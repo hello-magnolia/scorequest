@@ -58,6 +58,21 @@ Each realm image used the same style anchor ("cozy retro pixel-art game
 biome banner, classic 16-bit RPG overworld style…") with a per-biome scene and
 a four-hex palette, which keeps the set visually consistent.
 
+## Login & accounts
+
+Real accounts, Google login, and saved progress run on **Supabase** (free tier).
+The UI is built; connecting it is ~10 minutes — see `SETUP_AUTH.md`. Until you
+paste your project keys into `js/config.js`, the site runs in **demo mode**
+(login modal works, progress saved to localStorage for the session).
+
+- `js/auth.js` — Supabase client, Google + email login, the "Choose your hero"
+  modal, signed-in nav state, and progress persistence (with demo fallback).
+- `js/config.js` — the two public values you paste in (safe to commit).
+- `supabase_setup.sql` — run once in Supabase: profiles table + Row Level
+  Security (each user can touch only their own row) + auto-profile trigger.
+- `verify_auth.js` — 12 checks: demo-mode fallback, modal open/toggle, Google
+  button, demo login, hero-name greeting, progress round-trip, sign-out.
+
 ## Notes
 
 - Respects `prefers-reduced-motion`: static frame, no typewriter loop, instant reveals.
