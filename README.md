@@ -58,6 +58,22 @@ Each realm image used the same style anchor ("cozy retro pixel-art game
 biome banner, classic 16-bit RPG overworld style…") with a per-biome scene and
 a four-hex palette, which keeps the set visually consistent.
 
+## Map progression & the quest loop
+
+`js/game.js` + `js/map.js` turn the 8 realms into a playable progression:
+
+- **World map** (in the Quest Log section): 8 realm nodes on a track, each
+  showing level (1–5), an XP bar, lock state, and a banner flag when cleared.
+- **Leveling**: clearing a realm's mini-quests earns XP (10–40 per quest, +10
+  perfect-clear bonus). Reaching Lv 2 in a track's realm unlocks the next one.
+- **Quest drawer**: a short sample question set per realm. Answering awards XP,
+  animates the map + card, and celebrates level-ups / realm clears.
+- **Persistence**: every quest calls `SQGame.completeQuest` -> `SQAuth.saveProgress`,
+  so XP/streak/cleared-realms save to the hero's Supabase profile (or localStorage
+  in demo mode). Signed-out players get a nudge to create a hero to save progress.
+- `verify_map.js` — 18 checks: node render, XP math, unlock gating, card overlays,
+  clear state, persistence, and the full quest loop reaching an XP result.
+
 ## Login & accounts
 
 Real accounts, Google login, and saved progress run on **Supabase** (free tier).

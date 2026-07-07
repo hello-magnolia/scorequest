@@ -88,12 +88,13 @@ vc.on('jsdomError', () => {}); // ignore resource-loading noise, we assert behav
     !img.src || /cloudfront|assets\/realms/.test(img.src));
   check('Card img source chain uses local/CDN sources only', chained);
 
-  /* 5 — typewriter is typing */
+  /* 5 — typewriter is typing (sample across a full cycle so the pause between
+         lines doesn't produce a false negative) */
   const tw = document.getElementById('typewriter');
-  const twA = tw.textContent;
-  await new Promise(r => setTimeout(r, 500));
-  const twB = tw.textContent;
-  check('Typewriter effect running', twB.length > 0 && twB !== twA, JSON.stringify(twA) + ' -> ' + JSON.stringify(twB));
+  const seen = new Set();
+  for (let k = 0; k < 24; k++) { seen.add(tw.textContent); await new Promise(r => setTimeout(r, 120)); }
+  check('Typewriter effect running', seen.size >= 3 && [...seen].some(s => s.length > 0),
+    seen.size + ' distinct frames');
 
   /* 6 — scroll reveals: fire the observers like a scroll would */
   const revealCount = document.querySelectorAll('.reveal').length;

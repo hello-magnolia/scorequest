@@ -1,0 +1,342 @@
+/* ============================================================
+   ScoreQuest — map progression interface
+   ------------------------------------------------------------
+   Renders:
+   1. A live world map: 8 realm nodes on a winding trail, each showing
+      lock / level / progress, colored by section. Cleared realms get a
+      banner flag. Locked realms are dimmed with a lock glyph.
+   2. Progress overlays on the existing realm cards (level pip + XP bar),
+      and a "Start quest" button that opens the quest drawer.
+   3. A quest drawer: a short sample question set for the realm. Answering
+      calls SQGame.completeQuest -> awards XP -> animates the map + card,
+      with level-up / realm-cleared celebration.
+
+   Depends on SQGame (state) and SQAuth (persistence). Degrades: if a
+   visitor isn't signed in, playing a quest still works in-session and a
+   gentle nudge invites them to create a hero to save it.
+   ============================================================ */
+(function () {
+  'use strict';
+  if (!window.SQGame) return;
+  var G = window.SQGame;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- tiny sample quests per realm (demo content) ---------- */
+  var QUESTS = {
+    info: [
+      { q: 'A passage’s central idea is best described as its…', a: ['main point', 'first sentence', 'longest word', 'title'], correct: 0 },
+      { q: '“Command of evidence” asks you to…', a: ['guess the author’s mood', 'find text that supports a claim', 'count paragraphs', 'define a word'], correct: 1 },
+      { q: 'An inference is a conclusion based on…', a: ['stated + implied clues', 'the answer key', 'your opinion', 'the title only'], correct: 0 },
+    ],
+    craft: [
+      { q: '“Words in context” questions test a word’s…', a: ['dictionary rank', 'meaning in that sentence', 'syllable count', 'origin'], correct: 1 },
+      { q: 'Two texts that disagree have a relationship of…', a: ['agreement', 'tension / contrast', 'repetition', 'no connection'], correct: 1 },
+      { q: 'An author’s “purpose” is…', a: ['why they wrote it', 'how long it is', 'the font', 'the date'], correct: 0 },
+    ],
+    expression: [
+      { q: 'A transition like “however” signals…', a: ['a contrast', 'an example', 'a cause', 'agreement'], correct: 0 },
+      { q: 'The best transition depends on the…', a: ['sentence length', 'logical relationship', 'first letter', 'paragraph number'], correct: 1 },
+      { q: 'Rhetorical synthesis rewards the choice that…', a: ['is longest', 'meets the stated goal', 'sounds fancy', 'repeats the prompt'], correct: 1 },
+    ],
+    conventions: [
+      { q: 'Two independent clauses can be joined with…', a: ['a comma alone', 'a semicolon', 'nothing', 'an apostrophe'], correct: 1 },
+      { q: 'Subject–verb agreement means the verb matches the subject’s…', a: ['number', 'color', 'length', 'tense only'], correct: 0 },
+      { q: '“Its” vs “it’s”: “it’s” means…', a: ['belonging to it', 'it is / it has', 'many its', 'a typo'], correct: 1 },
+    ],
+    algebra: [
+      { q: 'Solve 2x + 4 = 10. x = ?', a: ['2', '3', '4', '7'], correct: 1 },
+      { q: 'The slope of y = 3x − 1 is…', a: ['−1', '1', '3', '0'], correct: 2 },
+      { q: 'A system with no solution has lines that are…', a: ['parallel', 'the same', 'perpendicular', 'curved'], correct: 0 },
+    ],
+    advmath: [
+      { q: 'The vertex form of a parabola is y = a(x − h)² + …', a: ['k', 'b', 'x', 'c'], correct: 0 },
+      { q: 'x² = 9 has solutions x = …', a: ['3 only', '−3 only', '±3', '9'], correct: 2 },
+      { q: '2³ · 2² = …', a: ['2⁵', '2⁶', '4⁵', '2¹'], correct: 0 },
+    ],
+    data: [
+      { q: '20 is what percent of 50?', a: ['20%', '30%', '40%', '50%'], correct: 2 },
+      { q: 'The median of 2, 4, 9 is…', a: ['2', '4', '5', '9'], correct: 1 },
+      { q: 'A rate of 60 miles in 2 hours is…', a: ['30 mph', '60 mph', '120 mph', '2 mph'], correct: 0 },
+    ],
+    geometry: [
+      { q: 'Angles in a triangle sum to…', a: ['90°', '180°', '270°', '360°'], correct: 1 },
+      { q: 'The area of a circle is…', a: ['2πr', 'πr²', 'πd', 'r²'], correct: 1 },
+      { q: 'In a right triangle, a² + b² = …', a: ['c', 'c²', '2c', 'ab'], correct: 1 },
+    ],
+  };
+
+  var mapWrap, drawer;
+
+  /* ============================================================
+     1. WORLD MAP — replaces the quest-log trail visuals
+     ============================================================ */
+  function buildMap() {
+    var host = document.getElementById('quest-log');
+    if (!host) return;
+
+    // Insert a map section right after the quest-log heading
+    var section = document.createElement('div');
+    section.className = 'worldmap reveal';
+    section.innerHTML =
+      '<div class="worldmap-head">' +
+        '<p class="worldmap-rank type-utility">World rank <span id="world-rank">Lv 8</span></p>' +
+        '<p class="worldmap-sub" id="world-sub">Clear quests to level each realm from 1 to 5. Reach Lv 2 to unlock the next realm in a track.</p>' +
+      '</div>' +
+      '<div class="map-grid" id="map-grid"></div>';
+
+    var head = host.querySelector('.section-head');
+    head.parentNode.insertBefore(section, head.nextSibling);
+    mapWrap = section;
+
+    // Join the scroll-reveal system. main.js sets up its observer on load; a
+    // section inserted afterward must be registered (or shown outright if the
+    // observer has already passed, or IO is unavailable).
+    if (window.SQRevealObserve) window.SQRevealObserve(section);
+    else section.classList.add('is-visible');
+
+    var grid = section.querySelector('#map-grid');
+    G.REALMS.forEach(function (r, i) {
+      var node = document.createElement('button');
+      node.className = 'map-node';
+      node.setAttribute('data-realm', r.id);
+      node.setAttribute('data-section', r.section);
+      node.innerHTML =
+        '<span class="node-index type-utility">' + String(i + 1).padStart(2, '0') + '</span>' +
+        '<canvas class="node-art" width="240" height="104" data-scene="' + r.scene + '"></canvas>' +
+        '<span class="node-lock" aria-hidden="true">\uD83D\uDD12</span>' +
+        '<span class="node-flag" aria-hidden="true"></span>' +
+        '<span class="node-body">' +
+          '<span class="node-name">' + r.name + '</span>' +
+          '<span class="node-domain type-utility">' + r.domain + '</span>' +
+          '<span class="node-bar"><span class="node-bar-fill"></span></span>' +
+          '<span class="node-meta type-utility"><span class="node-level">Lv 1</span><span class="node-pct">0%</span></span>' +
+        '</span>';
+      node.addEventListener('click', function () { openQuest(r.id); });
+      grid.appendChild(node);
+    });
+
+    // animate the node canvases (reuse PixelWorld)
+    section.querySelectorAll('canvas[data-scene]').forEach(startNodeCanvas);
+    refreshMap();
+  }
+
+  function startNodeCanvas(cv) {
+    var PW = window.PixelWorld;
+    var scene = PW && PW.scenes[cv.getAttribute('data-scene')];
+    if (!scene) return;
+    var ctx = cv.getContext('2d');
+    scene.draw(ctx, scene.w, scene.h, 0); // always paint a first frame
+    if (reduceMotion) { scene.draw(ctx, scene.w, scene.h, 2); return; }
+    var visible = true, start = performance.now();
+    (function loop(now) {
+      if (visible) scene.draw(ctx, scene.w, scene.h, (now - start) / 1000);
+      requestAnimationFrame(loop);
+    })(performance.now());
+    if (typeof IntersectionObserver === 'function') {
+      visible = false;
+      new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { rootMargin: '80px' }).observe(cv);
+    }
+  }
+
+  function refreshMap() {
+    if (!mapWrap) return;
+    var s = G.getState();
+    var rank = document.getElementById('world-rank');
+    if (rank) rank.textContent = 'Lv ' + s.totalLevel;
+    mapWrap.querySelectorAll('.map-node').forEach(function (node) {
+      var id = node.getAttribute('data-realm');
+      var st = s.realms[id];
+      node.classList.toggle('is-locked', !st.unlocked);
+      node.classList.toggle('is-cleared', st.cleared);
+      node.disabled = !st.unlocked;
+      node.querySelector('.node-level').textContent = 'Lv ' + st.level;
+      node.querySelector('.node-pct').textContent = st.cleared ? '★ cleared' : st.pct + '%';
+      var fill = node.querySelector('.node-bar-fill');
+      fill.style.width = (st.cleared ? 100 : st.pct) + '%';
+    });
+  }
+
+  /* ============================================================
+     2. CARD OVERLAYS — level pip + XP bar + Start quest button
+     ============================================================ */
+  function decorateCards() {
+    document.querySelectorAll('.card').forEach(function (card) {
+      var kicker = card.querySelector('.card-kicker');
+      if (!kicker) return;
+      // derive realm id from the canvas fallback's data-scene
+      var cv = card.querySelector('canvas[data-scene]');
+      var id = cv && cv.getAttribute('data-scene');
+      if (!id || !G.byId(id)) return;
+      card.setAttribute('data-realm', id);
+
+      var meta = card.querySelector('.card-meta');
+      var prog = document.createElement('div');
+      prog.className = 'card-progress';
+      prog.innerHTML =
+        '<div class="card-bar"><div class="card-bar-fill"></div></div>' +
+        '<button class="btn btn-outline btn-quest">Start quest</button>';
+      meta.parentNode.insertBefore(prog, meta.nextSibling);
+      prog.querySelector('.btn-quest').addEventListener('click', function () { openQuest(id); });
+    });
+    refreshCards();
+  }
+
+  function refreshCards() {
+    var s = G.getState();
+    document.querySelectorAll('.card[data-realm]').forEach(function (card) {
+      var id = card.getAttribute('data-realm');
+      var st = s.realms[id];
+      var chip = card.querySelector('.chip-lvl');
+      if (chip) {
+        var pips = '▮'.repeat(st.level) + '▯'.repeat(Math.max(0, G.MAX_LEVEL - st.level));
+        chip.textContent = pips + ' Level ' + st.level;
+      }
+      var fill = card.querySelector('.card-bar-fill');
+      if (fill) fill.style.width = (st.cleared ? 100 : st.pct) + '%';
+      var btn = card.querySelector('.btn-quest');
+      if (btn) {
+        if (!st.unlocked) { btn.textContent = '🔒 Locked'; btn.disabled = true; }
+        else if (st.cleared) { btn.textContent = '★ Replay quest'; btn.disabled = false; }
+        else { btn.textContent = 'Start quest'; btn.disabled = false; }
+      }
+      card.classList.toggle('realm-locked', !st.unlocked);
+      card.classList.toggle('realm-cleared', st.cleared);
+    });
+  }
+
+  /* ============================================================
+     3. QUEST DRAWER — the loop that actually earns XP
+     ============================================================ */
+  function buildDrawer() {
+    drawer = document.createElement('div');
+    drawer.className = 'quest-overlay';
+    drawer.hidden = true;
+    drawer.innerHTML =
+      '<div class="quest-panel pixel-frame" role="dialog" aria-modal="true" aria-labelledby="quest-title">' +
+        '<button class="quest-close" aria-label="Close">\u2715</button>' +
+        '<p class="eyebrow type-utility quest-eyebrow" id="quest-eyebrow"></p>' +
+        '<h3 class="quest-title" id="quest-title"></h3>' +
+        '<div class="quest-progress type-utility" id="quest-progress"></div>' +
+        '<div class="quest-stage" id="quest-stage"></div>' +
+      '</div>';
+    document.body.appendChild(drawer);
+    drawer.querySelector('.quest-close').addEventListener('click', closeQuest);
+    drawer.addEventListener('click', function (e) { if (e.target === drawer) closeQuest(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drawer.hidden) closeQuest(); });
+  }
+
+  var session = null;
+
+  function openQuest(realmId) {
+    var st = G.realmState(realmId);
+    if (!st.unlocked) return;
+    if (!drawer) buildDrawer();
+    var r = G.byId(realmId);
+    var pool = (QUESTS[realmId] || []).slice();
+    session = { realmId: realmId, items: pool, i: 0, correct: 0, total: pool.length };
+
+    drawer.querySelector('#quest-eyebrow').textContent = r.domain + ' · Lv ' + st.level;
+    drawer.querySelector('#quest-title').textContent = r.name + ' — side quest';
+    drawer.hidden = false;
+    document.body.style.overflow = 'hidden';
+    renderQuestStep();
+  }
+
+  function renderQuestStep() {
+    var stage = drawer.querySelector('#quest-stage');
+    var prog = drawer.querySelector('#quest-progress');
+    var item = session.items[session.i];
+    prog.textContent = 'Question ' + (session.i + 1) + ' / ' + session.total;
+
+    if (!item) return renderQuestResult();
+
+    stage.innerHTML =
+      '<p class="quest-q">' + item.q + '</p>' +
+      '<div class="quest-answers">' +
+        item.a.map(function (opt, idx) {
+          return '<button class="quest-answer" data-idx="' + idx + '">' + opt + '</button>';
+        }).join('') +
+      '</div>';
+
+    stage.querySelectorAll('.quest-answer').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(btn.getAttribute('data-idx'), 10);
+        var right = idx === item.correct;
+        if (right) session.correct++;
+        // reveal correctness
+        stage.querySelectorAll('.quest-answer').forEach(function (b, bi) {
+          b.disabled = true;
+          if (bi === item.correct) b.classList.add('is-correct');
+          else if (bi === idx) b.classList.add('is-wrong');
+        });
+        setTimeout(function () { session.i++; renderQuestStep(); }, right ? 620 : 1000);
+      });
+    });
+  }
+
+  function renderQuestResult() {
+    var stage = drawer.querySelector('#quest-stage');
+    var res = G.completeQuest(session.realmId, session.correct, session.total);
+    var signedIn = !!(window.SQAuth && window.SQAuth.getUser());
+
+    var banner =
+      res.cleared ? '<p class="quest-badge cleared">★ Realm cleared! ' + G.byId(session.realmId).name + ' conquered.</p>' :
+      res.leveledUp ? '<p class="quest-badge levelup">▲ Level up! Now Lv ' + res.newLevel + '.</p>' : '';
+
+    stage.innerHTML =
+      banner +
+      '<p class="quest-score">You answered <strong>' + session.correct + ' / ' + session.total + '</strong> correctly.</p>' +
+      '<p class="quest-xp type-utility">+' + res.earned + ' XP earned</p>' +
+      (signedIn
+        ? '<p class="quest-saved type-utility">✓ Saved to your hero</p>'
+        : '<p class="quest-saved type-utility warn">Progress kept for this session — <button class="quest-signup">create a hero</button> to save it.</p>') +
+      '<div class="quest-actions">' +
+        '<button class="btn btn-gold quest-again">Another quest</button>' +
+        '<button class="btn btn-outline quest-done">Back to map</button>' +
+      '</div>';
+
+    if (!reduceMotion && (res.leveledUp || res.cleared)) burst();
+
+    stage.querySelector('.quest-again').addEventListener('click', function () { openQuest(session.realmId); });
+    stage.querySelector('.quest-done').addEventListener('click', closeQuest);
+    var su = stage.querySelector('.quest-signup');
+    if (su) su.addEventListener('click', function () { closeQuest(); if (window.SQAuth) window.SQAuth.openModal('up'); });
+
+    refreshMap(); refreshCards();
+  }
+
+  function closeQuest() {
+    if (!drawer) return;
+    drawer.hidden = true;
+    document.body.style.overflow = '';
+    session = null;
+  }
+
+  /* confetti-ish pixel burst for level-ups */
+  function burst() {
+    var panel = drawer.querySelector('.quest-panel');
+    var colors = ['#F2B63C', '#79C77B', '#9A86D9', '#E2695A', '#57C7CE'];
+    for (var i = 0; i < 24; i++) {
+      var p = document.createElement('span');
+      p.className = 'pixel-confetti';
+      p.style.left = (20 + Math.random() * 60) + '%';
+      p.style.top = '30%';
+      p.style.background = colors[i % colors.length];
+      p.style.setProperty('--dx', (Math.random() * 2 - 1) * 120 + 'px');
+      p.style.setProperty('--dy', (80 + Math.random() * 160) + 'px');
+      p.style.animationDelay = (Math.random() * 0.15) + 's';
+      panel.appendChild(p);
+      setTimeout((function (el) { return function () { el.remove(); }; })(p), 1200);
+    }
+  }
+
+  /* ---------- init ---------- */
+  function init() {
+    buildMap();
+    decorateCards();
+    buildDrawer();
+    G.onChange(function () { refreshMap(); refreshCards(); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

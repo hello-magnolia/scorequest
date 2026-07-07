@@ -75,16 +75,19 @@
     var scene = PW && PW.scenes[cv.getAttribute('data-scene')];
     if (!scene) return;
     var ctx = cv.getContext('2d');
+    scene.draw(ctx, scene.w, scene.h, 0);
     if (reduceMotion) { scene.draw(ctx, scene.w, scene.h, 2); return; }
-    var visible = false, start = performance.now();
+    var visible = true, start = performance.now();
     function loop(now) {
       if (visible) scene.draw(ctx, scene.w, scene.h, (now - start) / 1000);
       requestAnimationFrame(loop);
     }
-    new IntersectionObserver(function (entries) {
-      visible = entries[0].isIntersecting;
-    }, { rootMargin: '60px' }).observe(cv);
-    scene.draw(ctx, scene.w, scene.h, 0);
+    if (typeof IntersectionObserver === 'function') {
+      visible = false;
+      new IntersectionObserver(function (entries) {
+        visible = entries[0].isIntersecting;
+      }, { rootMargin: '60px' }).observe(cv);
+    }
     requestAnimationFrame(loop);
   }
 
@@ -153,10 +156,13 @@
       });
     }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
     revealEls.forEach(function (el) { io.observe(el); });
+    // allow modules that insert content later (e.g. the world map) to join in
+    window.SQRevealObserve = function (el) { io.observe(el); };
   } else {
     revealEls.forEach(function (el) { el.classList.add('is-visible'); });
     document.querySelectorAll('.forecast').forEach(fillBars);
     document.querySelectorAll('.hero-stats').forEach(countUps);
+    window.SQRevealObserve = function (el) { el.classList.add('is-visible'); };
   }
 
   /* ---------- 5. quest trail draws with scroll ---------- */

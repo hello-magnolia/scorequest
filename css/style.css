@@ -430,3 +430,118 @@ a { color: inherit; }
   .auth-card { padding: 30px 22px 24px; }
   .hero-badge { max-width: 90px; }
 }
+
+/* ============================================================
+   WORLD MAP progression + quest drawer
+   ============================================================ */
+.worldmap { max-width: var(--wrap); margin: 0 auto 70px; }
+.worldmap-head { text-align: center; margin-bottom: 34px; }
+.worldmap-rank { font-size: 1.2rem; color: var(--parchment-dim); text-transform: uppercase; }
+.worldmap-rank span { color: var(--gold); }
+.worldmap-sub { color: var(--parchment-dim); font-size: 0.95rem; margin-top: 6px; max-width: 620px; margin-inline: auto; }
+
+.map-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px;
+}
+.map-node {
+  position: relative; text-align: left; cursor: pointer;
+  background: var(--ink-2); --frame: var(--line); padding: 0 0 14px;
+  color: var(--parchment); font-family: var(--font-body);
+  box-shadow: 0 calc(var(--pix) * -1) 0 0 var(--frame), 0 var(--pix) 0 0 var(--frame),
+    calc(var(--pix) * -1) 0 0 0 var(--frame), var(--pix) 0 0 0 var(--frame);
+  transition: transform 140ms steps(3, end), box-shadow 140ms;
+  overflow: hidden;
+}
+.map-node:hover:not(:disabled) { transform: translateY(calc(var(--pix) * -1)); --frame: var(--gold); }
+.map-node:focus-visible { outline: 3px dashed var(--gold); outline-offset: 4px; }
+.node-index {
+  position: absolute; top: 6px; left: 8px; z-index: 3;
+  font-size: 1.1rem; color: var(--gold); text-shadow: 2px 2px 0 rgba(0,0,0,0.7);
+}
+.node-art { width: 100%; height: auto; image-rendering: pixelated; display: block; }
+.node-lock, .node-flag { position: absolute; z-index: 3; }
+.node-lock { top: 40px; left: 50%; transform: translateX(-50%); font-size: 1.6rem; display: none; }
+.node-flag { top: 6px; right: 8px; width: 12px; height: 14px; background: var(--gold);
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 55%, 0 70%); display: none; }
+.node-body { display: block; padding: 12px 14px 0; }
+.node-name { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; display: block; }
+.node-domain { color: var(--dusk); font-size: 0.85rem; display: block; margin: 2px 0 10px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.node-bar { display: block; height: 10px; background: var(--ink-3); overflow: hidden; }
+.node-bar-fill { display: block; height: 100%; width: 0%; background: var(--meadow);
+  transition: width 700ms steps(10, end); }
+.map-node[data-section="rw"] .node-bar-fill { background: var(--meadow); }
+.map-node[data-section="math"] .node-bar-fill { background: var(--dusk); }
+.node-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 1rem; }
+.node-level { color: var(--gold); }
+.node-pct { color: var(--parchment-dim); }
+
+.map-node.is-locked { filter: grayscale(0.7) brightness(0.6); cursor: not-allowed; }
+.map-node.is-locked .node-lock { display: block; text-shadow: 2px 2px 0 rgba(0,0,0,0.8); }
+.map-node.is-locked .node-art { opacity: 0.5; }
+.map-node.is-cleared { --frame: var(--gold); }
+.map-node.is-cleared .node-flag { display: block; }
+.map-node.is-cleared .node-pct { color: var(--gold); }
+
+/* card progress overlays */
+.card-progress { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+.card-bar { height: 10px; background: var(--ink-3); overflow: hidden; }
+.card-bar-fill { height: 100%; width: 0%; background: var(--gold);
+  transition: width 800ms steps(12, end); }
+.card[data-section="math"] .card-bar-fill { background: var(--dusk); }
+.card[data-section="rw"] .card-bar-fill { background: var(--meadow); }
+.btn-quest { font-size: 0.9rem; padding: 8px 16px; }
+.card.realm-locked { opacity: 0.72; }
+.card.realm-cleared { --frame: var(--gold); }
+
+/* quest drawer */
+.quest-overlay {
+  position: fixed; inset: 0; z-index: 210; display: grid; place-items: center; padding: 24px;
+  background: rgba(11, 8, 24, 0.85); animation: auth-fade 180ms ease;
+}
+.quest-panel {
+  --frame: var(--dusk); position: relative; width: 100%; max-width: 460px;
+  background: var(--ink-2); padding: 32px 28px 26px; overflow: hidden;
+  animation: auth-pop 200ms var(--reveal-ease);
+}
+.quest-close { position: absolute; top: 12px; right: 12px; background: transparent; border: none;
+  color: var(--parchment-dim); font-size: 1.1rem; cursor: pointer; padding: 4px; }
+.quest-close:hover { color: var(--gold-bright); }
+.quest-eyebrow { margin-bottom: 4px; }
+.quest-title { font-size: 1.6rem; margin-bottom: 8px; }
+.quest-progress { color: var(--parchment-dim); font-size: 1rem; margin-bottom: 18px; }
+.quest-q { font-size: 1.12rem; font-weight: 700; margin-bottom: 18px; line-height: 1.4; }
+.quest-answers { display: flex; flex-direction: column; gap: 10px; }
+.quest-answer {
+  text-align: left; padding: 12px 14px; background: var(--ink); color: var(--parchment);
+  border: none; box-shadow: inset 0 0 0 2px var(--line); cursor: pointer;
+  font-family: var(--font-body); font-size: 0.98rem; transition: box-shadow 120ms, background 120ms;
+}
+.quest-answer:hover:not(:disabled) { box-shadow: inset 0 0 0 2px var(--dusk); background: var(--ink-3); }
+.quest-answer.is-correct { box-shadow: inset 0 0 0 2px var(--meadow); background: rgba(121,199,123,0.16); }
+.quest-answer.is-wrong { box-shadow: inset 0 0 0 2px var(--berry); background: rgba(226,105,90,0.16); }
+.quest-badge { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; margin-bottom: 12px; }
+.quest-badge.levelup { color: var(--dusk); }
+.quest-badge.cleared { color: var(--gold); }
+.quest-score { font-size: 1.05rem; margin-bottom: 6px; }
+.quest-xp { color: var(--gold); font-size: 1.7rem; margin-bottom: 10px; }
+.quest-saved { font-size: 0.95rem; color: var(--meadow); margin-bottom: 18px; }
+.quest-saved.warn { color: var(--parchment-dim); }
+.quest-signup { background: none; border: none; color: var(--gold-bright); cursor: pointer;
+  font-family: var(--font-utility); font-size: 1rem; padding: 0; text-decoration: underline; }
+.quest-actions { display: flex; gap: 12px; }
+.pixel-confetti {
+  position: absolute; width: 7px; height: 7px; z-index: 5; pointer-events: none;
+  animation: confetti 1s ease-out forwards;
+}
+@keyframes confetti {
+  0% { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
+}
+
+@media (max-width: 1120px) { .map-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .map-grid { grid-template-columns: 1fr; } .quest-actions { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) {
+  .node-bar-fill, .card-bar-fill { transition: none; }
+  .pixel-confetti { display: none; }
+}
