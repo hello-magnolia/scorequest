@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ScoreQuest — Turn SAT &amp; ACT prep into an adventure</title>
+<meta name="description" content="ScoreQuest is a gamified SAT & ACT prep world. Eight realms — one for each Digital SAT content domain — daily side quests, full-length boss battles, and a score forecast that levels up with you." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
+</head>
+<body>
+
+<a class="skip-link" href="#world">Skip to content</a>
+
+<!-- ===================== NAV ===================== -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="ScoreQuest home">
+      <span class="brand-coin" aria-hidden="true"></span>
+      <span class="brand-name">ScoreQuest</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#world">World</a>
+      <a href="#quest-log">Quest&nbsp;Log</a>
+      <a href="#guild">Guild</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="#pricing">Log in</a>
+      <a class="btn btn-gold" href="#pricing">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="hero">
+  <canvas id="hero-canvas" class="hero-bg" aria-hidden="true"></canvas>
+  <!-- Seedance 2.0 render (Higgsfield). Source chain: local file -> CDN -> live canvas -->
+  <video id="hero-video" class="hero-bg" hidden muted loop playsinline autoplay aria-hidden="true"
+         data-local="assets/hero.mp4"
+         data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_160337_73e7a3e7-612c-49f7-ab6a-4f7920599476.mp4"></video>
+  <div class="hero-scrim" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <p class="eyebrow type-utility">Digital SAT · ACT · Built like a game</p>
+    <h1 class="hero-title">
+      <span class="hero-line">Turn test prep</span>
+      <span class="hero-line hero-line-accent">into an adventure</span>
+    </h1>
+    <p class="hero-sub"><span id="typewriter" aria-live="polite"></span><span class="caret" aria-hidden="true"></span></p>
+    <div class="hero-actions">
+      <a class="btn btn-gold btn-lg" href="#pricing">Start your quest</a>
+      <a class="btn btn-outline btn-lg" href="#world">Explore the world map</a>
+    </div>
+  </div>
+
+  <div class="hero-stats reveal">
+    <div class="stat"><span class="stat-num type-utility" data-count="800">0</span><span class="stat-plus type-utility">+</span><span class="stat-label">practice quests</span></div>
+    <div class="stat"><span class="stat-num type-utility" data-count="24">0</span><span class="stat-plus type-utility"></span><span class="stat-label">boss battles (full mocks)</span></div>
+    <div class="stat"><span class="stat-num type-utility" data-count="8">0</span><span class="stat-plus type-utility"></span><span class="stat-label">realms — one per SAT domain</span></div>
+    <div class="stat"><span class="stat-num type-utility" data-count="1">0</span><span class="stat-plus type-utility"></span><span class="stat-label">adaptive XP engine</span></div>
+  </div>
+</section>
+
+<!-- ===================== WORLD / 8 SAT DOMAIN REALMS ===================== -->
+<section class="section" id="world">
+  <div class="section-head reveal">
+    <p class="eyebrow type-utility">The world map</p>
+    <h2 class="section-title">Eight realms. Eight SAT domains.</h2>
+    <p class="section-sub">The Digital SAT tests exactly eight content domains — four in Reading&nbsp;&amp;&nbsp;Writing, four in Math. Each one is a biome. Clear its quests, earn your gear, then take on the boss. ACT expedition realms arrive next season.</p>
+  </div>
+
+  <div class="filters reveal" role="group" aria-label="Filter realms by section">
+    <button class="pill is-active" data-filter="all">All realms</button>
+    <button class="pill" data-filter="rw">Reading &amp; Writing</button>
+    <button class="pill" data-filter="math">Math</button>
+  </div>
+
+  <div class="cards" id="cards">
+    <article class="card reveal" data-section="rw">
+      <div class="card-art">
+        <img alt="Gloamwood — a twilight forest of lantern-lit trees and glowing books" loading="lazy"
+             data-local="assets/realms/info.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165708_74c8247e-041b-46c6-bd60-b5688daafbd5.png" />
+        <canvas data-scene="info" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">R&amp;W · Information &amp; Ideas</p>
+        <h3 class="card-title">Gloamwood</h3>
+        <p class="card-desc">Track central ideas and command of evidence through a lantern-lit forest of passages. Every glowing book is a clue.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▯▯ Level 1</span><span class="chip type-utility">Reading &amp; Writing</span></div>
+      </div>
+    </article>
+
+    <article class="card reveal" data-section="rw">
+      <div class="card-art">
+        <img alt="Echo Vale — a dawn canyon carved with glowing runes" loading="lazy"
+             data-local="assets/realms/craft.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165718_a044cd59-5803-4574-93c3-b300e750af85.png" />
+        <canvas data-scene="craft" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">R&amp;W · Craft &amp; Structure</p>
+        <h3 class="card-title">Echo Vale</h3>
+        <p class="card-desc">Words in context echo off the canyon walls. Decode text structure, purpose, and cross-text connections rune by rune.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▮▯ Level 2</span><span class="chip type-utility">Reading &amp; Writing</span></div>
+      </div>
+    </article>
+
+    <article class="card reveal" data-section="rw">
+      <div class="card-art">
+        <img alt="Inkmarsh — a teal wetland of quill reeds and glowing glyphs" loading="lazy"
+             data-local="assets/realms/expression.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165729_db1609c5-3aad-4569-8936-e642eba5a300.png" />
+        <canvas data-scene="expression" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">R&amp;W · Expression of Ideas</p>
+        <h3 class="card-title">Inkmarsh</h3>
+        <p class="card-desc">Wade the still teal waters of rhetorical synthesis. Pick the transition that carries the current, not the one that fights it.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▮▯ Level 2</span><span class="chip type-utility">Reading &amp; Writing</span></div>
+      </div>
+    </article>
+
+    <article class="card reveal" data-section="rw">
+      <div class="card-art">
+        <img alt="Syntax Citadel — an orderly castle keep at golden hour" loading="lazy"
+             data-local="assets/realms/conventions.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165740_bc2485ab-42d9-4045-bb54-e82d95728861.png" />
+        <canvas data-scene="conventions" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">R&amp;W · Standard English Conventions</p>
+        <h3 class="card-title">Syntax Citadel</h3>
+        <p class="card-desc">Grammar's stronghold, where every banner hangs straight. Boundaries, sentence structure, and agreement — hold the wall.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▯▯ Level 1</span><span class="chip type-utility">Reading &amp; Writing</span></div>
+      </div>
+    </article>
+
+    <article class="card reveal" data-section="math">
+      <div class="card-art">
+        <img alt="Copperpeak — an amber canyon mine glittering with gold crystals" loading="lazy"
+             data-local="assets/realms/algebra.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165752_549328bb-f73a-4925-891a-bd7faf12c8fc.png" />
+        <canvas data-scene="algebra" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">Math · Algebra</p>
+        <h3 class="card-title">Copperpeak</h3>
+        <p class="card-desc">Mine linear equations, systems, and inequalities from the amber canyon. The ore here is pure points.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▮▯ Level 2</span><span class="chip type-utility">Math</span></div>
+      </div>
+    </article>
+
+    <article class="card reveal" data-section="math">
+      <div class="card-art">
+        <img alt="Starfall Summit — aurora over snow-capped night peaks" loading="lazy"
+             data-local="assets/realms/advmath.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165803_fc6057f0-685d-41e9-867c-ed1d6a29bc8c.png" />
+        <canvas data-scene="advmath" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">Math · Advanced Math</p>
+        <h3 class="card-title">Starfall Summit</h3>
+        <p class="card-desc">Scale the night peaks under the aurora: quadratics, nonlinear functions, and exponents — the hardest climb, the best view.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▮▮ Level 3</span><span class="chip type-utility">Math</span></div>
+      </div>
+    </article>
+
+    <article class="card reveal" data-section="math">
+      <div class="card-art">
+        <img alt="Chartwater Bay — a dusk harbor with a lighthouse and constellation reflections" loading="lazy"
+             data-local="assets/realms/data.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165813_9e52c7c4-1383-4165-aac2-f41833390df3.png" />
+        <canvas data-scene="data" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">Math · Problem-Solving &amp; Data Analysis</p>
+        <h3 class="card-title">Chartwater Bay</h3>
+        <p class="card-desc">Read the harbor's charts: ratios, rates, percentages, and distributions. The lighthouse only lies if you misread the scale.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▮▯ Level 2</span><span class="chip type-utility">Math</span></div>
+      </div>
+    </article>
+
+    <article class="card reveal" data-section="math">
+      <div class="card-art">
+        <img alt="Prism Tidepools — geometric crystals rising from tide pools at dawn" loading="lazy"
+             data-local="assets/realms/geometry.png" data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165823_2af1d8d8-4219-46aa-b0c1-9a34f1f3a217.png" />
+        <canvas data-scene="geometry" width="240" height="104" aria-hidden="true"></canvas>
+      </div>
+      <div class="card-body">
+        <p class="card-kicker type-utility">Math · Geometry &amp; Trigonometry</p>
+        <h3 class="card-title">Prism Tidepools</h3>
+        <p class="card-desc">Angles, circles, and triangles crystallized on a dawn shore. Bring a protractor; leave with a habit.</p>
+        <div class="card-meta"><span class="chip chip-lvl type-utility">▮▮▯ Level 2</span><span class="chip type-utility">Math</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== QUEST LOG (how it works) ===================== -->
+<section class="section section-alt" id="quest-log">
+  <div class="section-head reveal">
+    <p class="eyebrow type-utility">Quest log</p>
+    <h2 class="section-title">How your quest works</h2>
+    <p class="section-sub">A path, not a pile of PDFs. Three loops carry you from first login to test day.</p>
+  </div>
+
+  <div class="trail-wrap">
+    <svg class="trail" viewBox="0 0 60 900" preserveAspectRatio="none" aria-hidden="true">
+      <path id="trail-path" d="M30 0 C 55 120, 5 200, 30 320 C 55 440, 5 540, 30 640 C 50 730, 12 800, 30 900" />
+    </svg>
+
+    <ol class="steps">
+      <li class="step reveal">
+        <span class="step-marker type-utility" aria-hidden="true">01</span>
+        <div class="step-body">
+          <h3 class="step-title">Take the diagnostic quest</h3>
+          <p>Twenty-five minutes, adaptive, zero stakes. It maps all eight domains onto your skill tree — every weak node becomes a marked quest on your world map.</p>
+        </div>
+      </li>
+      <li class="step reveal">
+        <span class="step-marker type-utility" aria-hidden="true">02</span>
+        <div class="step-body">
+          <h3 class="step-title">Clear daily side quests</h3>
+          <p>Fifteen-minute question sets tuned to yesterday's mistakes. Keep the streak alive, bank XP, and unlock gear for your avatar.</p>
+        </div>
+      </li>
+      <li class="step reveal">
+        <span class="step-marker type-utility" aria-hidden="true">03</span>
+        <div class="step-body">
+          <h3 class="step-title">Fight the boss battles</h3>
+          <p>Full-length, fully timed mock exams in the official digital format. Every boss you clear sharpens your score forecast.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="forecast reveal" aria-label="Example score forecast">
+    <p class="forecast-title type-utility">Score forecast · example party member</p>
+    <div class="forecast-row">
+      <span class="bar-label">Reading &amp; Writing</span>
+      <div class="bar"><div class="bar-fill bar-fill-rw" data-fill="78"></div></div>
+      <span class="bar-xp type-utility">+140</span>
+    </div>
+    <div class="forecast-row">
+      <span class="bar-label">Math</span>
+      <div class="bar"><div class="bar-fill bar-fill-math" data-fill="88"></div></div>
+      <span class="bar-xp type-utility">+180</span>
+    </div>
+    <p class="forecast-total">Forecast: <span class="type-utility forecast-num" data-count="1460" data-start="1140">1140</span> <span class="forecast-note">after 9 weeks of quests</span></p>
+  </div>
+</section>
+
+<!-- ===================== GUILD (features) ===================== -->
+<section class="section" id="guild">
+  <div class="section-head reveal">
+    <p class="eyebrow type-utility">The guild hall</p>
+    <h2 class="section-title">Prep is better in a party</h2>
+    <p class="section-sub">The mechanics that keep you coming back — pointed at a real score, not a slot machine.</p>
+  </div>
+  <div class="features">
+    <div class="feature reveal">
+      <span class="feature-icon" data-icon="flame" aria-hidden="true"></span>
+      <h3>Streaks with shields</h3>
+      <p>Daily fire, but forgiving — shields protect your streak on the days life happens.</p>
+    </div>
+    <div class="feature reveal">
+      <span class="feature-icon" data-icon="chest" aria-hidden="true"></span>
+      <h3>Gear &amp; loot</h3>
+      <p>Clear quests to earn cosmetics for your avatar and camp. Purely for glory. Glory matters.</p>
+    </div>
+    <div class="feature reveal">
+      <span class="feature-icon" data-icon="banner" aria-hidden="true"></span>
+      <h3>Guilds &amp; leaderboards</h3>
+      <p>Form a study party with friends. Weekly guild quests, shared XP goals, gentle rivalry.</p>
+    </div>
+    <div class="feature reveal">
+      <span class="feature-icon" data-icon="crystal" aria-hidden="true"></span>
+      <h3>Score forecast</h3>
+      <p>A live estimate of your section scores, recalculated after every quest — so progress is visible, not vibes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRICING ===================== -->
+<section class="section section-alt" id="pricing">
+  <div class="section-head reveal">
+    <p class="eyebrow type-utility">Choose your class</p>
+    <h2 class="section-title">Premium, priced like a game — not a tutor's yacht</h2>
+    <p class="section-sub">Start free. Upgrade when the quest gets serious.</p>
+  </div>
+  <div class="plans">
+    <div class="plan reveal">
+      <p class="plan-name type-utility">Wanderer</p>
+      <p class="plan-price"><span class="plan-amount type-utility">$0</span></p>
+      <ul class="plan-list">
+        <li>One realm of your choice</li>
+        <li>One daily side quest</li>
+        <li>Guild membership</li>
+        <li>Streaks &amp; basic loot</li>
+      </ul>
+      <a class="btn btn-outline btn-block" href="#top">Start wandering</a>
+    </div>
+    <div class="plan plan-featured reveal">
+      <p class="plan-badge type-utility">Most chosen</p>
+      <p class="plan-name type-utility">Adventurer</p>
+      <p class="plan-price"><span class="plan-amount type-utility">$19</span><span class="plan-per">/month</span></p>
+      <ul class="plan-list">
+        <li>All eight realms, fully unlocked</li>
+        <li>Unlimited side quests</li>
+        <li>All 24 boss battles</li>
+        <li>Live score forecast</li>
+        <li>Streak shields</li>
+      </ul>
+      <a class="btn btn-gold btn-block" href="#top">Begin the adventure</a>
+    </div>
+    <div class="plan reveal">
+      <p class="plan-name type-utility">Guildmaster</p>
+      <p class="plan-price"><span class="plan-amount type-utility">$39</span><span class="plan-per">/month</span></p>
+      <ul class="plan-list">
+        <li>Everything in Adventurer</li>
+        <li>2 live strategy raids / month with a coach</li>
+        <li>Parent scroll: weekly progress reports</li>
+        <li>Score pledge: +150 points or 3 months free*</li>
+      </ul>
+      <a class="btn btn-outline btn-block" href="#top">Lead the guild</a>
+    </div>
+  </div>
+  <p class="fine-print reveal">*Pledge applies after completing the diagnostic, 8 weeks of daily quests, and 4 boss battles. Details in the terms scroll.</p>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="section outro">
+  <div class="outro-inner reveal">
+    <h2 class="outro-title">Your quest begins<br />where the path does.</h2>
+    <a class="btn btn-gold btn-lg" href="#pricing">Start your quest — free</a>
+    <p class="outro-note">No credit card. No dark forest. Just the first side quest.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="brand-name brand-name-sm">ScoreQuest</span>
+    <p class="footer-copy">A concept prototype. Realm art generated with Higgsfield (Nano Banana 2 + Seedance 2.0); live pixel canvas as fallback. Not affiliated with the College Board or ACT, Inc.</p>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="#world">World</a><a href="#quest-log">Quest log</a><a href="#pricing">Pricing</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="js/pixelworld.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
