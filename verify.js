@@ -153,10 +153,22 @@ vc.on('jsdomError', () => {}); // ignore resource-loading noise, we assert behav
   /* 12b — copy rules: no em dashes anywhere in rendered text */
   check('No em dashes in rendered page text', !document.body.textContent.includes('\u2014'));
 
-  /* 12c — premium pricing: $120 Guildmaster is the featured plan */
+  /* 12c — premium pricing: $120 featured in the MIDDLE, $360 anchor beside it */
   const featured = document.querySelector('.plan-featured');
-  check('Guildmaster $120 is the featured plan', !!featured && /\$120/.test(featured.textContent) &&
-    /Best for families/.test(featured.textContent) && /Guildmaster/.test(featured.textContent));
+  const plans = [...document.querySelectorAll('.plan')];
+  check('Guildmaster $120 is the featured middle plan', !!featured && plans[1] === featured &&
+    /\$120/.test(featured.textContent) && /Best value/.test(featured.textContent));
+  check('$360 anchor plan frames $120 as the deal', /\$360/.test(plans[2].textContent) &&
+    /one tutoring hour/.test(featured.textContent));
+
+  /* 12d — hero stats render inline (number and plus on one line) */
+  const sv = document.querySelectorAll('.stat-value');
+  check('Hero stats inline: 800 and + share one value element', sv.length === 4 &&
+    !!sv[0].querySelector('.stat-num') && !!sv[0].querySelector('.stat-plus'));
+
+  /* 12e — guild headline no longer references a party */
+  check('Guild headline reads "Studying that feels like playing"',
+    /Studying that feels like playing/.test(document.getElementById('guild').textContent));
 
   /* 13 — no runtime errors */
   check('No uncaught runtime errors', errors.length === 0, errors.join(' | ') || 'clean');

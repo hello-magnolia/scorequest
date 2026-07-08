@@ -26,6 +26,28 @@ const OPTS = {
   check('8 biome segments in realm order', segs.length === 8 &&
     order === 'info,craft,expression,conventions,algebra,advmath,data,geometry', order);
 
+  /* 1b — character builder opens before the first journey */
+  const builder = document.querySelector('.builder-overlay');
+  check('Character builder opens on first visit', !!builder && builder.hidden === false);
+  const pcv = builder.querySelector('canvas');
+  let previewPainted = false;
+  try { previewPainted = [...pcv.getContext('2d').getImageData(0,0,16,20).data].some(v=>v>0); } catch(e){}
+  check('Builder shows a painted hero preview', previewPainted);
+  const hatBefore = pcv.getContext('2d').getImageData(6,1,1,1).data.join(',');
+  builder.querySelector('.swatch[data-kind="hat"][data-i="1"]').dispatchEvent(new window.MouseEvent('click',{bubbles:true}));
+  await new Promise(r2 => setTimeout(r2, 40));
+  const hatAfter = pcv.getContext('2d').getImageData(6,1,1,1).data.join(',');
+  check('Choosing a swatch recolors the hero live', hatBefore !== hatAfter, hatBefore + ' -> ' + hatAfter);
+  builder.querySelector('.builder-name input').value = 'Nova';
+  builder.querySelector('.builder-begin').dispatchEvent(new window.MouseEvent('click',{bubbles:true}));
+  await new Promise(r2 => setTimeout(r2, 60));
+  check('Begin saves the character and closes the builder',
+    builder.hidden === true && /Nova/.test(window.localStorage.getItem('sq_character') || ''));
+  const spx = document.querySelector('.hero-sprite canvas').getContext('2d').getImageData(6,1,1,1).data;
+  check('Map sprite wears the chosen colors (berry hat)',
+    spx[0] === 226 && spx[1] === 105 && spx[2] === 90, spx.slice(0,3).join(','));
+  check('Customize hero button reopens the builder', !!document.getElementById('customize-hero'));
+
   /* 2 — nodes: 5 per segment, one boss each */
   const nodes = document.querySelectorAll('.rnode');
   check('40 quest nodes (5 per realm)', nodes.length === 40, nodes.length + ' nodes');

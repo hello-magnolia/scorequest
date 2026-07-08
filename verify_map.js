@@ -92,14 +92,28 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
     scenePainted && !!drawer.querySelector('.quest-scrim') &&
     drawer.querySelector('.quest-panel').getAttribute('data-section') === 'rw');
 
-  // answering a full quest reaches the result screen with XP
+  // wrong answers surface an explanation and wait for Continue
+  const q1Answers = drawer.querySelectorAll('.quest-answer');
+  q1Answers[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // Q1 correct is 0
+  await new Promise(r => setTimeout(r, 60));
+  const fb = drawer.querySelector('.quest-feedback');
+  check('Wrong answer shows explanation + Continue', !!fb && fb.classList.contains('is-wrong') &&
+    /Answer:/.test(fb.textContent) && fb.textContent.length > 60 && !!fb.querySelector('.quest-continue'),
+    fb ? fb.textContent.trim().slice(0, 60) : 'no feedback');
+  check('No auto-advance: question stays until Continue', !!drawer.querySelector('.quest-q'));
+  fb.querySelector('.quest-continue').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 60));
+
+  // answering the rest via the continue-driven loop reaches the XP result
   function answerAll() {
     return new Promise(resolve => {
       (function step(){
-        const ans = drawer.querySelectorAll('.quest-answer');
-        if (ans.length) { ans[0].dispatchEvent(new window.MouseEvent('click',{bubbles:true})); setTimeout(step, 40); }
-        else if (drawer.querySelector('.quest-xp')) resolve(true);
-        else setTimeout(step, 40);
+        const cont = drawer.querySelector('.quest-continue');
+        if (cont) { cont.dispatchEvent(new window.MouseEvent('click',{bubbles:true})); return setTimeout(step, 40); }
+        const ans = [...drawer.querySelectorAll('.quest-answer')].filter(a => !a.disabled);
+        if (ans.length) { ans[0].dispatchEvent(new window.MouseEvent('click',{bubbles:true})); return setTimeout(step, 40); }
+        if (drawer.querySelector('.quest-xp')) return resolve(true);
+        setTimeout(step, 40);
       })();
     });
   }

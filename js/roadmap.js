@@ -174,8 +174,10 @@
 
   function drawSpriteFrame(frame) {
     if (!spriteCtx || !PW || !PW.sprite) return;
-    PW.sprite.draw(spriteCtx, frame);
+    var pal = window.SQCharacter ? window.SQCharacter.palette() : null;
+    PW.sprite.draw(spriteCtx, frame, pal);
   }
+  window.addEventListener('sq-character', function () { drawSpriteFrame(0); });
 
   function buildSprite() {
     if (!PW || !PW.sprite) return;
@@ -274,7 +276,8 @@
     window.SQAuth.onChange(function (st) {
       var line = document.getElementById('mappage-player');
       if (!line) return;
-      var name = st.user ? ((st.profile && st.profile.hero_name) || 'Hero') : null;
+      var chr = window.SQCharacter && window.SQCharacter.get();
+      var name = (chr && chr.name) || (st.user ? ((st.profile && st.profile.hero_name) || 'Hero') : null);
       line.hidden = !name;
       if (name) document.getElementById('mappage-player-name').textContent = name;
     });

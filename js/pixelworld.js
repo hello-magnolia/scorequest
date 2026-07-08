@@ -524,23 +524,30 @@
   /* ============================================================
      ADVENTURER SPRITE, 16 x 20, three frames: 0 idle, 1/2 walk
      ============================================================ */
-  function drawAdventurer(ctx, frame) {
+  var ADVENTURER_DEFAULT = {
+    hatLight: '#8E7CC3', hatDark: '#6E4680',
+    tunic: '#2E6B55', tunicDark: '#1F4A3B',
+    scarf: '#F2B63C',
+  };
+
+  function drawAdventurer(ctx, frame, pal) {
+    pal = Object.assign({}, ADVENTURER_DEFAULT, pal || {});
     ctx.clearRect(0, 0, 16, 20);
     // pointed hat
-    px(ctx, 7, 0, 2, 1, '#6E4680');
-    px(ctx, 6, 1, 4, 1, '#8E7CC3');
-    px(ctx, 5, 2, 6, 1, '#8E7CC3');
-    px(ctx, 3, 3, 10, 1, '#6E4680');
+    px(ctx, 7, 0, 2, 1, pal.hatDark);
+    px(ctx, 6, 1, 4, 1, pal.hatLight);
+    px(ctx, 5, 2, 6, 1, pal.hatLight);
+    px(ctx, 3, 3, 10, 1, pal.hatDark);
     // face
     px(ctx, 5, 4, 6, 3, '#F2C9A0');
     px(ctx, 6, 5, 1, 1, '#2A1D07');
     px(ctx, 9, 5, 1, 1, '#2A1D07');
-    // gold scarf
-    px(ctx, 5, 7, 6, 1, '#F2B63C');
-    px(ctx, 10, 8, 1, 2, '#F2B63C');
+    // scarf
+    px(ctx, 5, 7, 6, 1, pal.scarf);
+    px(ctx, 10, 8, 1, 2, pal.scarf);
     // tunic
-    px(ctx, 4, 8, 8, 5, '#2E6B55');
-    px(ctx, 4, 8, 1, 5, '#1F4A3B');
+    px(ctx, 4, 8, 8, 5, pal.tunic);
+    px(ctx, 4, 8, 1, 5, pal.tunicDark);
     // satchel strap + bag
     px(ctx, 6, 8, 1, 5, '#7A4A2A');
     px(ctx, 11, 11, 3, 3, '#7A4A2A');
