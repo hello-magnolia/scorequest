@@ -150,6 +150,14 @@ vc.on('jsdomError', () => {}); // ignore resource-loading noise, we assert behav
   const shown = document.querySelectorAll('.card:not(.is-filtered)').length;
   check('Math filter shows the 4 Math realms, hides the 4 R&W realms', shown === 4 && hidden === 4, shown + ' shown, ' + hidden + ' hidden');
 
+  /* 12b — copy rules: no em dashes anywhere in rendered text */
+  check('No em dashes in rendered page text', !document.body.textContent.includes('\u2014'));
+
+  /* 12c — premium pricing: $120 Guildmaster is the featured plan */
+  const featured = document.querySelector('.plan-featured');
+  check('Guildmaster $120 is the featured plan', !!featured && /\$120/.test(featured.textContent) &&
+    /Best for families/.test(featured.textContent) && /Guildmaster/.test(featured.textContent));
+
   /* 13 — no runtime errors */
   check('No uncaught runtime errors', errors.length === 0, errors.join(' | ') || 'clean');
 

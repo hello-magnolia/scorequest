@@ -520,7 +520,7 @@ a { color: inherit; }
 .pillar { text-align: center; padding: 4px 10px; }
 .pillar h3 { font-size: 1.2rem; margin-bottom: 8px; }
 .pillar p { color: var(--parchment-dim); font-size: 0.95rem; }
-.lang-cycle { color: var(--gold); font-size: 1.1rem; display: inline-block; min-width: 4.5em;
+.lang-cycle { color: var(--gold); font-size: 1.1rem; display: inline-block; min-width: 6em;
   transition: opacity 200ms ease; }
 
 /* ---- the report: a light, formal document on the dark page ---- */
@@ -632,12 +632,13 @@ a { color: inherit; }
 
 /* left/right demo layout: pitch rail + report */
 .parents-demo-row {
-  display: grid; grid-template-columns: 300px 1fr; gap: 44px; align-items: center;
+  display: grid; grid-template-columns: 340px 1fr; gap: 48px; align-items: start;
   max-width: 1160px; margin: 0 auto;
 }
-.preport-pitch .pitch-title { font-size: clamp(1.6rem, 3.2vw, 2.2rem); margin-top: 10px; }
-.preport-pitch .pitch-sub { margin-top: 12px; color: var(--parchment-dim); font-size: 1.02rem; line-height: 1.55; }
-.preport-pitch .pitch-note { margin-top: 18px; color: var(--dusk); font-size: 1rem; }
+.preport-pitch { position: sticky; top: 110px; padding-top: 34px; }
+.preport-pitch .pitch-title { font-size: clamp(2rem, 3.8vw, 2.8rem); margin-top: 12px; }
+.preport-pitch .pitch-sub { margin-top: 14px; color: var(--parchment); font-size: 1.18rem; line-height: 1.6; }
+.preport-pitch .pitch-note { margin-top: 20px; color: var(--dusk); font-size: 1.05rem; }
 .parents-demo-row .preport { margin: 0; }
 
 /* personable narrative glance */
@@ -651,6 +652,6 @@ a { color: inherit; }
 
 @media (max-width: 980px) {
   .parents-demo-row { grid-template-columns: 1fr; gap: 26px; }
-  .preport-pitch { text-align: center; max-width: 480px; margin: 0 auto; }
+  .preport-pitch { position: static; padding-top: 0; text-align: center; max-width: 480px; margin: 0 auto; }
 }
 @media (prefers-reduced-motion: reduce) { .glance-text { transition: none; } }

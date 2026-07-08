@@ -132,6 +132,12 @@ const OPTS = {
   const after = dom2.window.document.getElementById('lang-cycle-word').textContent;
   check('Language auto-cycle animates the pillar word', before === 'English' && after !== before, before + ' -> ' + after);
 
+  /* 12b — 中文 dwells much longer than other languages */
+  await new Promise(r => setTimeout(r, 3200)); // well past a normal 2.6s dwell
+  const still = dom2.window.document.getElementById('lang-cycle-word').textContent;
+  check('中文 dwell is much longer (still 中文 after a normal cycle length)', after === '中文' && still === '中文',
+    after + ' held -> ' + still);
+
   /* rendering guarantee (regression from the overlay bug) */
   const cssText = await new Promise((res, rej) => {
     require('http').get('http://localhost:8000/css/style.css', r => {

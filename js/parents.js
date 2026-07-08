@@ -167,13 +167,17 @@
     } else swap();
   }
 
+  var DWELL = { en: 2600, zh: 9000, es: 2600, fr: 2600 }; // 中文 dwells much longer
   function startAutoCycle() {
     if (reduceMotion) return;
-    autoTimer = setInterval(function () {
-      applyLang(ORDER[(ORDER.indexOf(current) + 1) % ORDER.length], true);
-    }, 3200);
+    (function tick() {
+      autoTimer = setTimeout(function () {
+        applyLang(ORDER[(ORDER.indexOf(current) + 1) % ORDER.length], true);
+        tick();
+      }, DWELL[current] || 2600);
+    })();
   }
-  function stopAutoCycle() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
+  function stopAutoCycle() { if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; } }
 
   document.querySelectorAll('.lang-pill').forEach(function (pill) {
     pill.addEventListener('click', function () {
@@ -231,7 +235,7 @@
     var pts = exams.map(function (e, i) { return x(i) + ',' + y(e.score); }).join(' ');
     var dots = exams.map(function (e, i) {
       return '<circle cx="' + x(i) + '" cy="' + y(e.score) + '" r="3.4" class="trend-dot"/>' +
-             '<text x="' + x(i) + '" y="' + (y(e.score) - 8) + '" class="trend-val" text-anchor="middle">' + e.score + '</text>' +
+             '<text x="' + (x(i) - 10) + '" y="' + (y(e.score) - 7) + '" class="trend-val" text-anchor="middle">' + e.score + '</text>' +
              '<text x="' + x(i) + '" y="' + (H - 8) + '" class="trend-axis" text-anchor="middle">' + e.date + '</text>';
     }).join('');
 

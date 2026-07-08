@@ -200,7 +200,7 @@
       '<p class="quest-xp type-utility">+' + res.earned + ' XP earned</p>' +
       (signedIn
         ? '<p class="quest-saved type-utility">✓ Saved to your hero</p>'
-        : '<p class="quest-saved type-utility warn">Progress kept for this session — <button class="quest-signup">create a hero</button> to save it.</p>') +
+        : '<p class="quest-saved type-utility warn">Progress kept for this session. <button class="quest-signup">Create a hero</button> to save it.</p>') +
       '<div class="quest-actions">' +
         '<button class="btn btn-gold quest-again">Another quest</button>' +
         '<button class="btn btn-outline quest-done">Back to map</button>' +
