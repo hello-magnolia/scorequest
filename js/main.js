@@ -1,5 +1,5 @@
 /* ============================================================
-   ScoreQuest — page behaviour
+   ScoreQuest - page behaviour
    1. Hero: live canvas world (or assets/hero.mp4 if present)
    2. Realm card canvases
    3. Typewriter hero subline

@@ -1,5 +1,5 @@
 /* ============================================================
-   ScoreQuest — auth + progress (Supabase)
+   ScoreQuest - auth + progress (Supabase)
    ------------------------------------------------------------
    Public surface (window.SQAuth):
      init()                       set up client, restore session, wire UI
@@ -185,7 +185,7 @@
   }
 
   /* ============================================================
-     UI — pixel "Choose your hero" modal + nav state
+     UI - pixel "Choose your hero" modal + nav state
      ============================================================ */
   var modal;
 

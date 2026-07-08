@@ -1,5 +1,5 @@
 /* ============================================================
-   ScoreQuest — map progression interface
+   ScoreQuest - map progression interface
    ------------------------------------------------------------
    Renders:
    1. A live world map: 8 realm nodes on a winding trail, each showing
@@ -68,7 +68,7 @@
   var mapWrap, drawer;
 
   /* ============================================================
-     2. CARD OVERLAYS — level pip + XP bar + Start quest button
+     2. CARD OVERLAYS - level pip + XP bar + Start quest button
      ============================================================ */
   function decorateCards() {
     document.querySelectorAll('.card').forEach(function (card) {
@@ -116,7 +116,7 @@
   }
 
   /* ============================================================
-     3. QUEST DRAWER — the loop that actually earns XP
+     3. QUEST DRAWER - the loop that actually earns XP
      ============================================================ */
   function buildDrawer() {
     drawer = document.createElement('div');
@@ -147,7 +147,7 @@
     session = { realmId: realmId, items: pool, i: 0, correct: 0, total: pool.length };
 
     drawer.querySelector('#quest-eyebrow').textContent = r.domain + ' · Lv ' + st.level;
-    drawer.querySelector('#quest-title').textContent = r.name + ' — side quest';
+    drawer.querySelector('#quest-title').textContent = r.name + ': side quest';
     drawer.hidden = false;
     document.body.style.overflow = 'hidden';
     renderQuestStep();
@@ -247,6 +247,9 @@
     buildDrawer();
     G.onChange(function () { refreshCards(); });
   }
+  // expose the quest drawer so other surfaces (the roadmap page) can launch quests
+  window.SQQuest = { open: openQuest };
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();

@@ -1,8 +1,8 @@
 /* ============================================================
-   ScoreQuest — Supabase configuration
+   ScoreQuest - Supabase configuration
    ------------------------------------------------------------
    Paste your project's two PUBLIC values below. Both are safe to
-   commit to a public repo — the anon key is designed to be shipped
+   commit to a public repo - the anon key is designed to be shipped
    in client-side code. Row Level Security (see supabase_setup.sql)
    is what actually protects your data, not the secrecy of this key.
 

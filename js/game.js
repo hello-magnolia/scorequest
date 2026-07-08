@@ -1,5 +1,5 @@
 /* ============================================================
-   ScoreQuest — game progression model
+   ScoreQuest - game progression model
    ------------------------------------------------------------
    Single source of truth for the 8 realms and the rules that turn
    cleared quests into XP, levels, streaks, and unlocks. Reads/writes

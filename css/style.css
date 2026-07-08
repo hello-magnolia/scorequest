@@ -655,3 +655,121 @@ a { color: inherit; }
   .preport-pitch { position: static; padding-top: 0; text-align: center; max-width: 480px; margin: 0 auto; }
 }
 @media (prefers-reduced-motion: reduce) { .glance-text { transition: none; } }
+
+/* ============================================================
+   WORLD MAP page: winding quest path through the biomes
+   ============================================================ */
+.page-map { background: var(--ink); }
+.mappage { max-width: 720px; margin: 0 auto; padding: 130px 16px 90px; }
+.mappage-head { text-align: center; margin-bottom: 42px; }
+.mappage-title { font-size: clamp(2.2rem, 6vw, 3.4rem); margin-top: 8px; }
+.mappage-sub { color: var(--parchment-dim); margin-top: 14px; font-size: 1.05rem; max-width: 520px; margin-inline: auto; }
+.mappage-rank { margin-top: 16px; font-size: 1.2rem; color: var(--parchment-dim); text-transform: uppercase; }
+.mappage-rank span { color: var(--gold); }
+.mappage-outro { text-align: center; margin-top: 48px; }
+.mappage-outro-note { color: var(--parchment-dim); font-size: 0.95rem; margin-bottom: 18px; }
+
+.roadmap { display: flex; flex-direction: column; gap: 18px; }
+
+/* ---- realm segment ---- */
+.seg {
+  position: relative; overflow: hidden;
+  box-shadow: 0 calc(var(--pix) * -1) 0 0 var(--line), 0 var(--pix) 0 0 var(--line),
+    calc(var(--pix) * -1) 0 0 0 var(--line), var(--pix) 0 0 0 var(--line);
+  background: var(--ink-2);
+}
+.seg-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; image-rendering: pixelated; opacity: 0.55;
+}
+.seg-shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(22,17,43,0.82) 0%, rgba(22,17,43,0.35) 30%, rgba(22,17,43,0.55) 100%);
+}
+.seg-locked .seg-bg { opacity: 0.18; filter: grayscale(0.8); }
+.seg-cleared { --frame: var(--gold); }
+
+.seg-head {
+  position: relative; z-index: 3; padding: 20px 22px 0;
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "index level" "name level" "domain level";
+  column-gap: 14px;
+}
+.seg-index { grid-area: index; color: var(--gold); font-size: 1rem; text-transform: uppercase; }
+.seg-name { grid-area: name; font-size: 1.6rem; text-shadow: 3px 3px 0 rgba(22,17,43,0.8); }
+.seg-domain { grid-area: domain; color: var(--parchment); font-size: 1rem; opacity: 0.85; }
+.seg-level { grid-area: level; align-self: start; color: var(--gold); font-size: 1.15rem;
+  background: rgba(22,17,43,0.75); padding: 4px 10px; box-shadow: inset 0 0 0 2px var(--line); }
+.seg-locked .seg-name, .seg-locked .seg-domain, .seg-locked .seg-index { opacity: 0.5; }
+.seg-flag { display: none; position: absolute; top: 18px; right: 22px; }
+.seg-cleared .seg-flag {
+  display: block; width: 14px; height: 16px; background: var(--gold);
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 55%, 0 70%);
+  transform: translateY(34px);
+}
+
+/* ---- dotted trail ---- */
+.seg-trail { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.seg-trail-path {
+  fill: none; stroke: var(--gold); stroke-width: 5;
+  stroke-dasharray: 2 12; stroke-linecap: square; opacity: 0.85;
+}
+.seg-locked .seg-trail-path { stroke: var(--line); opacity: 0.6; }
+
+/* ---- quest nodes ---- */
+.rnode {
+  position: absolute; z-index: 4; transform: translate(-50%, -50%);
+  width: 68px; height: 68px; cursor: pointer; border: none;
+  background: var(--ink-2); color: var(--parchment);
+  box-shadow: 0 calc(var(--pix) * -1) 0 0 var(--frame, var(--line)), 0 var(--pix) 0 0 var(--frame, var(--line)),
+    calc(var(--pix) * -1) 0 0 0 var(--frame, var(--line)), var(--pix) 0 0 0 var(--frame, var(--line)),
+    0 6px 0 0 rgba(0,0,0,0.35);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  transition: transform 120ms steps(2, end);
+}
+.rnode:hover:not(:disabled) { transform: translate(-50%, -54%); }
+.rnode:focus-visible { outline: 3px dashed var(--gold); outline-offset: 4px; }
+.rnode-boss { width: 84px; height: 84px; }
+.rnode-icon { width: 30px; height: 30px; image-rendering: pixelated;
+  background-size: contain; background-repeat: no-repeat; background-position: center; }
+.rnode-boss .rnode-icon { width: 38px; height: 38px; }
+.rnode-tag { font-size: 1rem; color: var(--parchment-dim); line-height: 1; }
+
+/* states */
+.rnode.is-done { background: var(--gold); --frame: #a87a1a; }
+.rnode.is-done .rnode-tag { color: #2a1d07; }
+.rnode.is-done .rnode-icon { filter: brightness(0.35) sepia(1) saturate(0.6); }
+.rnode.is-current { background: var(--ink); --frame: var(--gold); }
+.rnode.is-current .rnode-tag { color: var(--gold); }
+.rnode.is-locked { background: var(--ink-3); opacity: 0.55; cursor: not-allowed; --frame: var(--line); }
+.rnode.is-locked .rnode-icon { filter: grayscale(1) brightness(0.7); }
+.rnode.is-locked::after { content: '\1F512'; position: absolute; font-size: 0.8rem; top: -6px; right: -6px; }
+
+.rnode-start {
+  display: none; position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: #2a1d07; font-size: 0.95rem; padding: 2px 10px; white-space: nowrap;
+}
+.rnode.is-current .rnode-start { display: block; animation: start-bob 1.2s steps(2, end) infinite; }
+@keyframes start-bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -4px); } }
+
+/* ---- biome node icons (original pixel glyphs, one per realm) ---- */
+.rnode-icon[data-biome='info'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='1' y='3' width='4' height='5' fill='%23F4E9D0'/%3E%3Crect x='6' y='3' width='4' height='5' fill='%23F4E9D0'/%3E%3Crect x='5' y='3' width='1' height='6' fill='%232F5C3B'/%3E%3Crect x='1' y='8' width='9' height='1' fill='%232F5C3B'/%3E%3Crect x='2' y='4' width='2' height='1' fill='%2379C77B'/%3E%3Crect x='7' y='5' width='2' height='1' fill='%2379C77B'/%3E%3C/svg%3E"); }
+.rnode-icon[data-biome='craft'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='2' y='1' width='7' height='9' fill='%23C98A5A'/%3E%3Crect x='3' y='2' width='5' height='7' fill='%23B07A50'/%3E%3Crect x='5' y='3' width='1' height='3' fill='%2357C7CE'/%3E%3Crect x='4' y='4' width='3' height='1' fill='%2357C7CE'/%3E%3Crect x='5' y='7' width='1' height='1' fill='%2357C7CE'/%3E%3C/svg%3E"); }
+.rnode-icon[data-biome='expression'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='7' y='1' width='2' height='2' fill='%23CFEFE3'/%3E%3Crect x='6' y='3' width='2' height='2' fill='%23CFEFE3'/%3E%3Crect x='5' y='5' width='2' height='2' fill='%2357C7CE'/%3E%3Crect x='4' y='7' width='2' height='1' fill='%2357C7CE'/%3E%3Crect x='2' y='8' width='3' height='1' fill='%2312333C'/%3E%3Crect x='2' y='9' width='6' height='1' fill='%2312333C'/%3E%3C/svg%3E"); }
+.rnode-icon[data-biome='conventions'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='2' y='1' width='7' height='5' fill='%234A3A5E'/%3E%3Crect x='2' y='6' width='7' height='3' fill='%233A2D4C'/%3E%3Crect x='3' y='9' width='5' height='1' fill='%233A2D4C'/%3E%3Crect x='5' y='2' width='1' height='6' fill='%23F2B63C'/%3E%3Crect x='3' y='4' width='5' height='1' fill='%23F2B63C'/%3E%3C/svg%3E"); }
+.rnode-icon[data-biome='algebra'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='4' y='1' width='3' height='2' fill='%23FFD974'/%3E%3Crect x='3' y='3' width='5' height='5' fill='%23F2B63C'/%3E%3Crect x='4' y='8' width='3' height='2' fill='%23C98A2E'/%3E%3Crect x='4' y='2' width='1' height='4' fill='%23FFF0C2'/%3E%3C/svg%3E"); }
+.rnode-icon[data-biome='advmath'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='5' y='0' width='1' height='11' fill='%23C9CFF2'/%3E%3Crect x='0' y='5' width='11' height='1' fill='%23C9CFF2'/%3E%3Crect x='4' y='4' width='3' height='3' fill='%238E7CC3'/%3E%3Crect x='3' y='3' width='1' height='1' fill='%2357C7A0'/%3E%3Crect x='7' y='3' width='1' height='1' fill='%2357C7A0'/%3E%3Crect x='3' y='7' width='1' height='1' fill='%2357C7A0'/%3E%3Crect x='7' y='7' width='1' height='1' fill='%2357C7A0'/%3E%3C/svg%3E"); }
+.rnode-icon[data-biome='data'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='4' y='2' width='3' height='7' fill='%23F4E9D0'/%3E%3Crect x='4' y='4' width='3' height='1' fill='%23E2695A'/%3E%3Crect x='4' y='6' width='3' height='1' fill='%23E2695A'/%3E%3Crect x='3' y='1' width='5' height='1' fill='%233A2D4C'/%3E%3Crect x='5' y='0' width='1' height='1' fill='%23FFD974'/%3E%3Crect x='2' y='9' width='7' height='1' fill='%235C4A3A'/%3E%3C/svg%3E"); }
+.rnode-icon[data-biome='geometry'] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect x='5' y='2' width='1' height='1' fill='%23E58BA5'/%3E%3Crect x='4' y='3' width='3' height='2' fill='%23E58BA5'/%3E%3Crect x='3' y='5' width='5' height='2' fill='%23FFD1DE'/%3E%3Crect x='2' y='7' width='7' height='2' fill='%23E58BA5'/%3E%3Crect x='5' y='3' width='1' height='5' fill='%23FFFFFF'/%3E%3C/svg%3E"); }
+
+@media (max-width: 560px) {
+  .seg-head { padding: 16px 14px 0; }
+  .seg-name { font-size: 1.3rem; }
+  .rnode { width: 60px; height: 60px; }
+  .rnode-boss { width: 72px; height: 72px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rnode.is-current .rnode-start { animation: none; }
+  .rnode:hover:not(:disabled) { transform: translate(-50%, -50%); }
+}
+
+.world-map-link { text-align: center; margin-top: 44px; }

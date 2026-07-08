@@ -1,5 +1,5 @@
 /* ============================================================
-   PixelWorld — procedural pixel-art scenes for ScoreQuest
+   PixelWorld - procedural pixel-art scenes for ScoreQuest
    Works in the browser (window.PixelWorld) and in Node (module.exports)
    Every scene draws into a low-res canvas; the page scales it up
    with image-smoothing off for crisp pixels.
@@ -108,7 +108,7 @@
   }
 
   /* ============================================================
-     HERO — "Duskmeadow": calm valley at golden hour, winding path
+     HERO - "Duskmeadow": calm valley at golden hour, winding path
      to the distant Academy tower. Logical size 480 x 270.
      ============================================================ */
   function drawHero(ctx, W, H, t) {
@@ -202,10 +202,10 @@
   }
 
   /* ============================================================
-     BIOME CARD SCENES — logical size 240 x 104 each
+     BIOME CARD SCENES - logical size 240 x 104 each
      ============================================================ */
 
-  /* Reading & Vocabulary — Gloamwood: lantern-lit library forest */
+  /* Reading & Vocabulary - Gloamwood: lantern-lit library forest */
   function drawGloamwood(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#14281E', '#1B3527', '#234230', '#2C5039'], H * 0.7);
     starfield(ctx, W, H * 0.4, 24, 3, t, '#7FB58C', '#D9F2C9');
@@ -236,7 +236,7 @@
     flowers(ctx, W, H * 0.78, H * 0.96, 8, 13, '#9AD9B0', '#F4E9D0');
   }
 
-  /* Grammar & Writing — Inkmarsh: teal wetland with glowing ink pools */
+  /* Grammar & Writing - Inkmarsh: teal wetland with glowing ink pools */
   function drawInkmarsh(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#0E2830', '#12333C', '#174049', '#1D4E57'], H * 0.55);
     starfield(ctx, W, H * 0.3, 18, 4, t, '#6FB5B8', '#D6F5F0');
@@ -268,7 +268,7 @@
     }
   }
 
-  /* Algebra — Copperpeak: warm canyon mines with number crystals */
+  /* Algebra - Copperpeak: warm canyon mines with number crystals */
   function drawCopperpeak(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#3A1F1B', '#5C2E22', '#8A452B', '#C96A3D'], H * 0.5);
     // sun disc
@@ -297,7 +297,7 @@
     for (let x = 0; x < W; x += 8) px(ctx, x, H * 0.79, 1, 3, '#5C3A22');
   }
 
-  /* Advanced Math — Starfall Summit: aurora over night peaks */
+  /* Advanced Math - Starfall Summit: aurora over night peaks */
   function drawStarfall(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#0B0D28', '#101336', '#161A44', '#1D2148'], H);
     starfield(ctx, W, H * 0.8, 60, 15, t, '#9BA6E8', '#FFFFFF');
@@ -330,7 +330,7 @@
     px(ctx, ox - 2, oy - 6, 4, 3, '#FFD974');
   }
 
-  /* Geometry & Trig — Prism Tidepools: dawn beach of crystal shapes */
+  /* Geometry & Trig - Prism Tidepools: dawn beach of crystal shapes */
   function drawPrism(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#6E4680', '#A05E7E', '#D08267', '#EFA96E', '#F5C98E'], H * 0.45);
     // sea with sparkles
@@ -368,7 +368,7 @@
     glowPlus(ctx, W * 0.52, H * 0.9, '#B78A4E');
   }
 
-  /* Science (ACT) — Lumen Glade: bioluminescent research grove */
+  /* Science (ACT) - Lumen Glade: bioluminescent research grove */
   function drawLumen(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#170F2E', '#1E1440', '#261A4E', '#2E2058'], H * 0.62);
     starfield(ctx, W, H * 0.4, 26, 25, t, '#8E7CC3', '#E8DEFF');
@@ -403,7 +403,7 @@
     glowPlus(ctx, W * 0.5 + 11, H * 0.9 - 10, '#FFE79A');
   }
 
-  /* Craft & Structure — Echo Vale: dawn canyon with glowing carved runes */
+  /* Craft & Structure - Echo Vale: dawn canyon with glowing carved runes */
   function drawEchoVale(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#6E4680', '#9A5E7E', '#C97F6E', '#E5A28F'], H * 0.4);
     // far canyon wall
@@ -435,7 +435,7 @@
     for (let i = 0; i < 5; i++) px(ctx, r() * W * 0.6 + W * 0.2, H * (0.76 + r() * 0.06), 4, 3, '#5C7A46');
   }
 
-  /* Standard English Conventions — Syntax Citadel: orderly keep at golden hour */
+  /* Standard English Conventions - Syntax Citadel: orderly keep at golden hour */
   function drawCitadel(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#8A5C8E', '#C97F6E', '#EFA96E', '#F5C98E'], H * 0.5);
     starfield(ctx, W, H * 0.24, 10, 44, t, '#F4E9D0', '#FFFFFF');
@@ -443,7 +443,7 @@
     // green hill
     px(ctx, 0, H * 0.62, W, H, '#4C8A5B');
     px(ctx, 0, H * 0.8, W, H, '#3E7A4C');
-    // the keep — deliberately symmetrical (grammar likes order)
+    // the keep - deliberately symmetrical (grammar likes order)
     const cx = W * 0.5, base = H * 0.62;
     px(ctx, cx - 26, base - 26, 52, 26, '#4A3A5E');            // main hall
     px(ctx, cx - 30, base - 30, 60, 5, '#3A2D4C');             // parapet
@@ -470,7 +470,7 @@
         glowPlus(ctx, lx, ly - 10, '#FFE79A');
       }
     });
-    // trimmed hedges — identical, evenly spaced
+    // trimmed hedges - identical, evenly spaced
     for (let i = 0; i < 4; i++) {
       px(ctx, W * 0.08 + i * 14, H * 0.72, 10, 6, '#2E6B3F');
       px(ctx, W * (0.92 - 0.06 * i) - 10, H * 0.72, 10, 6, '#2E6B3F');
@@ -478,7 +478,7 @@
     flowers(ctx, W, H * 0.68, H * 0.94, 12, 46, '#E58BA5', '#F4E9D0');
   }
 
-  /* Problem-Solving & Data Analysis — Chartwater Bay: dusk harbor + star charts */
+  /* Problem-Solving & Data Analysis - Chartwater Bay: dusk harbor + star charts */
   function drawHarbor(ctx, W, H, t) {
     skyBands(ctx, W, H, ['#332566', '#6E4680', '#C97F6E', '#EFA96E'], H * 0.5);
     starfield(ctx, W, H * 0.36, 22, 55, t, '#C9CFF2', '#FFFFFF');

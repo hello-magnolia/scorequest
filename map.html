@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>World Map, ScoreQuest</title>
+<meta name="description" content="Your quest path through all eight SAT realms. Clear nodes, level each biome, and take on the boss." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
+</head>
+<body class="page-map">
+
+<header class="nav is-scrolled" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="ScoreQuest home">
+      <span class="brand-coin" aria-hidden="true"></span>
+      <span class="brand-name">ScoreQuest</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html#world">Realms</a>
+      <a href="index.html#quest-log">Quest&nbsp;Log</a>
+      <a href="index.html#pricing">Pricing</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="index.html#pricing">Log in</a>
+      <a class="btn btn-gold" href="index.html#pricing">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main class="mappage">
+  <div class="mappage-head">
+    <p class="eyebrow type-utility">Your quest path</p>
+    <h1 class="mappage-title">The World Map</h1>
+    <p class="mappage-sub">Follow the path through all eight realms. Clear each node to earn XP, then face the boss to conquer the biome.</p>
+    <p class="mappage-rank type-utility">World rank <span id="world-rank">Lv 8</span></p>
+  </div>
+
+  <div class="roadmap" id="roadmap"><!-- segments injected by js/roadmap.js --></div>
+
+  <div class="mappage-outro">
+    <p class="mappage-outro-note">New nodes unlock as you level. Every quest saves to your hero.</p>
+    <a class="btn btn-outline" href="index.html">Back to base camp</a>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/pixelworld.js"></script>
+<script src="js/game.js"></script>
+<script src="js/map.js"></script>
+<script src="js/roadmap.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

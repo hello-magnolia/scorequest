@@ -1,5 +1,5 @@
 /* ============================================================
-   ScoreQuest — Parent Progress Report (demo interface)
+   ScoreQuest - Parent Progress Report (demo interface)
    ------------------------------------------------------------
    Formal, measurement-driven report for parents. Deliberate rules:
    - No game vocabulary anywhere in this surface.
@@ -247,7 +247,7 @@
       dots +
       '</svg>';
     // A re-render after the section was revealed must not leave the line in its
-    // pre-animation (invisible) state — re-apply the drawn state immediately.
+    // pre-animation (invisible) state - re-apply the drawn state immediately.
     if (revealed || reduceMotion) {
       var line = host.querySelector('.trend-line');
       line.style.transition = 'none';
