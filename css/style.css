@@ -545,3 +545,10 @@ a { color: inherit; }
   .node-bar-fill, .card-bar-fill { transition: none; }
   .pixel-confetti { display: none; }
 }
+
+/* ============================================================
+   HARD RULE: [hidden] must always win.
+   Class rules like .auth-overlay { display:grid } outrank the UA's
+   [hidden] -> display:none, which made overlays render on load.
+   ============================================================ */
+[hidden] { display: none !important; }

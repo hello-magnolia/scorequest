@@ -101,6 +101,23 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   check('Playing a quest reaches XP result screen', reached === true && !!drawer.querySelector('.quest-xp'),
     drawer.querySelector('.quest-xp') ? drawer.querySelector('.quest-xp').textContent : 'no xp');
 
+  /* rendering guarantee: [hidden] must beat class display rules (the bug where
+     overlays rendered on load despite hidden=true). The !important rule wins by
+     CSS spec over any non-important display rule; assert it's in the stylesheet
+     and the overlay starts with the hidden attribute set. */
+  const cssText = await new Promise((res, rej) => {
+    require('http').get('http://localhost:8000/css/style.css', r => {
+      let b = ''; r.on('data', c => b += c); r.on('end', () => res(b));
+    }).on('error', rej);
+  });
+  check('[hidden]{display:none !important} rule present in stylesheet',
+    /\[hidden\]\s*\{\s*display:\s*none\s*!important/.test(cssText));
+  // the drawer is open from the quest we just played — close it, then assert
+  const closeBtn = document.querySelector('.quest-overlay .quest-close');
+  if (closeBtn) closeBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 50));
+  check('Overlay hides again after close (hidden attribute set)', document.querySelector('.quest-overlay').hasAttribute('hidden'));
+
   const fails = results.filter(x=>!x).length;
   console.log('\n' + (results.length-fails) + '/' + results.length + ' checks passed');
   process.exit(fails?1:0);

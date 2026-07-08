@@ -67,6 +67,19 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   await new Promise(r => setTimeout(r, 60));
   check('Sign out restores Log in button', !!document.querySelector('.nav-cta .btn-login') && window.SQAuth.getUser()===null);
 
+  /* rendering guarantee: [hidden] must beat class display rules (the bug where
+     overlays rendered on load despite hidden=true). The !important rule wins by
+     CSS spec over any non-important display rule; assert it's in the stylesheet
+     and the overlay starts with the hidden attribute set. */
+  const cssText = await new Promise((res, rej) => {
+    require('http').get('http://localhost:8000/css/style.css', r => {
+      let b = ''; r.on('data', c => b += c); r.on('end', () => res(b));
+    }).on('error', rej);
+  });
+  check('[hidden]{display:none !important} rule present in stylesheet',
+    /\[hidden\]\s*\{\s*display:\s*none\s*!important/.test(cssText));
+  check('Auth overlay hidden attribute restored after use', document.querySelector('.auth-overlay').hasAttribute('hidden'));
+
   const fails = results.filter(x=>!x).length;
   console.log('\n' + (results.length-fails) + '/' + results.length + ' checks passed');
   process.exit(fails?1:0);
