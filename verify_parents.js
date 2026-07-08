@@ -103,6 +103,12 @@ const OPTS = {
   check('Report uses official SAT domain names, not biome names',
     /Information & Ideas/.test(sectionText) && !/Gloamwood|Copperpeak|Inkmarsh/.test(sectionText));
 
+  /* 8b — layout stability: language swaps must not touch the graphs */
+  check('Height stabilizer ran', window.__SQ_STABILIZED === true);
+  const svgBefore = document.querySelector('#trend-chart svg');
+  const barsBefore = [...document.querySelectorAll('.abar')];
+  const fillsBefore = [...document.querySelectorAll('.dbar-fill')].map(f => f.getAttribute('data-w')).join(',');
+
   /* 9 — 中文 pill translates labels AND domain names */
   document.querySelector('.lang-pill[data-lang="zh"]').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 350));
@@ -112,6 +118,10 @@ const OPTS = {
   check('中文 narrative keeps the name and names the weak domain',
     /Kevin/.test(document.querySelector('.glance-text').textContent) &&
     /几何与三角/.test(document.querySelector('.glance-text').textContent));
+  check('Charts untouched by language switch (same DOM nodes, same values)',
+    document.querySelector('#trend-chart svg') === svgBefore &&
+    [...document.querySelectorAll('.abar')].every((b, i) => b === barsBefore[i]) &&
+    [...document.querySelectorAll('.dbar-fill')].map(f => f.getAttribute('data-w')).join(',') === fillsBefore);
 
   /* 10 — Spanish */
   document.querySelector('.lang-pill[data-lang="es"]').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));

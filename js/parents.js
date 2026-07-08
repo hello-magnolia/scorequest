@@ -298,6 +298,39 @@
     }).join('');
   }
 
+  /* ---------- layout stabilizer ----------
+     Translated labels wrap to different line counts, which changes tile
+     and paragraph heights and shifts the charts. Measure every
+     translatable block in all four languages and lock its min-height to
+     the tallest, so language swaps change words inside fixed boxes and
+     nothing else moves. Charts are never re-rendered on a swap. */
+  function stabilizeHeights() {
+    var els = root.querySelectorAll(
+      '.rstat-label[data-i18n], .rchart-title[data-i18n], .rchart-cap[data-i18n], ' +
+      '.glance-text[data-i18n], .preport-note[data-i18n], .preport-kicker[data-i18n], .preport-range[data-i18n]'
+    );
+    els.forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      var original = el.textContent;
+      el.style.minHeight = '';
+      var max = 0;
+      ORDER.forEach(function (lang) {
+        var t = STRINGS[lang][key];
+        if (!t) return;
+        el.textContent = t.replace('{name}', currentName);
+        max = Math.max(max, el.offsetHeight);
+      });
+      el.textContent = original;
+      if (max > 0) el.style.minHeight = max + 'px';
+    });
+    window.__SQ_STABILIZED = true;
+  }
+  var stabilizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(stabilizeTimer);
+    stabilizeTimer = setTimeout(stabilizeHeights, 160);
+  });
+
   /* ---------- reveal animations ---------- */
   var revealed = false;
   function animateBars() {
@@ -316,6 +349,7 @@
   function init() {
     renderReport();
     applyLang('en', false);
+    stabilizeHeights();
 
     if (typeof IntersectionObserver === 'function' && !reduceMotion) {
       var seen = false;
@@ -328,7 +362,7 @@
       animateBars(); startAutoCycle();
     }
 
-    if (window.SQGame) window.SQGame.onChange(function () { renderReport(); applyLang(current, false); animateBars(); });
+    if (window.SQGame) window.SQGame.onChange(function () { renderReport(); applyLang(current, false); animateBars(); stabilizeHeights(); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
