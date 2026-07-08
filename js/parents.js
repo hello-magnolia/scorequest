@@ -26,6 +26,7 @@
       sets: 'Question sets completed',
       days: 'Consecutive practice days',
       exams: 'Full-length practice exams',
+      detail: 'Performance detail',
       trendTitle: 'Practice exam scores',
       trendCap: 'Scored full-length, timed practice exams (official digital format)',
       activity: 'Weekly practice time (minutes)',
@@ -52,6 +53,7 @@
       sets: '完成练习组数',
       days: '连续练习天数',
       exams: '全真模拟考试',
+      detail: '成绩与表现',
       trendTitle: '模拟考试成绩',
       trendCap: '计时完成的全长模拟考试成绩（官方机考格式）',
       activity: '每周练习时长（分钟）',
@@ -78,6 +80,7 @@
       sets: 'Series de preguntas completadas',
       days: 'Días consecutivos de práctica',
       exams: 'Exámenes de práctica completos',
+      detail: 'Detalle de rendimiento',
       trendTitle: 'Resultados de exámenes de práctica',
       trendCap: 'Exámenes completos y cronometrados (formato digital oficial)',
       activity: 'Práctica semanal (minutos)',
@@ -104,6 +107,7 @@
       sets: 'Séries de questions terminées',
       days: 'Jours de pratique consécutifs',
       exams: 'Examens blancs complets',
+      detail: 'Détail des performances',
       trendTitle: 'Résultats des examens blancs',
       trendCap: 'Examens blancs complets et chronométrés (format numérique officiel)',
       activity: 'Pratique hebdomadaire (minutes)',
@@ -346,10 +350,36 @@
     else if (line) line.style.strokeDashoffset = '0';
   }
 
+  /* ---------- the two-page deck: hover the peeking page to flip ---------- */
+  function initDeck() {
+    var pages = root.querySelectorAll('.ppage');
+    var dots = root.querySelectorAll('.pdeck-dot');
+    if (pages.length !== 2) return;
+    function setFront(idx) {
+      pages.forEach(function (p, i) {
+        p.classList.toggle('is-front', i === idx);
+        p.classList.toggle('is-back', i !== idx);
+      });
+      dots.forEach(function (d, i) { d.classList.toggle('is-active', i === idx); });
+    }
+    pages.forEach(function (p, i) {
+      p.addEventListener('mouseenter', function () {
+        if (p.classList.contains('is-back')) setFront(i);
+      });
+      p.addEventListener('click', function () {
+        if (p.classList.contains('is-back')) setFront(i);
+      });
+    });
+    dots.forEach(function (d) {
+      d.addEventListener('click', function () { setFront(parseInt(d.getAttribute('data-page'), 10)); });
+    });
+  }
+
   function init() {
     renderReport();
     applyLang('en', false);
     stabilizeHeights();
+    initDeck();
 
     if (typeof IntersectionObserver === 'function' && !reduceMotion) {
       var seen = false;

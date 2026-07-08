@@ -19,6 +19,11 @@ const OPTS = {
   await new Promise(r => window.addEventListener('load', r));
   await new Promise(r => setTimeout(r, 700));
 
+  // pin the demo to EN so assertions are deterministic regardless of load
+  // latency (a manual pill choice stops the auto-cycle by design)
+  document.querySelector('.lang-pill[data-lang="en"]').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 320));
+
   /* 1 — placement between hero and world */
   const ids = [...document.querySelectorAll('main > section')].map(s => s.id);
   check('Parents section sits between hero and world',
@@ -102,6 +107,22 @@ const OPTS = {
   /* 8 — official domain names, not biome names, in the report */
   check('Report uses official SAT domain names, not biome names',
     /Information & Ideas/.test(sectionText) && !/Gloamwood|Copperpeak|Inkmarsh/.test(sectionText));
+
+  /* 8a — the two-page deck: peeking back page flips to the front on hover */
+  const pages = [...document.querySelectorAll('.ppage')];
+  check('Report is a two-page deck (summary + performance)', pages.length === 2 &&
+    pages[0].classList.contains('is-front') && pages[1].classList.contains('is-back'));
+  check('Pages split sensibly: stats on page 1, trend chart on page 2',
+    !!pages[0].querySelector('#pstat-time') && !!pages[1].querySelector('#trend-chart'));
+  pages[1].dispatchEvent(new window.MouseEvent('mouseenter', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Hovering the peeking page flips it to the front',
+    pages[1].classList.contains('is-front') && pages[0].classList.contains('is-back'));
+  const dots = [...document.querySelectorAll('.pdeck-dot')];
+  check('Deck dots present and tracking the front page', dots.length === 2 && dots[1].classList.contains('is-active'));
+  dots[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Dot click flips back to page 1', pages[0].classList.contains('is-front'));
 
   /* 8b — layout stability: language swaps must not touch the graphs */
   check('Height stabilizer ran', window.__SQ_STABILIZED === true);
