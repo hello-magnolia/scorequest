@@ -21,11 +21,10 @@
   var PW = window.PixelWorld;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  var NODE_GAP = 118;      // vertical distance between node centers
-  var HEADER_H = 96;       // segment banner space
-  var PAD_BOTTOM = 46;
+  var NODE_GAP = 132;      // vertical distance between node centers
+  var HEADER_H = 108;      // segment banner space
+  var PAD_BOTTOM = 60;
   var PATTERN = [0, 0.7, 1, 0.7, 0]; // serpentine offsets (x amplitude fraction)
-  var AMP = 130;           // max horizontal offset at full width
 
   /* ---------- build segments ---------- */
   var segments = [];
@@ -37,9 +36,19 @@
     var height = HEADER_H + NODE_GAP * 5 + PAD_BOTTOM;
     seg.style.height = height + 'px';
 
+    var sparks = '';
+    for (var sp = 0; sp < 7; sp++) {
+      sparks += '<span class="spark' + (sp % 3 === 2 ? ' spark-mint' : '') + '" style="left:' +
+        (6 + Math.random() * 88) + '%;top:' + (12 + Math.random() * 80) + '%;animation-delay:' +
+        (Math.random() * 6).toFixed(2) + 's;animation-duration:' + (5 + Math.random() * 5).toFixed(2) + 's"></span>';
+    }
     seg.innerHTML =
-      '<canvas class="seg-bg" width="240" height="104" data-scene="' + r.scene + '" aria-hidden="true"></canvas>' +
+      '<div class="seg-media" aria-hidden="true">' +
+        '<canvas class="seg-bg" width="240" height="104" data-scene="' + r.scene + '"></canvas>' +
+        '<img class="seg-art" hidden alt="" loading="lazy" />' +
+      '</div>' +
       '<div class="seg-shade" aria-hidden="true"></div>' +
+      '<div class="seg-sparks" aria-hidden="true">' + sparks + '</div>' +
       '<svg class="seg-trail" aria-hidden="true"></svg>' +
       '<header class="seg-head">' +
         '<span class="seg-index type-utility">Realm ' + String(idx + 1).padStart(2, '0') + '</span>' +
@@ -92,16 +101,45 @@
     }
   });
 
+  /* ---------- generated realm art: local -> CDN -> live canvas ---------- */
+  segments.forEach(function (seg) {
+    var r = G.byId(seg.getAttribute('data-realm'));
+    var img = seg.querySelector('.seg-art');
+    var sources = [r.art, r.cdn].filter(Boolean);
+    if (!sources.length) return;
+    var i = 0;
+    img.onerror = function () { if (i < sources.length) img.src = sources[i++]; else img.hidden = true; };
+    img.onload = function () { img.hidden = false; seg.classList.add('has-art'); };
+    img.src = sources[i++];
+  });
+
+  /* ---------- parallax: backdrops drift slower than the path ---------- */
+  var parallaxTick = false;
+  function parallax() {
+    parallaxTick = false;
+    if (reduceMotion) return;
+    var vh = window.innerHeight || 800;
+    segments.forEach(function (seg) {
+      var rect = seg.getBoundingClientRect();
+      if (rect.bottom < -80 || rect.top > vh + 80) return;
+      var offset = ((rect.top + rect.height / 2) - vh / 2) * 0.07;
+      seg.querySelector('.seg-media').style.transform = 'translateY(' + offset.toFixed(1) + 'px)';
+    });
+  }
+  window.addEventListener('scroll', function () {
+    if (!parallaxTick) { parallaxTick = true; requestAnimationFrame(parallax); }
+  }, { passive: true });
+
   /* ---------- serpentine layout + dotted connector ---------- */
   function layout() {
     var w = host.clientWidth || 640;
-    var scale = Math.max(0.35, Math.min(1, (w - 150) / (AMP * 2)));
+    var amp = Math.max(90, Math.min(240, (w - 260) / 2)); // fill the frame
     segments.forEach(function (seg, sIdx) {
       var dir = sIdx % 2 === 0 ? 1 : -1; // alternate the snake direction per realm
       var cx = w / 2;
       var pts = [];
       seg.querySelectorAll('.rnode').forEach(function (node, i) {
-        var x = cx + dir * PATTERN[i] * AMP * scale;
+        var x = cx + dir * PATTERN[i] * amp;
         var y = HEADER_H + 30 + i * NODE_GAP;
         node.style.left = x + 'px';
         node.style.top = y + 'px';
@@ -158,7 +196,7 @@
 
   function nodeGlobalPos(node) {
     var seg = node.closest('.seg');
-    var half = node.classList.contains('rnode-boss') ? 42 : 34;
+    var half = node.classList.contains('rnode-boss') ? 48 : 38;
     return {
       x: parseFloat(node.style.left) || 0,
       y: seg.offsetTop + (parseFloat(node.style.top) || 0) - half + 4, // feet on the node's top edge

@@ -62,6 +62,16 @@ const OPTS = {
   check('Each realm has its own biome icon', document.querySelectorAll('.rnode-icon[data-biome="info"]').length === 5 &&
     document.querySelectorAll('.rnode-icon[data-biome="geometry"]').length === 5);
 
+  /* 3b — the stunning pass: art chain, sparks, parallax, glow hook */
+  check('Every segment attempts the generated realm art (local -> CDN chain)',
+    segs.every(s => { const img = s.querySelector('.seg-art'); return img && /assets\/realms|cloudfront/.test(img.src || 'x'); }));
+  check('Ambient sparks drift in every segment',
+    segs.every(s => s.querySelectorAll('.spark').length >= 5));
+  window.dispatchEvent(new window.Event('scroll'));
+  await new Promise(r => setTimeout(r, 80));
+  check('Parallax applies a transform to segment media on scroll',
+    segs.some(s => (s.querySelector('.seg-media').style.transform || '').includes('translateY')));
+
   /* 4 — fresh state: first node of first realm is current, rest gated */
   const infoNodes = [...segs[0].querySelectorAll('.rnode')];
   check('Gloamwood node 1 is the current START node',
