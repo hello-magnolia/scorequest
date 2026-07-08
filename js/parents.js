@@ -18,7 +18,12 @@
     en: {
       kicker: 'Progress Report · Demo',
       student: 'Student',
+      child: 'Your child',
       week: 'This week',
+      glance: 'This week at a glance',
+      flagWeak: 'Weakest domain: Advanced Math (61%). Practice is being directed there.',
+      flagMissed: 'One missed practice day (Wednesday).',
+      goodTrend: 'Practice exam scores rose 1050 \u2192 1230 since March.',
       time: 'Practice time',
       sets: 'Question sets completed',
       days: 'Consecutive practice days',
@@ -41,7 +46,12 @@
     zh: {
       kicker: '学习进度报告 · 演示',
       student: '学生',
+      child: '您的孩子',
       week: '本周',
+      glance: '本周概览',
+      flagWeak: '最薄弱领域：进阶数学（61%）。练习正集中安排在该领域。',
+      flagMissed: '本周有一天未练习（周三）。',
+      goodTrend: '模拟考试成绩自三月起从 1050 提升至 1230。',
       time: '练习时长',
       sets: '完成练习组数',
       days: '连续练习天数',
@@ -64,7 +74,12 @@
     es: {
       kicker: 'Informe de progreso · Demo',
       student: 'Estudiante',
+      child: 'Su hijo/a',
       week: 'Esta semana',
+      glance: 'Resumen de la semana',
+      flagWeak: 'Área más débil: Matemáticas avanzadas (61%). La práctica se está dirigiendo allí.',
+      flagMissed: 'Un día sin práctica (miércoles).',
+      goodTrend: 'Los exámenes de práctica subieron de 1050 a 1230 desde marzo.',
       time: 'Tiempo de práctica',
       sets: 'Series de preguntas completadas',
       days: 'Días consecutivos de práctica',
@@ -87,7 +102,12 @@
     fr: {
       kicker: 'Rapport de progression · Démo',
       student: 'Élève',
+      child: 'Votre enfant',
       week: 'Cette semaine',
+      glance: 'La semaine en un coup d\u2019\u0153il',
+      flagWeak: 'Domaine le plus faible : mathématiques avancées (61 %). La pratique y est concentrée.',
+      flagMissed: 'Un jour sans pratique (mercredi).',
+      goodTrend: 'Les examens blancs sont passés de 1050 à 1230 depuis mars.',
       time: 'Temps de pratique',
       sets: 'Séries de questions terminées',
       days: 'Jours de pratique consécutifs',
@@ -117,7 +137,7 @@
 
   /* ---------- demo data: measured, dated, plausible ---------- */
   var DEMO = {
-    name: 'Emily Chen',
+    name: null, // demo shows the translated 'Your child' label
     minutes: [34, 41, 0, 52, 38, 27, 30],                       // Mon..Sun
     sets: 18, days: 12,
     exams: [                                                     // scored practice exams
@@ -234,7 +254,12 @@
 
   function renderReport() {
     var d = reportData();
-    document.getElementById('preport-name').textContent = d.name;
+    var nameEl = document.getElementById('preport-name');
+    if (d.live && d.name) {
+      var firstName = String(d.name).trim().split(/\s+/)[0]; // first name only, never a surname
+      nameEl.removeAttribute('data-i18n');
+      nameEl.textContent = firstName;
+    }
     var total = d.minutes.reduce(function (a, b) { return a + b; }, 0);
     document.getElementById('pstat-time').textContent = fmtMinutes(total);
     document.getElementById('pstat-sets').textContent = String(d.sets);

@@ -35,10 +35,29 @@ const OPTS = {
   const gameWords = sectionText.match(/\b(quests?|realms?|boss(es)?|XP|guild(master)?|hero(es)?|loot|streaks?|scroll)\b/i);
   check('No game vocabulary in parents section', !gameWords, gameWords ? 'found: ' + gameWords[0] : 'clean');
 
-  /* 4 — real-name orientation: demo student named, no in-game names anywhere on page */
-  check('Report shows a real student name (Emily Chen)',
-    document.getElementById('preport-name').textContent === 'Emily Chen');
-  check('No in-game character names on the page', !/Nightscholar/i.test(document.body.textContent));
+  /* 4 — child-oriented naming: "Your child", never a surname or game name */
+  check('Report addresses "Your child" (no surname)',
+    document.getElementById('preport-name').textContent === 'Your child');
+  check('No in-game character names on the page', !/Nightscholar|Emily Chen/i.test(document.body.textContent));
+
+  /* 4b — copy is short: statement + pillars trimmed */
+  const subLen = document.querySelector('.statement-sub').textContent.trim().length;
+  const pillarMax = Math.max(...[...document.querySelectorAll('.pillar p')].map(p => p.textContent.trim().length));
+  check('Statement blurb is short (<140 chars)', subLen < 140, subLen + ' chars');
+  check('Each pillar is short (<110 chars)', pillarMax < 110, 'longest ' + pillarMax + ' chars');
+
+  /* 4c — parent-appealing intro above the demo */
+  const intro = document.querySelector('.preport-intro');
+  check('Intro title/blurb sits above the demo report',
+    !!intro && intro.nextElementSibling && intro.nextElementSibling.id === 'preport' &&
+    /week/i.test(intro.textContent));
+
+  /* 4d — at-a-glance summary: red attention flags + one positive, in plain language */
+  const attn = document.querySelectorAll('.glance-item.flag-attn');
+  const good = document.querySelectorAll('.glance-item.flag-good');
+  check('At-a-glance shows red attention flags + a positive', attn.length === 2 && good.length === 1,
+    attn.length + ' red, ' + good.length + ' green');
+  check('Red flag names the weak domain in plain language', /Advanced Math \(61%\)/.test(attn[0].textContent));
 
   /* 5 — guardrail: measured scores allowed, projections/guarantees forbidden */
   const projection = sectionText.match(/guarantee|projected|predict|forecast|will\s+(score|gain|improve)|\+\s?\d+\s*(points?|pts)/i);
@@ -73,6 +92,9 @@ const OPTS = {
   check('中文 pill translates report labels', document.querySelector('[data-i18n="time"]').textContent === '练习时长',
     document.querySelector('[data-i18n="time"]').textContent);
   check('中文 pill translates domain names', /代数/.test(document.getElementById('domain-bars').textContent));
+  check('中文 pill translates "Your child" and glance flags',
+    document.getElementById('preport-name').textContent === '您的孩子' &&
+    /进阶数学/.test(document.querySelector('.glance-item.flag-attn').textContent));
 
   /* 10 — Spanish */
   document.querySelector('.lang-pill[data-lang="es"]').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));

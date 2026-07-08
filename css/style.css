@@ -663,3 +663,19 @@ a { color: inherit; }
   .abar, .dbar-fill, .preport [data-i18n], .lang-cycle { transition: none; }
   .trend-line { stroke-dasharray: none; stroke-dashoffset: 0; }
 }
+
+/* intro above the demo report + at-a-glance flags */
+.preport-intro { text-align: center; max-width: 620px; margin: 0 auto 26px; }
+.preport-intro-title { font-size: clamp(1.4rem, 3vw, 1.9rem); }
+.preport-intro-sub { margin-top: 8px; color: var(--parchment-dim); font-size: 1rem; }
+
+.glance { margin-bottom: 26px; }
+.glance-items { display: flex; flex-direction: column; gap: 8px; }
+.glance-item {
+  font-size: 0.9rem; line-height: 1.45; padding: 9px 13px; border-radius: 2px;
+  border-left: 4px solid transparent; transition: opacity 200ms ease;
+}
+.flag-attn { border-left-color: #b3372e; background: #f7e6e2; color: #7a281f; }
+.flag-good { border-left-color: #2f6b4f; background: #e7efe6; color: #24513c; }
+
+@media (prefers-reduced-motion: reduce) { .glance-item { transition: none; } }
