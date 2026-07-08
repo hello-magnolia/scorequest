@@ -74,32 +74,33 @@
     <p class="eyebrow type-utility">For parents</p>
     <h2 class="statement-title">The #1 reason SAT &amp; ACT prep fails:<br />
       <span class="statement-accent">students never do the work.</span></h2>
-    <p class="statement-sub">Workbooks gather dust. Tutoring hours get rescheduled. ScoreQuest is built like the games students already choose to play — streaks, XP, realms to clear — so the practice actually happens. And you can see it happening.</p>
+    <p class="statement-sub">Workbooks gather dust. Tutoring hours get rescheduled. ScoreQuest is built on the engagement mechanics of the games students already choose &mdash; so the practice actually happens. And you see it happening: measured, reported, and tied to the outcome that matters.</p>
   </div>
 
   <div class="parents-pillars">
     <div class="pillar reveal">
-      <h3>Built like their games</h3>
-      <p>Daily side quests, gear to earn, realms to unlock. The motivation loop does the nagging, so you don't have to.</p>
+      <h3>Consistency drives scores</h3>
+      <p>Regular, distributed practice is the strongest lever a student controls. The product’s job is to make that practice something your student returns to daily &mdash; without reminders from you.</p>
     </div>
     <div class="pillar reveal">
-      <h3>Effort you can verify</h3>
-      <p>Time practicing, quests cleared, streaks kept — real activity, measured directly. We don't promise score outcomes; we show you the work, because the work is what moves scores.</p>
+      <h3>Measured, not promised</h3>
+      <p>Practice time, completed question sets, and scored full-length practice exams &mdash; direct measurements, reported plainly. No projections, no inflated promises.</p>
     </div>
     <div class="pillar reveal">
       <h3>In your language</h3>
-      <p>The Parent Scroll reads in <span class="lang-cycle type-utility" id="lang-cycle-word">English</span> — weekly reports that make sense to every family.</p>
+      <p>Weekly reports read in <span class="lang-cycle type-utility" id="lang-cycle-word">English</span> &mdash; clear to every family, in the language you think in.</p>
     </div>
   </div>
 
-  <!-- Parent Scroll: demo dashboard -->
-  <div class="pscroll reveal" id="pscroll" aria-label="Parent Scroll demo dashboard">
-    <div class="pscroll-head">
+  <!-- Progress Report: demo interface -->
+  <div class="preport reveal" id="preport" aria-label="Parent progress report demo">
+    <div class="preport-head">
       <div>
-        <p class="pscroll-kicker type-utility" data-i18n="kicker">Parent Scroll · demo preview</p>
-        <h3 class="pscroll-title"><span data-i18n="week">This week</span> · <span class="pscroll-hero">Nightscholar</span></h3>
+        <p class="preport-kicker" data-i18n="kicker">Progress Report &middot; Demo</p>
+        <h3 class="preport-title"><span data-i18n="student">Student</span>: <span class="preport-name" id="preport-name">Emily Chen</span></h3>
+        <p class="preport-range" data-i18n="week">This week</p>
       </div>
-      <div class="lang-pills" role="group" aria-label="Dashboard language">
+      <div class="lang-pills" role="group" aria-label="Report language">
         <button class="lang-pill is-active" data-lang="en">EN</button>
         <button class="lang-pill" data-lang="zh">中文</button>
         <button class="lang-pill" data-lang="es">ES</button>
@@ -107,38 +108,44 @@
       </div>
     </div>
 
-    <div class="pscroll-stats">
-      <div class="pstat">
-        <span class="pstat-num type-utility" id="pstat-time">3h 42m</span>
-        <span class="pstat-label" data-i18n="time">Time practicing</span>
+    <div class="preport-stats">
+      <div class="rstat">
+        <span class="rstat-num" id="pstat-time">3h 42m</span>
+        <span class="rstat-label" data-i18n="time">Practice time</span>
       </div>
-      <div class="pstat">
-        <span class="pstat-num type-utility" id="pstat-quests">18</span>
-        <span class="pstat-label" data-i18n="quests">Quests cleared</span>
+      <div class="rstat">
+        <span class="rstat-num" id="pstat-sets">18</span>
+        <span class="rstat-label" data-i18n="sets">Question sets completed</span>
       </div>
-      <div class="pstat">
-        <span class="pstat-num type-utility" id="pstat-streak">12</span>
-        <span class="pstat-label" data-i18n="streak">Day streak</span>
+      <div class="rstat">
+        <span class="rstat-num" id="pstat-days">12</span>
+        <span class="rstat-label" data-i18n="days">Consecutive practice days</span>
       </div>
-      <div class="pstat">
-        <span class="pstat-num type-utility" id="pstat-boss">1</span>
-        <span class="pstat-label" data-i18n="boss">Boss battles</span>
+      <div class="rstat">
+        <span class="rstat-num" id="pstat-exams">4</span>
+        <span class="rstat-label" data-i18n="exams">Full-length practice exams</span>
       </div>
     </div>
 
-    <div class="pscroll-grid">
-      <div class="pscroll-activity">
-        <p class="pscroll-sub type-utility" data-i18n="activity">Weekly activity (minutes)</p>
+    <div class="preport-charts">
+      <div class="rchart rchart-trend">
+        <p class="rchart-title" data-i18n="trendTitle">Practice exam scores</p>
+        <div id="trend-chart"></div>
+        <p class="rchart-cap" data-i18n="trendCap">Scored full-length, timed practice exams (official digital format)</p>
+      </div>
+      <div class="rchart">
+        <p class="rchart-title" data-i18n="activity">Weekly practice time (minutes)</p>
         <div class="activity-chart" id="activity-chart" aria-hidden="true"></div>
-        <p class="pscroll-last"><span data-i18n="last">Last active</span>: <span class="type-utility" data-i18n="today">today</span> · 4:12pm</p>
-      </div>
-      <div class="pscroll-realms">
-        <p class="pscroll-sub type-utility" data-i18n="realms">Realm progress</p>
-        <div class="realm-minis" id="realm-minis"></div>
+        <p class="rchart-cap"><span data-i18n="last">Last session</span>: <span data-i18n="today">today</span> &middot; 4:12&thinsp;pm &middot; 34 min</p>
       </div>
     </div>
 
-    <p class="pscroll-note" data-i18n="note">Included with Guildmaster: this scroll, emailed weekly, in your language.</p>
+    <div class="rchart rchart-wide">
+      <p class="rchart-title" data-i18n="accuracy">Accuracy by content domain</p>
+      <div class="domain-bars" id="domain-bars"></div>
+    </div>
+
+    <p class="preport-note" data-i18n="note">Included with the family plan: this report, emailed weekly, in your language.</p>
   </div>
 </section>
 

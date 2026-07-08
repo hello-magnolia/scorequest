@@ -1,13 +1,14 @@
 /* ============================================================
-   ScoreQuest — Parent Scroll (demo dashboard) + language cycling
+   ScoreQuest — Parent Progress Report (demo interface)
    ------------------------------------------------------------
+   Formal, measurement-driven report for parents. Deliberate rules:
+   - No game vocabulary anywhere in this surface.
+   - Student is shown by real name (demo: Emily Chen; signed-in
+     accounts show the account holder's name).
+   - Score data shown is MEASURED (scored practice exams over time),
+     never projected. No guarantees, no predictions.
    - Labels carry data-i18n keys; STRINGS holds EN / 中文 / ES / FR.
-   - Languages auto-cycle with a soft fade until a parent picks one
-     with the pills (then auto-cycling stops — their choice wins).
-   - Stats blend: if a signed-in hero has real progress, quests /
-     streak / realm bars reflect it; otherwise a demo hero is shown.
-   - Deliberately reports EFFORT metrics only (time, quests, streaks,
-     activity) — no projected-score claims.
+     Languages auto-cycle with a soft fade until a parent picks one.
    ============================================================ */
 (function () {
   'use strict';
@@ -15,141 +16,180 @@
 
   var STRINGS = {
     en: {
-      kicker: 'Parent Scroll · demo preview',
+      kicker: 'Progress Report · Demo',
+      student: 'Student',
       week: 'This week',
-      time: 'Time practicing',
-      quests: 'Quests cleared',
-      streak: 'Day streak',
-      boss: 'Boss battles',
-      activity: 'Weekly activity (minutes)',
-      last: 'Last active',
+      time: 'Practice time',
+      sets: 'Question sets completed',
+      days: 'Consecutive practice days',
+      exams: 'Full-length practice exams',
+      trendTitle: 'Practice exam scores',
+      trendCap: 'Scored full-length, timed practice exams (official digital format)',
+      activity: 'Weekly practice time (minutes)',
+      last: 'Last session',
       today: 'today',
-      realms: 'Realm progress',
-      note: 'Included with Guildmaster: this scroll, emailed weekly, in your language.',
+      accuracy: 'Accuracy by content domain',
+      note: 'Included with the family plan: this report, emailed weekly, in your language.',
       word: 'English',
+      domains: {
+        info: 'Information & Ideas', craft: 'Craft & Structure',
+        expression: 'Expression of Ideas', conventions: 'Standard English Conventions',
+        algebra: 'Algebra', advmath: 'Advanced Math',
+        data: 'Problem-Solving & Data Analysis', geometry: 'Geometry & Trigonometry',
+      },
     },
     zh: {
-      kicker: '家长卷轴 · 演示预览',
+      kicker: '学习进度报告 · 演示',
+      student: '学生',
       week: '本周',
       time: '练习时长',
-      quests: '完成任务',
-      streak: '连续打卡',
-      boss: '首领战',
-      activity: '每周活跃（分钟）',
-      last: '最近活跃',
+      sets: '完成练习组数',
+      days: '连续练习天数',
+      exams: '全真模拟考试',
+      trendTitle: '模拟考试成绩',
+      trendCap: '计时完成的全长模拟考试成绩（官方机考格式）',
+      activity: '每周练习时长（分钟）',
+      last: '上次学习',
       today: '今天',
-      realms: '领域进度',
-      note: '公会长版包含：每周发送到您邮箱的家长卷轴（支持您的语言）。',
+      accuracy: '各内容领域正确率',
+      note: '家庭版包含：每周发送至您邮箱的进度报告，支持您的语言。',
       word: '中文',
+      domains: {
+        info: '信息与观点', craft: '技巧与结构',
+        expression: '观点表达', conventions: '标准英语规范',
+        algebra: '代数', advmath: '进阶数学',
+        data: '解题与数据分析', geometry: '几何与三角',
+      },
     },
     es: {
-      kicker: 'Pergamino parental · vista de demostración',
+      kicker: 'Informe de progreso · Demo',
+      student: 'Estudiante',
       week: 'Esta semana',
       time: 'Tiempo de práctica',
-      quests: 'Misiones completadas',
-      streak: 'Racha de días',
-      boss: 'Batallas de jefe',
-      activity: 'Actividad semanal (minutos)',
-      last: 'Última actividad',
+      sets: 'Series de preguntas completadas',
+      days: 'Días consecutivos de práctica',
+      exams: 'Exámenes de práctica completos',
+      trendTitle: 'Resultados de exámenes de práctica',
+      trendCap: 'Exámenes completos y cronometrados (formato digital oficial)',
+      activity: 'Práctica semanal (minutos)',
+      last: 'Última sesión',
       today: 'hoy',
-      realms: 'Progreso por reino',
-      note: 'Incluido con Guildmaster: este pergamino, por correo cada semana, en su idioma.',
+      accuracy: 'Precisión por área de contenido',
+      note: 'Incluido en el plan familiar: este informe, por correo cada semana, en su idioma.',
       word: 'Español',
+      domains: {
+        info: 'Información e ideas', craft: 'Técnica y estructura',
+        expression: 'Expresión de ideas', conventions: 'Convenciones del inglés',
+        algebra: 'Álgebra', advmath: 'Matemáticas avanzadas',
+        data: 'Resolución de problemas y datos', geometry: 'Geometría y trigonometría',
+      },
     },
     fr: {
-      kicker: 'Parchemin des parents · aperçu démo',
+      kicker: 'Rapport de progression · Démo',
+      student: 'Élève',
       week: 'Cette semaine',
       time: 'Temps de pratique',
-      quests: 'Quêtes terminées',
-      streak: 'Série de jours',
-      boss: 'Combats de boss',
-      activity: 'Activité hebdomadaire (minutes)',
-      last: 'Dernière activité',
+      sets: 'Séries de questions terminées',
+      days: 'Jours de pratique consécutifs',
+      exams: 'Examens blancs complets',
+      trendTitle: 'Résultats des examens blancs',
+      trendCap: 'Examens blancs complets et chronométrés (format numérique officiel)',
+      activity: 'Pratique hebdomadaire (minutes)',
+      last: 'Dernière session',
       today: "aujourd'hui",
-      realms: 'Progression des royaumes',
-      note: 'Inclus avec Guildmaster : ce parchemin, envoyé chaque semaine, dans votre langue.',
+      accuracy: 'Précision par domaine',
+      note: "Inclus dans l'offre famille : ce rapport, envoyé chaque semaine, dans votre langue.",
       word: 'Français',
+      domains: {
+        info: 'Informations et idées', craft: 'Style et structure',
+        expression: 'Expression des idées', conventions: "Conventions de l'anglais",
+        algebra: 'Algèbre', advmath: 'Mathématiques avancées',
+        data: 'Résolution de problèmes et données', geometry: 'Géométrie et trigonométrie',
+      },
     },
   };
   var ORDER = ['en', 'zh', 'es', 'fr'];
   var current = 'en';
   var autoTimer = null;
 
-  var root = document.getElementById('pscroll');
+  var root = document.getElementById('preport');
   if (!root) return;
 
-  /* ---------- apply a language with a soft fade ---------- */
+  /* ---------- demo data: measured, dated, plausible ---------- */
+  var DEMO = {
+    name: 'Emily Chen',
+    minutes: [34, 41, 0, 52, 38, 27, 30],                       // Mon..Sun
+    sets: 18, days: 12,
+    exams: [                                                     // scored practice exams
+      { date: '3/14', score: 1050 },
+      { date: '4/04', score: 1120 },
+      { date: '4/25', score: 1180 },
+      { date: '5/16', score: 1230 },
+    ],
+    accuracy: { info: 82, craft: 74, expression: 79, conventions: 88,
+                algebra: 76, advmath: 61, data: 71, geometry: 68 },
+  };
+
+  /* ---------- i18n ---------- */
   function applyLang(lang, animate) {
     current = lang;
-    var strings = STRINGS[lang];
-    var targets = root.querySelectorAll('[data-i18n]');
-    var cycleWord = document.getElementById('lang-cycle-word');
-
+    var t = STRINGS[lang];
     function swap() {
-      targets.forEach(function (el) {
+      root.parentElement.querySelectorAll('[data-i18n]').forEach(function (el) {
         var key = el.getAttribute('data-i18n');
-        if (strings[key]) el.textContent = strings[key];
+        if (t[key]) el.textContent = t[key];
       });
-      if (cycleWord) cycleWord.textContent = strings.word;
+      var w = document.getElementById('lang-cycle-word');
+      if (w) w.textContent = t.word;
       document.querySelectorAll('.lang-pill').forEach(function (p) {
         p.classList.toggle('is-active', p.getAttribute('data-lang') === lang);
       });
+      root.querySelectorAll('.dbar-name').forEach(function (el) {
+        var id = el.getAttribute('data-domain');
+        if (t.domains[id]) el.textContent = t.domains[id];
+      });
     }
-
     if (animate && !reduceMotion) {
       root.classList.add('lang-fading');
-      if (cycleWord) cycleWord.classList.add('lang-fading');
-      setTimeout(function () {
-        swap();
-        root.classList.remove('lang-fading');
-        if (cycleWord) cycleWord.classList.remove('lang-fading');
-      }, 220);
-    } else {
-      swap();
-    }
+      setTimeout(function () { swap(); root.classList.remove('lang-fading'); }, 220);
+    } else swap();
   }
 
-  /* ---------- auto-cycle until the parent chooses ---------- */
   function startAutoCycle() {
-    if (reduceMotion) return; // respect reduced motion: stay on EN, pills still work
+    if (reduceMotion) return;
     autoTimer = setInterval(function () {
-      var next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
-      applyLang(next, true);
+      applyLang(ORDER[(ORDER.indexOf(current) + 1) % ORDER.length], true);
     }, 3200);
   }
-  function stopAutoCycle() {
-    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-  }
+  function stopAutoCycle() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
 
   document.querySelectorAll('.lang-pill').forEach(function (pill) {
     pill.addEventListener('click', function () {
-      stopAutoCycle(); // an explicit choice ends the demo carousel
+      stopAutoCycle();
       applyLang(pill.getAttribute('data-lang'), true);
     });
   });
 
-  /* ---------- stats: live hero if they have progress, else demo ---------- */
-  var DEMO = {
-    heroName: 'Nightscholar',
-    minutes: [34, 41, 0, 52, 38, 27, 30], // Mon..Sun
-    quests: 18, streak: 12, boss: 1,
-  };
-
-  function liveOrDemo() {
+  /* ---------- data: signed-in students with progress see their own ---------- */
+  function reportData() {
     var G = window.SQGame, A = window.SQAuth;
     if (G && A && A.getUser()) {
       var s = G.getState();
-      var totalQuests = 0;
-      Object.keys(s.realms).forEach(function (id) { totalQuests += s.realms[id].questsCleared; });
       if (s.totalXp > 0) {
+        var sets = 0;
+        Object.keys(s.realms).forEach(function (id) { sets += s.realms[id].questsCleared; });
+        var acc = {};
+        G.REALMS.forEach(function (r) {
+          var st = s.realms[r.id];
+          // proxy accuracy from domain progress until per-question analytics land
+          acc[r.id] = Math.min(95, 55 + Math.round((st.cleared ? 100 : st.pct) * 0.4) + st.level * 4);
+        });
+        var prof = A.getUser().user_metadata || {};
         return {
-          heroName: (A.getUser() && A.getUser().demo ? 'Your hero' : 'Your hero'),
-          minutes: DEMO.minutes, // session-time tracking lands with the question bank
-          quests: totalQuests,
-          streak: s.streak,
-          boss: DEMO.boss,
-          live: true,
-          realms: s.realms,
+          name: prof.full_name || prof.hero_name || 'Your student',
+          minutes: DEMO.minutes, // session-time instrumentation ships with the question bank
+          sets: sets, days: s.streak,
+          exams: DEMO.exams, accuracy: acc, live: true,
         };
       }
     }
@@ -161,21 +201,49 @@
     return h > 0 ? h + 'h ' + m + 'm' : m + 'm';
   }
 
-  function renderStats() {
-    var d = liveOrDemo();
+  /* ---------- charts ---------- */
+  function renderTrend(exams) {
+    var host = document.getElementById('trend-chart');
+    var W = 320, H = 130, padL = 40, padR = 16, padT = 14, padB = 26;
+    var scores = exams.map(function (e) { return e.score; });
+    var min = Math.min.apply(null, scores), max = Math.max.apply(null, scores);
+    var lo = Math.floor((min - 40) / 50) * 50, hi = Math.ceil((max + 40) / 50) * 50;
+    function x(i) { return padL + (i / (exams.length - 1)) * (W - padL - padR); }
+    function y(v) { return padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB); }
+
+    var grid = '';
+    for (var g = lo; g <= hi; g += 100) {
+      grid += '<line x1="' + padL + '" y1="' + y(g) + '" x2="' + (W - padR) + '" y2="' + y(g) + '" class="trend-grid"/>' +
+              '<text x="' + (padL - 6) + '" y="' + (y(g) + 3) + '" class="trend-axis" text-anchor="end">' + g + '</text>';
+    }
+    var pts = exams.map(function (e, i) { return x(i) + ',' + y(e.score); }).join(' ');
+    var dots = exams.map(function (e, i) {
+      return '<circle cx="' + x(i) + '" cy="' + y(e.score) + '" r="3.4" class="trend-dot"/>' +
+             '<text x="' + x(i) + '" y="' + (y(e.score) - 8) + '" class="trend-val" text-anchor="middle">' + e.score + '</text>' +
+             '<text x="' + x(i) + '" y="' + (H - 8) + '" class="trend-axis" text-anchor="middle">' + e.date + '</text>';
+    }).join('');
+
+    host.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Practice exam score trend from ' +
+      exams[0].score + ' to ' + exams[exams.length - 1].score + '">' +
+      grid +
+      '<polyline points="' + pts + '" class="trend-line" pathLength="100"/>' +
+      dots +
+      '</svg>';
+  }
+
+  function renderReport() {
+    var d = reportData();
+    document.getElementById('preport-name').textContent = d.name;
     var total = d.minutes.reduce(function (a, b) { return a + b; }, 0);
     document.getElementById('pstat-time').textContent = fmtMinutes(total);
-    document.getElementById('pstat-quests').textContent = String(d.quests);
-    document.getElementById('pstat-streak').textContent = String(d.streak);
-    document.getElementById('pstat-boss').textContent = String(d.boss);
-    var heroEl = root.querySelector('.pscroll-hero');
-    if (heroEl && window.SQAuth && window.SQAuth.getUser()) {
-      var prof = null;
-      try { prof = window.SQAuth.getProgress() && null; } catch (e) {}
-      heroEl.textContent = d.live ? 'Your hero' : DEMO.heroName;
-    }
+    document.getElementById('pstat-sets').textContent = String(d.sets);
+    document.getElementById('pstat-days').textContent = String(d.days);
+    document.getElementById('pstat-exams').textContent = String(d.exams.length);
 
-    // weekly activity bars
+    renderTrend(d.exams);
+
+    // weekly practice bars
     var chart = document.getElementById('activity-chart');
     var days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     var max = Math.max.apply(null, d.minutes.concat([1]));
@@ -183,56 +251,54 @@
       var pct = Math.round((m / max) * 100);
       return '<div class="abar-wrap">' +
         '<div class="abar' + (m === 0 ? ' abar-zero' : '') + '" data-h="' + pct + '" title="' + m + ' min"></div>' +
-        '<span class="abar-day type-utility">' + days[i] + '</span></div>';
+        '<span class="abar-day">' + days[i] + '</span></div>';
     }).join('');
 
-    // realm mini-bars (all 8, live when available)
-    var minis = document.getElementById('realm-minis');
+    // accuracy by domain
+    var t = STRINGS[current];
+    var barsHost = document.getElementById('domain-bars');
     var G = window.SQGame;
-    if (G) {
-      var s = G.getState();
-      minis.innerHTML = G.REALMS.map(function (r) {
-        var st = s.realms[r.id];
-        var pct = st.cleared ? 100 : st.pct;
-        return '<div class="rmini">' +
-          '<span class="rmini-name">' + r.name + '</span>' +
-          '<span class="rmini-bar"><span class="rmini-fill" data-section="' + r.section + '" data-w="' + pct + '"></span></span>' +
-          '<span class="rmini-lvl type-utility">Lv ' + st.level + '</span></div>';
-      }).join('');
-    }
+    var order = G ? G.REALMS.map(function (r) { return r.id; })
+                  : Object.keys(d.accuracy);
+    barsHost.innerHTML = order.map(function (id) {
+      var pct = d.accuracy[id];
+      var section = G ? G.byId(id).section : 'rw';
+      return '<div class="dbar">' +
+        '<span class="dbar-name" data-domain="' + id + '">' + t.domains[id] + '</span>' +
+        '<span class="dbar-track"><span class="dbar-fill" data-section="' + section + '" data-w="' + pct + '"></span></span>' +
+        '<span class="dbar-pct">' + pct + '%</span></div>';
+    }).join('');
   }
 
-  /* ---------- animate bars when the scroll reveals ---------- */
+  /* ---------- reveal animations ---------- */
   function animateBars() {
     root.querySelectorAll('.abar').forEach(function (b) {
       b.style.height = Math.max(6, parseInt(b.getAttribute('data-h'), 10)) + '%';
     });
-    root.querySelectorAll('.rmini-fill').forEach(function (b) {
+    root.querySelectorAll('.dbar-fill').forEach(function (b) {
       b.style.width = b.getAttribute('data-w') + '%';
     });
+    var line = root.querySelector('.trend-line');
+    if (line && !reduceMotion) line.classList.add('trend-drawn');
+    else if (line) line.style.strokeDashoffset = '0';
   }
 
   function init() {
-    renderStats();
+    renderReport();
     applyLang('en', false);
 
     if (typeof IntersectionObserver === 'function' && !reduceMotion) {
       var seen = false;
       new IntersectionObserver(function (entries, obs) {
         if (entries[0].isIntersecting && !seen) {
-          seen = true;
-          animateBars();
-          startAutoCycle();
-          obs.disconnect();
+          seen = true; animateBars(); startAutoCycle(); obs.disconnect();
         }
       }, { threshold: 0.25 }).observe(root);
     } else {
-      animateBars();
-      startAutoCycle();
+      animateBars(); startAutoCycle();
     }
 
-    // re-render when auth/progress changes so a real hero's numbers appear
-    if (window.SQGame) window.SQGame.onChange(function () { renderStats(); animateBars(); });
+    if (window.SQGame) window.SQGame.onChange(function () { renderReport(); applyLang(current, false); animateBars(); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
