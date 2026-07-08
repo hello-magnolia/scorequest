@@ -145,6 +145,130 @@
     });
   }
 
+  /* ============================================================
+     THE ADVENTURER: your hero sprite stands at the frontier node
+     and walks the trail when progress moves it forward.
+     ============================================================ */
+  var allNodes = [];
+  segments.forEach(function (seg) {
+    seg.querySelectorAll('.rnode').forEach(function (n) { allNodes.push(n); });
+  });
+
+  var spriteEl = null, spriteCtx = null, spriteState = null;
+
+  function nodeGlobalPos(node) {
+    var seg = node.closest('.seg');
+    var half = node.classList.contains('rnode-boss') ? 42 : 34;
+    return {
+      x: parseFloat(node.style.left) || 0,
+      y: seg.offsetTop + (parseFloat(node.style.top) || 0) - half + 4, // feet on the node's top edge
+    };
+  }
+
+  function frontierNode() {
+    for (var i = 0; i < allNodes.length; i++) {
+      if (allNodes[i].classList.contains('is-current')) return allNodes[i];
+    }
+    return allNodes[allNodes.length - 1]; // everything conquered: rest at the final boss
+  }
+
+  function drawSpriteFrame(frame) {
+    if (!spriteCtx || !PW || !PW.sprite) return;
+    PW.sprite.draw(spriteCtx, frame);
+  }
+
+  function buildSprite() {
+    if (!PW || !PW.sprite) return;
+    spriteEl = document.createElement('div');
+    spriteEl.className = 'hero-sprite';
+    spriteEl.innerHTML = '<canvas width="16" height="20"></canvas>';
+    host.appendChild(spriteEl);
+    spriteCtx = spriteEl.querySelector('canvas').getContext('2d');
+    drawSpriteFrame(0);
+    host.classList.add('has-sprite');
+
+    var start = frontierNode();
+    var p = nodeGlobalPos(start);
+    spriteState = { node: start, x: p.x, y: p.y, walking: false, queue: [] };
+    window.__SQ_SPRITE = spriteState;
+    placeSprite(p.x, p.y, 1);
+    if (!reduceMotion) requestAnimationFrame(idleLoop);
+  }
+
+  function placeSprite(x, y, facing) {
+    spriteEl.style.left = x + 'px';
+    spriteEl.style.top = y + 'px';
+    spriteEl.style.setProperty('--facing', facing);
+  }
+
+  /* sample the same curve the trail uses between two points */
+  function samplePath(a, b, out) {
+    var steps = 14, midY = (a.y + b.y) / 2;
+    for (var s = 1; s <= steps; s++) {
+      var t = s / steps, mt = 1 - t;
+      var x = mt*mt*mt*a.x + 3*mt*mt*t*a.x + 3*mt*t*t*b.x + t*t*t*b.x;
+      var y = mt*mt*mt*a.y + 3*mt*mt*t*midY + 3*mt*t*t*midY + t*t*t*b.y;
+      out.push({ x: x, y: y });
+    }
+  }
+
+  function walkTo(targetNode) {
+    var fromIdx = allNodes.indexOf(spriteState.node);
+    var toIdx = allNodes.indexOf(targetNode);
+    if (toIdx === fromIdx) return;
+    if (reduceMotion || toIdx < fromIdx) { // never moon-walk backwards; just appear
+      var p = nodeGlobalPos(targetNode);
+      spriteState.node = targetNode; spriteState.x = p.x; spriteState.y = p.y;
+      placeSprite(p.x, p.y, 1);
+      return;
+    }
+    // path through every node between here and there
+    var pts = [{ x: spriteState.x, y: spriteState.y }];
+    for (var i = fromIdx + 1; i <= toIdx; i++) {
+      samplePath(pts[pts.length - 1], nodeGlobalPos(allNodes[i]), pts);
+    }
+    spriteState.node = targetNode;
+    spriteState.walking = true;
+    var seg = 0, segStart = performance.now();
+    var SPEED = 170; // px per second
+
+    (function step(now) {
+      if (!spriteState.walking) return;
+      var a = pts[seg], b = pts[seg + 1];
+      var dist = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+      var t = Math.min(1, (now - segStart) / (dist / SPEED * 1000));
+      var x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
+      var facing = b.x >= a.x ? 1 : -1;
+      spriteState.x = x; spriteState.y = y;
+      placeSprite(x, y, facing);
+      drawSpriteFrame(Math.floor(now / 130) % 2 + 1);
+      if (t >= 1) {
+        seg++;
+        segStart = now;
+        if (seg >= pts.length - 1) {
+          spriteState.walking = false;
+          drawSpriteFrame(0);
+          return;
+        }
+      }
+      requestAnimationFrame(step);
+    })(performance.now());
+  }
+
+  function idleLoop(now) {
+    if (spriteEl && !spriteState.walking) {
+      var bob = Math.sin(now / 480) > 0 ? 0 : -2; // two-step pixel bob
+      spriteEl.style.setProperty('--bob', bob + 'px');
+    }
+    requestAnimationFrame(idleLoop);
+  }
+
+  function updateSprite() {
+    if (!spriteEl) return;
+    var target = frontierNode();
+    if (target !== spriteState.node && !spriteState.walking) walkTo(target);
+  }
+
   // who's playing
   if (window.SQAuth) {
     window.SQAuth.onChange(function (st) {
@@ -158,6 +282,14 @@
 
   layout();
   refresh();
-  window.addEventListener('resize', function () { layout(); });
-  G.onChange(function () { refresh(); });
+  buildSprite();
+  window.addEventListener('resize', function () {
+    layout();
+    if (spriteEl && !spriteState.walking) {
+      var p = nodeGlobalPos(spriteState.node);
+      spriteState.x = p.x; spriteState.y = p.y;
+      placeSprite(p.x, p.y, 1);
+    }
+  });
+  G.onChange(function () { refresh(); updateSprite(); });
 })();

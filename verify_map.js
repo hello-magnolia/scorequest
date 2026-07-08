@@ -82,6 +82,16 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   check('Quest drawer opens with a question + answers', drawer && !drawer.hidden &&
     !!drawer.querySelector('.quest-q') && drawer.querySelectorAll('.quest-answer').length >= 2);
 
+  /* immersive backdrop: biome scene painted behind the questions */
+  let scenePainted = false;
+  try {
+    const d = drawer.querySelector('.quest-scene canvas').getContext('2d').getImageData(0, 0, 8, 8).data;
+    scenePainted = [...d].some(v => v > 0);
+  } catch (e) {}
+  check('Quest drawer shows the realm biome backdrop + scrim',
+    scenePainted && !!drawer.querySelector('.quest-scrim') &&
+    drawer.querySelector('.quest-panel').getAttribute('data-section') === 'rw');
+
   // answering a full quest reaches the result screen with XP
   function answerAll() {
     return new Promise(resolve => {

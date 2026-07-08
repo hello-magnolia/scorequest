@@ -777,3 +777,38 @@ a { color: inherit; }
 .mappage-player { margin-top: 6px; color: var(--dusk); font-size: 1.05rem; }
 .mappage-player span { color: var(--gold); }
 .auth-guest { margin-top: 12px; }
+
+/* ============================================================
+   The adventurer sprite + immersive quest scenes
+   ============================================================ */
+.roadmap { position: relative; }
+.hero-sprite {
+  position: absolute; z-index: 6; pointer-events: none;
+  width: 48px; height: 60px;
+  transform: translate(-50%, -100%) translateY(var(--bob, 0px)) scaleX(var(--facing, 1));
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35));
+}
+.hero-sprite canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.has-sprite .rnode-start { display: none !important; } /* the hero standing there IS the marker */
+
+/* quest drawer: the biome behind the questions */
+.quest-scene { position: absolute; inset: 0; z-index: 0; }
+.quest-scene canvas, .quest-scene img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; image-rendering: pixelated;
+}
+.quest-scrim {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(22,17,43,0.5) 0%, rgba(22,17,43,0.86) 46%, rgba(22,17,43,0.95) 100%);
+}
+.quest-panel > *:not(.quest-scene):not(.quest-scrim) { position: relative; z-index: 2; }
+.quest-panel[data-section="rw"] { --frame: var(--meadow); }
+.quest-panel[data-section="math"] { --frame: var(--dusk); }
+.quest-title { text-shadow: 2px 2px 0 rgba(22, 17, 43, 0.9); }
+.quest-eyebrow { text-shadow: 2px 2px 0 rgba(22, 17, 43, 0.9); }
+.quest-answer { background: rgba(22, 17, 43, 0.86); }
+.quest-answer:hover:not(:disabled) { background: rgba(38, 32, 82, 0.92); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-sprite { transform: translate(-50%, -100%); }
+}

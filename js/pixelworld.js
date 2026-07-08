@@ -520,6 +520,48 @@
     px(ctx, W * 0.5, H * 0.62 + bob, 7, 9, '#F4E9D0');        // sail
   }
 
+
+  /* ============================================================
+     ADVENTURER SPRITE, 16 x 20, three frames: 0 idle, 1/2 walk
+     ============================================================ */
+  function drawAdventurer(ctx, frame) {
+    ctx.clearRect(0, 0, 16, 20);
+    // pointed hat
+    px(ctx, 7, 0, 2, 1, '#6E4680');
+    px(ctx, 6, 1, 4, 1, '#8E7CC3');
+    px(ctx, 5, 2, 6, 1, '#8E7CC3');
+    px(ctx, 3, 3, 10, 1, '#6E4680');
+    // face
+    px(ctx, 5, 4, 6, 3, '#F2C9A0');
+    px(ctx, 6, 5, 1, 1, '#2A1D07');
+    px(ctx, 9, 5, 1, 1, '#2A1D07');
+    // gold scarf
+    px(ctx, 5, 7, 6, 1, '#F2B63C');
+    px(ctx, 10, 8, 1, 2, '#F2B63C');
+    // tunic
+    px(ctx, 4, 8, 8, 5, '#2E6B55');
+    px(ctx, 4, 8, 1, 5, '#1F4A3B');
+    // satchel strap + bag
+    px(ctx, 6, 8, 1, 5, '#7A4A2A');
+    px(ctx, 11, 11, 3, 3, '#7A4A2A');
+    px(ctx, 11, 11, 3, 1, '#A87A1A');
+    // arms swing with the walk
+    if (frame === 1) { px(ctx, 3, 10, 1, 3, '#F2C9A0'); px(ctx, 12, 9, 1, 2, '#F2C9A0'); }
+    else if (frame === 2) { px(ctx, 3, 9, 1, 2, '#F2C9A0'); px(ctx, 12, 10, 1, 3, '#F2C9A0'); }
+    else { px(ctx, 3, 9, 1, 3, '#F2C9A0'); px(ctx, 12, 9, 1, 3, '#F2C9A0'); }
+    // legs + boots
+    if (frame === 1) {
+      px(ctx, 4, 13, 2, 5, '#4A3A5E'); px(ctx, 4, 18, 3, 2, '#3A2D4C');   // lead leg
+      px(ctx, 9, 13, 2, 4, '#4A3A5E'); px(ctx, 10, 17, 3, 2, '#3A2D4C');  // trailing
+    } else if (frame === 2) {
+      px(ctx, 9, 13, 2, 5, '#4A3A5E'); px(ctx, 9, 18, 3, 2, '#3A2D4C');
+      px(ctx, 4, 13, 2, 4, '#4A3A5E'); px(ctx, 3, 17, 3, 2, '#3A2D4C');
+    } else {
+      px(ctx, 5, 13, 2, 5, '#4A3A5E'); px(ctx, 9, 13, 2, 5, '#4A3A5E');
+      px(ctx, 4, 18, 3, 2, '#3A2D4C'); px(ctx, 9, 18, 3, 2, '#3A2D4C');
+    }
+  }
+
   const scenes = {
     hero: { w: 480, h: 270, draw: drawHero },
     info: { w: 240, h: 104, draw: drawGloamwood },
@@ -533,5 +575,5 @@
     science: { w: 240, h: 104, draw: drawLumen },
   };
 
-  return { scenes, makeRng };
+  return { scenes, makeRng, sprite: { w: 16, h: 20, draw: drawAdventurer } };
 });

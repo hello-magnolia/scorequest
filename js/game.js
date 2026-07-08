@@ -18,14 +18,14 @@
 
   // Ordered to match the world map path. section: 'rw' | 'math'.
   var REALMS = [
-    { id: 'info',        name: 'Gloamwood',        scene: 'info',        section: 'rw',   domain: 'Information & Ideas',            quests: 40 },
-    { id: 'craft',       name: 'Echo Vale',        scene: 'craft',       section: 'rw',   domain: 'Craft & Structure',             quests: 40 },
-    { id: 'expression',  name: 'Inkmarsh',         scene: 'expression',  section: 'rw',   domain: 'Expression of Ideas',           quests: 32 },
-    { id: 'conventions', name: 'Syntax Citadel',   scene: 'conventions', section: 'rw',   domain: 'Standard English Conventions',  quests: 44 },
-    { id: 'algebra',     name: 'Copperpeak',       scene: 'algebra',     section: 'math', domain: 'Algebra',                       quests: 48 },
-    { id: 'advmath',     name: 'Starfall Summit',  scene: 'advmath',     section: 'math', domain: 'Advanced Math',                 quests: 44 },
-    { id: 'data',        name: 'Chartwater Bay',   scene: 'data',        section: 'math', domain: 'Problem-Solving & Data',        quests: 36 },
-    { id: 'geometry',    name: 'Prism Tidepools',  scene: 'geometry',    section: 'math', domain: 'Geometry & Trigonometry',       quests: 32 },
+    { id: 'info',        name: 'Gloamwood',        scene: 'info',        section: 'rw',   domain: 'Information & Ideas',            quests: 40 , art: 'assets/realms/info.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165708_74c8247e-041b-46c6-bd60-b5688daafbd5.png' },
+    { id: 'craft',       name: 'Echo Vale',        scene: 'craft',       section: 'rw',   domain: 'Craft & Structure',             quests: 40 , art: 'assets/realms/craft.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165718_a044cd59-5803-4574-93c3-b300e750af85.png' },
+    { id: 'expression',  name: 'Inkmarsh',         scene: 'expression',  section: 'rw',   domain: 'Expression of Ideas',           quests: 32 , art: 'assets/realms/expression.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165729_db1609c5-3aad-4569-8936-e642eba5a300.png' },
+    { id: 'conventions', name: 'Syntax Citadel',   scene: 'conventions', section: 'rw',   domain: 'Standard English Conventions',  quests: 44 , art: 'assets/realms/conventions.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165740_bc2485ab-42d9-4045-bb54-e82d95728861.png' },
+    { id: 'algebra',     name: 'Copperpeak',       scene: 'algebra',     section: 'math', domain: 'Algebra',                       quests: 48 , art: 'assets/realms/algebra.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165752_549328bb-f73a-4925-891a-bd7faf12c8fc.png' },
+    { id: 'advmath',     name: 'Starfall Summit',  scene: 'advmath',     section: 'math', domain: 'Advanced Math',                 quests: 44 , art: 'assets/realms/advmath.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165803_fc6057f0-685d-41e9-867c-ed1d6a29bc8c.png' },
+    { id: 'data',        name: 'Chartwater Bay',   scene: 'data',        section: 'math', domain: 'Problem-Solving & Data',        quests: 36 , art: 'assets/realms/data.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165813_9e52c7c4-1383-4165-aac2-f41833390df3.png' },
+    { id: 'geometry',    name: 'Prism Tidepools',  scene: 'geometry',    section: 'math', domain: 'Geometry & Trigonometry',       quests: 32 , art: 'assets/realms/geometry.png', cdn: 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_165823_2af1d8d8-4219-46aa-b0c1-9a34f1f3a217.png' },
   ];
   var BY_ID = {};
   REALMS.forEach(function (r) { BY_ID[r.id] = r; });

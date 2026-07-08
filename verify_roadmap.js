@@ -61,6 +61,19 @@ const OPTS = {
   check('Dotted trail drawn in every segment',
     segs.every(s => { const p = s.querySelector('.seg-trail-path'); return p && (p.getAttribute('d')||'').startsWith('M'); }));
 
+  /* 6b — the adventurer sprite stands at the frontier */
+  const sprite = document.querySelector('.hero-sprite');
+  let spritePainted = false;
+  try {
+    const d = sprite.querySelector('canvas').getContext('2d').getImageData(0, 0, 16, 20).data;
+    spritePainted = [...d].some(v => v > 0);
+  } catch (e) {}
+  check('Adventurer sprite present and painted', !!sprite && spritePainted);
+  check('Sprite starts at Gloamwood node 1',
+    window.__SQ_SPRITE && window.__SQ_SPRITE.node === infoNodes[0]);
+  check('Sprite replaces the START badge as the marker',
+    document.getElementById('roadmap').classList.contains('has-sprite'));
+
   /* 7 — clicking the current node opens the quest drawer */
   infoNodes[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 80));
@@ -74,6 +87,10 @@ const OPTS = {
   await new Promise(r => setTimeout(r, 80));
   check('Reaching Lv 2 completes node 1 and advances START to node 2',
     infoNodes[0].classList.contains('is-done') && infoNodes[1].classList.contains('is-current'));
+  await new Promise(r => setTimeout(r, 1400)); // let the walk finish (~118px at 170px/s)
+  check('Sprite walks the trail to node 2',
+    window.__SQ_SPRITE.node === infoNodes[1] && window.__SQ_SPRITE.walking === false,
+    'walking=' + window.__SQ_SPRITE.walking);
   check('Lv 2 unlocks Echo Vale on the path',
     !craftSeg.classList.contains('seg-locked') &&
     craftSeg.querySelector('.rnode').classList.contains('is-current'));

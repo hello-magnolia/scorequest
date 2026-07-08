@@ -124,6 +124,8 @@
     drawer.hidden = true;
     drawer.innerHTML =
       '<div class="quest-panel pixel-frame" role="dialog" aria-modal="true" aria-labelledby="quest-title">' +
+        '<div class="quest-scene" aria-hidden="true"><canvas width="240" height="104"></canvas><img alt="" hidden /></div>' +
+        '<div class="quest-scrim" aria-hidden="true"></div>' +
         '<button class="quest-close" aria-label="Close">\u2715</button>' +
         '<p class="eyebrow type-utility quest-eyebrow" id="quest-eyebrow"></p>' +
         '<h3 class="quest-title" id="quest-title"></h3>' +
@@ -134,6 +136,36 @@
     drawer.querySelector('.quest-close').addEventListener('click', closeQuest);
     drawer.addEventListener('click', function (e) { if (e.target === drawer) closeQuest(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !drawer.hidden) closeQuest(); });
+
+    // ambient biome backdrop: animated canvas, upgraded to the generated
+    // image when it loads (local file first, then the Higgsfield CDN)
+    var sceneCv = drawer.querySelector('.quest-scene canvas');
+    var sceneCtx = sceneCv.getContext('2d');
+    var sceneStart = performance.now();
+    (function ambient(now) {
+      if (!drawer.hidden && drawer._scene && !reduceMotion) {
+        drawer._scene.draw(sceneCtx, 240, 104, (now - sceneStart) / 1000);
+      }
+      requestAnimationFrame(ambient);
+    })(performance.now());
+  }
+
+  function setQuestScene(r) {
+    var PW = window.PixelWorld;
+    var panel = drawer.querySelector('.quest-panel');
+    var cv = drawer.querySelector('.quest-scene canvas');
+    var img = drawer.querySelector('.quest-scene img');
+    panel.setAttribute('data-section', r.section);
+    drawer._scene = PW && PW.scenes[r.scene];
+    if (drawer._scene) drawer._scene.draw(cv.getContext('2d'), 240, 104, 2);
+    // generated-art chain on top of the live canvas
+    img.hidden = true;
+    img.removeAttribute('src');
+    var sources = [r.art, r.cdn].filter(Boolean);
+    var i = 0;
+    img.onerror = function () { if (i < sources.length) img.src = sources[i++]; else img.hidden = true; };
+    img.onload = function () { img.hidden = false; };
+    if (sources.length) img.src = sources[i++];
   }
 
   var session = null;
@@ -146,6 +178,7 @@
     var pool = (QUESTS[realmId] || []).slice();
     session = { realmId: realmId, items: pool, i: 0, correct: 0, total: pool.length };
 
+    setQuestScene(r);
     drawer.querySelector('#quest-eyebrow').textContent = r.domain + ' · Lv ' + st.level;
     drawer.querySelector('#quest-title').textContent = r.name + ': side quest';
     drawer.hidden = false;
