@@ -68,95 +68,6 @@
   var mapWrap, drawer;
 
   /* ============================================================
-     1. WORLD MAP — replaces the quest-log trail visuals
-     ============================================================ */
-  function buildMap() {
-    var host = document.getElementById('quest-log');
-    if (!host) return;
-
-    // Insert a map section right after the quest-log heading
-    var section = document.createElement('div');
-    section.className = 'worldmap reveal';
-    section.innerHTML =
-      '<div class="worldmap-head">' +
-        '<p class="worldmap-rank type-utility">World rank <span id="world-rank">Lv 8</span></p>' +
-        '<p class="worldmap-sub" id="world-sub">Clear quests to level each realm from 1 to 5. Reach Lv 2 to unlock the next realm in a track.</p>' +
-      '</div>' +
-      '<div class="map-grid" id="map-grid"></div>';
-
-    var head = host.querySelector('.section-head');
-    head.parentNode.insertBefore(section, head.nextSibling);
-    mapWrap = section;
-
-    // Join the scroll-reveal system. main.js sets up its observer on load; a
-    // section inserted afterward must be registered (or shown outright if the
-    // observer has already passed, or IO is unavailable).
-    if (window.SQRevealObserve) window.SQRevealObserve(section);
-    else section.classList.add('is-visible');
-
-    var grid = section.querySelector('#map-grid');
-    G.REALMS.forEach(function (r, i) {
-      var node = document.createElement('button');
-      node.className = 'map-node';
-      node.setAttribute('data-realm', r.id);
-      node.setAttribute('data-section', r.section);
-      node.innerHTML =
-        '<span class="node-index type-utility">' + String(i + 1).padStart(2, '0') + '</span>' +
-        '<canvas class="node-art" width="240" height="104" data-scene="' + r.scene + '"></canvas>' +
-        '<span class="node-lock" aria-hidden="true">\uD83D\uDD12</span>' +
-        '<span class="node-flag" aria-hidden="true"></span>' +
-        '<span class="node-body">' +
-          '<span class="node-name">' + r.name + '</span>' +
-          '<span class="node-domain type-utility">' + r.domain + '</span>' +
-          '<span class="node-bar"><span class="node-bar-fill"></span></span>' +
-          '<span class="node-meta type-utility"><span class="node-level">Lv 1</span><span class="node-pct">0%</span></span>' +
-        '</span>';
-      node.addEventListener('click', function () { openQuest(r.id); });
-      grid.appendChild(node);
-    });
-
-    // animate the node canvases (reuse PixelWorld)
-    section.querySelectorAll('canvas[data-scene]').forEach(startNodeCanvas);
-    refreshMap();
-  }
-
-  function startNodeCanvas(cv) {
-    var PW = window.PixelWorld;
-    var scene = PW && PW.scenes[cv.getAttribute('data-scene')];
-    if (!scene) return;
-    var ctx = cv.getContext('2d');
-    scene.draw(ctx, scene.w, scene.h, 0); // always paint a first frame
-    if (reduceMotion) { scene.draw(ctx, scene.w, scene.h, 2); return; }
-    var visible = true, start = performance.now();
-    (function loop(now) {
-      if (visible) scene.draw(ctx, scene.w, scene.h, (now - start) / 1000);
-      requestAnimationFrame(loop);
-    })(performance.now());
-    if (typeof IntersectionObserver === 'function') {
-      visible = false;
-      new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { rootMargin: '80px' }).observe(cv);
-    }
-  }
-
-  function refreshMap() {
-    if (!mapWrap) return;
-    var s = G.getState();
-    var rank = document.getElementById('world-rank');
-    if (rank) rank.textContent = 'Lv ' + s.totalLevel;
-    mapWrap.querySelectorAll('.map-node').forEach(function (node) {
-      var id = node.getAttribute('data-realm');
-      var st = s.realms[id];
-      node.classList.toggle('is-locked', !st.unlocked);
-      node.classList.toggle('is-cleared', st.cleared);
-      node.disabled = !st.unlocked;
-      node.querySelector('.node-level').textContent = 'Lv ' + st.level;
-      node.querySelector('.node-pct').textContent = st.cleared ? '★ cleared' : st.pct + '%';
-      var fill = node.querySelector('.node-bar-fill');
-      fill.style.width = (st.cleared ? 100 : st.pct) + '%';
-    });
-  }
-
-  /* ============================================================
      2. CARD OVERLAYS — level pip + XP bar + Start quest button
      ============================================================ */
   function decorateCards() {
@@ -302,7 +213,7 @@
     var su = stage.querySelector('.quest-signup');
     if (su) su.addEventListener('click', function () { closeQuest(); if (window.SQAuth) window.SQAuth.openModal('up'); });
 
-    refreshMap(); refreshCards();
+    refreshCards();
   }
 
   function closeQuest() {
@@ -332,10 +243,9 @@
 
   /* ---------- init ---------- */
   function init() {
-    buildMap();
     decorateCards();
     buildDrawer();
-    G.onChange(function () { refreshMap(); refreshCards(); });
+    G.onChange(function () { refreshCards(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

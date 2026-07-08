@@ -20,16 +20,9 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   const G = window.SQGame;
   check('SQGame present with 8 realms', !!G && G.REALMS.length === 8, G ? G.REALMS.map(r=>r.id).join(',') : 'none');
 
-  // world map rendered
-  const nodes = [...document.querySelectorAll('.map-node')];
-  check('World map renders 8 realm nodes', nodes.length === 8, nodes.length + ' nodes');
-
-  // node canvases painted
-  const painted = nodes.filter(n => {
-    const cv = n.querySelector('canvas');
-    try { return [...cv.getContext('2d').getImageData(0,0,8,8).data].some(v=>v>0); } catch(e){ return false; }
-  });
-  check('All node biome canvases painted', painted.length === 8, painted.length + '/8');
+  // the duplicate world-map grid must be gone; realm cards are the single surface
+  check('Duplicate world-map grid removed', document.querySelectorAll('.map-node, .worldmap').length === 0);
+  check('Realm cards remain the single realm surface', document.querySelectorAll('.card[data-realm]').length === 8);
 
   // initial unlock gating: first realm of each section open, others locked
   const s0 = G.getState();
@@ -39,9 +32,11 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
     'craft.unlocked=' + s0.realms.craft.unlocked);
   check('Fresh world rank is Lv 8 (all realms Lv 1)', s0.totalLevel === 8, 'Lv ' + s0.totalLevel);
 
-  // locked node is disabled + dimmed
-  const craftNode = nodes.find(n => n.getAttribute('data-realm') === 'craft');
-  check('Locked node is disabled with lock class', craftNode.disabled && craftNode.classList.contains('is-locked'));
+  // locked realm reflected on its card
+  const craftCard = document.querySelector('.card[data-realm="craft"]');
+  const craftBtn = craftCard.querySelector('.btn-quest');
+  check('Locked realm card: quest button disabled with lock label',
+    craftCard.classList.contains('realm-locked') && craftBtn.disabled && /Locked/.test(craftBtn.textContent));
 
   // XP mechanics: a perfect quest awards base+accuracy+bonus
   const r1 = G.completeQuest('info', 5, 5);
@@ -55,9 +50,10 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   const sCraft = G.realmState('craft');
   check('Reaching Lv 2 unlocks the next R&W realm (craft)', sCraft.unlocked === true);
 
-  // unlock reflected in DOM after refresh
+  // unlock reflected on the card after refresh
   await new Promise(r => setTimeout(r, 50));
-  check('Unlocked node no longer disabled in map', !craftNode.disabled && !craftNode.classList.contains('is-locked'));
+  check('Unlocked realm card: quest button enabled',
+    !craftBtn.disabled && !craftCard.classList.contains('realm-locked'));
 
   // card overlays present + reflect progress
   const infoCard = document.querySelector('.card[data-realm="info"]');
@@ -70,8 +66,8 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   const cleared = G.realmState('info');
   check('info clears at max level (Lv 5)', cleared.cleared && cleared.level === 5, 'Lv ' + cleared.level + ' cleared=' + cleared.cleared);
   await new Promise(r => setTimeout(r, 50));
-  const infoNode = nodes.find(n => n.getAttribute('data-realm') === 'info');
-  check('Cleared node shows banner flag class', infoNode.classList.contains('is-cleared'));
+  check('Cleared realm card gains cleared styling',
+    document.querySelector('.card[data-realm="info"]').classList.contains('realm-cleared'));
 
   // persistence: progress went through SQAuth (demo localStorage)
   const prog = window.SQAuth.getProgress();
