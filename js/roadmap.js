@@ -145,6 +145,17 @@
     });
   }
 
+  // who's playing
+  if (window.SQAuth) {
+    window.SQAuth.onChange(function (st) {
+      var line = document.getElementById('mappage-player');
+      if (!line) return;
+      var name = st.user ? ((st.profile && st.profile.hero_name) || 'Hero') : null;
+      line.hidden = !name;
+      if (name) document.getElementById('mappage-player-name').textContent = name;
+    });
+  }
+
   layout();
   refresh();
   window.addEventListener('resize', function () { layout(); });

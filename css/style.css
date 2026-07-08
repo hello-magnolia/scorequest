@@ -773,3 +773,7 @@ a { color: inherit; }
 }
 
 .world-map-link { text-align: center; margin-top: 44px; }
+
+.mappage-player { margin-top: 6px; color: var(--dusk); font-size: 1.05rem; }
+.mappage-player span { color: var(--gold); }
+.auth-guest { margin-top: 12px; }

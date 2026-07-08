@@ -67,6 +67,25 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   await new Promise(r => setTimeout(r, 60));
   check('Sign out restores Log in button', !!document.querySelector('.nav-cta .btn-login') && window.SQAuth.getUser()===null);
 
+  /* login flows enter the world map */
+  check('Demo hero creation routes the player to the world map', window.__SQ_LAST_REDIRECT === 'map.html');
+
+  // guest flow: reopen the modal and enter as guest
+  window.__SQ_LAST_REDIRECT = null;
+  document.querySelector('.nav-cta .btn-login').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 40));
+  const guestBtn = document.querySelector('.auth-guest');
+  check('"Explore as guest" button present in the modal', !!guestBtn && /guest/i.test(guestBtn.textContent));
+  guestBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 80));
+  check('Guest click logs in instantly and routes to the map',
+    !!window.SQAuth.getUser() && window.__SQ_LAST_REDIRECT === 'map.html',
+    (window.SQAuth.getUser() || {}).email || 'no user');
+  const badge2 = document.querySelector('.nav-cta .hero-badge');
+  check('Nav greets the guest hero', !!badge2 && /Guest/.test(badge2.textContent));
+  window.SQAuth.signOut();
+  await new Promise(r => setTimeout(r, 40));
+
   /* rendering guarantee: [hidden] must beat class display rules (the bug where
      overlays rendered on load despite hidden=true). The !important rule wins by
      CSS spec over any non-important display rule; assert it's in the stylesheet

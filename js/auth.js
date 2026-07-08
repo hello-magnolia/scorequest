@@ -109,9 +109,19 @@
   }
 
   /* ---------- auth actions ---------- */
+  function mapUrl() {
+    return window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'map.html';
+  }
+  function enterWorld() {
+    // after a successful login / hero creation, drop the player onto the map
+    window.__SQ_LAST_REDIRECT = 'map.html';
+    if (window.__SQ_NO_REDIRECT) return;                       // test hook
+    if (document.body.classList.contains('page-map')) return;  // already there
+    window.location.href = 'map.html';
+  }
   function redirectTarget() {
-    // return to the current page after the OAuth round-trip
-    return window.location.origin + window.location.pathname;
+    // OAuth round-trip lands the player on the world map
+    return mapUrl();
   }
 
   function signInWithGoogle() {
@@ -130,12 +140,20 @@
         password: pw,
         options: { data: { hero_name: heroName || email.split('@')[0] }, emailRedirectTo: redirectTarget() },
       })
-      .then(handleAuthResult);
+      .then(function (res) {
+        handleAuthResult(res);
+        if (res.data && res.data.session) enterWorld();
+        return res;
+      });
   }
 
   function signInWithEmail(email, pw) {
     if (!supabase) return demoLogin(email.split('@')[0]);
-    return supabase.auth.signInWithPassword({ email: email, password: pw }).then(handleAuthResult);
+    return supabase.auth.signInWithPassword({ email: email, password: pw }).then(function (res) {
+      handleAuthResult(res);
+      if (res.data && res.data.session) enterWorld();
+      return res;
+    });
   }
 
   function handleAuthResult(res) {
@@ -158,6 +176,7 @@
     loadDemoProgress();
     emit();
     closeModal();
+    enterWorld();
     return Promise.resolve({ demo: true });
   }
   function demoNotice(msg) {
@@ -200,6 +219,7 @@
         '<h2 id="auth-title" class="auth-title" data-mode="in">Choose your hero</h2>' +
         '<button class="btn btn-google btn-block auth-google">' +
           '<span class="g-mark" aria-hidden="true">G</span> Continue with Google</button>' +
+        '<button class="btn btn-outline btn-block auth-guest">Explore as guest (no account)</button>' +
         '<div class="auth-or"><span>or</span></div>' +
         '<label class="auth-field auth-heroname" hidden><span class="type-utility">Hero name</span>' +
           '<input type="text" autocomplete="nickname" maxlength="24" placeholder="e.g. Nightscholar" /></label>' +
@@ -261,6 +281,10 @@
 
     modal.querySelector('.auth-google').addEventListener('click', function () {
       signInWithGoogle().catch(fail);
+    });
+
+    modal.querySelector('.auth-guest').addEventListener('click', function () {
+      demoLogin('Guest');
     });
 
     submit.addEventListener('click', function () {
