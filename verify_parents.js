@@ -35,9 +35,10 @@ const OPTS = {
   const gameWords = sectionText.match(/\b(quests?|realms?|boss(es)?|XP|guild(master)?|hero(es)?|loot|streaks?|scroll)\b/i);
   check('No game vocabulary in parents section', !gameWords, gameWords ? 'found: ' + gameWords[0] : 'clean');
 
-  /* 4 — child-oriented naming: "Your child", never a surname or game name */
-  check('Report addresses "Your child" (no surname)',
-    document.getElementById('preport-name').textContent === 'Your child');
+  /* 4 — first-name-only student, never a surname or game name */
+  const shownName = document.getElementById('preport-name').textContent.trim();
+  check('Report shows first name only (Kevin, no surname)',
+    shownName === 'Kevin' && !/\s/.test(shownName), shownName);
   check('No in-game character names on the page', !/Nightscholar|Emily Chen/i.test(document.body.textContent));
 
   /* 4b — copy is short: statement + pillars trimmed */
@@ -46,18 +47,34 @@ const OPTS = {
   check('Statement blurb is short (<140 chars)', subLen < 140, subLen + ' chars');
   check('Each pillar is short (<110 chars)', pillarMax < 110, 'longest ' + pillarMax + ' chars');
 
-  /* 4c — parent-appealing intro above the demo */
-  const intro = document.querySelector('.preport-intro');
-  check('Intro title/blurb sits above the demo report',
-    !!intro && intro.nextElementSibling && intro.nextElementSibling.id === 'preport' &&
-    /week/i.test(intro.textContent));
+  /* 4c — left/right demo layout: pitch rail beside the report */
+  const row = document.querySelector('.parents-demo-row');
+  const pitch = row && row.querySelector('.preport-pitch');
+  check('Left/right layout: pitch rail sits beside the report',
+    !!row && !!pitch && pitch.nextElementSibling && pitch.nextElementSibling.id === 'preport');
+  check('Pitch speaks peace-of-mind to parents',
+    /Peace of mind/i.test(pitch.textContent) && /fingertips/i.test(pitch.textContent));
 
-  /* 4d — at-a-glance summary: red attention flags + one positive, in plain language */
-  const attn = document.querySelectorAll('.glance-item.flag-attn');
-  const good = document.querySelectorAll('.glance-item.flag-good');
-  check('At-a-glance shows red attention flags + a positive', attn.length === 2 && good.length === 1,
-    attn.length + ' red, ' + good.length + ' green');
-  check('Red flag names the weak domain in plain language', /Advanced Math \(61%\)/.test(attn[0].textContent));
+  /* 4d — personable narrative instead of alert boxes */
+  const narrative = document.querySelector('.glance-text');
+  check('Glance is a personable narrative ("This week, Kevin…")',
+    !!narrative && /^This week, Kevin/.test(narrative.textContent.trim()));
+  check('No red/green alert boxes remain',
+    document.querySelectorAll('.flag-attn, .flag-good').length === 0);
+
+  /* 4e — weak domain highlighted in red on the accuracy chart */
+  const weakFills = document.querySelectorAll('.dbar-fill.is-weak');
+  const weakRow = document.querySelector('.dbar-weak');
+  check('Exactly one weak domain rendered in red (Geometry & Trig, 54%)',
+    weakFills.length === 1 && !!weakRow && /Geometry/.test(weakRow.textContent) && /54%/.test(weakRow.textContent),
+    weakRow ? weakRow.textContent.trim().slice(0,50) : 'none');
+
+  /* 4f — trend line survives a state-change re-render (the formatting bug) */
+  window.SQGame.completeQuest('info', 5, 5); // triggers renderReport()
+  await new Promise(r => setTimeout(r, 80));
+  const line = document.querySelector('.trend-line');
+  check('Trend line stays drawn after report re-renders',
+    !!line && (line.classList.contains('trend-drawn') || line.style.strokeDashoffset === '0'));
 
   /* 5 — guardrail: measured scores allowed, projections/guarantees forbidden */
   const projection = sectionText.match(/guarantee|projected|predict|forecast|will\s+(score|gain|improve)|\+\s?\d+\s*(points?|pts)/i);
@@ -92,9 +109,9 @@ const OPTS = {
   check('中文 pill translates report labels', document.querySelector('[data-i18n="time"]').textContent === '练习时长',
     document.querySelector('[data-i18n="time"]').textContent);
   check('中文 pill translates domain names', /代数/.test(document.getElementById('domain-bars').textContent));
-  check('中文 pill translates "Your child" and glance flags',
-    document.getElementById('preport-name').textContent === '您的孩子' &&
-    /进阶数学/.test(document.querySelector('.glance-item.flag-attn').textContent));
+  check('中文 narrative keeps the name and names the weak domain',
+    /Kevin/.test(document.querySelector('.glance-text').textContent) &&
+    /几何与三角/.test(document.querySelector('.glance-text').textContent));
 
   /* 10 — Spanish */
   document.querySelector('.lang-pill[data-lang="es"]').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));

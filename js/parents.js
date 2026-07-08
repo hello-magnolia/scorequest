@@ -21,9 +21,7 @@
       child: 'Your child',
       week: 'This week',
       glance: 'This week at a glance',
-      flagWeak: 'Weakest domain: Advanced Math (61%). Practice is being directed there.',
-      flagMissed: 'One missed practice day (Wednesday).',
-      goodTrend: 'Practice exam scores rose 1050 \u2192 1230 since March.',
+      narrative: 'This week, {name} practiced on 6 of 7 days, completed 18 question sets, and finished a fourth full-length practice exam. Geometry & Trigonometry is the current weak spot, so daily sets are focusing there. Practice exam scores have climbed from 1050 to 1230 since March.',
       time: 'Practice time',
       sets: 'Question sets completed',
       days: 'Consecutive practice days',
@@ -49,9 +47,7 @@
       child: '您的孩子',
       week: '本周',
       glance: '本周概览',
-      flagWeak: '最薄弱领域：进阶数学（61%）。练习正集中安排在该领域。',
-      flagMissed: '本周有一天未练习（周三）。',
-      goodTrend: '模拟考试成绩自三月起从 1050 提升至 1230。',
+      narrative: '本周，{name} 共练习了 6 天，完成 18 组练习题，并完成了第四次全真模拟考试。目前较薄弱的领域是几何与三角，每日练习正集中于此。模拟考试成绩自三月以来已从 1050 提升至 1230。',
       time: '练习时长',
       sets: '完成练习组数',
       days: '连续练习天数',
@@ -77,9 +73,7 @@
       child: 'Su hijo/a',
       week: 'Esta semana',
       glance: 'Resumen de la semana',
-      flagWeak: 'Área más débil: Matemáticas avanzadas (61%). La práctica se está dirigiendo allí.',
-      flagMissed: 'Un día sin práctica (miércoles).',
-      goodTrend: 'Los exámenes de práctica subieron de 1050 a 1230 desde marzo.',
+      narrative: 'Esta semana, {name} practicó 6 de 7 días, completó 18 series de preguntas y terminó su cuarto examen de práctica completo. Geometría y trigonometría es el punto débil actual, así que las series diarias se concentran allí. Los exámenes de práctica han subido de 1050 a 1230 desde marzo.',
       time: 'Tiempo de práctica',
       sets: 'Series de preguntas completadas',
       days: 'Días consecutivos de práctica',
@@ -105,9 +99,7 @@
       child: 'Votre enfant',
       week: 'Cette semaine',
       glance: 'La semaine en un coup d\u2019\u0153il',
-      flagWeak: 'Domaine le plus faible : mathématiques avancées (61 %). La pratique y est concentrée.',
-      flagMissed: 'Un jour sans pratique (mercredi).',
-      goodTrend: 'Les examens blancs sont passés de 1050 à 1230 depuis mars.',
+      narrative: 'Cette semaine, {name} a pratiqué 6 jours sur 7, terminé 18 séries de questions et passé un quatrième examen blanc complet. La géométrie et la trigonométrie restent le point faible, donc les séries quotidiennes s\u2019y concentrent. Les résultats des examens blancs sont passés de 1050 à 1230 depuis mars.',
       time: 'Temps de pratique',
       sets: 'Séries de questions terminées',
       days: 'Jours de pratique consécutifs',
@@ -137,7 +129,7 @@
 
   /* ---------- demo data: measured, dated, plausible ---------- */
   var DEMO = {
-    name: null, // demo shows the translated 'Your child' label
+    name: 'Kevin',
     minutes: [34, 41, 0, 52, 38, 27, 30],                       // Mon..Sun
     sets: 18, days: 12,
     exams: [                                                     // scored practice exams
@@ -147,7 +139,7 @@
       { date: '5/16', score: 1230 },
     ],
     accuracy: { info: 82, craft: 74, expression: 79, conventions: 88,
-                algebra: 76, advmath: 61, data: 71, geometry: 68 },
+                algebra: 76, advmath: 68, data: 71, geometry: 54 },
   };
 
   /* ---------- i18n ---------- */
@@ -157,7 +149,7 @@
     function swap() {
       root.parentElement.querySelectorAll('[data-i18n]').forEach(function (el) {
         var key = el.getAttribute('data-i18n');
-        if (t[key]) el.textContent = t[key];
+        if (t[key]) el.textContent = t[key].replace('{name}', currentName);
       });
       var w = document.getElementById('lang-cycle-word');
       if (w) w.textContent = t.word;
@@ -224,7 +216,7 @@
   /* ---------- charts ---------- */
   function renderTrend(exams) {
     var host = document.getElementById('trend-chart');
-    var W = 320, H = 130, padL = 40, padR = 16, padT = 14, padB = 26;
+    var W = 320, H = 134, padL = 40, padR = 22, padT = 18, padB = 26;
     var scores = exams.map(function (e) { return e.score; });
     var min = Math.min.apply(null, scores), max = Math.max.apply(null, scores);
     var lo = Math.floor((min - 40) / 50) * 50, hi = Math.ceil((max + 40) / 50) * 50;
@@ -250,16 +242,22 @@
       '<polyline points="' + pts + '" class="trend-line" pathLength="100"/>' +
       dots +
       '</svg>';
+    // A re-render after the section was revealed must not leave the line in its
+    // pre-animation (invisible) state — re-apply the drawn state immediately.
+    if (revealed || reduceMotion) {
+      var line = host.querySelector('.trend-line');
+      line.style.transition = 'none';
+      line.classList.add('trend-drawn');
+      line.style.strokeDashoffset = '0';
+    }
   }
+
+  var currentName = 'Kevin';
 
   function renderReport() {
     var d = reportData();
-    var nameEl = document.getElementById('preport-name');
-    if (d.live && d.name) {
-      var firstName = String(d.name).trim().split(/\s+/)[0]; // first name only, never a surname
-      nameEl.removeAttribute('data-i18n');
-      nameEl.textContent = firstName;
-    }
+    currentName = String(d.name || 'Kevin').trim().split(/\s+/)[0]; // first name only, never a surname
+    document.getElementById('preport-name').textContent = currentName;
     var total = d.minutes.reduce(function (a, b) { return a + b; }, 0);
     document.getElementById('pstat-time').textContent = fmtMinutes(total);
     document.getElementById('pstat-sets').textContent = String(d.sets);
@@ -288,15 +286,18 @@
     barsHost.innerHTML = order.map(function (id) {
       var pct = d.accuracy[id];
       var section = G ? G.byId(id).section : 'rw';
-      return '<div class="dbar">' +
+      var weak = pct < 60;
+      return '<div class="dbar' + (weak ? ' dbar-weak' : '') + '">' +
         '<span class="dbar-name" data-domain="' + id + '">' + t.domains[id] + '</span>' +
-        '<span class="dbar-track"><span class="dbar-fill" data-section="' + section + '" data-w="' + pct + '"></span></span>' +
-        '<span class="dbar-pct">' + pct + '%</span></div>';
+        '<span class="dbar-track"><span class="dbar-fill' + (weak ? ' is-weak' : '') + '" data-section="' + section + '" data-w="' + pct + '"></span></span>' +
+        '<span class="dbar-pct' + (weak ? ' is-weak' : '') + '">' + pct + '%</span></div>';
     }).join('');
   }
 
   /* ---------- reveal animations ---------- */
+  var revealed = false;
   function animateBars() {
+    revealed = true;
     root.querySelectorAll('.abar').forEach(function (b) {
       b.style.height = Math.max(6, parseInt(b.getAttribute('data-h'), 10)) + '%';
     });
