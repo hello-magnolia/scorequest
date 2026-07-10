@@ -31,9 +31,8 @@ const OPTS = {
   check('Intro cinematic opens on first visit (before the builder)',
     !!intro && intro.hidden === false &&
     (document.querySelector('.builder-overlay') === null || document.querySelector('.builder-overlay').hidden));
-  let introPainted = false;
-  try { introPainted = [...intro.querySelector('.intro-canvas').getContext('2d').getImageData(0,0,10,10).data].some(v=>v>0); } catch(e){}
-  check('Intro scene painted with whimsical caption + dots', introPainted &&
+  check('Intro shows whimsical caption + dots (no low-res canvas layer)',
+    intro.querySelector('.intro-canvas') === null &&
     /past midnight/.test(intro.querySelector('.intro-text').textContent) &&
     /Anything but question seven/.test(intro.querySelector('.intro-text').textContent) &&
     intro.querySelectorAll('.intro-dot').length === 5);

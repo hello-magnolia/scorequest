@@ -1015,8 +1015,8 @@ a { color: inherit; }
 }
 @media (prefers-reduced-motion: reduce) { .intro-overlay { cursor: default; } }
 
-.intro-media { position: absolute; inset: 0; }
-.intro-media canvas, .intro-media img, .intro-media video {
+.intro-media { position: absolute; inset: 0; background: var(--ink); }
+.intro-media img, .intro-media video {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; image-rendering: pixelated;
 }

@@ -52,7 +52,7 @@ vc.on('jsdomError', () => {}); // ignore resource-loading noise, we assert behav
 
   /* 1 — page & script bootstrapping */
   check('Page loads with title', /ScoreQuest/.test(document.title));
-  check('PixelWorld engine attached', !!window.PixelWorld && Object.keys(window.PixelWorld.scenes).length === 13,
+  check('PixelWorld engine attached', !!window.PixelWorld && Object.keys(window.PixelWorld.scenes).length === 10,
     Object.keys(window.PixelWorld?.scenes || {}).join(','));
 
   /* 2 — hero canvas actually painted pixels */
