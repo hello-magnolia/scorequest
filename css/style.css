@@ -1109,3 +1109,86 @@ a { color: inherit; }
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3));
 }
 .mango-sprite canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+
+/* ============================================================
+   Checkout (parent-facing: trial-first, Stripe-secured)
+   ============================================================ */
+.checkout { max-width: 1060px; margin: 0 auto; padding: 120px 24px 80px; }
+.co-head { text-align: center; margin-bottom: 42px; }
+.co-title { font-size: clamp(2rem, 4.5vw, 3rem); }
+.co-sub { color: var(--parchment-dim); max-width: 580px; margin: 12px auto 0; }
+.co-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 34px; align-items: start; }
+.co-label { color: var(--parchment-dim); letter-spacing: 0.08em; margin: 0 0 10px; }
+.co-plans { display: grid; gap: 12px; margin-bottom: 26px; }
+.co-plan { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: rgba(22, 17, 43, 0.6); border: 2px solid var(--line); color: var(--parchment);
+  padding: 16px 18px; cursor: pointer; font: inherit; text-align: left; }
+.co-plan:hover { border-color: var(--dusk); }
+.co-plan.is-selected { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.co-plan-badge { position: absolute; top: -10px; left: 14px; background: var(--gold); color: var(--ink); padding: 2px 8px; font-size: 0.85rem; }
+.co-plan-name { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.co-plan-price { color: var(--gold); font-size: 1.2rem; }
+.co-billing { display: inline-flex; border: 2px solid var(--line); margin-bottom: 26px; }
+.co-bill { font: inherit; background: none; border: none; color: var(--parchment-dim); padding: 10px 18px; cursor: pointer; }
+.co-bill.is-selected { background: var(--gold); color: var(--ink); font-weight: 700; }
+.co-faq details { border-top: 1px solid var(--line); padding: 12px 2px; }
+.co-faq summary { cursor: pointer; color: var(--parchment); font-weight: 600; }
+.co-faq p { color: var(--parchment-dim); margin: 10px 0 2px; }
+.co-summary { background: rgba(22, 17, 43, 0.85); border: 2px solid var(--line); padding: 26px 26px 22px; position: sticky; top: 96px; }
+.co-plan-title { font-size: 1.7rem; margin: 2px 0 4px; }
+.co-tagline { color: var(--parchment-dim); margin: 0 0 14px; }
+.co-bigprice { font-size: 2rem; color: var(--gold); margin: 0; }
+.co-price-note { color: var(--parchment-dim); margin: 2px 0 16px; font-size: 0.95rem; }
+.co-features { margin: 0 0 18px; }
+.co-due { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; font-weight: 700; }
+.co-due-amt { color: var(--gold-bright); font-size: 1.4rem; }
+.co-after { color: var(--parchment-dim); font-size: 0.95rem; margin: 4px 0 18px; }
+.co-cta.is-demo { opacity: 0.65; cursor: not-allowed; }
+.co-demo-note { color: var(--parchment-dim); font-size: 0.92rem; margin: 10px 0 0; }
+.co-demo-note code { color: var(--gold); }
+.co-trust { color: var(--parchment-dim); font-size: 0.95rem; margin: 14px 0 0; text-align: center; }
+@media (max-width: 860px) { .co-grid { grid-template-columns: 1fr; } .co-summary { position: static; } }
+
+/* ============================================================
+   Parents page + success page
+   ============================================================ */
+.parentspage { max-width: 1060px; margin: 0 auto; padding: 120px 24px 80px; }
+.pp-hero { text-align: center; margin-bottom: 64px; }
+.pp-title { font-size: clamp(2.2rem, 5vw, 3.4rem); }
+.pp-sub { color: var(--parchment-dim); max-width: 640px; margin: 14px auto 0; font-size: 1.1rem; }
+.pp-section { margin-bottom: 84px; }
+.pp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
+.pp-card { background: rgba(22, 17, 43, 0.6); border: 1px solid var(--line); padding: 20px; }
+.pp-card-kicker { color: var(--gold); letter-spacing: 0.08em; margin: 0 0 8px; font-size: 0.9rem; }
+.pp-card h3 { font-size: 1.1rem; margin: 0 0 8px; }
+.pp-card p { color: var(--parchment-dim); margin: 0; }
+.pp-sample { margin-top: 22px; text-align: center; }
+.pp-sample a { color: var(--gold); }
+.pp-live { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 34px; }
+.pp-live-card { border: 1px solid var(--line); background: rgba(22, 17, 43, 0.6); padding: 22px; text-align: center; }
+.pp-live-label { color: var(--parchment-dim); margin: 0 0 8px; }
+.pp-live-value { font-family: var(--font-display); font-weight: 700; margin: 0; font-size: 1.15rem; }
+.pp-note { text-align: center; color: var(--parchment-dim); margin-top: 24px; }
+.pp-goal { max-width: 640px; margin: 34px auto 0; display: grid; gap: 22px; }
+.pp-goal-row { display: flex; gap: 16px; align-items: flex-start; }
+.pp-goal-dot { width: 14px; height: 14px; margin-top: 6px; flex: none; }
+.pp-goal-dot.is-good { background: #7FE3C0; }
+.pp-goal-dot.is-watch { background: var(--gold); }
+.pp-goal-dot.is-alert { background: #E2695A; }
+.pp-goal h3 { margin: 0 0 6px; font-size: 1.1rem; }
+.pp-goal p { margin: 0; color: var(--parchment-dim); }
+.pp-honesty { text-align: center; color: var(--parchment); margin-top: 34px; font-weight: 600; }
+.pp-cta { text-align: center; border-top: 1px solid var(--line); padding-top: 56px; }
+.pp-cta-title { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-bottom: 24px; }
+.pp-cta-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.pitch-more a { color: var(--gold); }
+@media (max-width: 860px) { .pp-cards, .pp-live { grid-template-columns: 1fr; } }
+
+.success { max-width: 760px; margin: 0 auto; padding: 130px 24px 80px; }
+.suc-title { font-size: clamp(2rem, 5vw, 3rem); }
+.suc-sub { color: var(--parchment-dim); margin-top: 10px; }
+.suc-steps { list-style: none; counter-reset: suc; margin: 44px 0 0; padding: 0; display: grid; gap: 30px; }
+.suc-steps li { counter-increment: suc; border: 1px solid var(--line); background: rgba(22, 17, 43, 0.6); padding: 24px 24px 22px; position: relative; }
+.suc-steps li::before { content: counter(suc); position: absolute; top: -14px; left: 18px; background: var(--gold); color: var(--ink); font-family: var(--font-utility); padding: 2px 10px; }
+.suc-steps h3 { margin: 0 0 8px; }
+.suc-steps p { color: var(--parchment-dim); margin: 0 0 14px; }

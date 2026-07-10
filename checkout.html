@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkout, ScoreQuest</title>
+<meta name="description" content="Start your 7-day free trial. Payments are handled securely by Stripe." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=b20260710x" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
+</head>
+<body class="page-checkout">
+
+<header class="nav is-scrolled" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="ScoreQuest home">
+      <span class="brand-coin" aria-hidden="true"></span>
+      <span class="brand-name">ScoreQuest</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html#world">Realms</a>
+      <a href="parents.html">Parents</a>
+      <a href="index.html#pricing">Pricing</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="index.html#pricing">Log in</a>
+    </div>
+  </div>
+</header>
+
+<main class="checkout" id="checkout">
+  <div class="co-head">
+    <p class="eyebrow type-utility">Secure checkout</p>
+    <h1 class="co-title">Start the habit today</h1>
+    <p class="co-sub">Every plan begins with a 7-day free trial. Nothing is charged until it ends, and you can cancel in one click any time before.</p>
+  </div>
+
+  <div class="co-grid">
+    <!-- plan + billing pickers -->
+    <section class="co-pick" aria-label="Choose your plan">
+      <p class="co-label type-utility">Plan</p>
+      <div class="co-plans">
+        <button class="co-plan" type="button" data-plan="adventurer">
+          <span class="co-plan-name">Adventurer</span>
+          <span class="co-plan-price type-utility">$49/mo</span>
+        </button>
+        <button class="co-plan" type="button" data-plan="guildmaster">
+          <span class="co-plan-badge type-utility">Best value</span>
+          <span class="co-plan-name">Guildmaster</span>
+          <span class="co-plan-price type-utility">$120/mo</span>
+        </button>
+        <button class="co-plan" type="button" data-plan="champion">
+          <span class="co-plan-name">Champion</span>
+          <span class="co-plan-price type-utility">$360/mo</span>
+        </button>
+      </div>
+
+      <p class="co-label type-utility">Billing</p>
+      <div class="co-billing" role="group" aria-label="Billing period">
+        <button class="co-bill" type="button" data-billing="monthly">Monthly</button>
+        <button class="co-bill" type="button" data-billing="annual">Annual &middot; save 20%</button>
+      </div>
+
+      <div class="co-faq">
+        <details>
+          <summary>When am I charged?</summary>
+          <p>Never during the trial. Your card is saved by Stripe when you start, and the first charge happens only after the full 7 days. Cancel before then and you pay nothing.</p>
+        </details>
+        <details>
+          <summary>Can I switch plans later?</summary>
+          <p>Yes. Upgrades apply immediately with prorated billing; downgrades apply at your next renewal. Just reply to any receipt email or use the account page.</p>
+        </details>
+        <details>
+          <summary>Is my card information safe?</summary>
+          <p>Payment happens entirely on Stripe, the processor used by millions of businesses. Your card number is never seen by, or stored on, ScoreQuest.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- order summary -->
+    <section class="co-summary" aria-label="Order summary">
+      <p class="co-label type-utility">Your plan</p>
+      <h2 class="co-plan-title" id="co-name">Guildmaster</h2>
+      <p class="co-tagline" id="co-tagline"></p>
+      <p class="co-bigprice"><span class="type-utility" id="co-price">$120/mo</span></p>
+      <p class="co-price-note" id="co-price-note"></p>
+      <ul class="co-features plan-list" id="co-features"></ul>
+      <div class="co-due">
+        <span>Due today</span>
+        <span class="co-due-amt type-utility" id="co-due">$0.00</span>
+      </div>
+      <p class="co-after" id="co-after"></p>
+      <a class="btn btn-gold btn-block co-cta" id="co-cta" href="#">Start your free trial</a>
+      <p class="co-demo-note" id="co-demo-note" hidden>Demo build: live payments are not connected yet. When the Stripe Payment Links are pasted into <code>js/config.js</code>, this button opens Stripe&rsquo;s secure checkout.</p>
+      <p class="co-trust type-utility">Payments secured by Stripe &middot; Cancel anytime during trial &middot; No charge for 7 days</p>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="brand-name brand-name-sm">ScoreQuest</span>
+    <p class="footer-copy">A concept prototype. Not affiliated with the College Board or ACT, Inc.</p>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="index.html#world">World</a><a href="parents.html">Parents</a><a href="index.html#pricing">Pricing</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js?v=b20260710x"></script>
+<script src="js/auth.js?v=b20260710x"></script>
+<script src="js/sfx.js?v=b20260710x"></script>
+<script src="js/checkout.js?v=b20260710x"></script>
+<script src="js/main.js?v=b20260710x"></script>
+</body>
+</html>
