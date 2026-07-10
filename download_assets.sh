@@ -19,4 +19,10 @@ curl -fsSL "$BASE/hf_20260707_165803_fc6057f0-685d-41e9-867c-ed1d6a29bc8c.png" -
 curl -fsSL "$BASE/hf_20260707_165813_9e52c7c4-1383-4165-aac2-f41833390df3.png" -o assets/realms/data.png
 curl -fsSL "$BASE/hf_20260707_165823_2af1d8d8-4219-46aa-b0c1-9a34f1f3a217.png" -o assets/realms/geometry.png
 
+echo "Intro cinematic stills (Nano Banana 2, 16:9 2k)..."
+mkdir -p assets/intro
+curl -fsSL "$BASE/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png" -o assets/intro/bedroom.png
+curl -fsSL "$BASE/hf_20260710_022725_20fbc722-18c9-46d9-8c01-5b1feaa77e0f.png" -o assets/intro/summons.png
+curl -fsSL "$BASE/hf_20260710_022743_7503496a-a6fa-41cc-9a12-670db63ec102.png" -o assets/intro/portal.png
+
 echo "Done. The page automatically prefers these local files over the CDN."

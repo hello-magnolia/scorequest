@@ -51,7 +51,90 @@
 
   var PENTA = [523.25, 587.33, 659.25, 783.99, 880.0]; // C5 pentatonic
 
+  /* ============================================================
+     BACKGROUND MUSIC — an original composition, written for this
+     game: a gentle 3/4 lullaby-waltz in A minor (76 bpm), soft
+     detuned-triangle arpeggios over a warm bass, with a sparse
+     singing melody. Nostalgic and cozy by design; entirely our own.
+     ============================================================ */
+  var MKEY = 'sq_music';
+  function midi(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+  var BARS = [
+    { chord: [69, 72, 76], bass: 45, mel: 76 },   // Am
+    { chord: [65, 69, 72], bass: 41, mel: 72 },   // F
+    { chord: [72, 76, 79], bass: 48, mel: null }, // C
+    { chord: [67, 71, 74], bass: 43, mel: 74 },   // G
+    { chord: [69, 72, 76], bass: 45, mel: 77 },   // Am
+    { chord: [65, 69, 72], bass: 41, mel: 76 },   // F
+    { chord: [62, 65, 69], bass: 38, mel: 69 },   // Dm
+    { chord: [64, 68, 71], bass: 40, mel: 71 },   // E
+  ];
+  var ARP = [0, 1, 2, 1, 2, 1];                   // eighth-note pattern per bar
+  var STEP = (60 / 76) / 2;                       // eighth at 76 bpm
+  var music = { on: null, timer: null, step: 0, next: 0 };
+
+  function musicEnabled() {
+    try { return window.localStorage.getItem(MKEY) !== 'off'; } catch (e) { return true; }
+  }
+  function mvoice(freq, when, dur, peak, type, detune) {
+    var a = ac(); if (!a) return;
+    [0, detune || 0].forEach(function (dt, layer) {
+      var osc = a.createOscillator(), g = a.createGain();
+      osc.type = type || 'triangle';
+      osc.frequency.setValueAtTime(freq * (1 + dt), when);
+      var p = peak * (layer ? 0.5 : 1);
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(p, when + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0006, when + dur);
+      osc.connect(g).connect(a.destination);
+      osc.start(when); osc.stop(when + dur + 0.05);
+      if (!(detune)) return;
+    });
+  }
+  function schedule() {
+    var a = ac(); if (!a || !music.on) return;
+    while (music.next < a.currentTime + 0.18) {
+      var bar = BARS[Math.floor(music.step / 6) % BARS.length];
+      var sub = music.step % 6;
+      var t = music.next;
+      mvoice(midi(bar.chord[ARP[sub]]), t, 0.5, 0.028, 'triangle', 0.0022); // arp
+      if (sub === 0) {
+        mvoice(midi(bar.bass), t, STEP * 6, 0.045, 'sine');                 // bass
+        if (bar.mel) mvoice(midi(bar.mel), t + STEP, STEP * 4.6, 0.03, 'sine', 0.0016); // melody
+      }
+      music.step++;
+      music.next += STEP;
+    }
+  }
+  function startMusic() {
+    var a = ac(); if (!a || music.on || !musicEnabled()) return;
+    music.on = true;
+    music.step = 0;
+    music.next = a.currentTime + 0.1;
+    music.timer = setInterval(schedule, 60);
+  }
+  function stopMusic() {
+    music.on = false;
+    if (music.timer) { clearInterval(music.timer); music.timer = null; }
+  }
+
+  window.SQMusic = {
+    enabled: musicEnabled,
+    playing: function () { return !!music.on; },
+    ensure: function () { if (musicEnabled() && !music.on) startMusic(); },
+    toggle: function () {
+      var on = !musicEnabled();
+      try { window.localStorage.setItem(MKEY, on ? 'on' : 'off'); } catch (e) {}
+      if (on) startMusic(); else stopMusic();
+      return on;
+    },
+  };
+
   window.SQSfx = {
+    /* soft press for anything clickable */
+    click: function () {
+      voice(1500, { type: 'sine', dur: 0.05, peak: 0.045, glideTo: 950 });
+    },
     enabled: enabled,
     toggle: function () { setEnabled(!enabled()); return enabled(); },
     tap: function (i) {
@@ -75,4 +158,13 @@
       });
     },
   };
+
+  /* every clickable thing gives a soft press; the first gesture also starts
+     the background music on the map (autoplay policy requires a gesture) */
+  document.addEventListener('click', function (e) {
+    var hit = e.target.closest && e.target.closest(
+      'button, .btn, .rnode, .quest-answer, .swatch, .lang-pill, .pdeck-dot, .pill, .pdeck-dot, .intro-overlay');
+    if (hit) window.SQSfx.click();
+    if (document.body.classList.contains('page-map')) window.SQMusic.ensure();
+  }, true);
 })();

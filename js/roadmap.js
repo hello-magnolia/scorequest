@@ -330,6 +330,13 @@
     soundBtn.addEventListener('click', function () { window.SQSfx.toggle(); soundLabel(); if (window.SQSfx.enabled()) window.SQSfx.tap(2); });
   }
 
+  var musicBtn = document.getElementById('music-toggle');
+  if (musicBtn && window.SQMusic) {
+    function musicLabel() { musicBtn.textContent = 'Music: ' + (window.SQMusic.enabled() ? 'on' : 'off'); }
+    musicLabel();
+    musicBtn.addEventListener('click', function () { window.SQMusic.toggle(); musicLabel(); });
+  }
+
   layout();
   refresh();
   buildSprite();

@@ -19,12 +19,18 @@
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var KEY = 'sq_intro_seen';
 
+  var HERO_VIDEO = ['assets/hero.mp4', '__CDN__/hf_20260707_160337_73e7a3e7-612c-49f7-ab6a-4f7920599476.mp4'];
   var SCENES = [
-    { scene: 'bedroom', text: '11:52 PM. Another practice test, another headache. Test day is 63 days away, and none of it is sticking.' },
-    { scene: 'summons', text: 'Then, under the flashcards, something glows. A summons, addressed to you.' },
-    { scene: 'portal',  text: 'The room dissolves into starlight. Somewhere far away, eight realms are waiting.' },
-    { scene: 'hero',    text: 'Each realm holds one domain of the exam. Clear its quests, and its power becomes yours.' },
-    { scene: 'hero',    text: 'Heroes who walk the whole path return changed. Your quest begins now.', cta: 'Create your hero' },
+    { scene: 'bedroom', video: ['assets/intro/bedroom.mp4', '__VID_BEDROOM__'], image: ['assets/intro/bedroom.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
+      text: 'Somewhere past midnight, the practice test sits open and untouched. You have reorganized your desk twice and studied the ceiling extensively. Anything but question seven.' },
+    { scene: 'summons', video: ['assets/intro/summons.mp4', '__VID_SUMMONS__'], image: ['assets/intro/summons.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022725_20fbc722-18c9-46d9-8c01-5b1feaa77e0f.png'],
+      text: 'Then, beneath the flashcards, a warm light stirs. A letter that was not there before, sealed in gold, humming your name.' },
+    { scene: 'portal', video: ['assets/intro/portal.mp4', '__VID_PORTAL__'], image: ['assets/intro/portal.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022743_7503496a-a6fa-41cc-9a12-670db63ec102.png'],
+      text: 'The room unravels into starlight, page by page, until only the glow remains. Far below, eight realms turn beneath a patient moon.' },
+    { scene: 'hero', video: HERO_VIDEO,
+      text: 'Duskmeadow, where the lantern light knows every path, and each realm guards one art of the exam. Master a realm, and its power walks with you.' },
+    { scene: 'hero', video: HERO_VIDEO,
+      text: 'The old scholars say those who walk the whole path come home changed. The path is waiting. So is your hero.', cta: 'Create your hero' },
   ];
 
   var overlay = null, canvasCtx = null, idx = 0;
@@ -41,7 +47,11 @@
     overlay.className = 'intro-overlay';
     overlay.hidden = true;
     overlay.innerHTML =
-      '<canvas class="intro-canvas" width="480" height="270" aria-hidden="true"></canvas>' +
+      '<div class="intro-media" aria-hidden="true">' +
+        '<canvas class="intro-canvas" width="480" height="270"></canvas>' +
+        '<img class="intro-img" hidden alt="" />' +
+        '<video class="intro-video" hidden muted loop playsinline autoplay></video>' +
+      '</div>' +
       '<div class="intro-vignette" aria-hidden="true"></div>' +
       '<button class="intro-skip type-utility">Skip intro</button>' +
       '<div class="intro-caption pixel-frame">' +
@@ -78,8 +88,28 @@
     })(performance.now());
   }
 
+  function setMedia(step) {
+    var img = overlay.querySelector('.intro-img');
+    var vid = overlay.querySelector('.intro-video');
+    img.hidden = true; vid.hidden = true; vid.pause();
+    function chain(el, sources, showEvent) {
+      var srcs = (sources || []).filter(function (u) { return u && u.indexOf('__') !== 0; })
+        .map(function (u) { return u.replace('__CDN__', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01'); });
+      if (!srcs.length) return false;
+      var i = 0;
+      el.onerror = function () { if (i < srcs.length) el.src = srcs[i++]; else el.hidden = true; };
+      el['on' + showEvent] = function () { el.hidden = false; };
+      el.src = srcs[i++];
+      return true;
+    }
+    // prefer the animated Higgsfield render; fall back to the still, then canvas
+    if (!chain(vid, step.video, 'canplay')) chain(img, step.image, 'load');
+    else if (step.image) chain(img, step.image, 'load'); // still shows while/if video loads
+  }
+
   function render() {
     var step = SCENES[idx];
+    setMedia(step);
     overlay.querySelector('.intro-text').textContent = step.text;
     var next = overlay.querySelector('.intro-next');
     next.textContent = step.cta || 'Continue';

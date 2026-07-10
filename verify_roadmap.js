@@ -33,9 +33,13 @@ const OPTS = {
     (document.querySelector('.builder-overlay') === null || document.querySelector('.builder-overlay').hidden));
   let introPainted = false;
   try { introPainted = [...intro.querySelector('.intro-canvas').getContext('2d').getImageData(0,0,10,10).data].some(v=>v>0); } catch(e){}
-  check('Intro scene painted with caption + dots', introPainted &&
-    /11:52 PM/.test(intro.querySelector('.intro-text').textContent) &&
+  check('Intro scene painted with whimsical caption + dots', introPainted &&
+    /past midnight/.test(intro.querySelector('.intro-text').textContent) &&
+    /Anything but question seven/.test(intro.querySelector('.intro-text').textContent) &&
     intro.querySelectorAll('.intro-dot').length === 5);
+  check('Intro media chain present (video + generated still + canvas)',
+    !!intro.querySelector('.intro-video') && !!intro.querySelector('.intro-img') &&
+    /cloudfront|assets\/intro/.test(intro.querySelector('.intro-img').src || 'x'));
   const cap0 = intro.querySelector('.intro-text').textContent;
   intro.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // click the scene itself
   await new Promise(r => setTimeout(r, 40));
@@ -54,7 +58,11 @@ const OPTS = {
   let sfxSafe = true;
   try { window.SQSfx.tap(1); window.SQSfx.correct(); window.SQSfx.toggle(); window.SQSfx.toggle(); } catch (e) { sfxSafe = false; }
   check('Sound module loaded and safe in any environment', !!window.SQSfx && sfxSafe);
-  check('Sound toggle button present on the map', !!document.getElementById('sound-toggle'));
+  let musicSafe = true;
+  try { window.SQMusic.ensure(); window.SQMusic.toggle(); window.SQMusic.toggle(); window.SQSfx.click(); } catch (e) { musicSafe = false; }
+  check('Original background music engine loaded and safe', !!window.SQMusic && musicSafe);
+  check('Sound + music toggles present on the map',
+    !!document.getElementById('sound-toggle') && !!document.getElementById('music-toggle'));
 
   /* 1b — character builder opens after the intro */
   const builder = document.querySelector('.builder-overlay');
