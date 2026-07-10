@@ -418,11 +418,74 @@
     musicBtn.addEventListener('click', function () { window.SQMusic.toggle(); musicLabel(); });
   }
 
+  /* ---------- Mango, waiting at the end of the path ---------- */
+  var mangoEl = null, mangoCtx = null;
+  var mango = { mode: 'sit', t0: 0, nextScratch: 0 };
+
+  function buildMango() {
+    if (!window.SQMango) return;
+    mangoEl = document.createElement('div');
+    mangoEl.className = 'mango-sprite';
+    mangoEl.setAttribute('aria-label', 'A small capybara, waiting');
+    mangoEl.innerHTML = '<canvas width="' + window.SQMango.w + '" height="' + window.SQMango.h + '"></canvas>';
+    mangoEl.style.width = (window.SQMango.w * 3) + 'px';
+    mangoEl.style.height = (window.SQMango.h * 3) + 'px';
+    host.appendChild(mangoEl);
+    mangoCtx = mangoEl.querySelector('canvas').getContext('2d');
+    window.SQMango.draw(mangoCtx, 0);
+    mango.nextScratch = performance.now() + 9000 + Math.random() * 6000;
+    window.__SQ_MANGO = mango;
+    placeMango();
+    mangoEl.addEventListener('click', function () {
+      if (mango.mode !== 'sit') return;
+      mango.mode = 'turn';
+      mango.t0 = performance.now();
+      if (window.SQSfx) window.SQSfx.uiTick();
+    });
+    if (!reduceMotion) requestAnimationFrame(mangoLoop);
+  }
+
+  function placeMango() {
+    if (!mangoEl) return;
+    var lastSeg = segments[segments.length - 1];
+    var nodes = lastSeg.querySelectorAll('.rnode');
+    var boss = nodes[nodes.length - 1];
+    mangoEl.style.left = ((parseFloat(boss.style.left) || 0) + 110) + 'px';
+    mangoEl.style.top = (lastSeg.offsetTop + (parseFloat(boss.style.top) || 0) + 44) + 'px';
+  }
+
+  function mangoLoop(now) {
+    if (mangoEl) {
+      var f = 0;
+      if (mango.mode === 'turn') {
+        // turns its back on you, holds, then turns around again
+        var e = now - mango.t0;
+        if (e < 260) f = 1;
+        else if (e < 2700) f = 2;
+        else if (e < 2960) f = 1;
+        else { mango.mode = 'sit'; mango.nextScratch = now + 6000 + Math.random() * 6000; }
+      } else if (mango.mode === 'scratch') {
+        var e2 = now - mango.t0;
+        if (e2 < 180) f = 5;
+        else if (e2 < 1280) f = Math.floor((e2 - 180) / 150) % 2 + 3; // scratch-scratch
+        else if (e2 < 1460) f = 5;
+        else { mango.mode = 'sit'; mango.nextScratch = now + 9000 + Math.random() * 8000; }
+      } else if (now >= mango.nextScratch) {
+        mango.mode = 'scratch';
+        mango.t0 = now;
+      }
+      window.SQMango.draw(mangoCtx, f);
+    }
+    requestAnimationFrame(mangoLoop);
+  }
+
   layout();
   refresh();
   buildSprite();
+  buildMango();
   window.addEventListener('resize', function () {
     layout();
+    placeMango();
     if (spriteEl && !spriteState.walking) {
       var p = nodeGlobalPos(spriteState.node);
       spriteState.x = p.x; spriteState.y = p.y;

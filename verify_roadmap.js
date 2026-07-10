@@ -229,6 +229,26 @@ const OPTS = {
     !craftSeg.classList.contains('seg-locked') &&
     craftSeg.querySelector('.rnode').classList.contains('is-current'));
 
+  /* 8b2 — Mango waits at the bottom of the map */
+  const mangoEl = document.querySelector('.mango-sprite');
+  let mangoPainted = false;
+  try {
+    const md = mangoEl.querySelector('canvas').getContext('2d')
+      .getImageData(0, 0, window.SQMango.w, window.SQMango.h).data;
+    mangoPainted = [...md].some(v => v > 0);
+  } catch (e) {}
+  check('Mango present at the end of the path (painted, all 6 frames)', !!mangoEl && mangoPainted &&
+    (() => { try { const cv = document.createElement('canvas'); cv.width = window.SQMango.w; cv.height = window.SQMango.h;
+      [0,1,2,3,4,5].forEach(f => window.SQMango.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
+  const lastSegEl = segs[segs.length - 1];
+  check('Mango positioned in the final biome',
+    parseFloat(mangoEl.style.top) > lastSegEl.offsetTop);
+  mangoEl.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 80));
+  check('Clicking Mango makes it turn its back on you', window.__SQ_MANGO.mode === 'turn');
+  await new Promise(r => setTimeout(r, 3100));
+  check('Mango turns back around after a sulk', window.__SQ_MANGO.mode === 'sit');
+
   /* 8c — the journey waits for Return to map when the drawer is open */
   infoNodes[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r2 => setTimeout(r2, 80));

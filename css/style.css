@@ -1105,3 +1105,11 @@ a { color: inherit; }
   .rnode, .seg-media { transition: none; }
   .rnode.node-wake { animation: none; }
 }
+
+/* Mango, waiting at the end of the path (faces back up the trail) */
+.mango-sprite {
+  position: absolute; z-index: 5; cursor: pointer;
+  transform: translate(-50%, -100%) scaleX(-1);
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3));
+}
+.mango-sprite canvas { width: 100%; height: 100%; image-rendering: pixelated; }

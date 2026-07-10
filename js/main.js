@@ -10,7 +10,7 @@
    8. Sticky nav state
    ============================================================ */
 (function () {
-  console.log('ScoreQuest build b20260710o');
+  console.log('ScoreQuest build b20260710r');
   'use strict';
   var PW = window.PixelWorld;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

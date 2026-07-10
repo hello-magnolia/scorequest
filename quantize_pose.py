@@ -4,7 +4,9 @@
 Converts a high-res image OF pixel art into a true pixel grid mapped onto
 the capybara's shared palette (/tmp/capy_clean.json), with artifact cleanup.
 
-Usage: python3 quantize_pose.py <input.png> <output.json>
+Usage: python3 quantize_pose.py <input.png> <output.json> [palette.json]
+palette.json defaults to /tmp/capy_clean.json; pass NEW:<path> to build a
+fresh palette from this image and save it there.
 Writes {"map": [...rows...]} and prints the grid.
 """
 import sys, json
@@ -60,9 +62,26 @@ def quantize(path, palette_json='/tmp/capy_clean.json'):
         cs.sort(key=lambda c: c[0] + c[1] + c[2])
         return cs[4]
 
-    d0 = json.load(open(palette_json))
     LEGS = 'obshmenwafg'
-    pal = [tuple(int(v[j:j + 2], 16) for j in (1, 3, 5)) for v in d0['palette']]
+    if palette_json.startswith('NEW:'):
+        # build a palette from this image: frequent cell colors, merged
+        from collections import Counter
+        freq = Counter()
+        for cy in range(rows):
+            for cx in range(cols):
+                c = cell(cx, cy)
+                if not is_bg(c): freq[c] += 1
+        pal = []
+        for c, n in freq.most_common():
+            for pc in pal:
+                if abs(c[0]-pc[0]) + abs(c[1]-pc[1]) + abs(c[2]-pc[2]) < 70: break
+            else:
+                pal.append(c)
+        pal = pal[:10]
+        json.dump({'palette': ['#%02x%02x%02x' % c for c in pal]}, open(palette_json[4:], 'w'))
+    else:
+        d0 = json.load(open(palette_json))
+        pal = [tuple(int(v[j:j + 2], 16) for j in (1, 3, 5)) for v in d0['palette']]
 
     def nearest(c):
         if is_bg(c): return '.'
@@ -100,7 +119,7 @@ def quantize(path, palette_json='/tmp/capy_clean.json'):
     return [''.join(r) for r in g]
 
 if __name__ == '__main__':
-    amap = quantize(sys.argv[1])
+    amap = quantize(sys.argv[1], sys.argv[3] if len(sys.argv) > 3 else '/tmp/capy_clean.json')
     json.dump({'map': amap}, open(sys.argv[2], 'w'))
     print(len(amap[0]), 'x', len(amap))
     for r in amap: print(r)
