@@ -208,6 +208,7 @@
       btn.addEventListener('click', function () {
         var idx = parseInt(btn.getAttribute('data-idx'), 10);
         var right = idx === item.correct;
+        if (window.SQSfx) { if (right) window.SQSfx.correct(); else window.SQSfx.wrong(); }
         if (right) session.correct++;
         stage.querySelectorAll('.quest-answer').forEach(function (b, bi) {
           b.disabled = true;
@@ -254,6 +255,7 @@
         '<button class="btn btn-outline quest-done">Back to map</button>' +
       '</div>';
 
+    if (res.leveledUp || res.cleared) { if (window.SQSfx) window.SQSfx.levelup(); }
     if (!reduceMotion && (res.leveledUp || res.cleared)) burst();
 
     stage.querySelector('.quest-again').addEventListener('click', function () { openQuest(session.realmId); });

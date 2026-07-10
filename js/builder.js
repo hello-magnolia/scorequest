@@ -150,7 +150,8 @@
   function init() {
     var customize = document.getElementById('customize-hero');
     if (customize) customize.addEventListener('click', openBuilder);
-    if (!load()) openBuilder();
+    var introPending = window.SQIntro && !window.SQIntro.seen();
+    if (!load() && !introPending) openBuilder();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

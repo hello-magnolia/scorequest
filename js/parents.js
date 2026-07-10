@@ -224,7 +224,7 @@
   /* ---------- charts ---------- */
   function renderTrend(exams) {
     var host = document.getElementById('trend-chart');
-    var W = 320, H = 134, padL = 40, padR = 22, padT = 18, padB = 26;
+    var W = 320, H = 134, padL = 46, padR = 22, padT = 18, padB = 26;
     var scores = exams.map(function (e) { return e.score; });
     var min = Math.min.apply(null, scores), max = Math.max.apply(null, scores);
     var lo = Math.floor((min - 40) / 50) * 50, hi = Math.ceil((max + 40) / 50) * 50;
@@ -238,8 +238,13 @@
     }
     var pts = exams.map(function (e, i) { return x(i) + ',' + y(e.score); }).join(' ');
     var dots = exams.map(function (e, i) {
+      // labels sit up-left of each dot, clear of the ascending line; the FIRST
+      // point instead goes below-right, the only quadrant that avoids both the
+      // y-axis tick column and the outgoing line
+      var lx = i === 0 ? x(i) + 15 : x(i) - 10;
+      var ly = i === 0 ? y(e.score) + 14 : y(e.score) - 7;
       return '<circle cx="' + x(i) + '" cy="' + y(e.score) + '" r="3.4" class="trend-dot"/>' +
-             '<text x="' + (x(i) - 10) + '" y="' + (y(e.score) - 7) + '" class="trend-val" text-anchor="middle">' + e.score + '</text>' +
+             '<text x="' + lx + '" y="' + ly + '" class="trend-val" text-anchor="middle">' + e.score + '</text>' +
              '<text x="' + x(i) + '" y="' + (H - 8) + '" class="trend-axis" text-anchor="middle">' + e.date + '</text>';
     }).join('');
 
@@ -355,6 +360,11 @@
     var pages = root.querySelectorAll('.ppage');
     var dots = root.querySelectorAll('.pdeck-dot');
     if (pages.length !== 2) return;
+    // One flip per hover gesture: after a hover-flip, the page that slides to
+    // the back can land under the cursor and fire mouseenter, which used to
+    // flip straight back. Lock hover flips until the pointer leaves the deck
+    // (or settles on the front page); clicks and dots always work.
+    var hoverLocked = false;
     function setFront(idx) {
       pages.forEach(function (p, i) {
         p.classList.toggle('is-front', i === idx);
@@ -364,14 +374,18 @@
     }
     pages.forEach(function (p, i) {
       p.addEventListener('mouseenter', function () {
-        if (p.classList.contains('is-back')) setFront(i);
+        if (p.classList.contains('is-front')) { hoverLocked = false; return; }
+        if (hoverLocked) return;
+        hoverLocked = true;
+        setFront(i);
       });
       p.addEventListener('click', function () {
-        if (p.classList.contains('is-back')) setFront(i);
+        if (p.classList.contains('is-back')) { hoverLocked = true; setFront(i); }
       });
     });
+    root.addEventListener('mouseleave', function () { hoverLocked = false; });
     dots.forEach(function (d) {
-      d.addEventListener('click', function () { setFront(parseInt(d.getAttribute('data-page'), 10)); });
+      d.addEventListener('click', function () { hoverLocked = true; setFront(parseInt(d.getAttribute('data-page'), 10)); });
     });
   }
 

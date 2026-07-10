@@ -26,9 +26,39 @@ const OPTS = {
   check('8 biome segments in realm order', segs.length === 8 &&
     order === 'info,craft,expression,conventions,algebra,advmath,data,geometry', order);
 
-  /* 1b — character builder opens before the first journey */
+  /* 1a — intro cinematic plays first: five scenes, click-through, then the builder */
+  const intro = document.querySelector('.intro-overlay');
+  check('Intro cinematic opens on first visit (before the builder)',
+    !!intro && intro.hidden === false &&
+    (document.querySelector('.builder-overlay') === null || document.querySelector('.builder-overlay').hidden));
+  let introPainted = false;
+  try { introPainted = [...intro.querySelector('.intro-canvas').getContext('2d').getImageData(0,0,10,10).data].some(v=>v>0); } catch(e){}
+  check('Intro scene painted with caption + dots', introPainted &&
+    /11:52 PM/.test(intro.querySelector('.intro-text').textContent) &&
+    intro.querySelectorAll('.intro-dot').length === 5);
+  const cap0 = intro.querySelector('.intro-text').textContent;
+  intro.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // click the scene itself
+  await new Promise(r => setTimeout(r, 40));
+  check('Clicking the scene advances the story',
+    intro.querySelector('.intro-text').textContent !== cap0 &&
+    intro.querySelectorAll('.intro-dot.is-done').length === 1);
+  const nextBtn = intro.querySelector('.intro-next');
+  for (let k = 0; k < 3; k++) { nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 30)); }
+  check('Final scene offers the call to adventure', nextBtn.textContent === 'Create your hero');
+  nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Finishing the intro persists and opens character creation',
+    intro.hidden === true && !!window.localStorage.getItem('sq_intro_seen'));
+
+  /* 1a2 — sound module present and safe without AudioContext */
+  let sfxSafe = true;
+  try { window.SQSfx.tap(1); window.SQSfx.correct(); window.SQSfx.toggle(); window.SQSfx.toggle(); } catch (e) { sfxSafe = false; }
+  check('Sound module loaded and safe in any environment', !!window.SQSfx && sfxSafe);
+  check('Sound toggle button present on the map', !!document.getElementById('sound-toggle'));
+
+  /* 1b — character builder opens after the intro */
   const builder = document.querySelector('.builder-overlay');
-  check('Character builder opens on first visit', !!builder && builder.hidden === false);
+  check('Character builder opens after the intro', !!builder && builder.hidden === false);
   const pcv = builder.querySelector('canvas');
   let previewPainted = false;
   try { previewPainted = [...pcv.getContext('2d').getImageData(0,0,16,20).data].some(v=>v>0); } catch(e){}

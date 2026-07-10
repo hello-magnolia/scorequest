@@ -120,9 +120,27 @@ const OPTS = {
     pages[1].classList.contains('is-front') && pages[0].classList.contains('is-back'));
   const dots = [...document.querySelectorAll('.pdeck-dot')];
   check('Deck dots present and tracking the front page', dots.length === 2 && dots[1].classList.contains('is-active'));
-  dots[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  // one flip per hover gesture: the page that just slid behind must not
+  // bounce straight back when the cursor lands on it
+  pages[0].dispatchEvent(new window.MouseEvent('mouseenter', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Hover flips only once per gesture (no bounce-back)', pages[1].classList.contains('is-front'));
+  document.getElementById('preport').dispatchEvent(new window.MouseEvent('mouseleave', { bubbles: true }));
+  pages[0].dispatchEvent(new window.MouseEvent('mouseenter', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Leaving and re-hovering flips again', pages[0].classList.contains('is-front'));
+  const dotsAfter = dots;
+  dotsAfter[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 60));
   check('Dot click flips back to page 1', pages[0].classList.contains('is-front'));
+
+  // first trend label sits below-right of its dot, clear of the y-axis column
+  const firstVal = document.querySelector('#trend-chart .trend-val');
+  const firstDot = document.querySelector('#trend-chart .trend-dot');
+  check('First score label placed below-right of its dot (clear of the axis)',
+    parseFloat(firstVal.getAttribute('x')) > parseFloat(firstDot.getAttribute('cx')) &&
+    parseFloat(firstVal.getAttribute('y')) > parseFloat(firstDot.getAttribute('cy')),
+    'label(' + firstVal.getAttribute('x') + ',' + firstVal.getAttribute('y') + ') dot(' + firstDot.getAttribute('cx') + ',' + firstDot.getAttribute('cy') + ')');
 
   /* 8b — layout stability: language swaps must not touch the graphs */
   check('Height stabilizer ran', window.__SQ_STABILIZED === true);

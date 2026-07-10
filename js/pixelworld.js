@@ -569,8 +569,136 @@
     }
   }
 
+
+  /* ============================================================
+     INTRO CINEMATIC SCENES
+     ============================================================ */
+
+  /* Scene: late-night bedroom, practice-test misery. glow=true adds the summons */
+  function drawBedroom(ctx, W, H, t, glow) {
+    t = t || 0;
+    // room
+    px(ctx, 0, 0, W, H, '#171226');
+    px(ctx, 0, 0, W, H * 0.72, '#1d1731');           // wall
+    px(ctx, 0, H * 0.72, W, H, '#241c33');           // floor
+    for (var fx = 0; fx < W; fx += 26) px(ctx, fx, H * 0.72, 1, H * 0.28, '#1c1529'); // floorboards
+
+    // window with night city + rain
+    px(ctx, W * 0.06, H * 0.1, W * 0.24, H * 0.42, '#0d1030');
+    px(ctx, W * 0.06 - 3, H * 0.1 - 3, W * 0.24 + 6, 3, '#3a2d4c');
+    px(ctx, W * 0.06 - 3, H * 0.52, W * 0.24 + 6, 3, '#3a2d4c');
+    px(ctx, W * 0.06 - 3, H * 0.1, 3, H * 0.42, '#3a2d4c');
+    px(ctx, W * 0.3, H * 0.1, 3, H * 0.42, '#3a2d4c');
+    px(ctx, W * 0.175, H * 0.1, 2, H * 0.42, '#3a2d4c'); // mullion
+    starfield(ctx, W * 0.28, H * 0.3, 8, 71, t, '#9ba6e8', '#ffffff');
+    // moon
+    px(ctx, W * 0.24, H * 0.15, 10, 8, '#c9cff2');
+    // distant windows
+    var rr = makeRng(72);
+    for (var b = 0; b < 8; b++) px(ctx, W * (0.08 + rr() * 0.2), H * (0.34 + rr() * 0.14), 2, 2, rr() > 0.5 ? '#f2b63c' : '#57c7ce');
+    // rain streaks
+    for (var rn = 0; rn < 10; rn++) {
+      var ry = ((t * 90) + rn * 37) % (H * 0.4);
+      px(ctx, W * 0.07 + (rn * 11) % (W * 0.22), H * 0.11 + ry, 1, 6, 'rgba(155,166,232,0.35)');
+    }
+
+    // desk
+    px(ctx, W * 0.4, H * 0.6, W * 0.5, 6, '#4a332a');
+    px(ctx, W * 0.42, H * 0.6 + 6, 6, H * 0.3, '#3b2a20');
+    px(ctx, W * 0.84, H * 0.6 + 6, 6, H * 0.3, '#3b2a20');
+    // laptop, screen flickering cold blue
+    var flick = Math.sin(t * 7) > 0.7 ? '#7fb2d9' : '#5f93c2';
+    px(ctx, W * 0.56, H * 0.44, W * 0.14, H * 0.15, '#2a2438');
+    px(ctx, W * 0.57, H * 0.455, W * 0.12, H * 0.12, flick);
+    px(ctx, W * 0.55, H * 0.59, W * 0.16, 3, '#3a3352');
+    // scattered flashcards + papers
+    var rp = makeRng(73);
+    for (var p = 0; p < 7; p++) {
+      px(ctx, W * (0.44 + rp() * 0.4), H * (0.61 + rp() * 0.02) - 3, 12, 7, p % 2 ? '#e8e0cc' : '#d9d0b8');
+    }
+    for (var p2 = 0; p2 < 4; p2++) px(ctx, W * (0.35 + rp() * 0.5), H * (0.78 + rp() * 0.14), 10, 6, '#cfc7b0');
+    // mug with weary steam
+    px(ctx, W * 0.5, H * 0.56, 8, 9, '#8a4a2e');
+    px(ctx, W * 0.5 + 8, H * 0.575, 3, 4, '#8a4a2e');
+    if (Math.sin(t * 1.4) > 0) glowPlus(ctx, W * 0.5 + 3, H * 0.53, 'rgba(201,207,242,0.4)');
+    // desk lamp with warm cone
+    px(ctx, W * 0.87, H * 0.44, 3, H * 0.16, '#3a3352');
+    px(ctx, W * 0.83, H * 0.42, 11, 5, '#4a4468');
+    for (var c = 0; c < 8; c++) px(ctx, W * 0.84 - c * 3, H * 0.45 + c * 4, 8 + c * 6, 4, 'rgba(242,182,60,0.05)');
+
+    // the student: slumped at the desk, head on hand
+    var sx = W * 0.72, sy = H * 0.6;
+    px(ctx, sx - 8, sy - 26, 16, 12, '#f2c9a0');      // head, tipped low
+    px(ctx, sx - 8, sy - 30, 16, 5, '#4a3a5e');       // messy hair
+    px(ctx, sx - 4, sy - 21, 2, 2, '#2a1d07');        // tired eye
+    px(ctx, sx - 12, sy - 14, 22, 14, '#2e6b55');     // hunched torso
+    px(ctx, sx + 8, sy - 22, 5, 10, '#f2c9a0');       // hand propping head
+    // chair
+    px(ctx, sx - 14, sy, 26, 4, '#3b2a20');
+    px(ctx, sx - 12, sy + 4, 4, H * 0.3, '#33241b');
+    px(ctx, sx + 6, sy + 4, 4, H * 0.3, '#33241b');
+    px(ctx, sx - 16, sy - 20, 4, 22, '#33241b');      // chair back
+
+    if (glow) {
+      // the summons: a radiant envelope under the flashcards
+      var gx = W * 0.47, gy = H * 0.585;
+      var pulse = 0.5 + Math.sin(t * 2.2) * 0.5;
+      for (var g = 4; g >= 1; g--) {
+        px(ctx, gx - g * 5, gy - g * 3, 18 + g * 10, 10 + g * 6, 'rgba(242,182,60,' + (0.05 + pulse * 0.04) + ')');
+      }
+      px(ctx, gx, gy, 18, 11, '#ffd974');
+      px(ctx, gx, gy, 18, 2, '#f2b63c');
+      px(ctx, gx + 8, gy + 4, 2, 2, '#a87a1a');       // seal
+      // rising motes
+      for (var m = 0; m < 6; m++) {
+        var my = gy - ((t * 26 + m * 17) % 60);
+        var on = Math.sin(t * 3 + m) > -0.2;
+        if (on) glowPlus(ctx, gx + 3 + (m * 7) % 16 + Math.sin(t + m) * 3, my, '#ffe79a');
+      }
+      // warm tint spilling into the room
+      px(ctx, 0, 0, W, H, 'rgba(242,182,60,' + (0.03 + pulse * 0.03) + ')');
+    }
+  }
+
+  /* Scene: the room dissolves, starlight tunnel to the realms */
+  function drawPortal(ctx, W, H, t) {
+    t = t || 0;
+    px(ctx, 0, 0, W, H, '#0b0d28');
+    var cx = W / 2, cy = H / 2;
+    // radiating star streaks
+    var r = makeRng(81);
+    for (var i = 0; i < 46; i++) {
+      var ang = r() * 6.283, base = r();
+      var d = ((base * 160) + t * 55) % 170 + 12;
+      var x = cx + Math.cos(ang) * d, y = cy + Math.sin(ang) * d * 0.62;
+      var len = 3 + d * 0.06;
+      px(ctx, x, y, Math.abs(Math.cos(ang)) * len + 1, Math.abs(Math.sin(ang)) * len * 0.6 + 1,
+        i % 4 === 0 ? '#ffe79a' : (i % 3 === 0 ? '#8e7cc3' : '#c9cff2'));
+    }
+    // golden rings, breathing
+    var breathe = Math.sin(t * 1.3) * 3;
+    function ring(rad, col) {
+      for (var a = 0; a < 40; a++) {
+        var th = (a / 40) * 6.283 + t * 0.3;
+        px(ctx, cx + Math.cos(th) * rad, cy + Math.sin(th) * rad * 0.62, 2, 2, col);
+      }
+    }
+    ring(52 + breathe, '#f2b63c');
+    ring(30 - breathe, '#ffd974');
+    // bright core
+    px(ctx, cx - 7, cy - 5, 14, 10, '#fff3d6');
+    px(ctx, cx - 4, cy - 8, 8, 16, '#ffffff');
+    // the summoned: a tiny silhouette drifting toward the light
+    var fall = (t * 14) % 60;
+    px(ctx, cx - 30 + fall * 0.5, cy - 34 + fall * 0.5, 5, 8, '#241b4d');
+    px(ctx, cx - 29 + fall * 0.5, cy - 37 + fall * 0.5, 3, 3, '#3a2d4c');
+  }
+
   const scenes = {
     hero: { w: 480, h: 270, draw: drawHero },
+    bedroom: { w: 480, h: 270, draw: function (c, W, H, t) { drawBedroom(c, W, H, t, false); } },
+    summons: { w: 480, h: 270, draw: function (c, W, H, t) { drawBedroom(c, W, H, t, true); } },
+    portal: { w: 480, h: 270, draw: drawPortal },
     info: { w: 240, h: 104, draw: drawGloamwood },
     craft: { w: 240, h: 104, draw: drawEchoVale },
     expression: { w: 240, h: 104, draw: drawInkmarsh },

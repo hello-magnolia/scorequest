@@ -69,12 +69,13 @@
         '<span class="rnode-icon" data-biome="' + r.id + '" aria-hidden="true"></span>' +
         '<span class="rnode-tag type-utility">' + (boss ? 'BOSS' : String(i + 1)) + '</span>' +
         '<span class="rnode-start type-utility" aria-hidden="true">START</span>';
-      node.addEventListener('click', (function (id) {
+      node.addEventListener('click', (function (id, step) {
         return function () {
           if (this.classList.contains('is-locked')) return;
+          if (window.SQSfx) window.SQSfx.tap(step);
           if (window.SQQuest) window.SQQuest.open(id);
         };
-      })(r.id));
+      })(r.id, i));
       seg.appendChild(node);
     }
 
@@ -319,6 +320,14 @@
       line.hidden = !name;
       if (name) document.getElementById('mappage-player-name').textContent = name;
     });
+  }
+
+  // sound preference toggle
+  var soundBtn = document.getElementById('sound-toggle');
+  if (soundBtn && window.SQSfx) {
+    function soundLabel() { soundBtn.textContent = 'Sound: ' + (window.SQSfx.enabled() ? 'on' : 'off'); }
+    soundLabel();
+    soundBtn.addEventListener('click', function () { window.SQSfx.toggle(); soundLabel(); if (window.SQSfx.enabled()) window.SQSfx.tap(2); });
   }
 
   layout();
