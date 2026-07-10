@@ -97,9 +97,9 @@ const OPTS = {
   check('Customize hero button reopens the builder', !!document.getElementById('customize-hero'));
 
   /* 1c — the capybara has all six frames */
-  check('Capybara has all six frames (stand, walk x2, blink, sit-chew x2)',
+  check('Capybara has the full sequence (stand, walk x2, blink, sit, bend, chew x2)',
     (() => { try { const cv = document.createElement('canvas'); cv.width = window.SQCompanion.w; cv.height = window.SQCompanion.h;
-      [0,1,2,3,4,5].forEach(f => window.SQCompanion.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
+      [0,1,2,3,4,5,6,7].forEach(f => window.SQCompanion.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
   await new Promise(r => setTimeout(r, 3500));
   check('Left alone, the capybara sits down to chew grass',
     window.__SQ_SPRITE.sitting === true);

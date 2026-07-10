@@ -305,10 +305,18 @@
   function idleLoop(now) {
     if (spriteEl && !spriteState.walking) {
       if (now - spriteState.idleSince > SIT_AFTER) {
-        // settled: sit down and chew on grass
+        // the graze sequence: sit upright, bend down for a mouthful,
+        // come up chewing, and bend again when the mouthful runs out
         if (!spriteState.sitting) spriteState.sitting = true;
         spriteEl.style.setProperty('--cbob', '0px');
-        drawSpriteFrame(Math.floor(now / 420) % 2 + 4);
+        var e = now - spriteState.idleSince - SIT_AFTER;
+        var f;
+        if (e < 700) f = 4;                       // sit upright
+        else {
+          var t = (e - 700) % (550 + 4200);
+          f = t < 550 ? 5 : 6 + (Math.floor((t - 550) / 420) % 2); // bend, then chew
+        }
+        drawSpriteFrame(f);
       } else {
         var bob = Math.sin(now / 560) > 0 ? 0 : -1.5; // slow capybara bob
         spriteEl.style.setProperty('--cbob', bob + 'px');
