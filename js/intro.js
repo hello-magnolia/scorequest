@@ -21,11 +21,11 @@
 
   var HERO_VIDEO = ['assets/hero.mp4', '__CDN__/hf_20260707_160337_73e7a3e7-612c-49f7-ab6a-4f7920599476.mp4'];
   var SCENES = [
-    { scene: 'bedroom', video: ['assets/intro/bedroom.mp4', '__VID_BEDROOM__'], image: ['assets/intro/bedroom.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
+    { scene: 'bedroom', video: ['assets/intro/bedroom.mp4', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_030436_8fa96d4e-b1e5-42d4-8f27-0ee298d74ee1.mp4'], image: ['assets/intro/bedroom.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
       text: 'Somewhere past midnight, the practice test sits open and untouched. You have reorganized your desk twice and studied the ceiling extensively. Anything but question seven.' },
-    { scene: 'summons', video: ['assets/intro/summons.mp4', '__VID_SUMMONS__'], image: ['assets/intro/summons.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022725_20fbc722-18c9-46d9-8c01-5b1feaa77e0f.png'],
+    { scene: 'summons', video: ['assets/intro/summons.mp4', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_030446_a850f884-0043-4564-aa70-c16ef902f9b3.mp4'], image: ['assets/intro/summons.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022725_20fbc722-18c9-46d9-8c01-5b1feaa77e0f.png'],
       text: 'Then, beneath the flashcards, a warm light stirs. A letter that was not there before, sealed in gold, humming your name.' },
-    { scene: 'portal', video: ['assets/intro/portal.mp4', '__VID_PORTAL__'], image: ['assets/intro/portal.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022743_7503496a-a6fa-41cc-9a12-670db63ec102.png'],
+    { scene: 'portal', video: ['assets/intro/portal.mp4', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_030454_ebf2faec-0853-418a-9e97-077e9ab60527.mp4'], image: ['assets/intro/portal.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022743_7503496a-a6fa-41cc-9a12-670db63ec102.png'],
       text: 'The room unravels into starlight, page by page, until only the glow remains. Far below, eight realms turn beneath a patient moon.' },
     { scene: 'hero', video: HERO_VIDEO,
       text: 'Duskmeadow, where the lantern light knows every path, and each realm guards one art of the exam. Master a realm, and its power walks with you.' },

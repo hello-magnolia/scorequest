@@ -40,6 +40,9 @@ const OPTS = {
   check('Intro media chain present (video + generated still + canvas)',
     !!intro.querySelector('.intro-video') && !!intro.querySelector('.intro-img') &&
     /cloudfront|assets\/intro/.test(intro.querySelector('.intro-img').src || 'x'));
+  check('Intro scene 1 attempts its animated Higgsfield render',
+    /cloudfront|assets\/intro/.test(intro.querySelector('.intro-video').src || 'x'),
+    (intro.querySelector('.intro-video').src || '').split('/').pop());
   const cap0 = intro.querySelector('.intro-text').textContent;
   intro.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // click the scene itself
   await new Promise(r => setTimeout(r, 40));

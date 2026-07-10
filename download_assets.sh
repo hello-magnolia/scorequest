@@ -25,4 +25,9 @@ curl -fsSL "$BASE/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png" -
 curl -fsSL "$BASE/hf_20260710_022725_20fbc722-18c9-46d9-8c01-5b1feaa77e0f.png" -o assets/intro/summons.png
 curl -fsSL "$BASE/hf_20260710_022743_7503496a-a6fa-41cc-9a12-670db63ec102.png" -o assets/intro/portal.png
 
+echo "Intro cinematic animations (Seedance 2.0, 1080p 16:9, 8s loops)..."
+curl -fsSL "$BASE/hf_20260710_030436_8fa96d4e-b1e5-42d4-8f27-0ee298d74ee1.mp4" -o assets/intro/bedroom.mp4
+curl -fsSL "$BASE/hf_20260710_030446_a850f884-0043-4564-aa70-c16ef902f9b3.mp4" -o assets/intro/summons.mp4
+curl -fsSL "$BASE/hf_20260710_030454_ebf2faec-0853-418a-9e97-077e9ab60527.mp4" -o assets/intro/portal.mp4
+
 echo "Done. The page automatically prefers these local files over the CDN."
