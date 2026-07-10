@@ -30,4 +30,10 @@ curl -fsSL "$BASE/hf_20260710_030436_8fa96d4e-b1e5-42d4-8f27-0ee298d74ee1.mp4" -
 curl -fsSL "$BASE/hf_20260710_030446_a850f884-0043-4564-aa70-c16ef902f9b3.mp4" -o assets/intro/summons.mp4
 curl -fsSL "$BASE/hf_20260710_030454_ebf2faec-0853-418a-9e97-077e9ab60527.mp4" -o assets/intro/portal.mp4
 
+echo "Intro scenes 4-5: valley + trailhead (stills and animations)..."
+curl -fsSL "$BASE/hf_20260710_031648_c3a3adf6-e139-4eb9-8133-bb4300eb70e8.png" -o assets/intro/valley.png
+curl -fsSL "$BASE/hf_20260710_031658_471211c6-8f1d-44bf-9be5-34202b7bf548.png" -o assets/intro/trailhead.png
+curl -fsSL "$BASE/hf_20260710_031810_ba42ad70-10bb-42cd-a792-be9f5f68a562.mp4" -o assets/intro/valley.mp4
+curl -fsSL "$BASE/hf_20260710_031832_0d6df14e-d0d8-480b-9abf-5ca6cc8a6243.mp4" -o assets/intro/trailhead.mp4
+
 echo "Done. The page automatically prefers these local files over the CDN."

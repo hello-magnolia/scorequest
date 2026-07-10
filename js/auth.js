@@ -168,6 +168,22 @@
     emit();
   }
 
+  /* ---------- test as new user: a clean first run, every time ---------- */
+  function testAsNewUser() {
+    // wipe all first-run state so the intro cinematic and character builder
+    // play again exactly as a brand-new player would see them
+    try {
+      window.localStorage.removeItem('sq_intro_seen');
+      window.localStorage.removeItem('sq_character');
+      window.localStorage.removeItem('sq_demo_progress');
+    } catch (e) {}
+    demoLogin('Tester');
+    // already on the map? reload so the intro actually replays
+    if (!window.__SQ_NO_REDIRECT && document.body.classList.contains('page-map')) {
+      window.location.reload();
+    }
+  }
+
   /* ---------- demo mode helpers ---------- */
   function demoLogin(name) {
     state.demo = true;
@@ -219,7 +235,7 @@
         '<h2 id="auth-title" class="auth-title" data-mode="in">Choose your hero</h2>' +
         '<button class="btn btn-google btn-block auth-google">' +
           '<span class="g-mark" aria-hidden="true">G</span> Continue with Google</button>' +
-        '<button class="btn btn-outline btn-block auth-guest">Explore as guest (no account)</button>' +
+        '<button class="btn btn-outline btn-block auth-guest">Test as new user (replays the intro)</button>' +
         '<div class="auth-or"><span>or</span></div>' +
         '<label class="auth-field auth-heroname" hidden><span class="type-utility">Hero name</span>' +
           '<input type="text" autocomplete="nickname" maxlength="24" placeholder="e.g. Nightscholar" /></label>' +
@@ -284,7 +300,7 @@
     });
 
     modal.querySelector('.auth-guest').addEventListener('click', function () {
-      demoLogin('Guest');
+      testAsNewUser();
     });
 
     submit.addEventListener('click', function () {

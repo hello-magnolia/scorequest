@@ -19,7 +19,6 @@
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var KEY = 'sq_intro_seen';
 
-  var HERO_VIDEO = ['assets/hero.mp4', '__CDN__/hf_20260707_160337_73e7a3e7-612c-49f7-ab6a-4f7920599476.mp4'];
   var SCENES = [
     { scene: 'bedroom', video: ['assets/intro/bedroom.mp4', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_030436_8fa96d4e-b1e5-42d4-8f27-0ee298d74ee1.mp4'], image: ['assets/intro/bedroom.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
       text: 'Somewhere past midnight, the practice test sits open and untouched. You have reorganized your desk twice and studied the ceiling extensively. Anything but question seven.' },
@@ -27,9 +26,9 @@
       text: 'Then, beneath the flashcards, a warm light stirs. A letter that was not there before, sealed in gold, humming your name.' },
     { scene: 'portal', video: ['assets/intro/portal.mp4', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_030454_ebf2faec-0853-418a-9e97-077e9ab60527.mp4'], image: ['assets/intro/portal.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_022743_7503496a-a6fa-41cc-9a12-670db63ec102.png'],
       text: 'The room unravels into starlight, page by page, until only the glow remains. Far below, eight realms turn beneath a patient moon.' },
-    { scene: 'hero', video: HERO_VIDEO,
+    { scene: 'hero', video: ['assets/intro/valley.mp4', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_031810_ba42ad70-10bb-42cd-a792-be9f5f68a562.mp4'], image: ['assets/intro/valley.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_031648_c3a3adf6-e139-4eb9-8133-bb4300eb70e8.png'],
       text: 'Duskmeadow, where the lantern light knows every path, and each realm guards one art of the exam. Master a realm, and its power walks with you.' },
-    { scene: 'hero', video: HERO_VIDEO,
+    { scene: 'hero', video: ['assets/intro/trailhead.mp4', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_031832_0d6df14e-d0d8-480b-9abf-5ca6cc8a6243.mp4'], image: ['assets/intro/trailhead.png', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260710_031658_471211c6-8f1d-44bf-9be5-34202b7bf548.png'],
       text: 'The old scholars say those who walk the whole path come home changed. The path is waiting. So is your hero.', cta: 'Create your hero' },
   ];
 

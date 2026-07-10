@@ -70,19 +70,24 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   /* login flows enter the world map */
   check('Demo hero creation routes the player to the world map', window.__SQ_LAST_REDIRECT === 'map.html');
 
-  // guest flow: reopen the modal and enter as guest
+  // test-as-new-user flow: wipes first-run state so the intro replays
   window.__SQ_LAST_REDIRECT = null;
+  window.localStorage.setItem('sq_intro_seen', '1');
+  window.localStorage.setItem('sq_character', '{"hat":1}');
   document.querySelector('.nav-cta .btn-login').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 40));
-  const guestBtn = document.querySelector('.auth-guest');
-  check('"Explore as guest" button present in the modal', !!guestBtn && /guest/i.test(guestBtn.textContent));
-  guestBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const testerBtn = document.querySelector('.auth-guest');
+  check('"Test as new user" button present in the modal', !!testerBtn && /Test as new user/.test(testerBtn.textContent));
+  testerBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 80));
-  check('Guest click logs in instantly and routes to the map',
+  check('Tester click wipes intro + character state for a clean first run',
+    window.localStorage.getItem('sq_intro_seen') === null &&
+    window.localStorage.getItem('sq_character') === null);
+  check('Tester logs in and routes to the map',
     !!window.SQAuth.getUser() && window.__SQ_LAST_REDIRECT === 'map.html',
     (window.SQAuth.getUser() || {}).email || 'no user');
   const badge2 = document.querySelector('.nav-cta .hero-badge');
-  check('Nav greets the guest hero', !!badge2 && /Guest/.test(badge2.textContent));
+  check('Nav greets the tester', !!badge2 && /Tester/.test(badge2.textContent));
   window.SQAuth.signOut();
   await new Promise(r => setTimeout(r, 40));
 
