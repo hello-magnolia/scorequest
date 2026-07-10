@@ -36,15 +36,18 @@ const OPTS = {
     /past midnight/.test(intro.querySelector('.intro-text').textContent) &&
     /Anything but question seven/.test(intro.querySelector('.intro-text').textContent) &&
     intro.querySelectorAll('.intro-dot').length === 5);
-  check('Intro media chain present (video + generated still + canvas)',
+  check('Intro media chain present (video primary, still as fallback only)',
     !!intro.querySelector('.intro-video') && !!intro.querySelector('.intro-img') &&
-    /cloudfront|assets\/intro/.test(intro.querySelector('.intro-img').src || 'x'));
+    /cloudfront|assets\/intro/.test(intro.querySelector('.intro-video').src || 'x') &&
+    !(intro.querySelector('.intro-img').src));
   check('Intro scene 1 attempts its animated Higgsfield render',
     /cloudfront|assets\/intro/.test(intro.querySelector('.intro-video').src || 'x'),
     (intro.querySelector('.intro-video').src || '').split('/').pop());
   const cap0 = intro.querySelector('.intro-text').textContent;
   intro.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // click the scene itself
-  await new Promise(r => setTimeout(r, 40));
+  await new Promise(r => setTimeout(r, 80));
+  check('Advance dips the scene to black first', intro.querySelector('.intro-media').classList.contains('is-dark'));
+  await new Promise(r => setTimeout(r, 340));
   check('Clicking the scene advances the story',
     intro.querySelector('.intro-text').textContent !== cap0 &&
     intro.querySelectorAll('.intro-dot.is-done').length === 1);
@@ -52,7 +55,7 @@ const OPTS = {
     window.__SQ_MEDIA_GEN >= 2, 'gen=' + window.__SQ_MEDIA_GEN);
   check('Intro preloads its art on open (anti-flash)', window.__SQ_INTRO_PRELOAD === true);
   const nextBtn = intro.querySelector('.intro-next');
-  for (let k = 0; k < 3; k++) { nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 30)); }
+  for (let k = 0; k < 3; k++) { nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 380)); }
   check('Final scene offers the call to adventure', nextBtn.textContent === 'Create your hero');
   nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 60));
@@ -61,7 +64,12 @@ const OPTS = {
 
   /* 1a2 — sound module present and safe without AudioContext */
   let sfxSafe = true;
-  try { window.SQSfx.tap(1); window.SQSfx.correct(); window.SQSfx.toggle(); window.SQSfx.toggle(); } catch (e) { sfxSafe = false; }
+  try {
+    window.SQSfx.tap(1); window.SQSfx.correct(); window.SQSfx.toggle(); window.SQSfx.toggle();
+    ['info','craft','expression','conventions','algebra','advmath','data','geometry']
+      .forEach(id => window.SQSfx.realmTap(id));
+  } catch (e) { sfxSafe = false; }
+  check('Each realm has its own themed sound', sfxSafe);
   check('Sound module loaded and safe in any environment', !!window.SQSfx && sfxSafe);
   let musicSafe = true;
   try { window.SQMusic.ensure(); window.SQMusic.toggle(); window.SQMusic.toggle(); window.SQSfx.click(); } catch (e) { musicSafe = false; }
@@ -179,6 +187,13 @@ const OPTS = {
     infoNodes.every(n => n.classList.contains('is-done')) &&
     segs[0].classList.contains('seg-cleared') &&
     /Conquered/.test(segs[0].querySelector('.seg-level').textContent));
+
+  /* 9b — all-access (test / paid users): every realm unlocked */
+  window.localStorage.setItem('sq_all_access', '1');
+  const allState = window.SQGame.getState();
+  check('All-access unlocks every realm (paying-user capabilities)',
+    Object.values(allState.realms).every(st => st.unlocked === true));
+  window.localStorage.removeItem('sq_all_access');
 
   /* 10 — world rank live */
   check('World rank displayed and updated',

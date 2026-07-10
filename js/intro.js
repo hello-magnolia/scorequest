@@ -96,11 +96,6 @@
     el['on' + readyEvent] = function () { resolved[kind][idx] = el.currentSrc || el.src; };
     el.src = srcs[i++];
   }
-  function preloadStills() {
-    SCENES.forEach(function (st, i) {
-      resolveChain('image', i, st.image, function () { return new Image(); }, 'load');
-    });
-  }
   function prefetchVideo(i) {
     var st = SCENES[i];
     if (!st) return;
@@ -112,6 +107,10 @@
   }
 
   var mediaGen = 0;
+  function sceneReady() {
+    var media = overlay.querySelector('.intro-media');
+    media.classList.remove('is-dark');
+  }
   function setMedia(step, sceneIdx) {
     // Generation token: scene advances can outrun in-flight loads, and a stale
     // load event used to unhide an element still painting the PREVIOUS scene's
@@ -124,24 +123,30 @@
     img.hidden = true; vid.hidden = true;
     vid.pause(); vid.removeAttribute('src'); try { vid.load(); } catch (e) {}
     img.removeAttribute('src');
-    function chain(el, sources, showEvent, kind, idx) {
+    function chain(el, sources, showEvent, kind, idx, onExhausted) {
       var srcs = (sources || []).filter(function (u) { return u && u.indexOf('__') !== 0; });
       if (resolved[kind] && resolved[kind][idx]) srcs = [resolved[kind][idx]]; // cached winner first
-      if (!srcs.length) return false;
+      if (!srcs.length) { if (onExhausted) onExhausted(); return false; }
       var i = 0;
       function next() {
         if (gen !== mediaGen) return;
-        if (i >= srcs.length) { el.hidden = true; return; }
+        if (i >= srcs.length) { el.hidden = true; if (onExhausted) onExhausted(); return; }
         el.src = srcs[i++];
       }
       el.onerror = function () { if (gen === mediaGen) next(); };
-      el['on' + showEvent] = function () { if (gen === mediaGen) el.hidden = false; };
+      el['on' + showEvent] = function () {
+        if (gen !== mediaGen) return;
+        el.hidden = false;
+        sceneReady(); // fade back from black
+      };
       next();
       return true;
     }
-    // prefer the animated Higgsfield render; the still covers while it loads
-    chain(vid, step.video, 'canplay', 'video', sceneIdx);
-    if (step.image) chain(img, step.image, 'load', 'image', sceneIdx);
+    // the animated render IS the scene; the still exists only if every video
+    // source fails; if both fail, fade back to the dark stage + caption
+    chain(vid, step.video, 'canplay', 'video', sceneIdx, function () {
+      if (!chain(img, step.image, 'load', 'image', sceneIdx, sceneReady)) sceneReady();
+    });
   }
 
   function render() {
@@ -157,11 +162,18 @@
     });
   }
 
+  var dipping = false;
   function advance() {
     if (window.SQSfx) window.SQSfx.uiTick();
     if (idx >= SCENES.length - 1) return finish();
-    idx++;
-    render();
+    if (dipping) return;
+    dipping = true;
+    overlay.querySelector('.intro-media').classList.add('is-dark'); // fade to black
+    setTimeout(function () {
+      idx++;
+      render();   // swap sources + caption in the dark; sceneReady fades back
+      dipping = false;
+    }, reduceMotion ? 0 : 300);
   }
 
   function finish() {
@@ -174,11 +186,11 @@
 
   function open() {
     if (!overlay) build();
-    preloadStills();
     prefetchVideo(0);
     prefetchVideo(1);
     window.__SQ_INTRO_PRELOAD = true;
     idx = 0;
+    overlay.querySelector('.intro-media').classList.add('is-dark');
     render();
     overlay.hidden = false;
     document.body.style.overflow = 'hidden';

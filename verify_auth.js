@@ -83,6 +83,8 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   check('Tester click wipes intro + character state for a clean first run',
     window.localStorage.getItem('sq_intro_seen') === null &&
     window.localStorage.getItem('sq_character') === null);
+  check('Tester receives all-access (every realm unlocked)',
+    window.localStorage.getItem('sq_all_access') === '1');
   check('Tester logs in and routes to the map',
     !!window.SQAuth.getUser() && window.__SQ_LAST_REDIRECT === 'map.html',
     (window.SQAuth.getUser() || {}).email || 'no user');

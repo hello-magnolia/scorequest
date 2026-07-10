@@ -63,8 +63,11 @@
     var span = Math.max(1, ceil - floor);
     // Unlock rule: first realm of each section always open; each next unlocks
     // when the previous realm in its section reaches level 2 (a foothold).
+    // All-access (test users / paid) bypasses gating entirely.
+    var allAccess = false;
+    try { allAccess = window.localStorage.getItem('sq_all_access') === '1'; } catch (e) {}
     var unlocked = true;
-    if (idx > 0) {
+    if (!allAccess && idx > 0) {
       var prevSame = null;
       for (var j = idx - 1; j >= 0; j--) { if (REALMS[j].section === r.section) { prevSame = REALMS[j]; break; } }
       if (prevSame) unlocked = levelFromXp(((pr.realms && pr.realms[prevSame.id]) || {}).xp || 0) >= 2;

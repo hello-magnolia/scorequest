@@ -69,13 +69,13 @@
         '<span class="rnode-icon" data-biome="' + r.id + '" aria-hidden="true"></span>' +
         '<span class="rnode-tag type-utility">' + (boss ? 'BOSS' : String(i + 1)) + '</span>' +
         '<span class="rnode-start type-utility" aria-hidden="true">START</span>';
-      node.addEventListener('click', (function (id, step) {
+      node.addEventListener('click', (function (id) {
         return function () {
           if (this.classList.contains('is-locked')) return;
-          if (window.SQSfx) window.SQSfx.tap(step);
+          if (window.SQSfx) window.SQSfx.realmTap(id);
           if (window.SQQuest) window.SQQuest.open(id);
         };
-      })(r.id, i));
+      })(r.id));
       seg.appendChild(node);
     }
 

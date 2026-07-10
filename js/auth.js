@@ -162,6 +162,7 @@
   }
 
   function signOut() {
+    try { window.localStorage.removeItem('sq_all_access'); } catch (e) {}
     if (supabase && state.user) supabase.auth.signOut();
     state.user = null; state.profile = null; state.progress = defaultProgress();
     if (state.demo) { try { window.localStorage.removeItem(localKey()); } catch (e) {} }
@@ -176,6 +177,7 @@
       window.localStorage.removeItem('sq_intro_seen');
       window.localStorage.removeItem('sq_character');
       window.localStorage.removeItem('sq_demo_progress');
+      window.localStorage.setItem('sq_all_access', '1'); // full paid capabilities
     } catch (e) {}
     demoLogin('Tester');
     // already on the map? reload so the intro actually replays

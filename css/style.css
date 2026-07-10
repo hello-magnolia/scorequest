@@ -1023,8 +1023,10 @@ a { color: inherit; }
 
 /* generated art fades in over the canvas instead of popping */
 @keyframes media-fade { from { opacity: 0; } to { opacity: 1; } }
-.intro-media img:not([hidden]), .intro-media video:not([hidden]) { animation: media-fade 300ms ease; }
 .seg-art:not([hidden]) { animation: media-fade 450ms ease; }
+.intro-media { transition: opacity 320ms ease; }
+.intro-media.is-dark { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
-  .intro-media img:not([hidden]), .intro-media video:not([hidden]), .seg-art:not([hidden]) { animation: none; }
+  .seg-art:not([hidden]) { animation: none; }
+  .intro-media { transition: none; }
 }

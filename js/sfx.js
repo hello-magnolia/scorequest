@@ -130,7 +130,51 @@
     },
   };
 
+  /* eight original one-shot motifs, one per realm's theme */
+  var REALM_SOUNDS = {
+    info: function () {          // Gloamwood: wooden knock + forest chime
+      voice(392, { type: 'triangle', dur: 0.14, peak: 0.12 });
+      voice(660, { type: 'sine', dur: 0.3, peak: 0.07, delay: 0.07 });
+    },
+    craft: function () {         // Echo Vale: a note and its canyon echo
+      voice(587.33, { type: 'triangle', dur: 0.18, peak: 0.13 });
+      voice(587.33, { type: 'triangle', dur: 0.22, peak: 0.055, delay: 0.16 });
+      voice(587.33, { type: 'triangle', dur: 0.26, peak: 0.025, delay: 0.32 });
+    },
+    expression: function () {    // Inkmarsh: a watery bloop
+      voice(880, { type: 'sine', dur: 0.16, peak: 0.11, glideTo: 320 });
+      voice(520, { type: 'sine', dur: 0.1, peak: 0.06, glideTo: 780, delay: 0.1 });
+    },
+    conventions: function () {   // Syntax Citadel: a tidy two-note fanfare
+      voice(523.25, { type: 'square', dur: 0.12, peak: 0.05 });
+      voice(698.46, { type: 'square', dur: 0.2, peak: 0.055, delay: 0.1 });
+    },
+    algebra: function () {       // Copperpeak: pickaxe clink (inharmonic metal)
+      voice(1190, { type: 'square', dur: 0.07, peak: 0.05 });
+      voice(1870, { type: 'square', dur: 0.05, peak: 0.03 });
+      voice(2640, { type: 'sine', dur: 0.12, peak: 0.04, delay: 0.01 });
+    },
+    advmath: function () {       // Starfall Summit: rising star shimmer
+      voice(1046.5, { type: 'sine', dur: 0.12, peak: 0.06 });
+      voice(1318.5, { type: 'sine', dur: 0.12, peak: 0.06, delay: 0.07 });
+      voice(1568, { type: 'sine', dur: 0.22, peak: 0.06, delay: 0.14 });
+    },
+    data: function () {          // Chartwater Bay: harbor bell
+      voice(659.25, { type: 'sine', dur: 0.55, peak: 0.11 });
+      voice(989, { type: 'sine', dur: 0.45, peak: 0.045 });
+    },
+    geometry: function () {      // Prism Tidepools: glassy crystal ping
+      voice(1760, { type: 'sine', dur: 0.2, peak: 0.07 });
+      voice(2637, { type: 'sine', dur: 0.14, peak: 0.04, delay: 0.02 });
+    },
+  };
+
   window.SQSfx = {
+    /* the realm's themed voice, falling back to the pentatonic tap */
+    realmTap: function (realmId) {
+      var fn = REALM_SOUNDS[realmId];
+      if (fn) fn(); else window.SQSfx.tap(0);
+    },
     /* soft press for anything clickable */
     click: function () {
       voice(1500, { type: 'sine', dur: 0.05, peak: 0.045, glideTo: 950 });
