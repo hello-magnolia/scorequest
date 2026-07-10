@@ -42,16 +42,26 @@ def quantize(path, palette_json='/tmp/capy_clean.json'):
 
     import os
     fixed = os.environ.get('SQ_PITCH')
-    pitches = [int(fixed)] if fixed else range(16, 33)
-    best = None
+    pmin = int(os.environ.get('SQ_PMIN', 12))
+    pmax = int(os.environ.get('SQ_PMAX', 32))
+    pitches = [int(fixed)] if fixed else range(pmin, pmax + 1)
+    # score each pitch at its best phase; multiples of the true pitch also
+    # score well (harmonics), so pick the SMALLEST pitch within 12% of the
+    # global best rather than the raw minimum
+    per_pitch = {}
     for p in pitches:
+        bestp = None
         for ox in range(0, p, 2):
             for oy in range(0, p, 2):
-                v = cell_score(p, ox, oy) / (p * p)  # normalize: larger cells sample more area
-                if best is None or v < best[0]:
-                    best = (v, p, ox, oy)
-    _, P, OX, OY = best
-    print('pitch=%d phase=%d,%d' % (P, OX, OY), file=sys.stderr)
+                v = cell_score(p, ox, oy)
+                if bestp is None or v < bestp[0]:
+                    bestp = (v, ox, oy)
+        per_pitch[p] = bestp
+    gmin = min(v[0] for v in per_pitch.values())
+    P = min(p for p, v in per_pitch.items() if v[0] <= gmin * 1.12)
+    _, OX, OY = per_pitch[P]
+    print('pitch=%d phase=%d,%d (fundamental of %d candidates within tolerance)'
+          % (P, OX, OY, sum(1 for v in per_pitch.values() if v[0] <= gmin * 1.12)), file=sys.stderr)
 
     gx0, gy0 = minx + OX, miny + OY
     while gx0 - P >= minx - P // 2: gx0 -= P

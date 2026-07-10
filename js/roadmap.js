@@ -428,8 +428,8 @@
     mangoEl.className = 'mango-sprite';
     mangoEl.setAttribute('aria-label', 'A small capybara, waiting');
     mangoEl.innerHTML = '<canvas width="' + window.SQMango.w + '" height="' + window.SQMango.h + '"></canvas>';
-    mangoEl.style.width = (window.SQMango.w * 3) + 'px';
-    mangoEl.style.height = (window.SQMango.h * 3) + 'px';
+    mangoEl.style.width = (window.SQMango.w * 2) + 'px';
+    mangoEl.style.height = (window.SQMango.h * 2) + 'px';
     host.appendChild(mangoEl);
     mangoCtx = mangoEl.querySelector('canvas').getContext('2d');
     window.SQMango.draw(mangoCtx, 0);
