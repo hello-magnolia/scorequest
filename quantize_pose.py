@@ -40,14 +40,18 @@ def quantize(path, palette_json='/tmp/capy_clean.json'):
             sc += sum(abs(c[0] - mr) + abs(c[1] - mg) + abs(c[2] - mb) for c in cs)
         return sc
 
+    import os
+    fixed = os.environ.get('SQ_PITCH')
+    pitches = [int(fixed)] if fixed else range(16, 33)
     best = None
-    for p in (19, 20, 21, 22):
-        for ox in range(0, p, 3):
-            for oy in range(0, p, 3):
-                v = cell_score(p, ox, oy)
+    for p in pitches:
+        for ox in range(0, p, 2):
+            for oy in range(0, p, 2):
+                v = cell_score(p, ox, oy) / (p * p)  # normalize: larger cells sample more area
                 if best is None or v < best[0]:
                     best = (v, p, ox, oy)
     _, P, OX, OY = best
+    print('pitch=%d phase=%d,%d' % (P, OX, OY), file=sys.stderr)
 
     gx0, gy0 = minx + OX, miny + OY
     while gx0 - P >= minx - P // 2: gx0 -= P
