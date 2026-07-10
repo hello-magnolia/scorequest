@@ -172,7 +172,7 @@ const OPTS = {
 
   /* 8 — progression advances the path live */
   const G = window.SQGame;
-  G.completeQuest('info', 5, 5); G.completeQuest('info', 5, 5); G.completeQuest('info', 5, 5); // -> Lv 2
+  G.completeQuest('info', 5, 5); // one lesson -> Lv 2
   await new Promise(r => setTimeout(r, 80));
   check('Reaching Lv 2 completes node 1 and advances START to node 2',
     infoNodes[0].classList.contains('is-done') && infoNodes[1].classList.contains('is-current'));

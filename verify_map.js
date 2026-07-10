@@ -39,14 +39,14 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
     craftCard.classList.contains('realm-locked') && craftBtn.disabled && /Locked/.test(craftBtn.textContent));
 
   // XP mechanics: a perfect quest awards base+accuracy+bonus
-  const r1 = G.completeQuest('info', 5, 5);
+  const r1 = G.completeQuest('info', 5, 5); // one lesson -> Lv2
   check('Perfect quest awards XP (40) ', r1.earned === 40, r1.earned + ' xp');
   check('completeQuest returns state', r1.state && r1.state.xp === 40, 'xp=' + (r1.state && r1.state.xp));
 
   // drive info to Lv 2 to unlock craft
-  G.completeQuest('info', 5, 5); G.completeQuest('info', 5, 5); // +80 => 120 total => Lv2
+  // lesson-based: the single quest above already reached Lv2
   const sInfo = G.realmState('info');
-  check('info reaches Lv 2 at 120 XP', sInfo.level === 2, 'Lv ' + sInfo.level + ' @ ' + sInfo.xp + 'xp');
+  check('One completed lesson reaches Lv 2', sInfo.level === 2, 'Lv ' + sInfo.level + ' @ ' + sInfo.xp + 'xp');
   const sCraft = G.realmState('craft');
   check('Reaching Lv 2 unlocks the next R&W realm (craft)', sCraft.unlocked === true);
 
@@ -71,7 +71,7 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
 
   // persistence: progress went through SQAuth (demo localStorage)
   const prog = window.SQAuth.getProgress();
-  check('Progress persisted via SQAuth', prog.realms.info && prog.realms.info.xp >= 900 && prog.xp > 0,
+  check('Progress persisted via SQAuth', prog.realms.info && prog.realms.info.xp >= 800 && prog.xp > 0,
     'info.xp=' + (prog.realms.info && prog.realms.info.xp) + ' totalXp=' + prog.xp);
 
   // quest drawer opens and renders a question

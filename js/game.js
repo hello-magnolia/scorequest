@@ -33,7 +33,10 @@
   // Leveling: XP needed to REACH level n (1-indexed). Level 1 is the start.
   // Curve: gentle early, steeper later. cleared = reached max level (5).
   var MAX_LEVEL = 5;
-  var LEVEL_XP = [0, 0, 120, 300, 560, 900]; // index by level; L1=0, L5=900 cumulative
+  var LEVEL_XP = [0, 0, 120, 300, 560, 900]; // legacy display scale (rank flavor)
+  function levelFromRec(rec) {
+    return Math.min(1 + ((rec && rec.questsCleared) || 0), MAX_LEVEL);
+  }
   function levelFromXp(xp) {
     var lvl = 1;
     for (var n = 2; n <= MAX_LEVEL; n++) if (xp >= LEVEL_XP[n]) lvl = n;
@@ -54,11 +57,11 @@
     var pr = progress();
     var rec = (pr.realms && pr.realms[id]) || { xp: 0, questsCleared: 0 };
     var xp = rec.xp || 0;
-    var level = levelFromXp(xp);
+    var level = levelFromRec(rec); // one completed lesson = one level
     var cleared = level >= MAX_LEVEL;
     var floor = LEVEL_XP[level] || 0;
     var ceil = level < MAX_LEVEL ? LEVEL_XP[level + 1] : LEVEL_XP[MAX_LEVEL];
-    var xpInLevel = xp - floor;
+    var xpInLevel = Math.max(0, xp - floor);
     var xpToNext = Math.max(0, ceil - xp);
     var span = Math.max(1, ceil - floor);
     // Unlock rule: first realm of each section always open; each next unlocks
@@ -70,12 +73,12 @@
     if (!allAccess && idx > 0) {
       var prevSame = null;
       for (var j = idx - 1; j >= 0; j--) { if (REALMS[j].section === r.section) { prevSame = REALMS[j]; break; } }
-      if (prevSame) unlocked = levelFromXp(((pr.realms && pr.realms[prevSame.id]) || {}).xp || 0) >= 2;
+      if (prevSame) unlocked = levelFromRec((pr.realms && pr.realms[prevSame.id]) || null) >= 2;
     }
     return {
       id: id, realm: r, level: level, xp: xp, cleared: cleared, unlocked: unlocked,
       xpInLevel: xpInLevel, xpToNext: xpToNext,
-      pct: cleared ? 100 : Math.round((xpInLevel / span) * 100),
+      pct: cleared ? 100 : Math.round(((level - 1) / (MAX_LEVEL - 1)) * 100),
       questsCleared: rec.questsCleared || 0,
       maxLevel: MAX_LEVEL,
     };
@@ -113,11 +116,11 @@
     var pr = progress();
     var realms = Object.assign({}, pr.realms);
     var rec = Object.assign({ xp: 0, questsCleared: 0 }, realms[realmId]);
-    var beforeLevel = levelFromXp(rec.xp);
+    var beforeLevel = levelFromRec(rec);
     rec.xp += earned;
     rec.questsCleared += 1;
     realms[realmId] = rec;
-    var afterLevel = levelFromXp(rec.xp);
+    var afterLevel = levelFromRec(rec);
 
     // streak: +1 per day of activity (demo: +1 per quest session, capped feel)
     var today = new Date().toISOString().slice(0, 10);
