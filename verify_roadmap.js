@@ -94,27 +94,12 @@ const OPTS = {
   await new Promise(r2 => setTimeout(r2, 60));
   check('Begin saves the character and closes the builder',
     builder.hidden === true && /Nova/.test(window.localStorage.getItem('sq_character') || ''));
-  const spx = document.querySelector('.hero-sprite canvas').getContext('2d').getImageData(6,1,1,1).data;
-  check('Map sprite wears the chosen colors (berry hat)',
-    spx[0] === 226 && spx[1] === 105 && spx[2] === 90, spx.slice(0,3).join(','));
   check('Customize hero button reopens the builder', !!document.getElementById('customize-hero'));
 
-  /* 1c — the capybara companion trails the hero */
-  const compEl = document.querySelector('.companion-sprite');
-  let compPainted = false;
-  try {
-    const cd = compEl.querySelector('canvas').getContext('2d')
-      .getImageData(0, 0, window.SQCompanion.w, window.SQCompanion.h).data;
-    compPainted = [...cd].some(v => v > 0);
-  } catch (e) {}
-  check('Capybara companion present and painted', !!compEl && compPainted && !!window.SQCompanion);
-  const hx = parseFloat(document.querySelector('.hero-sprite').style.left);
-  const cx = parseFloat(compEl.style.left);
-  check('Companion settles just behind the hero',
-    Math.abs((hx - cx) - 30) <= 2,
-    'hero=' + hx + ' capy=' + cx);
-  check('Companion has all four frames (idle, walk x2, blink)',
-    (() => { try { [0,1,2,3].forEach(f => window.SQCompanion.draw(compEl.querySelector('canvas').getContext('2d'), f)); return true; } catch (e) { return false; } })());
+  /* 1c — the capybara has all four frames */
+  check('Capybara has all four frames (idle, walk x2, blink)',
+    (() => { try { const cv = document.createElement('canvas'); cv.width = window.SQCompanion.w; cv.height = window.SQCompanion.h;
+      [0,1,2,3].forEach(f => window.SQCompanion.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
 
   /* 2 — nodes: 5 per segment, one boss each */
   const nodes = document.querySelectorAll('.rnode');
@@ -163,18 +148,20 @@ const OPTS = {
   check('Dotted trail drawn in every segment',
     segs.every(s => { const p = s.querySelector('.seg-trail-path'); return p && (p.getAttribute('d')||'').startsWith('M'); }));
 
-  /* 6b — the adventurer sprite stands at the frontier */
-  const sprite = document.querySelector('.hero-sprite');
+  /* 6b — the capybara stands at the frontier as the traveler */
+  const sprite = document.querySelector('.companion-sprite');
   let spritePainted = false;
   try {
-    const d = sprite.querySelector('canvas').getContext('2d').getImageData(0, 0, 16, 20).data;
+    const d = sprite.querySelector('canvas').getContext('2d')
+      .getImageData(0, 0, window.SQCompanion.w, window.SQCompanion.h).data;
     spritePainted = [...d].some(v => v > 0);
   } catch (e) {}
-  check('Adventurer sprite present and painted', !!sprite && spritePainted);
-  check('Sprite starts at Gloamwood node 1',
+  check('Capybara traveler present and painted', !!sprite && spritePainted);
+  check('Capybara starts at Gloamwood node 1',
     window.__SQ_SPRITE && window.__SQ_SPRITE.node === infoNodes[0]);
-  check('Sprite replaces the START badge as the marker',
+  check('Capybara replaces the START badge as the marker',
     document.getElementById('roadmap').classList.contains('has-sprite'));
+  check('No hero sprite remains on the map', document.querySelector('.hero-sprite') === null);
 
   /* 7 — clicking the current node opens the quest drawer */
   infoNodes[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
@@ -190,7 +177,7 @@ const OPTS = {
   check('Reaching Lv 2 completes node 1 and advances START to node 2',
     infoNodes[0].classList.contains('is-done') && infoNodes[1].classList.contains('is-current'));
   await new Promise(r => setTimeout(r, 1400)); // let the walk finish (~118px at 170px/s)
-  check('Sprite walks the trail to node 2',
+  check('Capybara walks the trail to node 2',
     window.__SQ_SPRITE.node === infoNodes[1] && window.__SQ_SPRITE.walking === false,
     'walking=' + window.__SQ_SPRITE.walking);
   check('Lv 2 unlocks Echo Vale on the path',

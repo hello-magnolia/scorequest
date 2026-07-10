@@ -808,13 +808,6 @@ a { color: inherit; }
    The adventurer sprite + immersive quest scenes
    ============================================================ */
 .roadmap { position: relative; }
-.hero-sprite {
-  position: absolute; z-index: 6; pointer-events: none;
-  width: 48px; height: 60px;
-  transform: translate(-50%, -100%) translateY(var(--bob, 0px)) scaleX(var(--facing, 1));
-  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35));
-}
-.hero-sprite canvas { width: 100%; height: 100%; image-rendering: pixelated; }
 .has-sprite .rnode-start { display: none !important; } /* the hero standing there IS the marker */
 
 /* quest drawer: the biome behind the questions */
@@ -835,9 +828,6 @@ a { color: inherit; }
 .quest-answer { background: rgba(22, 17, 43, 0.86); }
 .quest-answer:hover:not(:disabled) { background: rgba(38, 32, 82, 0.92); }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-sprite { transform: translate(-50%, -100%); }
-}
 
 .stat-value { font-size: 2.4rem; color: var(--gold); line-height: 1; white-space: nowrap; }
 .plan-value { color: var(--gold-bright); font-size: 0.9rem; margin: 0 0 12px; line-height: 1.45; }
