@@ -251,14 +251,12 @@
         ? '<p class="quest-saved type-utility">✓ Saved to your hero</p>'
         : '<p class="quest-saved type-utility warn">Progress kept for this session. <button class="quest-signup">Create a hero</button> to save it.</p>') +
       '<div class="quest-actions">' +
-        '<button class="btn btn-gold quest-again">Another quest</button>' +
-        '<button class="btn btn-outline quest-done">Back to map</button>' +
+        '<button class="btn btn-gold quest-done">Return to map</button>' +
       '</div>';
 
     if (res.leveledUp || res.cleared) { if (window.SQSfx) window.SQSfx.levelup(); }
     if (!reduceMotion && (res.leveledUp || res.cleared)) burst();
 
-    stage.querySelector('.quest-again').addEventListener('click', function () { openQuest(session.realmId); });
     stage.querySelector('.quest-done').addEventListener('click', closeQuest);
     var su = stage.querySelector('.quest-signup');
     if (su) su.addEventListener('click', function () { closeQuest(); if (window.SQAuth) window.SQAuth.openModal('up'); });
@@ -267,6 +265,7 @@
   }
 
   function closeQuest() {
+    window.dispatchEvent(new CustomEvent('sq-quest-closed'));
     if (!drawer) return;
     drawer.hidden = true;
     document.body.style.overflow = '';

@@ -188,6 +188,22 @@ const OPTS = {
     !craftSeg.classList.contains('seg-locked') &&
     craftSeg.querySelector('.rnode').classList.contains('is-current'));
 
+  /* 8c — the journey waits for Return to map when the drawer is open */
+  infoNodes[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r2 => setTimeout(r2, 80));
+  const drawerEl = document.querySelector('.quest-overlay');
+  check('Drawer open at the new lesson', drawerEl && !drawerEl.hidden);
+  while (window.SQGame.realmState('info').level < 3) window.SQGame.completeQuest('info', 3, 3);
+  await new Promise(r2 => setTimeout(r2, 120));
+  check('Capybara holds position while the drawer is open',
+    window.__SQ_SPRITE.walking === false && window.__SQ_SPRITE.node === infoNodes[1] &&
+    infoNodes[2].classList.contains('is-pending'));
+  drawerEl.querySelector('.quest-close').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r2 => setTimeout(r2, 1700));
+  check('Return to map starts the journey to the next lesson',
+    window.__SQ_SPRITE.node === infoNodes[2] && !infoNodes[2].classList.contains('is-pending') &&
+    infoNodes[2].classList.contains('is-current'));
+
   /* 9 — clearing a realm: all nodes done, segment conquered */
   for (let i=0;i<20;i++) G.completeQuest('info', 5, 5);
   await new Promise(r => setTimeout(r, 80));

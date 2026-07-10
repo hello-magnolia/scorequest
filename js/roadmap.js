@@ -329,6 +329,7 @@
         setTimeout(function () { target.classList.remove('node-wake'); }, 550);
         if (window.SQSfx) window.SQSfx.realmTap(seg.getAttribute('data-realm'));
       }
+      setTimeout(updateSprite, 350); // catch up if the frontier moved again meanwhile
     });
   }
 
@@ -370,9 +371,33 @@
       placeSprite(p.x, p.y, 1);
     }
   });
+  // if the quest drawer is open, hold the journey until Return to map:
+  // the destination keeps its locked look, and the walk begins on close
+  var walkDeferred = false;
+  function questDrawerOpen() {
+    var d = document.querySelector('.quest-overlay');
+    return !!(d && !d.hidden);
+  }
+  function stagePendingOnly() {
+    if (!spriteEl || reduceMotion) return;
+    var target = frontierNode();
+    if (target === spriteState.node) return;
+    if (allNodes.indexOf(target) <= allNodes.indexOf(spriteState.node)) return;
+    target.classList.add('is-pending');
+    var seg = target.closest('.seg');
+    if (lockedBefore.indexOf(seg) !== -1) seg.classList.add('seg-pending');
+  }
   G.onChange(function () {
     lockedBefore = segments.filter(function (sg) { return sg.classList.contains('seg-locked'); });
     refresh();
-    updateSprite();
+    if (questDrawerOpen()) {
+      walkDeferred = true;
+      stagePendingOnly();
+    } else {
+      updateSprite();
+    }
+  });
+  window.addEventListener('sq-quest-closed', function () {
+    if (walkDeferred) { walkDeferred = false; updateSprite(); }
   });
 })();

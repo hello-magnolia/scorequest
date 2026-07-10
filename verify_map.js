@@ -120,6 +120,12 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   const reached = await Promise.race([answerAll(), new Promise(r=>setTimeout(()=>r(false), 4000))]);
   check('Playing a quest reaches XP result screen', reached === true && !!drawer.querySelector('.quest-xp'),
     drawer.querySelector('.quest-xp') ? drawer.querySelector('.quest-xp').textContent : 'no xp');
+  const actions = [...drawer.querySelectorAll('.quest-actions .btn')];
+  check('Result offers exactly one path: Return to map',
+    actions.length === 1 && /Return to map/.test(actions[0].textContent));
+  actions[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Return to map closes the quest drawer', drawer.hidden === true);
 
   /* rendering guarantee: [hidden] must beat class display rules (the bug where
      overlays rendered on load despite hidden=true). The !important rule wins by
