@@ -49,6 +49,8 @@ const OPTS = {
   check('Clicking the scene advances the story',
     intro.querySelector('.intro-text').textContent !== cap0 &&
     intro.querySelectorAll('.intro-dot.is-done').length === 1);
+  check('Scene advance bumps the media generation (stale-load guard active)',
+    window.__SQ_MEDIA_GEN >= 2, 'gen=' + window.__SQ_MEDIA_GEN);
   const nextBtn = intro.querySelector('.intro-next');
   for (let k = 0; k < 3; k++) { nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 30)); }
   check('Final scene offers the call to adventure', nextBtn.textContent === 'Create your hero');
@@ -106,6 +108,8 @@ const OPTS = {
   /* 3b — the stunning pass: art chain, sparks, parallax, glow hook */
   check('Every segment attempts the generated realm art (local -> CDN chain)',
     segs.every(s => { const img = s.querySelector('.seg-art'); return img && /assets\/realms|cloudfront/.test(img.src || 'x'); }));
+  check('Segment art is eager (hidden + lazy would never load)',
+    segs.every(s => !s.querySelector('.seg-art').hasAttribute('loading')));
   check('Ambient sparks drift in every segment',
     segs.every(s => s.querySelectorAll('.spark').length >= 5));
   window.dispatchEvent(new window.Event('scroll'));

@@ -45,7 +45,7 @@
     seg.innerHTML =
       '<div class="seg-media" aria-hidden="true">' +
         '<canvas class="seg-bg" width="240" height="104" data-scene="' + r.scene + '"></canvas>' +
-        '<img class="seg-art" hidden alt="" loading="lazy" />' +
+        '<img class="seg-art" hidden alt="" />' +
       '</div>' +
       '<div class="seg-shade" aria-hidden="true"></div>' +
       '<div class="seg-sparks" aria-hidden="true">' + sparks + '</div>' +

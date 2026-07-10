@@ -87,23 +87,36 @@
     })(performance.now());
   }
 
+  var mediaGen = 0;
   function setMedia(step) {
+    // Generation token: scene advances can outrun in-flight loads, and a stale
+    // load event used to unhide an element still painting the PREVIOUS scene's
+    // bitmap. Every swap bumps the generation; handlers from older swaps are
+    // ignored, and stale sources are flushed before new ones are set.
+    var gen = ++mediaGen;
+    window.__SQ_MEDIA_GEN = mediaGen;
     var img = overlay.querySelector('.intro-img');
     var vid = overlay.querySelector('.intro-video');
-    img.hidden = true; vid.hidden = true; vid.pause();
+    img.hidden = true; vid.hidden = true;
+    vid.pause(); vid.removeAttribute('src'); try { vid.load(); } catch (e) {}
+    img.removeAttribute('src');
     function chain(el, sources, showEvent) {
-      var srcs = (sources || []).filter(function (u) { return u && u.indexOf('__') !== 0; })
-        .map(function (u) { return u.replace('__CDN__', 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01'); });
+      var srcs = (sources || []).filter(function (u) { return u && u.indexOf('__') !== 0; });
       if (!srcs.length) return false;
       var i = 0;
-      el.onerror = function () { if (i < srcs.length) el.src = srcs[i++]; else el.hidden = true; };
-      el['on' + showEvent] = function () { el.hidden = false; };
-      el.src = srcs[i++];
+      function next() {
+        if (gen !== mediaGen) return;
+        if (i >= srcs.length) { el.hidden = true; return; }
+        el.src = srcs[i++];
+      }
+      el.onerror = function () { if (gen === mediaGen) next(); };
+      el['on' + showEvent] = function () { if (gen === mediaGen) el.hidden = false; };
+      next();
       return true;
     }
-    // prefer the animated Higgsfield render; fall back to the still, then canvas
-    if (!chain(vid, step.video, 'canplay')) chain(img, step.image, 'load');
-    else if (step.image) chain(img, step.image, 'load'); // still shows while/if video loads
+    // prefer the animated Higgsfield render; the still covers while it loads
+    chain(vid, step.video, 'canplay');
+    if (step.image) chain(img, step.image, 'load');
   }
 
   function render() {
