@@ -221,6 +221,8 @@
     spriteEl = document.createElement('div');
     spriteEl.className = 'companion-sprite';
     spriteEl.innerHTML = '<canvas width="' + window.SQCompanion.w + '" height="' + window.SQCompanion.h + '"></canvas>';
+    spriteEl.style.width = (window.SQCompanion.w * 3) + 'px';
+    spriteEl.style.height = (window.SQCompanion.h * 3) + 'px';
     host.appendChild(spriteEl);
     spriteCtx = spriteEl.querySelector('canvas').getContext('2d');
     drawSpriteFrame(0);
@@ -228,7 +230,8 @@
 
     var start = frontierNode();
     var p = nodeGlobalPos(start);
-    spriteState = { node: start, x: p.x, y: p.y, walking: false, nextBlink: performance.now() + 2600 };
+    spriteState = { node: start, x: p.x, y: p.y, walking: false, sitting: false,
+      idleSince: performance.now(), nextBlink: performance.now() + 2600 };
     window.__SQ_SPRITE = spriteState;
     placeSprite(p.x, p.y, 1);
     if (!reduceMotion) requestAnimationFrame(idleLoop);
@@ -269,6 +272,7 @@
     }
     spriteState.node = targetNode;
     spriteState.walking = true;
+    spriteState.sitting = false;
     var seg = 0, segStart = performance.now();
     var SPEED = 170; // px per second
 
@@ -287,6 +291,7 @@
         segStart = now;
         if (seg >= pts.length - 1) {
           spriteState.walking = false;
+          spriteState.idleSince = performance.now();
           drawSpriteFrame(0);
           if (onArrive) onArrive();
           return;
@@ -296,14 +301,22 @@
     })(performance.now());
   }
 
+  var SIT_AFTER = 3200;
   function idleLoop(now) {
     if (spriteEl && !spriteState.walking) {
-      var bob = Math.sin(now / 560) > 0 ? 0 : -1.5; // slow capybara bob
-      spriteEl.style.setProperty('--cbob', bob + 'px');
-      if (now >= spriteState.nextBlink) {
-        drawSpriteFrame(3);
-        spriteState.nextBlink = now + 2400 + Math.random() * 2200;
-        setTimeout(function () { if (!spriteState.walking) drawSpriteFrame(0); }, 170);
+      if (now - spriteState.idleSince > SIT_AFTER) {
+        // settled: sit down and chew on grass
+        if (!spriteState.sitting) spriteState.sitting = true;
+        spriteEl.style.setProperty('--cbob', '0px');
+        drawSpriteFrame(Math.floor(now / 420) % 2 + 4);
+      } else {
+        var bob = Math.sin(now / 560) > 0 ? 0 : -1.5; // slow capybara bob
+        spriteEl.style.setProperty('--cbob', bob + 'px');
+        if (now >= spriteState.nextBlink) {
+          drawSpriteFrame(3);
+          spriteState.nextBlink = now + 2400 + Math.random() * 2200;
+          setTimeout(function () { if (!spriteState.walking && !spriteState.sitting) drawSpriteFrame(0); }, 170);
+        }
       }
     }
     requestAnimationFrame(idleLoop);
