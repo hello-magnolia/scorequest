@@ -1030,3 +1030,15 @@ a { color: inherit; }
   .seg-art:not([hidden]) { animation: none; }
   .intro-media { transition: none; }
 }
+
+/* the capybara companion */
+.companion-sprite {
+  position: absolute; z-index: 5; pointer-events: none;
+  width: 57px; height: 50px;
+  transform: translate(-50%, -100%) translateY(var(--cbob, 0px)) scaleX(var(--facing, 1));
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3));
+}
+.companion-sprite canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+@media (prefers-reduced-motion: reduce) {
+  .companion-sprite { transform: translate(-50%, -100%); }
+}

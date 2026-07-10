@@ -99,6 +99,23 @@ const OPTS = {
     spx[0] === 226 && spx[1] === 105 && spx[2] === 90, spx.slice(0,3).join(','));
   check('Customize hero button reopens the builder', !!document.getElementById('customize-hero'));
 
+  /* 1c — the capybara companion trails the hero */
+  const compEl = document.querySelector('.companion-sprite');
+  let compPainted = false;
+  try {
+    const cd = compEl.querySelector('canvas').getContext('2d')
+      .getImageData(0, 0, window.SQCompanion.w, window.SQCompanion.h).data;
+    compPainted = [...cd].some(v => v > 0);
+  } catch (e) {}
+  check('Capybara companion present and painted', !!compEl && compPainted && !!window.SQCompanion);
+  const hx = parseFloat(document.querySelector('.hero-sprite').style.left);
+  const cx = parseFloat(compEl.style.left);
+  check('Companion settles just behind the hero',
+    Math.abs((hx - cx) - 30) <= 2,
+    'hero=' + hx + ' capy=' + cx);
+  check('Companion has all four frames (idle, walk x2, blink)',
+    (() => { try { [0,1,2,3].forEach(f => window.SQCompanion.draw(compEl.querySelector('canvas').getContext('2d'), f)); return true; } catch (e) { return false; } })());
+
   /* 2 — nodes: 5 per segment, one boss each */
   const nodes = document.querySelectorAll('.rnode');
   check('40 quest nodes (5 per realm)', nodes.length === 40, nodes.length + ' nodes');

@@ -233,13 +233,73 @@
     spriteState = { node: start, x: p.x, y: p.y, walking: false, queue: [] };
     window.__SQ_SPRITE = spriteState;
     placeSprite(p.x, p.y, 1);
+    buildCompanion();
+    if (compEl) placeCompanion(p.x - COMP_GAP, p.y, 1);
     if (!reduceMotion) requestAnimationFrame(idleLoop);
   }
 
+  var trail = [];
   function placeSprite(x, y, facing) {
     spriteEl.style.left = x + 'px';
     spriteEl.style.top = y + 'px';
     spriteEl.style.setProperty('--facing', facing);
+    trail.push({ t: performance.now(), x: x, y: y, f: facing });
+    if (trail.length > 300) trail.splice(0, 60);
+  }
+
+  /* ---------- the capybara: waddles ~a third of a second behind ---------- */
+  var compEl = null, compCtx = null, comp = { x: 0, y: 0, f: 1, frame: 0, lastStep: 0, nextBlink: 0 };
+  var COMP_LAG = 360, COMP_GAP = 30;
+
+  function buildCompanion() {
+    if (!window.SQCompanion) return;
+    compEl = document.createElement('div');
+    compEl.className = 'companion-sprite';
+    compEl.innerHTML = '<canvas width="' + window.SQCompanion.w + '" height="' + window.SQCompanion.h + '"></canvas>';
+    host.appendChild(compEl);
+    compCtx = compEl.querySelector('canvas').getContext('2d');
+    window.SQCompanion.draw(compCtx, 0);
+    comp.nextBlink = performance.now() + 2600;
+    window.__SQ_COMPANION = comp;
+  }
+
+  function placeCompanion(x, y, f) {
+    compEl.style.left = x + 'px';
+    compEl.style.top = y + 'px';
+    compEl.style.setProperty('--facing', f);
+    comp.x = x; comp.y = y; comp.f = f;
+  }
+
+  function updateCompanion(now) {
+    if (!compEl || !trail.length) return;
+    var target = trail[0];
+    for (var i = trail.length - 1; i >= 0; i--) {
+      if (trail[i].t <= now - COMP_LAG) { target = trail[i]; break; }
+    }
+    var tx = target.x - COMP_GAP * target.f, ty = target.y;
+    var dist = Math.hypot(tx - comp.x, ty - comp.y);
+    if (dist > 1.2) {
+      // waddle after the hero
+      placeCompanion(tx, ty, target.f);
+      if (now - comp.lastStep > 140) {
+        comp.frame = comp.frame === 1 ? 2 : 1;
+        comp.lastStep = now;
+        window.SQCompanion.draw(compCtx, comp.frame);
+      }
+      compEl.style.setProperty('--cbob', '0px');
+    } else {
+      // settle: idle bob, occasional blink
+      if (comp.frame !== 0 && now > comp.nextBlink - 200) {} // fallthrough
+      if (now >= comp.nextBlink) {
+        window.SQCompanion.draw(compCtx, 3);
+        comp.nextBlink = now + 2400 + Math.random() * 2200;
+        setTimeout(function () { if (compCtx) window.SQCompanion.draw(compCtx, 0); comp.frame = 0; }, 170);
+      } else if (comp.frame !== 0 && now - comp.lastStep > 150) {
+        comp.frame = 0;
+        window.SQCompanion.draw(compCtx, 0);
+      }
+      compEl.style.setProperty('--cbob', (Math.sin(now / 560) > 0 ? 0 : -1.5) + 'px');
+    }
   }
 
   /* sample the same curve the trail uses between two points */
@@ -301,6 +361,7 @@
       var bob = Math.sin(now / 480) > 0 ? 0 : -2; // two-step pixel bob
       spriteEl.style.setProperty('--bob', bob + 'px');
     }
+    updateCompanion(now);
     requestAnimationFrame(idleLoop);
   }
 
