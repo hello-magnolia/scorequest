@@ -51,6 +51,7 @@ const OPTS = {
     intro.querySelectorAll('.intro-dot.is-done').length === 1);
   check('Scene advance bumps the media generation (stale-load guard active)',
     window.__SQ_MEDIA_GEN >= 2, 'gen=' + window.__SQ_MEDIA_GEN);
+  check('Intro preloads its art on open (anti-flash)', window.__SQ_INTRO_PRELOAD === true);
   const nextBtn = intro.querySelector('.intro-next');
   for (let k = 0; k < 3; k++) { nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 30)); }
   check('Final scene offers the call to adventure', nextBtn.textContent === 'Create your hero');

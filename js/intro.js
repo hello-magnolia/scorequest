@@ -87,8 +87,43 @@
     })(performance.now());
   }
 
+  /* ---------- preload: the cure for the low-fi flash ----------
+     The canvas fallback paints instantly, so if the generated art
+     arrives late the viewer sees a low-fi version pop into hi-fi.
+     Fix: resolve every still the moment the intro opens, and fetch
+     each scene's video one step ahead, so by the time a scene shows,
+     its art is already in cache and appears within a frame. */
+  var resolved = { image: {}, video: {} };
+  var prefetching = {};
+
+  function resolveChain(kind, idx, sources, makeEl, readyEvent) {
+    if (!sources || resolved[kind][idx] || prefetching[kind + idx]) return;
+    var srcs = sources.filter(function (u) { return u && u.indexOf('__') !== 0; });
+    if (!srcs.length) return;
+    prefetching[kind + idx] = true;
+    var el = makeEl();
+    var i = 0;
+    el.onerror = function () { if (i < srcs.length) el.src = srcs[i++]; };
+    el['on' + readyEvent] = function () { resolved[kind][idx] = el.currentSrc || el.src; };
+    el.src = srcs[i++];
+  }
+  function preloadStills() {
+    SCENES.forEach(function (st, i) {
+      resolveChain('image', i, st.image, function () { return new Image(); }, 'load');
+    });
+  }
+  function prefetchVideo(i) {
+    var st = SCENES[i];
+    if (!st) return;
+    resolveChain('video', i, st.video, function () {
+      var v = document.createElement('video');
+      v.preload = 'auto'; v.muted = true;
+      return v;
+    }, 'canplaythrough');
+  }
+
   var mediaGen = 0;
-  function setMedia(step) {
+  function setMedia(step, sceneIdx) {
     // Generation token: scene advances can outrun in-flight loads, and a stale
     // load event used to unhide an element still painting the PREVIOUS scene's
     // bitmap. Every swap bumps the generation; handlers from older swaps are
@@ -100,8 +135,9 @@
     img.hidden = true; vid.hidden = true;
     vid.pause(); vid.removeAttribute('src'); try { vid.load(); } catch (e) {}
     img.removeAttribute('src');
-    function chain(el, sources, showEvent) {
+    function chain(el, sources, showEvent, kind, idx) {
       var srcs = (sources || []).filter(function (u) { return u && u.indexOf('__') !== 0; });
+      if (resolved[kind] && resolved[kind][idx]) srcs = [resolved[kind][idx]]; // cached winner first
       if (!srcs.length) return false;
       var i = 0;
       function next() {
@@ -115,13 +151,14 @@
       return true;
     }
     // prefer the animated Higgsfield render; the still covers while it loads
-    chain(vid, step.video, 'canplay');
-    if (step.image) chain(img, step.image, 'load');
+    chain(vid, step.video, 'canplay', 'video', sceneIdx);
+    if (step.image) chain(img, step.image, 'load', 'image', sceneIdx);
   }
 
   function render() {
     var step = SCENES[idx];
-    setMedia(step);
+    setMedia(step, idx);
+    prefetchVideo(idx + 1); // stay one scene ahead
     overlay.querySelector('.intro-text').textContent = step.text;
     var next = overlay.querySelector('.intro-next');
     next.textContent = step.cta || 'Continue';
@@ -148,6 +185,10 @@
 
   function open() {
     if (!overlay) build();
+    preloadStills();
+    prefetchVideo(0);
+    prefetchVideo(1);
+    window.__SQ_INTRO_PRELOAD = true;
     idx = 0;
     render();
     overlay.hidden = false;

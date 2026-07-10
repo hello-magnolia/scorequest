@@ -1020,3 +1020,11 @@ a { color: inherit; }
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; image-rendering: pixelated;
 }
+
+/* generated art fades in over the canvas instead of popping */
+@keyframes media-fade { from { opacity: 0; } to { opacity: 1; } }
+.intro-media img:not([hidden]), .intro-media video:not([hidden]) { animation: media-fade 300ms ease; }
+.seg-art:not([hidden]) { animation: media-fade 450ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .intro-media img:not([hidden]), .intro-media video:not([hidden]), .seg-art:not([hidden]) { animation: none; }
+}
