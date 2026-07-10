@@ -868,44 +868,6 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) { .quest-feedback { animation: none; } }
 
 /* ============================================================
-   Character builder
-   ============================================================ */
-.builder-overlay {
-  position: fixed; inset: 0; z-index: 220; display: grid; place-items: center; padding: 20px;
-  background: rgba(11, 8, 24, 0.88); animation: auth-fade 180ms ease; overflow: auto;
-}
-.builder-panel {
-  --frame: var(--gold); width: 100%; max-width: 420px;
-  background: var(--ink-2); padding: 32px 30px 26px; text-align: center;
-  animation: auth-pop 200ms var(--reveal-ease);
-}
-.builder-title { font-size: 1.9rem; margin: 6px 0 18px; }
-.builder-preview {
-  width: 136px; height: 170px; margin: 0 auto 20px; display: grid; place-items: center;
-  background: var(--ink); box-shadow: inset 0 0 0 var(--pix) var(--line);
-}
-.builder-preview canvas { width: 96px; height: 120px; image-rendering: pixelated; }
-.builder-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-.builder-label { width: 64px; text-align: left; color: var(--dusk); font-size: 1.05rem; text-transform: uppercase; }
-.builder-swatches { display: flex; gap: 10px; }
-.swatch {
-  width: 34px; height: 34px; cursor: pointer; border: none; background: var(--swatch);
-  box-shadow: inset 0 0 0 3px rgba(22, 17, 43, 0.5);
-  transition: transform 100ms steps(2, end);
-}
-.swatch:hover { transform: translateY(-2px); }
-.swatch.is-active { box-shadow: inset 0 0 0 3px rgba(22, 17, 43, 0.5), 0 0 0 3px var(--gold); }
-.swatch:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
-.builder-name { text-align: left; margin: 18px 0 16px; }
-.btn-customize { margin-top: 10px; font-size: 0.9rem; color: var(--parchment-dim); }
-.btn-customize:hover { color: var(--gold-bright); }
-
-@media (prefers-reduced-motion: reduce) {
-  .builder-overlay, .builder-panel { animation: none; }
-  .swatch:hover { transform: none; }
-}
-
-/* ============================================================
    World Map, the stunning pass: glow, sparks, parallax polish
    ============================================================ */
 .seg { isolation: isolate; }
@@ -1044,12 +1006,28 @@ a { color: inherit; }
 .intro-choice:hover .intro-heart, .intro-choice:focus .intro-heart { visibility: visible; }
 .intro-choice:focus { outline: 2px dashed var(--gold); outline-offset: 3px; }
 
-/* white flash on the touch -> onsen cut */
+/* Pomelo asks who u are */
+.intro-name { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
+.intro-name input {
+  flex: 1; min-width: 0; background: transparent; color: var(--parchment);
+  border: none; border-bottom: 3px solid var(--line); outline: none;
+  font-family: var(--font-utility); font-size: 1.4rem; letter-spacing: 0.03em;
+  padding: 2px 4px;
+}
+.intro-name input:focus { border-bottom-color: var(--gold); }
+.intro-name-ok {
+  font-family: var(--font-utility); font-size: 1.3rem; color: var(--gold);
+  background: none; border: 2px solid var(--gold); padding: 4px 16px;
+  cursor: pointer; letter-spacing: 0.05em;
+}
+.intro-name-ok:hover, .intro-name-ok:focus { color: var(--ink); background: var(--gold); }
+
+/* white flash on the touch -> onsen cut: the light swells, then we're elsewhere */
 .intro-flash {
   position: absolute; inset: 0; z-index: 4; background: #fff6e4;
-  opacity: 0; pointer-events: none; transition: opacity 200ms ease;
+  opacity: 0; pointer-events: none; transition: opacity 380ms ease;
 }
-.intro-flash.is-on { opacity: 1; }
+.intro-flash.is-rising { opacity: 1; transition: opacity 1050ms ease-in; }
 @media (prefers-reduced-motion: reduce) {
   .intro-cursor.is-on { animation: none; opacity: 1; }
   .intro-flash { transition: none; }

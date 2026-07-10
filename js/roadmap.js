@@ -391,16 +391,19 @@
     });
   }
 
-  // who's playing
+  // who's playing — from the name given to Pomelo, else the auth profile
   if (window.SQAuth) {
-    window.SQAuth.onChange(function (st) {
+    var lastAuth = {};
+    var refreshPlayer = function () {
       var line = document.getElementById('mappage-player');
       if (!line) return;
       var chr = window.SQCharacter && window.SQCharacter.get();
-      var name = (chr && chr.name) || (st.user ? ((st.profile && st.profile.hero_name) || 'Hero') : null);
+      var name = (chr && chr.name) || (lastAuth.user ? ((lastAuth.profile && lastAuth.profile.hero_name) || 'Hero') : null);
       line.hidden = !name;
       if (name) document.getElementById('mappage-player-name').textContent = name;
-    });
+    };
+    window.SQAuth.onChange(function (st) { lastAuth = st; refreshPlayer(); });
+    window.addEventListener('sq-character', refreshPlayer);
   }
 
   // sound preference toggle

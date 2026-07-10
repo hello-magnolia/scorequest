@@ -30,9 +30,10 @@ const OPTS = {
   const intro = document.querySelector('.intro-overlay');
   const clickIntro = () => intro.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  check('Intro cinematic opens on first visit (before the builder)',
-    !!intro && intro.hidden === false &&
-    (document.querySelector('.builder-overlay') === null || document.querySelector('.builder-overlay').hidden));
+  check('Intro cinematic opens on first visit', !!intro && intro.hidden === false);
+  const cueLog = [];
+  const realCue = window.SQMusic.cue;
+  window.SQMusic.cue = on => { cueLog.push(on); realCue(on); };
   const textEl = intro.querySelector('.intro-text');
   const full = () => textEl.getAttribute('data-full') || '';
   check('Scene 1 keeps the midnight caption; six dots mark the longer story',
@@ -66,10 +67,14 @@ const OPTS = {
   check('"You touch it." plays alone in the dark',
     intro.getAttribute('data-scene') === 'touch' &&
     (intro.querySelector('.intro-center').getAttribute('data-full') || '') === 'You touch it.');
-  await nextScene(); // touch -> onsen
-  check('The onsen flashback plays from the committed local asset',
+  clickIntro(); await sleep(60); clickIntro(); await sleep(140); // leave the touch scene
+  check('Leaving the touch scene swells brighter and brighter (flare rising)',
+    intro.querySelector('.intro-flash').classList.contains('is-rising'));
+  await sleep(1150);
+  check('The onsen flashback plays from the committed local asset and cues the lullaby',
     intro.getAttribute('data-scene') === 'onsen' && /two capybaras/.test(full()) &&
-    /assets\/intro\/onsen/.test(intro.querySelector('.intro-video').src || ''));
+    /assets\/intro\/onsen/.test(intro.querySelector('.intro-video').src || '') &&
+    cueLog[cueLog.length - 1] === true);
   await nextScene(); // onsen -> snatch
   check('The snatch cuts in: "And then, suddenly—"',
     intro.getAttribute('data-scene') === 'snatch' && /suddenly/.test(full()));
@@ -78,15 +83,30 @@ const OPTS = {
     intro.getAttribute('data-scene') === 'pomelo' && !!intro.querySelector('.intro-pomelo') &&
     /hello/.test(full()));
   let hops = 0;
-  while (intro.querySelector('.intro-choices').hidden && hops < 40) { clickIntro(); await sleep(140); hops++; }
+  while (intro.querySelector('.intro-name').hidden && hops < 20) { clickIntro(); await sleep(140); hops++; }
+  check('Pomelo asks who u are and waits for a typed name',
+    !intro.querySelector('.intro-name').hidden && /who are u/.test(full()), hops + ' clicks to the question');
+  clickIntro(); await sleep(60);
+  check('Clicks cannot skip past the question', !intro.querySelector('.intro-name').hidden);
+  intro.querySelector('.intro-name input').value = 'Nova';
+  intro.querySelector('.intro-name-ok').dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await sleep(120);
+  check('Pomelo repeats the name back', /Nova/.test(full()), full());
+  const seenPages = [full()];
+  hops = 0;
+  while (intro.querySelector('.intro-choices').hidden && hops < 40) { seenPages.push(full()); clickIntro(); await sleep(140); hops++; }
+  check('The story pages read as intended (big bird fast; u are a scholar)',
+    seenPages.some(t => /big bird fast\. leg too short\./.test(t)) &&
+    seenPages.some(t => /u are a scholar right\?/.test(t)));
   const choices = intro.querySelectorAll('.intro-choice');
   check('Derpy dialogue ends on the deal — two choices, both accept',
     !intro.querySelector('.intro-choices').hidden && choices.length === 2 &&
     /deal, obviously/.test(choices[1].textContent), hops + ' pages clicked through');
   choices[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await sleep(60);
-  check('Accepting the deal persists v2 and opens character creation',
-    intro.hidden === true && window.localStorage.getItem('sq_intro_seen') === 'v2');
+  check('Accepting the deal persists v2 and cues the lullaby back out',
+    intro.hidden === true && window.localStorage.getItem('sq_intro_seen') === 'v2' &&
+    cueLog[cueLog.length - 1] === false);
 
   /* 1a2 — sound module present and safe without AudioContext */
   let sfxSafe = true;
@@ -103,24 +123,15 @@ const OPTS = {
   check('Sound + music toggles present on the map',
     !!document.getElementById('sound-toggle') && !!document.getElementById('music-toggle'));
 
-  /* 1b — character builder opens after the intro */
-  const builder = document.querySelector('.builder-overlay');
-  check('Character builder opens after the intro', !!builder && builder.hidden === false);
-  const pcv = builder.querySelector('canvas');
-  let previewPainted = false;
-  try { previewPainted = [...pcv.getContext('2d').getImageData(0,0,16,20).data].some(v=>v>0); } catch(e){}
-  check('Builder shows a painted hero preview', previewPainted);
-  const hatBefore = pcv.getContext('2d').getImageData(6,1,1,1).data.join(',');
-  builder.querySelector('.swatch[data-kind="hat"][data-i="1"]').dispatchEvent(new window.MouseEvent('click',{bubbles:true}));
-  await new Promise(r2 => setTimeout(r2, 40));
-  const hatAfter = pcv.getContext('2d').getImageData(6,1,1,1).data.join(',');
-  check('Choosing a swatch recolors the hero live', hatBefore !== hatAfter, hatBefore + ' -> ' + hatAfter);
-  builder.querySelector('.builder-name input').value = 'Nova';
-  builder.querySelector('.builder-begin').dispatchEvent(new window.MouseEvent('click',{bubbles:true}));
-  await new Promise(r2 => setTimeout(r2, 60));
-  check('Begin saves the character and closes the builder',
-    builder.hidden === true && /Nova/.test(window.localStorage.getItem('sq_character') || ''));
-  check('Customize hero button reopens the builder', !!document.getElementById('customize-hero'));
+  /* 1b — the hero is named inside the story; the builder is gone */
+  check('No character builder remains in the page', document.querySelector('.builder-overlay') === null);
+  check('The name given to Pomelo is the hero name',
+    /Nova/.test(window.localStorage.getItem('sq_character') || ''),
+    window.localStorage.getItem('sq_character'));
+  const playerLine = document.getElementById('mappage-player');
+  check('The map header greets the named player',
+    !!playerLine && playerLine.hidden === false &&
+    document.getElementById('mappage-player-name').textContent === 'Nova');
 
   /* 1c — the capybara has all six frames */
   check('Capybara has all 13 frames (incl. the four-stage flop)',

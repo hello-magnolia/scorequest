@@ -2,19 +2,23 @@
    ScoreQuest — intro cinematic v2: Pomelo & the orange
    ------------------------------------------------------------
    Six scenes the player clicks through on their first visit to
-   the World Map, before building their hero:
+   the World Map:
      1. Late night, practice-test misery        (media, loops)
      2. A glowing orange lands on the desk      (media, plays once)
-     3. "You touch it."                         (black + centered text)
-     4. Two capybaras in the onsen              (media, loops)
-     5. The eagle. "And then, suddenly—"        (media, advances on end)
+     3. "You touch it."                         (black + centered text;
+                                                 exits on a swelling flare
+                                                 of light and sound)
+     4. Two capybaras in the onsen              (media, loops, music)
+     5. The eagle. "And then, suddenly—"        (media, music, advances on end)
      6. Pomelo's ask                            (sprite + dialogue pages)
    All text renders Undertale/Pokemon typewriter style: first
    click finishes the line, second advances. Scene 6 draws the
-   real companion sprite (SQCompanion) and ends on two deal
-   buttons — both accept — which open the character builder.
-   Seen-state persists per device (sq_intro_seen = 'v2', so
-   players who saw v1 meet Pomelo exactly once).
+   companion sprite (standing idle) and asks WHO ARE U — the name
+   typed there IS the hero name (the separate character builder is
+   gone; sq_character now holds { name } and window.SQCharacter.get
+   lives here for the roadmap's "Playing as" line). The lullaby
+   cues in for the capybara scenes only. Seen-state persists per
+   device (sq_intro_seen = 'v2').
    ============================================================ */
 (function () {
   'use strict';
@@ -22,6 +26,7 @@
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var KEY = 'sq_intro_seen';
   var VERSION = 'v2';
+  var CHAR_KEY = 'sq_character';
   var CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01';
 
   var SCENES = [
@@ -35,11 +40,11 @@
       text: 'Then something streaks past the window and lands on your desk with a soft thunk. An orange. Glowing. Still warm.' },
     { id: 'touch', kind: 'black', flashAfter: true,
       text: 'You touch it.' },
-    { id: 'onsen', kind: 'media', loop: true,
+    { id: 'onsen', kind: 'media', loop: true, music: true,
       video: ['assets/intro/onsen.mp4'],
       image: ['assets/intro/onsen.png'],
       text: 'Somewhere far away: two capybaras, one steaming spring, a pile of oranges. Every day the same. Perfect.' },
-    { id: 'snatch', kind: 'media', advanceOnEnd: true,
+    { id: 'snatch', kind: 'media', advanceOnEnd: true, music: true,
       video: ['assets/intro/snatch.mp4'],
       image: ['assets/intro/onsen.png'],
       text: 'And then, suddenly\u2014' },
@@ -47,9 +52,10 @@
       pages: [
         '* hello.',
         '* u found my orange. good.',
-        '* i am pomelo. the big bird took mango to the top of the big mountain.',
-        '* i tried to climb it. i have very short legs. it did not go well.',
-        '* the gates on the path only open if u answer questions. u are a student. u are basically made of answers.',
+        { text: '* i am pomelo. who are u?', input: true },
+        '* {name}. good name.',
+        '* the big bird took mango to the top of the big mountain. big bird fast. leg too short.',
+        '* the gates on the path only open if u answer questions. u are a scholar right? u are basically made of answers.',
         '* so. deal \u2014 u get mango back, i help u study.',
         '* i am extremely good at sitting next to people while they work. best in the world maybe.',
         '* deal?'
@@ -58,6 +64,7 @@
   ];
 
   var overlay = null, idx = 0;
+  var heroName = '';
 
   function seen() {
     try { return window.localStorage.getItem(KEY) === VERSION; } catch (e) { return false; }
@@ -66,9 +73,21 @@
     try { window.localStorage.setItem(KEY, VERSION); } catch (e) {}
   }
 
+  /* ---------- the hero record (the builder's old job) ---------- */
+  function loadCharacter() {
+    try { return JSON.parse(window.localStorage.getItem(CHAR_KEY)); } catch (e) { return null; }
+  }
+  function saveCharacter(name) {
+    var cfg = loadCharacter() || {};
+    cfg.name = name;
+    try { window.localStorage.setItem(CHAR_KEY, JSON.stringify(cfg)); } catch (e) {}
+    window.dispatchEvent(new CustomEvent('sq-character'));
+  }
+  window.SQCharacter = { get: loadCharacter };
+
   /* ---------- typewriter (Undertale/Pokemon) ----------
      Types one character at a time with longer holds on sentence
-     punctuation and a soft blip per letter. finish() completes
+     punctuation and a soft click per letter. finish() completes
      the line instantly; the blinking cursor invites the next
      click. Full text always lives in data-full for a11y/tests. */
   var tw = null;
@@ -126,6 +145,10 @@
       '<div class="intro-caption pixel-frame">' +
         '<p class="intro-text" aria-live="polite"></p>' +
         '<span class="intro-cursor" aria-hidden="true">\u25BC</span>' +
+        '<div class="intro-name" hidden>' +
+          '<input type="text" maxlength="24" placeholder="type ur name" aria-label="Your name" />' +
+          '<button class="intro-name-ok type-utility">ok</button>' +
+        '</div>' +
         '<div class="intro-choices" hidden></div>' +
         '<div class="intro-foot">' +
           '<div class="intro-dots">' + SCENES.map(function () { return '<span class="intro-dot"></span>'; }).join('') + '</div>' +
@@ -140,16 +163,27 @@
     });
     // clicking anywhere finishes the line, then advances — game muscle memory
     overlay.addEventListener('click', function (e) {
-      if (e.target.closest('.intro-skip') || e.target.closest('.intro-choice')) return;
+      if (e.target.closest('.intro-skip') || e.target.closest('.intro-choice') ||
+          e.target.closest('.intro-name')) return;
       advance();
     });
     document.addEventListener('keydown', function (e) {
       if (!overlay || overlay.hidden) return;
+      if (e.target && e.target.tagName === 'INPUT') return;      // the name field owns its keys
       if (e.key === ' ' || e.key === 'Enter' || e.key === 'z' || e.key === 'Z') {
         if (!overlay.querySelector('.intro-choices').hidden) return; // buttons own Enter
         e.preventDefault();
         advance();
       }
+    });
+
+    var nameBox = overlay.querySelector('.intro-name');
+    nameBox.querySelector('input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); submitName(); }
+    });
+    nameBox.querySelector('.intro-name-ok').addEventListener('click', function (e) {
+      e.stopPropagation();
+      submitName();
     });
   }
 
@@ -233,11 +267,11 @@
     });
   }
 
-  /* ---------- Pomelo, drawn live from the companion sprite ---------- */
+  /* ---------- Pomelo, drawn live from the companion sprite ----------
+     Standing idle only: he is here on business, not to graze. */
   var pomeloTimer = null;
-  var POMELO_IDLE = [ // frame, hold ms — stand, blink, and a little graze
-    [0, 1700], [3, 140], [0, 1100], [3, 140], [0, 700],
-    [4, 900], [5, 240], [6, 650], [7, 240], [8, 240], [7, 240], [8, 240], [5, 240], [4, 700]
+  var POMELO_IDLE = [ // frame, hold ms — stand with the occasional blink
+    [0, 1900], [3, 150], [0, 1250], [3, 150], [0, 800], [3, 130], [0, 160], [3, 130]
   ];
   function startPomelo() {
     var canvas = overlay.querySelector('.intro-pomelo');
@@ -258,6 +292,33 @@
   }
   function stopPomelo() {
     if (pomeloTimer) { clearTimeout(pomeloTimer); pomeloTimer = null; }
+  }
+
+  /* ---------- the name, given to a capybara ---------- */
+  var pageIdx = 0;
+  function pageAt(step, i) {
+    var p = step.pages[i];
+    var text = typeof p === 'string' ? p : p.text;
+    return {
+      text: text.replace('{name}', heroName || 'friend'),
+      input: typeof p !== 'string' && !!p.input
+    };
+  }
+  function showNameForm() {
+    var box = overlay.querySelector('.intro-name');
+    box.hidden = false;
+    setCursor(false);
+    var input = box.querySelector('input');
+    input.value = heroName || '';
+    input.focus();
+  }
+  function submitName() {
+    var box = overlay.querySelector('.intro-name');
+    heroName = (box.querySelector('input').value || '').trim() || 'friend';
+    saveCharacter(heroName);
+    box.hidden = true;
+    if (window.SQSfx) window.SQSfx.uiTick();
+    nextPage();
   }
 
   /* ---------- dialogue choices (both accept — Pomelo is confident) ---------- */
@@ -281,12 +342,30 @@
     if (row.firstChild) row.firstChild.focus();
   }
 
-  var pageIdx = 0;
+  function typePage(step) {
+    var page = pageAt(step, pageIdx);
+    var last = pageIdx === step.pages.length - 1;
+    typewrite(overlay.querySelector('.intro-text'), page.text,
+      page.input ? function () { showNameForm(); } :
+      last ? function () { showChoices(step); } : null);
+  }
+  function nextPage() {
+    var step = SCENES[idx];
+    pageIdx += 1;
+    if (pageIdx < step.pages.length) typePage(step);
+  }
+
+  function cueMusic(on) {
+    if (window.SQMusic && window.SQMusic.cue) window.SQMusic.cue(on);
+  }
+
   function render() {
     var step = SCENES[idx];
     overlay.setAttribute('data-scene', step.id);
     overlay.querySelector('.intro-choices').hidden = true;
+    overlay.querySelector('.intro-name').hidden = true;
     pendingAutoAdvance = false;
+    cueMusic(!!step.music);
     setMedia(step, idx);
     prefetchVideo(idx + 1); // stay one scene ahead
     overlay.querySelectorAll('.intro-dot').forEach(function (d, i) {
@@ -301,7 +380,7 @@
     } else if (step.kind === 'dialogue') {
       pageIdx = 0;
       startPomelo();
-      typewrite(textEl, step.pages[0]);
+      typePage(step);
     } else {
       typewrite(textEl, step.text, function () {
         if (pendingAutoAdvance) advance();   // snatch clip already ended
@@ -312,36 +391,39 @@
   var dipping = false;
   function advance() {
     var step = SCENES[idx];
-    if (tw && !tw.isDone()) { tw.finish(); return; }   // first press: finish the line
+    if (!overlay.querySelector('.intro-name').hidden) return;   // Pomelo is waiting for a name
+    if (tw && !tw.isDone()) { tw.finish(); return; }            // first press: finish the line
     if (window.SQSfx) window.SQSfx.uiTick();
     if (step.kind === 'dialogue') {
-      pageIdx += 1;
-      if (pageIdx >= step.pages.length) return;        // choices are on screen
-      var last = pageIdx === step.pages.length - 1;
-      typewrite(overlay.querySelector('.intro-text'), step.pages[pageIdx],
-        last ? function () { showChoices(step); } : null);
+      if (pageIdx >= step.pages.length - 1) return;             // choices are on screen
+      nextPage();
       return;
     }
     if (idx >= SCENES.length - 1) return finish();
     if (dipping) return;
     dipping = true;
-    if (step.flashAfter && !reduceMotion) overlay.querySelector('.intro-flash').classList.add('is-on');
+    var flash = overlay.querySelector('.intro-flash');
+    if (step.flashAfter) {
+      // the orange's light swells until it fills the screen, then we're elsewhere
+      if (window.SQSfx && window.SQSfx.flare) window.SQSfx.flare();
+      if (!reduceMotion) flash.classList.add('is-rising');
+    }
     overlay.querySelector('.intro-media').classList.add('is-dark'); // fade to black
     setTimeout(function () {
       idx++;
       render();   // swap sources + caption in the dark; sceneReady fades back
       dipping = false;
-      setTimeout(function () { overlay.querySelector('.intro-flash').classList.remove('is-on'); }, 80);
-    }, reduceMotion ? 0 : 300);
+      setTimeout(function () { flash.classList.remove('is-rising'); }, 120);
+    }, reduceMotion ? 0 : (step.flashAfter ? 1050 : 300));
   }
 
   function finish() {
     markSeen();
     stopPomelo();
+    cueMusic(false);
+    window.__SQ_INTRO_OPEN = false;
     overlay.hidden = true;
     document.body.style.overflow = '';
-    // straight into character creation, then the map
-    if (window.SQCharacter && !window.SQCharacter.get()) window.SQCharacter.open();
   }
 
   function open() {
@@ -349,6 +431,18 @@
     prefetchVideo(0);
     prefetchVideo(1);
     window.__SQ_INTRO_PRELOAD = true;
+    window.__SQ_INTRO_OPEN = true;
+    // unlock audio as early as the browser allows, so scene 1's
+    // typewriter is audible — immediately if user activation carried
+    // over, otherwise from the very first tap or keypress
+    function wake() {
+      if (window.SQSfx && window.SQSfx.wake) window.SQSfx.wake();
+      document.removeEventListener('pointerdown', wake, true);
+      document.removeEventListener('keydown', wake, true);
+    }
+    if (window.SQSfx && window.SQSfx.wake) window.SQSfx.wake();
+    document.addEventListener('pointerdown', wake, true);
+    document.addEventListener('keydown', wake, true);
     idx = 0;
     overlay.querySelector('.intro-media').classList.add('is-dark');
     render();

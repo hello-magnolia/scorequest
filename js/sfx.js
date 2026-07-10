@@ -122,6 +122,12 @@
     enabled: musicEnabled,
     playing: function () { return !!music.on; },
     ensure: function () { if (musicEnabled() && !music.on) startMusic(); },
+    /* scene-scoped start/stop that never flips the saved preference —
+       the intro cues the lullaby for the capybara scenes */
+    cue: function (on) {
+      if (on) { if (musicEnabled() && !music.on) startMusic(); }
+      else if (music.on) stopMusic();
+    },
     toggle: function () {
       var on = !musicEnabled();
       try { window.localStorage.setItem(MKEY, on ? 'on' : 'off'); } catch (e) {}
@@ -185,6 +191,9 @@
       voice(1500, { type: 'sine', dur: 0.05, peak: 0.045, glideTo: 950 });
     },
     enabled: enabled,
+    /* create/resume the AudioContext as early as the browser allows,
+       so the very first typewriter line is audible */
+    wake: function () { ac(); },
     toggle: function () { setEnabled(!enabled()); return enabled(); },
     tap: function (i) {
       var f = PENTA[Math.abs(i || 0) % PENTA.length];
@@ -194,9 +203,17 @@
     uiTick: function () {
       voice(880, { type: 'sine', dur: 0.08, peak: 0.06 });
     },
-    /* one soft square blip per typed character (Undertale-style) */
+    /* one soft click per typed character (Undertale-style, low and woody) */
     textBlip: function () {
-      voice(500 + Math.random() * 90, { type: 'square', dur: 0.04, peak: 0.028 });
+      voice(215 + Math.random() * 45, { type: 'square', dur: 0.03, peak: 0.05 });
+      voice(1300, { type: 'sine', dur: 0.015, peak: 0.012 }); // tick transient
+    },
+    /* the orange's light swelling to fill the room */
+    flare: function () {
+      voice(220, { type: 'sine', dur: 1.05, peak: 0.13, glideTo: 1180 });
+      voice(440, { type: 'triangle', dur: 0.9, peak: 0.05, glideTo: 1760, delay: 0.12 });
+      voice(1568, { type: 'sine', dur: 0.3, peak: 0.05, delay: 0.55 });
+      voice(2093, { type: 'sine', dur: 0.35, peak: 0.045, delay: 0.75 });
     },
     correct: function () {
       voice(659.25, { type: 'triangle', dur: 0.16, peak: 0.12 });
@@ -218,6 +235,6 @@
     var hit = e.target.closest && e.target.closest(
       'button, .btn, .rnode, .quest-answer, .swatch, .lang-pill, .pdeck-dot, .pill, .pdeck-dot, .intro-overlay');
     if (hit) window.SQSfx.click();
-    if (document.body.classList.contains('page-map')) window.SQMusic.ensure();
+    if (document.body.classList.contains('page-map') && !window.__SQ_INTRO_OPEN) window.SQMusic.ensure();
   }, true);
 })();
