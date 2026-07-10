@@ -311,10 +311,14 @@
         spriteEl.style.setProperty('--cbob', '0px');
         var e = now - spriteState.idleSince - SIT_AFTER;
         var f;
-        if (e < 700) f = 4;                       // sit upright
+        if (e < 800) f = 4;                       // sit upright, settle in
         else {
-          var t = (e - 700) % (550 + 4200);
-          f = t < 550 ? 5 : 6 + (Math.floor((t - 550) / 420) % 2); // bend, then chew
+          // half-bend down -> graze at the ground -> half-bend up -> chew
+          var t = (e - 800) % (320 + 700 + 280 + 4200);
+          if (t < 320) f = 5;                     // dipping
+          else if (t < 320 + 700) f = 6;          // grazing at the ground
+          else if (t < 320 + 700 + 280) f = 5;    // coming back up
+          else f = 7 + (Math.floor((t - 1300) / 420) % 2); // chewing
         }
         drawSpriteFrame(f);
       } else {
