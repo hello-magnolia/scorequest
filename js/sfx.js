@@ -208,12 +208,12 @@
       voice(215 + Math.random() * 45, { type: 'square', dur: 0.03, peak: 0.05 });
       voice(1300, { type: 'sine', dur: 0.015, peak: 0.012 }); // tick transient
     },
-    /* the orange's light swelling to fill the room */
+    /* the orange's light swelling to fill the room — slow, then everywhere */
     flare: function () {
-      voice(220, { type: 'sine', dur: 1.05, peak: 0.13, glideTo: 1180 });
-      voice(440, { type: 'triangle', dur: 0.9, peak: 0.05, glideTo: 1760, delay: 0.12 });
-      voice(1568, { type: 'sine', dur: 0.3, peak: 0.05, delay: 0.55 });
-      voice(2093, { type: 'sine', dur: 0.35, peak: 0.045, delay: 0.75 });
+      voice(196, { type: 'sine', dur: 1.9, peak: 0.13, glideTo: 1320 });
+      voice(392, { type: 'triangle', dur: 1.6, peak: 0.05, glideTo: 2093, delay: 0.2 });
+      voice(1568, { type: 'sine', dur: 0.4, peak: 0.05, delay: 1.0 });
+      voice(2093, { type: 'sine', dur: 0.5, peak: 0.045, delay: 1.35 });
     },
     correct: function () {
       voice(659.25, { type: 'triangle', dur: 0.16, peak: 0.12 });

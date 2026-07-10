@@ -34,6 +34,10 @@ const OPTS = {
   const cueLog = [];
   const realCue = window.SQMusic.cue;
   window.SQMusic.cue = on => { cueLog.push(on); realCue(on); };
+  check('A press-to-begin gate unlocks audio before any typing',
+    intro.getAttribute('data-scene') === 'begin' &&
+    /press to begin/.test(intro.querySelector('.intro-center').textContent));
+  clickIntro(); await sleep(150);
   const textEl = intro.querySelector('.intro-text');
   const full = () => textEl.getAttribute('data-full') || '';
   check('Scene 1 keeps the midnight caption; six dots mark the longer story',
@@ -46,6 +50,7 @@ const OPTS = {
   check('Intro media chain present (video primary, still as fallback only)',
     !!intro.querySelector('.intro-video') && !!intro.querySelector('.intro-img') &&
     /cloudfront|assets\/intro/.test(intro.querySelector('.intro-video').src || 'x') &&
+    intro.querySelector('.intro-video').muted === true &&
     !(intro.querySelector('.intro-img').src));
   check('Intro scene 1 attempts its animated Higgsfield render',
     /cloudfront|assets\/intro/.test(intro.querySelector('.intro-video').src || 'x'),
@@ -59,6 +64,9 @@ const OPTS = {
   check('Second click advances to the glowing orange',
     intro.getAttribute('data-scene') === 'orange' && /lands on your desk/.test(full()) &&
     intro.querySelectorAll('.intro-dot.is-done').length === 1);
+  check('Scene 2 brings its own audio (unmuted, committed local clip)',
+    intro.querySelector('.intro-video').muted === false &&
+    /assets\/intro\/orange/.test(intro.querySelector('.intro-video').src || ''));
   check('Scene advance bumps the media generation (stale-load guard active)',
     window.__SQ_MEDIA_GEN >= 2, 'gen=' + window.__SQ_MEDIA_GEN);
   check('Intro preloads its art on open (anti-flash)', window.__SQ_INTRO_PRELOAD === true);
@@ -70,7 +78,7 @@ const OPTS = {
   clickIntro(); await sleep(60); clickIntro(); await sleep(140); // leave the touch scene
   check('Leaving the touch scene swells brighter and brighter (flare rising)',
     intro.querySelector('.intro-flash').classList.contains('is-rising'));
-  await sleep(1150);
+  await sleep(2050);
   check('The onsen flashback plays from the committed local asset and cues the lullaby',
     intro.getAttribute('data-scene') === 'onsen' && /two capybaras/.test(full()) &&
     /assets\/intro\/onsen/.test(intro.querySelector('.intro-video').src || '') &&

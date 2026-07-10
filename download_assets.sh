@@ -36,9 +36,7 @@ curl -fsSL "$BASE/hf_20260710_031658_471211c6-8f1d-44bf-9be5-34202b7bf548.png" -
 curl -fsSL "$BASE/hf_20260710_031810_ba42ad70-10bb-42cd-a792-be9f5f68a562.mp4" -o assets/intro/valley.mp4
 curl -fsSL "$BASE/hf_20260710_031832_0d6df14e-d0d8-480b-9abf-5ca6cc8a6243.mp4" -o assets/intro/trailhead.mp4
 
-echo "Intro v2: the glowing orange lands (Seedance 2.0)..."
-curl -fsSL "$BASE/hf_20260710_191040_75ffe146-5a89-48d9-9bfb-22c90a1c63a3.mp4" -o assets/intro/orange.mp4
-# onsen.mp4, snatch.mp4, and onsen.png ship committed in assets/intro/ —
-# scenes 4-5 were authored off-CDN, so there is nothing to download for them.
+# Scene 2 (the glowing orange, with its own sound), scenes 4-5 (onsen, snatch),
+# and the onsen poster ship committed in assets/intro/ — nothing to download.
 
 echo "Done. The page automatically prefers these local files over the CDN."

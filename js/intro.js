@@ -34,8 +34,8 @@
       video: ['assets/intro/bedroom.mp4', CDN + '/hf_20260710_030436_8fa96d4e-b1e5-42d4-8f27-0ee298d74ee1.mp4'],
       image: ['assets/intro/bedroom.png', CDN + '/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
       text: 'Somewhere past midnight, the practice test sits open and untouched. You have reorganized your desk twice and studied the ceiling extensively. Anything but question seven.' },
-    { id: 'orange', kind: 'media',
-      video: ['assets/intro/orange.mp4', CDN + '/hf_20260710_191040_75ffe146-5a89-48d9-9bfb-22c90a1c63a3.mp4'],
+    { id: 'orange', kind: 'media', sound: true,
+      video: ['assets/intro/orange.mp4', CDN + '/hf_20260710_200915_4ce8fe29-f05f-4441-bbfb-5e0dd0a9027a.mp4'],
       image: ['assets/intro/bedroom.png', CDN + '/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
       text: 'Then something streaks past the window and lands on your desk with a soft thunk. An orange. Glowing. Still warm.' },
     { id: 'touch', kind: 'black', flashAfter: true,
@@ -235,6 +235,9 @@
     img.removeAttribute('src');
     if (!step.video && !step.image) return;   // black / dialogue scenes stay dark
     vid.loop = !!step.loop;
+    // scenes that bring their own audio play unmuted (respecting the sound toggle);
+    // by scene 2 the begin-gate click has satisfied the autoplay policy
+    vid.muted = !(step.sound && (!window.SQSfx || window.SQSfx.enabled()));
     vid.onended = step.advanceOnEnd ? function () {
       if (gen !== mediaGen) return;
       if (tw && tw.isDone()) advance();
@@ -317,8 +320,15 @@
     heroName = (box.querySelector('input').value || '').trim() || 'friend';
     saveCharacter(heroName);
     box.hidden = true;
-    if (window.SQSfx) window.SQSfx.uiTick();
     nextPage();
+  }
+  function showBegin() {
+    overlay.setAttribute('data-scene', 'begin');
+    overlay.querySelector('.intro-media').classList.add('is-dark');
+    overlay.querySelector('.intro-text').textContent = '';
+    var c = overlay.querySelector('.intro-center');
+    c.removeAttribute('data-full');
+    c.textContent = '\u25BC  press to begin  \u25BC';
   }
 
   /* ---------- dialogue choices (both accept — Pomelo is confident) ---------- */
@@ -389,11 +399,12 @@
   }
 
   var dipping = false;
+  var started = false;
   function advance() {
+    if (!started) { started = true; render(); return; }   // the begin gate: this click unlocked audio
     var step = SCENES[idx];
     if (!overlay.querySelector('.intro-name').hidden) return;   // Pomelo is waiting for a name
     if (tw && !tw.isDone()) { tw.finish(); return; }            // first press: finish the line
-    if (window.SQSfx) window.SQSfx.uiTick();
     if (step.kind === 'dialogue') {
       if (pageIdx >= step.pages.length - 1) return;             // choices are on screen
       nextPage();
@@ -414,7 +425,7 @@
       render();   // swap sources + caption in the dark; sceneReady fades back
       dipping = false;
       setTimeout(function () { flash.classList.remove('is-rising'); }, 120);
-    }, reduceMotion ? 0 : (step.flashAfter ? 1050 : 300));
+    }, reduceMotion ? 0 : (step.flashAfter ? 1900 : 300));
   }
 
   function finish() {
@@ -444,8 +455,8 @@
     document.addEventListener('pointerdown', wake, true);
     document.addEventListener('keydown', wake, true);
     idx = 0;
-    overlay.querySelector('.intro-media').classList.add('is-dark');
-    render();
+    started = false;
+    showBegin();
     overlay.hidden = false;
     document.body.style.overflow = 'hidden';
   }

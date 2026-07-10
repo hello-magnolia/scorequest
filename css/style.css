@@ -1027,7 +1027,17 @@ a { color: inherit; }
   position: absolute; inset: 0; z-index: 4; background: #fff6e4;
   opacity: 0; pointer-events: none; transition: opacity 380ms ease;
 }
-.intro-flash.is-rising { opacity: 1; transition: opacity 1050ms ease-in; }
+.intro-flash.is-rising { opacity: 1; transition: opacity 1900ms ease-in; }
+
+/* the begin gate: one press unlocks audio before the story starts */
+.intro-overlay[data-scene="begin"] .intro-caption { visibility: hidden; }
+.intro-overlay[data-scene="begin"] .intro-center {
+  font-size: 1.5rem; letter-spacing: 0.12em; text-shadow: none;
+  animation: intro-blink 1.2s steps(1, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay[data-scene="begin"] .intro-center { animation: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .intro-cursor.is-on { animation: none; opacity: 1; }
   .intro-flash { transition: none; }
