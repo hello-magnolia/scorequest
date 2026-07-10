@@ -175,6 +175,11 @@
       var fn = REALM_SOUNDS[realmId];
       if (fn) fn(); else window.SQSfx.tap(0);
     },
+    /* a soft contented thump for the flop */
+    flop: function () {
+      voice(150, { type: 'sine', dur: 0.3, peak: 0.1, glideTo: 82 });
+      voice(300, { type: 'triangle', dur: 0.12, peak: 0.04, delay: 0.02 });
+    },
     /* soft press for anything clickable */
     click: function () {
       voice(1500, { type: 'sine', dur: 0.05, peak: 0.045, glideTo: 950 });

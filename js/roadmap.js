@@ -226,6 +226,18 @@
     host.appendChild(spriteEl);
     spriteCtx = spriteEl.querySelector('canvas').getContext('2d');
     drawSpriteFrame(0);
+    spriteEl.addEventListener('click', function () {
+      if (spriteState.walking) return;
+      if (!spriteState.flop) {
+        spriteState.flop = 'down';
+        spriteState.flopStart = performance.now();
+        if (window.SQSfx) window.SQSfx.flop();
+      } else if (spriteState.flop === 'flat') {
+        spriteState.flop = 'up';
+        spriteState.flopStart = performance.now();
+        if (window.SQSfx) window.SQSfx.uiTick();
+      }
+    });
     host.classList.add('has-sprite');
 
     var start = frontierNode();
@@ -273,6 +285,7 @@
     spriteState.node = targetNode;
     spriteState.walking = true;
     spriteState.sitting = false;
+    spriteState.flop = null;
     var seg = 0, segStart = performance.now();
     var SPEED = 170; // px per second
 
@@ -302,9 +315,29 @@
   }
 
   var SIT_AFTER = 3200;
+  function flopFrames(now) {
+    var ft = now - spriteState.flopStart;
+    if (spriteState.flop === 'down') {
+      if (ft >= 720) { spriteState.flop = 'flat'; return 12; }
+      return ft < 240 ? 9 : ft < 480 ? 10 : 11;
+    }
+    if (spriteState.flop === 'up') {
+      if (ft >= 660) {
+        spriteState.flop = null;
+        spriteState.idleSince = now - SIT_AFTER; // resume seated, grazing soon
+        return 4;
+      }
+      return ft < 220 ? 11 : ft < 440 ? 10 : 9;
+    }
+    // flat: naps with slow breathing
+    spriteEl.style.setProperty('--cbob', (Math.sin(now / 950) > 0 ? 0 : -1) + 'px');
+    return 12;
+  }
   function idleLoop(now) {
     if (spriteEl && !spriteState.walking) {
-      if (now - spriteState.idleSince > SIT_AFTER) {
+      if (spriteState.flop) {
+        drawSpriteFrame(flopFrames(now));
+      } else if (now - spriteState.idleSince > SIT_AFTER) {
         // the graze sequence: sit upright, bend down for a mouthful,
         // come up chewing, and bend again when the mouthful runs out
         if (!spriteState.sitting) spriteState.sitting = true;
@@ -314,11 +347,11 @@
         if (e < 800) f = 4;                       // sit upright, settle in
         else {
           // half-bend down -> graze at the ground -> half-bend up -> chew
-          var t = (e - 800) % (320 + 700 + 280 + 4200);
+          var t = (e - 800) % (320 + 700 + 280 + 6200);
           if (t < 320) f = 5;                     // dipping
           else if (t < 320 + 700) f = 6;          // grazing at the ground
           else if (t < 320 + 700 + 280) f = 5;    // coming back up
-          else f = 7 + (Math.floor((t - 1300) / 420) % 2); // chewing
+          else f = 7 + (Math.floor((t - 1300) / 420) % 2); // chewing (savor it)
         }
         drawSpriteFrame(f);
       } else {

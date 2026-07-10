@@ -97,12 +97,24 @@ const OPTS = {
   check('Customize hero button reopens the builder', !!document.getElementById('customize-hero'));
 
   /* 1c — the capybara has all six frames */
-  check('Capybara has the full sequence (stand, walk x2, blink, sit, half-bend, graze, chew x2)',
+  check('Capybara has all 13 frames (incl. the four-stage flop)',
     (() => { try { const cv = document.createElement('canvas'); cv.width = window.SQCompanion.w; cv.height = window.SQCompanion.h;
-      [0,1,2,3,4,5,6,7,8].forEach(f => window.SQCompanion.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
+      [0,1,2,3,4,5,6,7,8,9,10,11,12].forEach(f => window.SQCompanion.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
   await new Promise(r => setTimeout(r, 3500));
   check('Left alone, the capybara sits down to chew grass',
     window.__SQ_SPRITE.sitting === true);
+
+  /* click-to-flop: down to a nap, click again to rise */
+  const capy = document.querySelector('.companion-sprite');
+  capy.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 80));
+  check('Clicking the capybara starts the flop', ['down','flat'].includes(window.__SQ_SPRITE.flop));
+  await new Promise(r => setTimeout(r, 900));
+  check('It settles fully flat for a nap', window.__SQ_SPRITE.flop === 'flat');
+  capy.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 900));
+  check('A second click wakes it back up to sitting',
+    window.__SQ_SPRITE.flop === null && window.__SQ_SPRITE.sitting === true);
 
   /* 2 — nodes: 5 per segment, one boss each */
   const nodes = document.querySelectorAll('.rnode');

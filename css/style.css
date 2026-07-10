@@ -1023,7 +1023,7 @@ a { color: inherit; }
 
 /* the capybara companion */
 .companion-sprite {
-  position: absolute; z-index: 6; pointer-events: none;
+  position: absolute; z-index: 6; pointer-events: auto; cursor: pointer;
   transform: translate(-50%, -100%) translateY(var(--cbob, 0px)) scaleX(var(--facing, 1));
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3));
 }
