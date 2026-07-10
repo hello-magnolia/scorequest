@@ -176,10 +176,14 @@ const OPTS = {
   await new Promise(r => setTimeout(r, 80));
   check('Reaching Lv 2 completes node 1 and advances START to node 2',
     infoNodes[0].classList.contains('is-done') && infoNodes[1].classList.contains('is-current'));
-  await new Promise(r => setTimeout(r, 1400)); // let the walk finish (~118px at 170px/s)
+  check('Destination stays visually locked while the capybara travels',
+    infoNodes[1].classList.contains('is-pending'));
+  await new Promise(r => setTimeout(r, 1600)); // let the walk finish
   check('Capybara walks the trail to node 2',
     window.__SQ_SPRITE.node === infoNodes[1] && window.__SQ_SPRITE.walking === false,
     'walking=' + window.__SQ_SPRITE.walking);
+  check('Arrival unlocks the lesson (pending lifted)',
+    !infoNodes[1].classList.contains('is-pending') && infoNodes[1].classList.contains('is-current'));
   check('Lv 2 unlocks Echo Vale on the path',
     !craftSeg.classList.contains('seg-locked') &&
     craftSeg.querySelector('.rnode').classList.contains('is-current'));

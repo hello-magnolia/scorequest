@@ -1023,12 +1023,30 @@ a { color: inherit; }
 
 /* the capybara companion */
 .companion-sprite {
-  position: absolute; z-index: 5; pointer-events: none;
-  width: 57px; height: 50px;
+  position: absolute; z-index: 6; pointer-events: none;
+  width: 114px; height: 100px;
   transform: translate(-50%, -100%) translateY(var(--cbob, 0px)) scaleX(var(--facing, 1));
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3));
 }
 .companion-sprite canvas { width: 100%; height: 100%; image-rendering: pixelated; }
 @media (prefers-reduced-motion: reduce) {
   .companion-sprite { transform: translate(-50%, -100%); }
+}
+
+/* staged unlock: destination looks locked until the capybara arrives */
+.rnode { transition: filter 450ms ease; }
+.rnode.is-pending { filter: grayscale(0.9) brightness(0.55); }
+.rnode.is-pending::before { display: none; }
+.seg-media { transition: opacity 700ms ease, filter 700ms ease; }
+.seg-pending .seg-media { opacity: 0.3; filter: grayscale(0.85); }
+.seg-pending .spark { display: none; }
+@keyframes node-wake {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  45% { transform: translate(-50%, -50%) scale(1.22); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+.rnode.node-wake { animation: node-wake 520ms var(--reveal-ease); }
+@media (prefers-reduced-motion: reduce) {
+  .rnode, .seg-media { transition: none; }
+  .rnode.node-wake { animation: none; }
 }

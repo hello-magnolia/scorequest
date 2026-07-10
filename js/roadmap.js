@@ -251,14 +251,15 @@
     }
   }
 
-  function walkTo(targetNode) {
+  function walkTo(targetNode, onArrive) {
     var fromIdx = allNodes.indexOf(spriteState.node);
     var toIdx = allNodes.indexOf(targetNode);
-    if (toIdx === fromIdx) return;
+    if (toIdx === fromIdx) { if (onArrive) onArrive(); return; }
     if (reduceMotion || toIdx < fromIdx) { // never moon-walk backwards; just appear
       var p = nodeGlobalPos(targetNode);
       spriteState.node = targetNode; spriteState.x = p.x; spriteState.y = p.y;
       placeSprite(p.x, p.y, 1);
+      if (onArrive) onArrive();
       return;
     }
     // path through every node between here and there
@@ -287,6 +288,7 @@
         if (seg >= pts.length - 1) {
           spriteState.walking = false;
           drawSpriteFrame(0);
+          if (onArrive) onArrive();
           return;
         }
       }
@@ -307,10 +309,27 @@
     requestAnimationFrame(idleLoop);
   }
 
+  var lockedBefore = [];
   function updateSprite() {
     if (!spriteEl) return;
     var target = frontierNode();
-    if (target !== spriteState.node && !spriteState.walking) walkTo(target);
+    if (target === spriteState.node || spriteState.walking) return;
+    // hold the destination in a locked look while the capybara makes the trip
+    var forward = allNodes.indexOf(target) > allNodes.indexOf(spriteState.node);
+    var seg = target.closest('.seg');
+    if (forward && !reduceMotion) {
+      target.classList.add('is-pending');
+      if (lockedBefore.indexOf(seg) !== -1) seg.classList.add('seg-pending');
+    }
+    walkTo(target, function () {
+      target.classList.remove('is-pending');
+      seg.classList.remove('seg-pending');
+      if (forward && !reduceMotion) {
+        target.classList.add('node-wake');
+        setTimeout(function () { target.classList.remove('node-wake'); }, 550);
+        if (window.SQSfx) window.SQSfx.realmTap(seg.getAttribute('data-realm'));
+      }
+    });
   }
 
   // who's playing
@@ -351,5 +370,9 @@
       placeSprite(p.x, p.y, 1);
     }
   });
-  G.onChange(function () { refresh(); updateSprite(); });
+  G.onChange(function () {
+    lockedBefore = segments.filter(function (sg) { return sg.classList.contains('seg-locked'); });
+    refresh();
+    updateSprite();
+  });
 })();
