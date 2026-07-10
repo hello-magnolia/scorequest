@@ -26,16 +26,22 @@ const OPTS = {
   check('8 biome segments in realm order', segs.length === 8 &&
     order === 'info,craft,expression,conventions,algebra,advmath,data,geometry', order);
 
-  /* 1a — intro cinematic plays first: five scenes, click-through, then the builder */
+  /* 1a — intro cinematic v2: six scenes, typewriter text, Pomelo's deal */
   const intro = document.querySelector('.intro-overlay');
+  const clickIntro = () => intro.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
   check('Intro cinematic opens on first visit (before the builder)',
     !!intro && intro.hidden === false &&
     (document.querySelector('.builder-overlay') === null || document.querySelector('.builder-overlay').hidden));
-  check('Intro shows whimsical caption + dots (no low-res canvas layer)',
+  const textEl = intro.querySelector('.intro-text');
+  const full = () => textEl.getAttribute('data-full') || '';
+  check('Scene 1 keeps the midnight caption; six dots mark the longer story',
     intro.querySelector('.intro-canvas') === null &&
-    /past midnight/.test(intro.querySelector('.intro-text').textContent) &&
-    /Anything but question seven/.test(intro.querySelector('.intro-text').textContent) &&
-    intro.querySelectorAll('.intro-dot').length === 5);
+    /past midnight/.test(full()) && /Anything but question seven/.test(full()) &&
+    intro.querySelectorAll('.intro-dot').length === 6);
+  check('Captions type character-by-character (Undertale style)',
+    textEl.textContent.length > 0 && textEl.textContent.length < full().length,
+    textEl.textContent.length + '/' + full().length + ' chars at first paint');
   check('Intro media chain present (video primary, still as fallback only)',
     !!intro.querySelector('.intro-video') && !!intro.querySelector('.intro-img') &&
     /cloudfront|assets\/intro/.test(intro.querySelector('.intro-video').src || 'x') &&
@@ -43,24 +49,44 @@ const OPTS = {
   check('Intro scene 1 attempts its animated Higgsfield render',
     /cloudfront|assets\/intro/.test(intro.querySelector('.intro-video').src || 'x'),
     (intro.querySelector('.intro-video').src || '').split('/').pop());
-  const cap0 = intro.querySelector('.intro-text').textContent;
-  intro.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // click the scene itself
-  await new Promise(r => setTimeout(r, 80));
+  clickIntro(); await sleep(50);
+  check('First click finishes the line instantly, cursor invites the next',
+    textEl.textContent === full() && intro.querySelector('.intro-cursor').classList.contains('is-on'));
+  clickIntro(); await sleep(80);
   check('Advance dips the scene to black first', intro.querySelector('.intro-media').classList.contains('is-dark'));
-  await new Promise(r => setTimeout(r, 340));
-  check('Clicking the scene advances the story',
-    intro.querySelector('.intro-text').textContent !== cap0 &&
+  await sleep(340);
+  check('Second click advances to the glowing orange',
+    intro.getAttribute('data-scene') === 'orange' && /lands on your desk/.test(full()) &&
     intro.querySelectorAll('.intro-dot.is-done').length === 1);
   check('Scene advance bumps the media generation (stale-load guard active)',
     window.__SQ_MEDIA_GEN >= 2, 'gen=' + window.__SQ_MEDIA_GEN);
   check('Intro preloads its art on open (anti-flash)', window.__SQ_INTRO_PRELOAD === true);
-  const nextBtn = intro.querySelector('.intro-next');
-  for (let k = 0; k < 3; k++) { nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); await new Promise(r => setTimeout(r, 380)); }
-  check('Final scene offers the call to adventure', nextBtn.textContent === 'Create your hero');
-  nextBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 60));
-  check('Finishing the intro persists and opens character creation',
-    intro.hidden === true && !!window.localStorage.getItem('sq_intro_seen'));
+  const nextScene = async () => { clickIntro(); await sleep(60); clickIntro(); await sleep(430); };
+  await nextScene(); // orange -> touch
+  check('"You touch it." plays alone in the dark',
+    intro.getAttribute('data-scene') === 'touch' &&
+    (intro.querySelector('.intro-center').getAttribute('data-full') || '') === 'You touch it.');
+  await nextScene(); // touch -> onsen
+  check('The onsen flashback plays from the committed local asset',
+    intro.getAttribute('data-scene') === 'onsen' && /two capybaras/.test(full()) &&
+    /assets\/intro\/onsen/.test(intro.querySelector('.intro-video').src || ''));
+  await nextScene(); // onsen -> snatch
+  check('The snatch cuts in: "And then, suddenly—"',
+    intro.getAttribute('data-scene') === 'snatch' && /suddenly/.test(full()));
+  await nextScene(); // snatch -> pomelo
+  check('Pomelo appears, drawn live from the real companion sprite',
+    intro.getAttribute('data-scene') === 'pomelo' && !!intro.querySelector('.intro-pomelo') &&
+    /hello/.test(full()));
+  let hops = 0;
+  while (intro.querySelector('.intro-choices').hidden && hops < 40) { clickIntro(); await sleep(140); hops++; }
+  const choices = intro.querySelectorAll('.intro-choice');
+  check('Derpy dialogue ends on the deal — two choices, both accept',
+    !intro.querySelector('.intro-choices').hidden && choices.length === 2 &&
+    /deal, obviously/.test(choices[1].textContent), hops + ' pages clicked through');
+  choices[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await sleep(60);
+  check('Accepting the deal persists v2 and opens character creation',
+    intro.hidden === true && window.localStorage.getItem('sq_intro_seen') === 'v2');
 
   /* 1a2 — sound module present and safe without AudioContext */
   let sfxSafe = true;

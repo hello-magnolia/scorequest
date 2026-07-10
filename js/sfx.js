@@ -194,6 +194,10 @@
     uiTick: function () {
       voice(880, { type: 'sine', dur: 0.08, peak: 0.06 });
     },
+    /* one soft square blip per typed character (Undertale-style) */
+    textBlip: function () {
+      voice(500 + Math.random() * 90, { type: 'square', dur: 0.04, peak: 0.028 });
+    },
     correct: function () {
       voice(659.25, { type: 'triangle', dur: 0.16, peak: 0.12 });
       voice(987.77, { type: 'triangle', dur: 0.3, peak: 0.12, delay: 0.09 });

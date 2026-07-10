@@ -992,12 +992,68 @@ a { color: inherit; }
   width: min(92%, 620px); background: rgba(22, 17, 43, 0.92);
   padding: 22px 26px 18px; cursor: default; z-index: 2;
 }
-.intro-text { font-size: 1.12rem; line-height: 1.6; color: var(--parchment); min-height: 3.2em; }
+.intro-text {
+  font-family: var(--font-utility); font-size: 1.45rem; line-height: 1.5;
+  letter-spacing: 0.02em; color: var(--parchment); min-height: 4.5em;
+  white-space: pre-wrap;
+}
 .intro-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; gap: 16px; }
 .intro-dots { display: flex; gap: 8px; }
 .intro-dot { width: 10px; height: 10px; background: var(--line); }
 .intro-dot.is-active { background: var(--gold); }
 .intro-dot.is-done { background: var(--dusk); }
+
+/* blinking advance cursor (Pokemon ▼) */
+.intro-cursor {
+  position: absolute; right: 16px; bottom: 12px; color: var(--gold);
+  font-size: 0.9rem; opacity: 0; pointer-events: none;
+}
+.intro-cursor.is-on { animation: intro-blink 0.9s steps(1, end) infinite; }
+@keyframes intro-blink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+
+/* scene 3: one line, alone in the dark */
+.intro-center {
+  position: absolute; inset: 0; z-index: 2; display: flex;
+  align-items: center; justify-content: center; text-align: center;
+  font-size: 2rem; color: var(--parchment); margin: 0; padding: 0 10%;
+  pointer-events: none; text-shadow: 0 0 18px rgba(242, 182, 60, 0.45);
+}
+.intro-overlay[data-scene="touch"] .intro-caption { visibility: hidden; }
+
+/* scene 6: Pomelo, drawn live from the companion sprite */
+.intro-pomelo {
+  display: none; position: absolute; left: 50%; top: 38%;
+  transform: translate(-50%, -50%); width: clamp(190px, 32vmin, 280px);
+  height: auto; image-rendering: pixelated; z-index: 2; pointer-events: none;
+}
+.intro-overlay[data-scene="pomelo"] .intro-pomelo { display: block; }
+.intro-overlay[data-scene="pomelo"] {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(122, 92, 199, 0.22), transparent 55%),
+    var(--ink);
+}
+
+/* the deal (both answers accept — Pomelo is confident) */
+.intro-choices { display: flex; gap: 34px; flex-wrap: wrap; margin-top: 10px; }
+.intro-choice {
+  font-family: var(--font-utility); font-size: 1.4rem; color: var(--gold);
+  background: none; border: none; cursor: pointer; padding: 4px 2px;
+  letter-spacing: 0.03em;
+}
+.intro-choice .intro-heart { color: #e8433f; margin-right: 12px; visibility: hidden; }
+.intro-choice:hover .intro-heart, .intro-choice:focus .intro-heart { visibility: visible; }
+.intro-choice:focus { outline: 2px dashed var(--gold); outline-offset: 3px; }
+
+/* white flash on the touch -> onsen cut */
+.intro-flash {
+  position: absolute; inset: 0; z-index: 4; background: #fff6e4;
+  opacity: 0; pointer-events: none; transition: opacity 200ms ease;
+}
+.intro-flash.is-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .intro-cursor.is-on { animation: none; opacity: 1; }
+  .intro-flash { transition: none; }
+}
 
 @media (max-width: 560px) {
   .intro-caption { bottom: 3vh; padding: 16px 16px 14px; }
