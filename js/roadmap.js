@@ -469,9 +469,7 @@
         else { mango.mode = 'sit'; mango.nextScratch = now + 6000 + Math.random() * 6000; }
       } else if (mango.mode === 'scratch') {
         var e2 = now - mango.t0;
-        if (e2 < 180) f = 5;
-        else if (e2 < 1280) f = Math.floor((e2 - 180) / 150) % 2 + 3; // scratch-scratch
-        else if (e2 < 1460) f = 5;
+        if (e2 < 1300) f = Math.floor(e2 / 150) % 2 + 4; // wobble 4 <-> 5: scratch-scratch
         else { mango.mode = 'sit'; mango.nextScratch = now + 9000 + Math.random() * 8000; }
       } else if (now >= mango.nextScratch) {
         mango.mode = 'scratch';
