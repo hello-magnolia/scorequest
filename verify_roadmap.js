@@ -34,6 +34,9 @@ const OPTS = {
   const cueLog = [];
   const realCue = window.SQMusic.cue;
   window.SQMusic.cue = on => { cueLog.push(on); realCue(on); };
+  let caws = 0;
+  const realCaw = window.SQSfx.caw;
+  window.SQSfx.caw = () => { caws++; realCaw(); };
   check('A press-to-begin gate unlocks audio before any typing',
     intro.getAttribute('data-scene') === 'begin' &&
     /press to begin/.test(intro.querySelector('.intro-center').textContent));
@@ -86,14 +89,23 @@ const OPTS = {
   await nextScene(); // onsen -> snatch
   check('The snatch cuts in: "And then, suddenly—"',
     intro.getAttribute('data-scene') === 'snatch' && /suddenly/.test(full()));
+  await sleep(450);
+  check('The eagle caws on arrival', caws === 1, caws + ' caws');
   await nextScene(); // snatch -> pomelo
-  check('Pomelo appears, drawn live from the real companion sprite',
-    intro.getAttribute('data-scene') === 'pomelo' && !!intro.querySelector('.intro-pomelo') &&
+  check('Pomelo enters walking through the dark (caption held back)',
+    intro.getAttribute('data-scene') === 'pomelo' &&
+    intro.classList.contains('is-walking'));
+  clickIntro(); await sleep(120);   // a click skips the entrance walk
+  check('Pomelo arrives at center and says hello',
+    !intro.classList.contains('is-walking') &&
+    intro.querySelector('.intro-pomelo').style.left === '50%' &&
     /hello/.test(full()));
   let hops = 0;
   while (intro.querySelector('.intro-name').hidden && hops < 20) { clickIntro(); await sleep(140); hops++; }
   check('Pomelo asks who u are and waits for a typed name',
     !intro.querySelector('.intro-name').hidden && /who are u/.test(full()), hops + ' clicks to the question');
+  check('The name field notes parent-report visibility, plainly',
+    /parent account is linked/.test(intro.querySelector('.intro-name-note').textContent));
   clickIntro(); await sleep(60);
   check('Clicks cannot skip past the question', !intro.querySelector('.intro-name').hidden);
   intro.querySelector('.intro-name input').value = 'Nova';

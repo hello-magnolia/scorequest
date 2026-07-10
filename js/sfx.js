@@ -208,6 +208,16 @@
       voice(215 + Math.random() * 45, { type: 'square', dur: 0.03, peak: 0.05 });
       voice(1300, { type: 'sine', dur: 0.015, peak: 0.012 }); // tick transient
     },
+    /* the eagle announces itself */
+    caw: function () {
+      voice(1500, { type: 'sawtooth', dur: 0.09, peak: 0.05, glideTo: 1750 });
+      voice(1750, { type: 'sawtooth', dur: 0.55, peak: 0.075, glideTo: 620, delay: 0.08 });
+      voice(880, { type: 'square', dur: 0.4, peak: 0.02, glideTo: 330, delay: 0.12 });
+    },
+    /* one soft capybara footstep */
+    step: function () {
+      voice(120, { type: 'sine', dur: 0.08, peak: 0.045, glideTo: 70 });
+    },
     /* the orange's light swelling to fill the room — slow, then everywhere */
     flare: function () {
       voice(196, { type: 'sine', dur: 1.9, peak: 0.13, glideTo: 1320 });

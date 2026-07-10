@@ -1007,7 +1007,8 @@ a { color: inherit; }
 .intro-choice:focus { outline: 2px dashed var(--gold); outline-offset: 3px; }
 
 /* Pomelo asks who u are */
-.intro-name { display: flex; gap: 14px; align-items: center; margin-top: 12px; }
+.intro-name { margin-top: 12px; }
+.intro-name-row { display: flex; gap: 14px; align-items: center; }
 .intro-name input {
   flex: 1; min-width: 0; background: transparent; color: var(--parchment);
   border: none; border-bottom: 3px solid var(--line); outline: none;
@@ -1021,6 +1022,13 @@ a { color: inherit; }
   cursor: pointer; letter-spacing: 0.05em;
 }
 .intro-name-ok:hover, .intro-name-ok:focus { color: var(--ink); background: var(--gold); }
+.intro-name-note {
+  margin: 10px 0 0; font-size: 1rem; color: var(--parchment-dim);
+  letter-spacing: 0.04em;
+}
+
+/* Pomelo's entrance: caption waits while he walks in through the dark */
+.intro-overlay.is-walking .intro-caption { visibility: hidden; }
 
 /* white flash on the touch -> onsen cut: the light swells, then we're elsewhere */
 .intro-flash {

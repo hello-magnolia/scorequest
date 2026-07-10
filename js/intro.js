@@ -44,7 +44,7 @@
       video: ['assets/intro/onsen.mp4'],
       image: ['assets/intro/onsen.png'],
       text: 'Somewhere far away: two capybaras, one steaming spring, a pile of oranges. Every day the same. Perfect.' },
-    { id: 'snatch', kind: 'media', advanceOnEnd: true, music: true,
+    { id: 'snatch', kind: 'media', advanceOnEnd: true, music: true, enterSound: 'caw', enterSoundDelay: 400,
       video: ['assets/intro/snatch.mp4'],
       image: ['assets/intro/onsen.png'],
       text: 'And then, suddenly\u2014' },
@@ -140,14 +140,17 @@
       '</div>' +
       '<div class="intro-vignette" aria-hidden="true"></div>' +
       '<p class="intro-center type-utility" aria-live="polite"></p>' +
-      '<canvas class="intro-pomelo" width="43" height="39" aria-label="Pomelo the capybara"></canvas>' +
+      '<canvas class="intro-pomelo" width="49" height="43" aria-label="Pomelo the capybara"></canvas>' +
       '<button class="intro-skip type-utility">Skip intro</button>' +
       '<div class="intro-caption pixel-frame">' +
         '<p class="intro-text" aria-live="polite"></p>' +
         '<span class="intro-cursor" aria-hidden="true">\u25BC</span>' +
         '<div class="intro-name" hidden>' +
-          '<input type="text" maxlength="24" placeholder="type ur name" aria-label="Your name" />' +
-          '<button class="intro-name-ok type-utility">ok</button>' +
+          '<div class="intro-name-row">' +
+            '<input type="text" maxlength="24" placeholder="type ur name" aria-label="Your name" />' +
+            '<button class="intro-name-ok type-utility">ok</button>' +
+          '</div>' +
+          '<p class="intro-name-note type-utility">If a parent account is linked, this name appears on their progress reports.</p>' +
         '</div>' +
         '<div class="intro-choices" hidden></div>' +
         '<div class="intro-foot">' +
@@ -271,17 +274,68 @@
   }
 
   /* ---------- Pomelo, drawn live from the companion sprite ----------
-     Standing idle only: he is here on business, not to graze. */
+     He enters the way he does everything: on foot. A beat of blank
+     dark after the snatch, then he walks in from the left with soft
+     footsteps, stops at center, and the dialogue begins. Standing
+     idle only afterwards — he is here on business, not to graze. */
   var pomeloTimer = null;
+  var walking = false, walkArrive = null, walkTimers = [];
   var POMELO_IDLE = [ // frame, hold ms — stand with the occasional blink
     [0, 1900], [3, 150], [0, 1250], [3, 150], [0, 800], [3, 130], [0, 160], [3, 130]
   ];
-  function startPomelo() {
+  function pomeloCtx() {
     var canvas = overlay.querySelector('.intro-pomelo');
-    if (!canvas || !window.SQCompanion) return;
+    if (!canvas) return null;
     var ctx = null;
     try { ctx = canvas.getContext('2d'); } catch (e) {}
-    if (!ctx) return;
+    if (ctx) ctx.setTransform(1, 0, 0, 1, 3, 2); // padding so no frame kisses the canvas edge
+    return ctx;
+  }
+  function clearWalk() {
+    walkTimers.forEach(clearTimeout);
+    walkTimers = [];
+  }
+  function enterPomelo(step) {
+    var canvas = overlay.querySelector('.intro-pomelo');
+    var ctx = pomeloCtx();
+    walking = true;
+    overlay.classList.add('is-walking');
+    canvas.style.left = '-14%';
+    walkArrive = function () {
+      if (!walking) return;
+      walking = false;
+      clearWalk();
+      overlay.classList.remove('is-walking');
+      canvas.style.left = '50%';
+      startPomelo();
+      typePage(step);
+    };
+    if (reduceMotion || !ctx || !window.SQCompanion) { walkArrive(); return; }
+    // a beat of blank dark, then the walk
+    walkTimers.push(setTimeout(function () {
+      if (!walking) return;
+      var frame = 2;
+      (function stepFrames() {
+        if (!walking) return;
+        frame = frame === 1 ? 2 : 1;                 // the two walk frames
+        window.SQCompanion.draw(ctx, frame);
+        if (window.SQSfx && window.SQSfx.step) window.SQSfx.step();
+        walkTimers.push(setTimeout(stepFrames, 175));
+      })();
+      var start = performance.now();
+      var DUR = 2200;
+      (function move(now) {
+        if (!walking) return;
+        var p = Math.min(1, (now - start) / DUR);
+        canvas.style.left = (-14 + 64 * p) + '%';     // -14% -> 50%
+        if (p < 1) window.requestAnimationFrame(move);
+        else walkArrive();
+      })(start);
+    }, 650));
+  }
+  function startPomelo() {
+    var ctx = pomeloCtx();
+    if (!ctx || !window.SQCompanion) return;
     window.SQCompanion.draw(ctx, 0);
     if (reduceMotion) return;
     var step = 0;
@@ -295,6 +349,8 @@
   }
   function stopPomelo() {
     if (pomeloTimer) { clearTimeout(pomeloTimer); pomeloTimer = null; }
+    walking = false;
+    clearWalk();
   }
 
   /* ---------- the name, given to a capybara ---------- */
@@ -385,12 +441,15 @@
     var textEl = overlay.querySelector('.intro-text');
     var centerEl = overlay.querySelector('.intro-center');
     centerEl.textContent = '';
+    if (step.enterSound && window.SQSfx && window.SQSfx[step.enterSound]) {
+      setTimeout(window.SQSfx[step.enterSound], step.enterSoundDelay || 0);
+    }
     if (step.kind === 'black') {
       typewrite(centerEl, step.text);
     } else if (step.kind === 'dialogue') {
       pageIdx = 0;
-      startPomelo();
-      typePage(step);
+      tw = null;
+      enterPomelo(step);
     } else {
       typewrite(textEl, step.text, function () {
         if (pendingAutoAdvance) advance();   // snatch clip already ended
@@ -402,6 +461,7 @@
   var started = false;
   function advance() {
     if (!started) { started = true; render(); return; }   // the begin gate: this click unlocked audio
+    if (walking) { if (walkArrive) walkArrive(); return; } // skip the entrance walk
     var step = SCENES[idx];
     if (!overlay.querySelector('.intro-name').hidden) return;   // Pomelo is waiting for a name
     if (tw && !tw.isDone()) { tw.finish(); return; }            // first press: finish the line
