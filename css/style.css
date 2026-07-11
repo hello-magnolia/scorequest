@@ -1192,3 +1192,75 @@ a { color: inherit; }
 .suc-steps li::before { content: counter(suc); position: absolute; top: -14px; left: 18px; background: var(--gold); color: var(--ink); font-family: var(--font-utility); padding: 2px 10px; }
 .suc-steps h3 { margin: 0 0 8px; }
 .suc-steps p { color: var(--parchment-dim); margin: 0 0 14px; }
+
+/* ============================================================
+   Realm walkabout (architecture preview)
+   ============================================================ */
+.page-realm { overflow: hidden; background: var(--ink); }
+.rw-stage { position: fixed; inset: 0; overflow: hidden; cursor: pointer; }
+.rw-world { position: absolute; top: 0; left: 0; height: 100%; will-change: transform; }
+.rw-bg { height: 100%; width: auto; display: block; image-rendering: pixelated; user-select: none; }
+.rw-capy {
+  position: absolute; left: 0; width: clamp(90px, 13vh, 150px); height: auto;
+  image-rendering: pixelated; pointer-events: none;
+}
+.rw-door {
+  position: absolute; width: clamp(60px, 12vh, 120px); height: clamp(90px, 26vh, 220px);
+  border: 3px dashed rgba(242, 182, 60, 0.45); border-radius: 6px;
+  box-shadow: 0 0 24px rgba(242, 182, 60, 0.12); pointer-events: none;
+}
+.rw-door.is-near {
+  border-color: var(--gold);
+  box-shadow: 0 0 34px rgba(242, 182, 60, 0.35);
+  animation: rw-door-pulse 1.4s ease-in-out infinite;
+}
+@keyframes rw-door-pulse { 0%,100% { opacity: 0.85; } 50% { opacity: 0.45; } }
+
+.rw-hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; cursor: default;
+  background: linear-gradient(rgba(22, 17, 43, 0.85), rgba(22, 17, 43, 0));
+}
+.rw-back { color: var(--parchment); text-decoration: none; letter-spacing: 0.05em; }
+.rw-back:hover { color: var(--gold); }
+.rw-title-wrap { text-align: center; }
+.rw-title { font-size: clamp(1.2rem, 3vw, 1.8rem); margin: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.rw-meta { margin: 2px 0 0; color: var(--parchment-dim); font-size: 0.95rem; }
+.rw-arrows { display: flex; gap: 10px; align-items: center; }
+.rw-arrows a { color: var(--gold); text-decoration: none; font-size: 1.3rem; padding: 2px 8px; }
+.rw-arrows a.is-off { opacity: 0.25; pointer-events: none; }
+.rw-arrows-note { color: var(--parchment-dim); font-size: 0.85rem; }
+
+.rw-hint {
+  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  color: var(--parchment-dim); letter-spacing: 0.08em; z-index: 4;
+  transition: opacity 0.6s ease; pointer-events: none;
+}
+.rw-hint.is-gone { opacity: 0; }
+
+.rw-veil {
+  position: absolute; inset: 0; z-index: 8; background: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--parchment-dim); letter-spacing: 0.08em;
+  transition: opacity 0.5s ease;
+}
+.rw-veil.is-gone { opacity: 0; pointer-events: none; }
+
+.rw-popup {
+  position: absolute; z-index: 6; left: 50%; bottom: 12%;
+  transform: translateX(-50%); max-width: min(520px, 88vw);
+  background: rgba(22, 17, 43, 0.95); padding: 22px 24px; cursor: default;
+}
+.rw-popup-text { font-family: var(--font-utility); font-size: 1.3rem; line-height: 1.6; margin: 0 0 16px; }
+.rw-popup-row { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* map hub: realm walkabout preview strip */
+.realm-preview { max-width: 900px; margin: 40px auto 0; text-align: center; padding: 0 20px; }
+.realm-preview-sub { color: var(--parchment-dim); margin: 6px 0 16px; }
+.realm-preview-links { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.realm-preview-links a {
+  color: var(--parchment); text-decoration: none; border: 1px solid var(--line);
+  padding: 8px 14px; font-family: var(--font-utility); letter-spacing: 0.04em;
+}
+.realm-preview-links a:hover { border-color: var(--gold); color: var(--gold); }

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Realm, ScoreQuest</title>
+<meta name="description" content="Walk the realm: a side-view stroll through one biome of the quest." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=b20260711a" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
+</head>
+<body class="page-realm">
+
+<div class="rw-stage" id="rw-stage">
+  <div class="rw-world" id="rw-world">
+    <img class="rw-bg" id="rw-bg" alt="" draggable="false" />
+    <div class="rw-door" id="rw-door" aria-hidden="true"></div>
+    <canvas class="rw-capy" id="rw-capy" width="49" height="43" aria-label="Pomelo the capybara"></canvas>
+  </div>
+
+  <div class="rw-hud">
+    <a class="rw-back type-utility" href="map.html">&larr; World Map</a>
+    <div class="rw-title-wrap">
+      <h1 class="rw-title" id="rw-title">&nbsp;</h1>
+      <p class="rw-meta type-utility" id="rw-meta">&nbsp;</p>
+    </div>
+    <nav class="rw-arrows type-utility" aria-label="Realm preview navigation">
+      <a id="rw-prev" href="#">&larr;</a>
+      <span class="rw-arrows-note">preview</span>
+      <a id="rw-next" href="#">&rarr;</a>
+    </nav>
+  </div>
+
+  <p class="rw-hint type-utility" id="rw-hint">tap ahead to walk</p>
+
+  <div class="rw-veil" id="rw-veil"><p class="type-utility" id="rw-veil-text">entering the realm&hellip;</p></div>
+
+  <div class="rw-popup pixel-frame" id="rw-popup" hidden>
+    <p class="rw-popup-text" id="rw-popup-text"></p>
+    <div class="rw-popup-row">
+      <a class="btn btn-outline" href="map.html">Return to map</a>
+      <a class="btn btn-gold" id="rw-popup-next" href="#">Onward &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/sfx.js?v=b20260711a"></script>
+<script src="js/companion.js?v=b20260711a"></script>
+<script src="js/realm.js?v=b20260711a"></script>
+</body>
+</html>
