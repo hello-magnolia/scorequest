@@ -183,7 +183,7 @@
   function placeCapy() {
     var p = pointAt(sPos);
     capy.style.left = Math.round(p.x - capyW / 2) + 'px';
-    capy.style.top = Math.round(p.y - capyH) + 'px';
+    capy.style.top = Math.round(p.y - capyH * FEET) + 'px';
     return p;
   }
 
@@ -222,10 +222,15 @@
 
   var ctx = null;
   try { ctx = capy.getContext('2d'); } catch (e) {}
+  var FEET = 44 / 45; // the drawn feet row within the padded canvas height
   function drawCapy(frame) {
     if (!ctx || !window.SQCompanion) return;
-    if (facing === 1) ctx.setTransform(1, 0, 0, 1, 3, 2);
-    else ctx.setTransform(-1, 0, 0, 1, 46, 2);
+    // some tween frames paint outside the 43x39 box, so clear the WHOLE
+    // canvas under identity first — otherwise slivers persist as stray lines
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, capy.width, capy.height);
+    if (facing === 1) ctx.setTransform(1, 0, 0, 1, 3, 6);
+    else ctx.setTransform(-1, 0, 0, 1, 54, 6);   // mirror within the padded canvas
     window.SQCompanion.draw(ctx, frame);
   }
 
@@ -238,7 +243,7 @@
       : Math.round(stageH * 21 / 9);          // synthetic width when art is missing
     world.style.width = worldW + 'px';
     capyW = capy.clientWidth || 120;
-    capyH = capy.clientHeight || Math.round(capyW * 43 / 49);
+    capyH = capy.clientHeight || Math.round(capyW * 45 / 57);
     buildPolyline();
     var end = pts[pts.length - 1];
     door.style.left = Math.round(Math.min(end[0], worldW - stageW * 0.16)) + 'px';

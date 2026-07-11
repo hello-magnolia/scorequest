@@ -15,6 +15,27 @@
   var PW = window.PixelWorld;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* ---------- 0. hub head: player line + world rank ----------
+     (owned by roadmap.js until the roadmap retired) */
+  (function hubHead() {
+    var line = document.getElementById('mappage-player');
+    if (line && window.SQAuth) {
+      var lastAuth = {};
+      var refreshPlayer = function () {
+        var chr = window.SQCharacter && window.SQCharacter.get && window.SQCharacter.get();
+        var name = (chr && chr.name) || (lastAuth.user ? ((lastAuth.profile && lastAuth.profile.hero_name) || 'Hero') : null);
+        line.hidden = !name;
+        if (name) document.getElementById('mappage-player-name').textContent = name;
+      };
+      window.SQAuth.onChange(function (st) { lastAuth = st; refreshPlayer(); });
+      window.addEventListener('sq-character', refreshPlayer);
+    }
+    var rank = document.getElementById('world-rank');
+    if (rank && window.SQGame && window.SQGame.totalLevel) {
+      rank.textContent = 'Lv ' + window.SQGame.totalLevel();
+    }
+  })();
+
   /* ---------- 1. hero background ---------- */
   var heroCanvas = document.getElementById('hero-canvas');
   var heroVideo = document.getElementById('hero-video');

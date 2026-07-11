@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=b20260711f" />
+<link rel="stylesheet" href="css/style.css?v=b20260711g" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
 </head>
 <body class="page-map">
@@ -33,49 +33,41 @@
 
 <main class="mappage">
   <div class="mappage-head">
-    <p class="eyebrow type-utility">Your quest path</p>
-    <h1 class="mappage-title">The World Map</h1>
-    <p class="mappage-sub">Follow the path through all eight realms. Clear each node to earn XP, then face the boss to conquer the biome.</p>
+    <p class="eyebrow type-utility">Choose your realm</p>
+    <h1 class="mappage-title">The Realms</h1>
+    <p class="mappage-sub">Eight biomes on the way to the summit. Walk each one, clear its trials, and reach the nest at Prism Peaks.</p>
     <p class="mappage-rank type-utility">World rank <span id="world-rank">Lv 8</span></p>
     <p class="mappage-player type-utility" id="mappage-player" hidden>Playing as <span id="mappage-player-name"></span></p>
     <button class="btn btn-ghost btn-customize" id="sound-toggle">Sound: on</button>
     <button class="btn btn-ghost btn-customize" id="music-toggle">Music: on</button>
   </div>
 
-  <div class="roadmap" id="roadmap"><!-- segments injected by js/roadmap.js --></div>
-
-  <div class="realm-preview">
-    <p class="eyebrow type-utility">Realm walkabouts &middot; architecture preview</p>
-    <p class="realm-preview-sub">Each biome as its own walkable side-view page: one template, per-realm loading, placeholder art.</p>
-    <nav class="realm-preview-links" aria-label="Realm walkabout previews">
-      <a href="realm.html?realm=lorewood">1 &middot; Lorewood</a>
-      <a href="realm.html?realm=storyforge">2 &middot; Story Forge</a>
-      <a href="realm.html?realm=inkreef">3 &middot; Ink Reef</a>
-      <a href="realm.html?realm=syntaxcitadel">4 &middot; Syntax Citadel</a>
-      <a href="realm.html?realm=mirrormines">5 &middot; Mirror Mines</a>
-      <a href="realm.html?realm=infinityisles">6 &middot; Infinity Isles</a>
-      <a href="realm.html?realm=datadocks">7 &middot; Data Docks</a>
-      <a href="realm.html?realm=prismpeaks">8 &middot; Prism Peaks</a>
-    </nav>
-  </div>
+  <nav class="realm-hub" aria-label="The eight realms">
+    <a class="hub-realm" href="realm.html?realm=lorewood"><span class="hub-num type-utility">1</span><span class="hub-name">Lorewood</span><span class="hub-domain">Information &amp; Ideas</span></a>
+    <a class="hub-realm" href="realm.html?realm=storyforge"><span class="hub-num type-utility">2</span><span class="hub-name">Story Forge</span><span class="hub-domain">Craft &amp; Structure</span></a>
+    <a class="hub-realm" href="realm.html?realm=inkreef"><span class="hub-num type-utility">3</span><span class="hub-name">Ink Reef</span><span class="hub-domain">Expression of Ideas</span></a>
+    <a class="hub-realm" href="realm.html?realm=syntaxcitadel"><span class="hub-num type-utility">4</span><span class="hub-name">Syntax Citadel</span><span class="hub-domain">Conventions</span></a>
+    <a class="hub-realm" href="realm.html?realm=mirrormines"><span class="hub-num type-utility">5</span><span class="hub-name">Mirror Mines</span><span class="hub-domain">Algebra</span></a>
+    <a class="hub-realm" href="realm.html?realm=infinityisles"><span class="hub-num type-utility">6</span><span class="hub-name">Infinity Isles</span><span class="hub-domain">Advanced Math</span></a>
+    <a class="hub-realm" href="realm.html?realm=datadocks"><span class="hub-num type-utility">7</span><span class="hub-name">Data Docks</span><span class="hub-domain">Problem-Solving &amp; Data</span></a>
+    <a class="hub-realm" href="realm.html?realm=prismpeaks"><span class="hub-num type-utility">8</span><span class="hub-name">Prism Peaks</span><span class="hub-domain">Geometry &amp; Trigonometry</span></a>
+  </nav>
 
   <div class="mappage-outro">
-    <p class="mappage-outro-note">New nodes unlock as you level. Every quest saves to your hero.</p>
+    <p class="mappage-outro-note">Progress saves to your hero. New realms unlock as you level.</p>
     <a class="btn btn-outline" href="index.html">Back to base camp</a>
   </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20260711f"></script>
-<script src="js/auth.js?v=b20260711f"></script>
-<script src="js/pixelworld.js?v=b20260711f"></script>
-<script src="js/game.js?v=b20260711f"></script>
-<script src="js/map.js?v=b20260711f"></script>
-<script src="js/sfx.js?v=b20260711f"></script>
-<script src="js/intro.js?v=b20260711f"></script>
-<script src="js/companion.js?v=b20260711f"></script>
-<script src="js/mango.js?v=b20260711f"></script>
-<script src="js/roadmap.js?v=b20260711f"></script>
-<script src="js/main.js?v=b20260711f"></script>
+<script src="js/config.js?v=b20260711g"></script>
+<script src="js/auth.js?v=b20260711g"></script>
+<script src="js/pixelworld.js?v=b20260711g"></script>
+<script src="js/game.js?v=b20260711g"></script>
+<script src="js/map.js?v=b20260711g"></script>
+<script src="js/sfx.js?v=b20260711g"></script>
+<script src="js/intro.js?v=b20260711g"></script>
+<script src="js/companion.js?v=b20260711g"></script>
+<script src="js/main.js?v=b20260711g"></script>
 </body>
 </html>

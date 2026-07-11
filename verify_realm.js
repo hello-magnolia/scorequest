@@ -61,8 +61,8 @@ const load = async (path) => {
   check('Art chain is local-first with CDN fallback (or dark-stage fallback engaged)',
     (bgEl && /assets\/realms\/lorewood|cloudfront/.test(bgEl.src)) ||
     (!bgEl && !!d.getElementById('rw-capy')));
-  check('Pomelo rides the padded companion canvas',
-    d.getElementById('rw-capy').width === 49 && d.getElementById('rw-capy').height === 43);
+  check('Pomelo rides the padded companion canvas (sized for the tween frames)',
+    d.getElementById('rw-capy').width === 57 && d.getElementById('rw-capy').height === 45);
   check('The boss area waits at the end (door marker + sealed-door text ready)',
     !!d.getElementById('rw-door') &&
     /sealed/.test(d.getElementById('rw-popup-text').textContent) &&
@@ -99,9 +99,9 @@ const load = async (path) => {
   /* hub strip */
   w = await load('map.html');
   d = w.document;
-  check('The World Map hub links all eight realm walkabouts',
-    d.querySelectorAll('.realm-preview-links a[href^="realm.html?realm="]').length === 8 &&
-    /architecture preview/.test(d.querySelector('.realm-preview').textContent));
+  check('The hub links all eight realms',
+    d.querySelectorAll('.hub-realm[href^="realm.html?realm="]').length === 8 &&
+    /The Realms/.test(d.querySelector('.mappage-title').textContent));
 
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');

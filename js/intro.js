@@ -140,7 +140,7 @@
       '</div>' +
       '<div class="intro-vignette" aria-hidden="true"></div>' +
       '<p class="intro-center type-utility" aria-live="polite"></p>' +
-      '<canvas class="intro-pomelo" width="49" height="43" aria-label="Pomelo the capybara"></canvas>' +
+      '<canvas class="intro-pomelo" width="57" height="45" aria-label="Pomelo the capybara"></canvas>' +
       '<button class="intro-skip type-utility">Skip intro</button>' +
       '<div class="intro-caption pixel-frame">' +
         '<p class="intro-text" aria-live="polite"></p>' +
@@ -288,8 +288,15 @@
     if (!canvas) return null;
     var ctx = null;
     try { ctx = canvas.getContext('2d'); } catch (e) {}
-    if (ctx) ctx.setTransform(1, 0, 0, 1, 3, 2); // padding so no frame kisses the canvas edge
     return ctx;
+  }
+  function drawPomelo(ctx, frame) {
+    var canvas = overlay.querySelector('.intro-pomelo');
+    // full clear under identity first: tween frames paint outside 43x39
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(1, 0, 0, 1, 3, 6); // padding so no frame kisses an edge
+    window.SQCompanion.draw(ctx, frame);
   }
   function clearWalk() {
     walkTimers.forEach(clearTimeout);
@@ -318,7 +325,7 @@
       (function stepFrames() {
         if (!walking) return;
         frame = frame === 1 ? 2 : 1;                 // the two walk frames
-        window.SQCompanion.draw(ctx, frame);
+        drawPomelo(ctx, frame);
         if (window.SQSfx && window.SQSfx.step) window.SQSfx.step();
         walkTimers.push(setTimeout(stepFrames, 175));
       })();
@@ -336,13 +343,13 @@
   function startPomelo() {
     var ctx = pomeloCtx();
     if (!ctx || !window.SQCompanion) return;
-    window.SQCompanion.draw(ctx, 0);
+    drawPomelo(ctx, 0);
     if (reduceMotion) return;
     var step = 0;
     (function loop() {
       if (!overlay || overlay.hidden || SCENES[idx].kind !== 'dialogue') return;
       var fr = POMELO_IDLE[step % POMELO_IDLE.length];
-      window.SQCompanion.draw(ctx, fr[0]);
+      drawPomelo(ctx, fr[0]);
       step += 1;
       pomeloTimer = setTimeout(loop, fr[1]);
     })();

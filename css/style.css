@@ -1298,3 +1298,20 @@ a { color: inherit; }
 .rw-ed-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .rw-ed-row .btn { padding: 8px 14px; font-size: 0.9rem; }
 .rw-trace-clear { color: var(--gold); pointer-events: auto; }
+
+/* the realm hub (map.html reborn) */
+.realm-hub {
+  max-width: 900px; margin: 34px auto 0; padding: 0 20px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+.hub-realm {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  column-gap: 16px; align-items: center; text-decoration: none;
+  border: 2px solid var(--line); background: rgba(22, 17, 43, 0.6);
+  padding: 18px 20px; transition: border-color 0.15s ease;
+}
+.hub-realm:hover { border-color: var(--gold); }
+.hub-num { grid-row: 1 / 3; font-size: 1.6rem; color: var(--gold); }
+.hub-name { color: var(--parchment); font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.hub-domain { color: var(--parchment-dim); font-size: 0.95rem; }
+@media (max-width: 640px) { .realm-hub { grid-template-columns: 1fr; } }
