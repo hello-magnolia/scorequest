@@ -43,9 +43,20 @@ const load = async (path) => {
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 420, clientY: 340 }));
   await new Promise(r => setTimeout(r, 60));
   check('Clicking the stage drops waypoints and updates the export',
-    /^2 pts/.test(d.getElementById('rw-ed-count').textContent) &&
-    /"path"/.test(d.getElementById('rw-ed-json').value),
+    /^2 path/.test(d.getElementById('rw-ed-count').textContent) &&
+    /"realm":"lorewood"/.test(d.getElementById('rw-ed-json').value),
     before + ' -> ' + d.getElementById('rw-ed-count').textContent);
+  // cycle path -> markers -> Mango, then trace her track
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 600, clientY: 260 }));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 700, clientY: 280 }));
+  await new Promise(r => setTimeout(r, 60));
+  check('N cycles to Mango\u2019s layer and her track exports under tracks.mango',
+    /Tracing: Mango/.test(d.getElementById('rw-ed-mode').textContent) &&
+    /1 markers|0 markers/.test(d.getElementById('rw-ed-count').textContent) &&
+    /"tracks":\{"mango":\[\[/.test(d.getElementById('rw-ed-json').value),
+    d.getElementById('rw-ed-count').textContent);
   /* back to the walkabout for the remaining checks */
   w = await load('realm.html');
   d = w.document;
