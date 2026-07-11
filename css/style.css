@@ -1297,3 +1297,4 @@ a { color: inherit; }
 }
 .rw-ed-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .rw-ed-row .btn { padding: 8px 14px; font-size: 0.9rem; }
+.rw-trace-clear { color: var(--gold); pointer-events: auto; }
