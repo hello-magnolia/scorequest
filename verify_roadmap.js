@@ -268,17 +268,26 @@ const OPTS = {
       .getImageData(0, 0, window.SQMango.w, window.SQMango.h).data;
     mangoPainted = [...md].some(v => v > 0);
   } catch (e) {}
-  check('Mango present at the end of the path (painted, all 6 frames)', !!mangoEl && mangoPainted &&
+  check('Mango present at the end of the path (painted, all 9 frames)', !!mangoEl && mangoPainted &&
     (() => { try { const cv = document.createElement('canvas'); cv.width = window.SQMango.w; cv.height = window.SQMango.h;
-      [0,1,2,3,4,5].forEach(f => window.SQMango.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
+      [0,1,2,3,4,5,6,7,8].forEach(f => window.SQMango.draw(cv.getContext('2d'), f)); return true; } catch (e) { return false; } })());
   const lastSegEl = segs[segs.length - 1];
   check('Mango positioned in the final biome',
     parseFloat(mangoEl.style.top) > lastSegEl.offsetTop);
   mangoEl.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 80));
-  check('Clicking Mango makes it turn its back on you', window.__SQ_MANGO.mode === 'turn');
-  await new Promise(r => setTimeout(r, 3100));
-  check('Mango turns back around after a sulk', window.__SQ_MANGO.mode === 'sit');
+  check('Clicking Mango starts her flop', ['flop-down','flat'].includes(window.__SQ_MANGO.mode));
+  await new Promise(r => setTimeout(r, 800));
+  check('Mango settles flat for a nap', window.__SQ_MANGO.mode === 'flat');
+  mangoEl.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 800));
+  check('A second click brings Mango back up to sitting', window.__SQ_MANGO.mode === 'sit');
+  window.__SQ_MANGO.nextIdle = 0;
+  await new Promise(r => setTimeout(r, 150));
+  check('Passive idle fires on its own (scratch or sulky turn)',
+    ['scratch','turn'].includes(window.__SQ_MANGO.mode));
+  await new Promise(r => setTimeout(r, 3200));
+  check('Passive idle resolves back to sitting', window.__SQ_MANGO.mode === 'sit');
 
   /* 8c — the journey waits for Return to map when the drawer is open */
   infoNodes[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));

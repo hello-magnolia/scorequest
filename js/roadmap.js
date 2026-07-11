@@ -436,14 +436,19 @@
     host.appendChild(mangoEl);
     mangoCtx = mangoEl.querySelector('canvas').getContext('2d');
     window.SQMango.draw(mangoCtx, 0);
-    mango.nextScratch = performance.now() + 9000 + Math.random() * 6000;
+    mango.nextIdle = performance.now() + 9000 + Math.random() * 6000;
     window.__SQ_MANGO = mango;
     placeMango();
     mangoEl.addEventListener('click', function () {
-      if (mango.mode !== 'sit') return;
-      mango.mode = 'turn';
-      mango.t0 = performance.now();
-      if (window.SQSfx) window.SQSfx.uiTick();
+      if (mango.mode === 'sit') {
+        mango.mode = 'flop-down';
+        mango.t0 = performance.now();
+        if (window.SQSfx) window.SQSfx.flop();
+      } else if (mango.mode === 'flat') {
+        mango.mode = 'flop-up';
+        mango.t0 = performance.now();
+        if (window.SQSfx) window.SQSfx.uiTick();
+      }
     });
     if (!reduceMotion) requestAnimationFrame(mangoLoop);
   }
@@ -460,19 +465,33 @@
   function mangoLoop(now) {
     if (mangoEl) {
       var f = 0;
-      if (mango.mode === 'turn') {
-        // turns its back on you, holds, then turns around again
+      if (mango.mode === 'flop-down') {
+        // click: she flops down for a nap
+        var ed = now - mango.t0;
+        if (ed < 260) f = 6;
+        else if (ed < 520) f = 7;
+        else { mango.mode = 'flat'; f = 8; }
+      } else if (mango.mode === 'flat') {
+        f = 8; // napping flat, head down
+      } else if (mango.mode === 'flop-up') {
+        var eu = now - mango.t0;
+        if (eu < 240) f = 7;
+        else if (eu < 480) f = 6;
+        else { mango.mode = 'sit'; mango.nextIdle = now + 6000 + Math.random() * 6000; }
+      } else if (mango.mode === 'turn') {
+        // passive sulk: turns her back, holds, turns around again
         var e = now - mango.t0;
         if (e < 260) f = 1;
         else if (e < 2700) f = 2;
         else if (e < 2960) f = 1;
-        else { mango.mode = 'sit'; mango.nextScratch = now + 6000 + Math.random() * 6000; }
+        else { mango.mode = 'sit'; mango.nextIdle = now + 9000 + Math.random() * 8000; }
       } else if (mango.mode === 'scratch') {
         var e2 = now - mango.t0;
-        if (e2 < 1300) f = Math.floor(e2 / 150) % 2 + 4; // wobble 4 <-> 5: scratch-scratch
-        else { mango.mode = 'sit'; mango.nextScratch = now + 9000 + Math.random() * 8000; }
-      } else if (now >= mango.nextScratch) {
-        mango.mode = 'scratch';
+        if (e2 < 1300) f = Math.floor(e2 / 150) % 2 + 4; // wobble 4 <-> 5
+        else { mango.mode = 'sit'; mango.nextIdle = now + 9000 + Math.random() * 8000; }
+      } else if (now >= mango.nextIdle) {
+        // rare passive idles: mostly a scratch, sometimes the sulky turn
+        mango.mode = Math.random() < 0.6 ? 'scratch' : 'turn';
         mango.t0 = now;
       }
       window.SQMango.draw(mangoCtx, f);
