@@ -26,8 +26,33 @@ const load = async (path) => {
     d.getElementById('rw-title').textContent === 'Lorewood' &&
     /Realm 1 of 8/.test(d.getElementById('rw-meta').textContent) &&
     /Information & Ideas/.test(d.getElementById('rw-meta').textContent));
-  check('The art chain is local-first with the placeholder CDN fallback',
-    /assets\/realms\/lorewood|cloudfront/.test(d.getElementById('rw-bg').src));
+  check('Lorewood carries a waypoint path with five node markers on it',
+    d.querySelectorAll('.rw-node').length === 5 &&
+    !!d.getElementById('rw-trace'));
+
+  /* the editor */
+  w = await load('realm.html?realm=lorewood&edit=1');
+  d = w.document;
+  await new Promise(r => setTimeout(r, 700)); // let the art chain exhaust to the dark fallback
+  check('Path editor mode opens with instructions and a JSON export',
+    !!d.querySelector('.rw-editor') &&
+    /Click along the walkable path/.test(d.querySelector('.rw-ed-help').textContent) &&
+    !!d.getElementById('rw-ed-json'));
+  const before = d.getElementById('rw-ed-count').textContent;
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 200, clientY: 300 }));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 420, clientY: 340 }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Clicking the stage drops waypoints and updates the export',
+    /^2 pts/.test(d.getElementById('rw-ed-count').textContent) &&
+    /"path"/.test(d.getElementById('rw-ed-json').value),
+    before + ' -> ' + d.getElementById('rw-ed-count').textContent);
+  /* back to the walkabout for the remaining checks */
+  w = await load('realm.html');
+  d = w.document;
+  const bgEl = d.getElementById('rw-bg');
+  check('Art chain is local-first with CDN fallback (or dark-stage fallback engaged)',
+    (bgEl && /assets\/realms\/lorewood|cloudfront/.test(bgEl.src)) ||
+    (!bgEl && !!d.getElementById('rw-capy')));
   check('Pomelo rides the padded companion canvas',
     d.getElementById('rw-capy').width === 49 && d.getElementById('rw-capy').height === 43);
   check('The boss area waits at the end (door marker + sealed-door text ready)',

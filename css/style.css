@@ -1264,3 +1264,36 @@ a { color: inherit; }
   padding: 8px 14px; font-family: var(--font-utility); letter-spacing: 0.04em;
 }
 .realm-preview-links a:hover { border-color: var(--gold); color: var(--gold); }
+
+/* realm v2: path trace overlay, node markers, path editor */
+.rw-trace { position: absolute; top: 0; left: 0; pointer-events: none; }
+.rw-node {
+  position: absolute; width: 16px; height: 16px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--ink); border: 3px solid var(--gold);
+  box-shadow: 0 0 14px rgba(242, 182, 60, 0.5);
+  animation: rw-node-pulse 1.8s ease-in-out infinite;
+}
+.rw-node.is-visited {
+  background: #7FE3C0; border-color: #7FE3C0;
+  box-shadow: 0 0 10px rgba(127, 227, 192, 0.6);
+  animation: none;
+}
+@keyframes rw-node-pulse { 0%,100% { box-shadow: 0 0 14px rgba(242,182,60,0.5); } 50% { box-shadow: 0 0 4px rgba(242,182,60,0.25); } }
+@media (prefers-reduced-motion: reduce) { .rw-node, .rw-door.is-near { animation: none; } }
+
+.is-editing .rw-stage { cursor: crosshair; }
+.rw-editor {
+  position: absolute; z-index: 7; left: 50%; bottom: 14px;
+  transform: translateX(-50%); width: min(640px, 92vw);
+  background: rgba(22, 17, 43, 0.96); padding: 14px 16px; cursor: default;
+}
+.rw-ed-head { margin: 0 0 4px; color: var(--gold); letter-spacing: 0.06em; }
+.rw-ed-help { margin: 0 0 10px; color: var(--parchment-dim); font-size: 0.92rem; }
+.rw-editor textarea {
+  width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4);
+  color: var(--parchment); border: 1px solid var(--line);
+  font-size: 0.85rem; padding: 6px 8px; resize: none; margin-bottom: 10px;
+}
+.rw-ed-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.rw-ed-row .btn { padding: 8px 14px; font-size: 0.9rem; }

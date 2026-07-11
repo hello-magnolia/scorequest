@@ -1,22 +1,27 @@
 /* ============================================================
-   ScoreQuest — realm walkabout (architecture preview)
+   ScoreQuest — realm walkabout v2: paths, markers, editor
    ------------------------------------------------------------
-   One template (realm.html), eight worlds: ?realm=<id> selects a
-   manifest entry, so every biome is its own page load — only the
-   current realm's art and sounds are ever in memory — while the
-   code stays one file. Horizontal progression: tap ahead and
-   Pomelo walks there, side-profile, with the camera following;
-   the page itself never scrolls. At the far end, the realm's
-   boss area waits, sealed. Crossing 55% of the world prefetches
-   the NEXT realm's art so the handoff feels instant.
+   Movement is now a polyline: each realm may carry `path` — a
+   list of [x, y] waypoints normalized to world width/height —
+   and Pomelo walks ALONG it: down stairs, across terraces,
+   up to the shrine. Taps project to the nearest point on the
+   path; node markers sit on it and light up as he reaches them.
+   Realms without a path fall back to a flat ground line (the
+   same polyline machinery with two points).
 
-   The manifest's img chains are local-first (assets/realms/…)
-   with the current Higgsfield renders as CDN placeholders — the
-   real quantized art drops into assets/realms/ later without
-   touching this file's logic. `ground` is the walk line as a
-   fraction of world height; per-realm because every biome draws
-   its path at a different height. Prism Peaks is flagged for the
-   planned vertical-ascent treatment once tall finale art exists.
+   PATH EDITOR — realm.html?realm=<id>&edit=1
+   The path in this file for Lorewood is an educated guess made
+   without seeing the art; the editor exists so a human can trace
+   the truth. In edit mode: click along the walkable path from
+   left to right to drop waypoints (the line draws as you go),
+   press N (or the Markers button) to switch to dropping node
+   markers, Z undoes, C clears. "Save preview" stores the trace in
+   localStorage so removing &edit=1 walks it immediately; "Copy
+   JSON" yields the snippet to commit into REALMS below.
+
+   If the art fails to load entirely (expired placeholder CDN),
+   the realm stays functional on a dark stage with a synthetic
+   world width — walkable, editable, just invisible.
    ============================================================ */
 (function () {
   'use strict';
@@ -25,9 +30,14 @@
   var CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01';
 
   var REALMS = [
-    { id: 'lorewood', name: 'Lorewood', domain: 'Information & Ideas', ground: 0.80,
+    { id: 'lorewood', name: 'Lorewood', domain: 'Information & Ideas',
       boss: 'The shrine doors are sealed. Whatever twists the old texts is waiting behind them.',
-      img: ['assets/realms/lorewood.png', CDN + '/hf_20260711_215833_948a0475-28db-41fa-94bf-14fca55664f1.png'] },
+      img: ['assets/realms/lorewood.png', CDN + '/hf_20260711_215833_948a0475-28db-41fa-94bf-14fca55664f1.png'],
+      /* educated guess at the terrace line — trace the real one with &edit=1 */
+      path: [[0.02, 0.70], [0.10, 0.70], [0.13, 0.74], [0.17, 0.74], [0.20, 0.78],
+             [0.30, 0.78], [0.40, 0.80], [0.55, 0.80], [0.62, 0.76], [0.70, 0.76],
+             [0.78, 0.72], [0.88, 0.72], [0.97, 0.70]],
+      nodes: [[0.12, 0.72], [0.28, 0.78], [0.46, 0.80], [0.66, 0.76], [0.84, 0.72]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', ground: 0.80,
       boss: 'The forge-hall doors are barred. Inside, something is bolting itself together in the wrong order.',
       img: ['assets/realms/storyforge.png', CDN + '/hf_20260711_215841_068ad0e5-1c08-4d92-beb5-7f038637027d.png'] },
@@ -54,6 +64,16 @@
   var params = new URLSearchParams(window.location.search);
   var idx = Math.max(0, REALMS.findIndex(function (r) { return r.id === params.get('realm'); }));
   var realm = REALMS[idx];
+  var editing = params.get('edit') === '1';
+  var PREVIEW_KEY = 'sq_realm_trace_' + realm.id;
+
+  // a human-saved trace beats the manifest's guess
+  try {
+    var saved = JSON.parse(window.localStorage.getItem(PREVIEW_KEY));
+    if (saved && saved.path && saved.path.length >= 2) {
+      realm = Object.assign({}, realm, { path: saved.path, nodes: saved.nodes || [] });
+    }
+  } catch (e) {}
 
   var stage = document.getElementById('rw-stage');
   var world = document.getElementById('rw-world');
@@ -63,6 +83,7 @@
   var veil = document.getElementById('rw-veil');
   var hint = document.getElementById('rw-hint');
   var popup = document.getElementById('rw-popup');
+  var trace = document.getElementById('rw-trace');
 
   /* ---------- HUD ---------- */
   document.title = realm.name + ', ScoreQuest';
@@ -84,64 +105,155 @@
     popupNext.hidden = true;
   }
 
-  /* ---------- world state ---------- */
+  /* ---------- world & path state ---------- */
   var stageW = 0, stageH = 0, worldW = 0, worldH = 0;
   var capyW = 0, capyH = 0;
-  var capyX = 0, targetX = 0, facing = 1;
-  var walking = false, ready = false;
-  var bossShown = false, prefetched = false;
-  var keyDir = 0;
+  var ready = false, bossShown = false, prefetched = false;
+  var facing = 1, walking = false, keyDir = 0;
+
+  // the path as normalized points -> pixel polyline with cumulative arc length
+  var norm = realm.path && realm.path.length >= 2
+    ? realm.path.slice()
+    : [[0.02, realm.ground || 0.8], [0.98, realm.ground || 0.8]];
+  var pts = [], cum = [], totalLen = 0;
+  var sPos = 0, sTarget = 0;
+  var nodeEls = [];
+
+  function buildPolyline() {
+    pts = norm.map(function (p) { return [p[0] * worldW, p[1] * worldH]; });
+    cum = [0];
+    for (var i = 1; i < pts.length; i++) {
+      var dx = pts[i][0] - pts[i - 1][0], dy = pts[i][1] - pts[i - 1][1];
+      cum.push(cum[i - 1] + Math.sqrt(dx * dx + dy * dy));
+    }
+    totalLen = cum[cum.length - 1] || 1;
+  }
+  function pointAt(s) {
+    s = Math.min(Math.max(s, 0), totalLen);
+    for (var i = 1; i < pts.length; i++) {
+      if (s <= cum[i]) {
+        var t = (s - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1);
+        return {
+          x: pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t,
+          y: pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t,
+          dx: pts[i][0] - pts[i - 1][0]
+        };
+      }
+    }
+    var last = pts[pts.length - 1];
+    return { x: last[0], y: last[1], dx: 1 };
+  }
+  // nearest arc-length position on the polyline to a world-space point
+  function nearestS(x, y) {
+    var best = 0, bestD = Infinity;
+    for (var i = 1; i < pts.length; i++) {
+      var ax = pts[i - 1][0], ay = pts[i - 1][1];
+      var bx = pts[i][0], by = pts[i][1];
+      var vx = bx - ax, vy = by - ay;
+      var L2 = vx * vx + vy * vy || 1;
+      var t = Math.min(Math.max(((x - ax) * vx + (y - ay) * vy) / L2, 0), 1);
+      var px = ax + vx * t, py = ay + vy * t;
+      var d = (x - px) * (x - px) + (y - py) * (y - py);
+      if (d < bestD) { bestD = d; best = cum[i - 1] + Math.sqrt(L2) * t; }
+    }
+    return best;
+  }
+
+  function placeCapy() {
+    var p = pointAt(sPos);
+    capy.style.left = Math.round(p.x - capyW / 2) + 'px';
+    capy.style.top = Math.round(p.y - capyH) + 'px';
+    return p;
+  }
+
+  function renderNodes() {
+    nodeEls.forEach(function (el) { el.remove(); });
+    nodeEls = [];
+    (realm.nodes || []).forEach(function (n, i) {
+      var el = document.createElement('div');
+      el.className = 'rw-node';
+      el.setAttribute('data-node', i + 1);
+      world.appendChild(el);
+      nodeEls.push(el);
+    });
+  }
+  function layoutNodes() {
+    (realm.nodes || []).forEach(function (n, i) {
+      var el = nodeEls[i];
+      if (!el) return;
+      el.style.left = Math.round(n[0] * worldW) + 'px';
+      el.style.top = Math.round(n[1] * worldH) + 'px';
+    });
+  }
+  function visitNodes() {
+    var p = pointAt(sPos);
+    (realm.nodes || []).forEach(function (n, i) {
+      var el = nodeEls[i];
+      if (!el || el.classList.contains('is-visited')) return;
+      var dx = n[0] * worldW - p.x, dy = n[1] * worldH - p.y;
+      if (dx * dx + dy * dy < (capyW * 0.6) * (capyW * 0.6)) {
+        el.classList.add('is-visited');
+        if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
+      }
+    });
+  }
 
   var ctx = null;
   try { ctx = capy.getContext('2d'); } catch (e) {}
   function drawCapy(frame) {
     if (!ctx || !window.SQCompanion) return;
     if (facing === 1) ctx.setTransform(1, 0, 0, 1, 3, 2);
-    else ctx.setTransform(-1, 0, 0, 1, 46, 2);   // mirror within the padded canvas
+    else ctx.setTransform(-1, 0, 0, 1, 46, 2);
     window.SQCompanion.draw(ctx, frame);
   }
 
   function layout() {
-    stageW = stage.clientWidth;
-    stageH = stage.clientHeight;
-    if (!bg.naturalWidth) return;
+    stageW = stage.clientWidth || 960;
+    stageH = stage.clientHeight || 540;
     worldH = stageH;
-    worldW = Math.round(bg.naturalWidth / bg.naturalHeight * worldH);
+    worldW = bg.naturalWidth
+      ? Math.round(bg.naturalWidth / bg.naturalHeight * worldH)
+      : Math.round(stageH * 21 / 9);          // synthetic width when art is missing
     world.style.width = worldW + 'px';
     capyW = capy.clientWidth || 120;
     capyH = capy.clientHeight || Math.round(capyW * 43 / 49);
-    var groundPx = Math.round(realm.ground * worldH);
-    capy.style.top = (groundPx - capyH) + 'px';
-    door.style.left = Math.round(worldW - stageW * 0.16) + 'px';
-    door.style.top = (groundPx - stageH * 0.30) + 'px';
-    capyX = Math.min(Math.max(capyX, 0), worldW - capyW);
-    targetX = Math.min(Math.max(targetX, 0), worldW - capyW);
+    buildPolyline();
+    var end = pts[pts.length - 1];
+    door.style.left = Math.round(Math.min(end[0], worldW - stageW * 0.16)) + 'px';
+    door.style.top = Math.round(end[1] - stageH * 0.30) + 'px';
+    layoutNodes();
+    drawTrace();
   }
 
   function camera() {
-    var camX = Math.min(Math.max(capyX + capyW / 2 - stageW * 0.42, 0), Math.max(0, worldW - stageW));
+    var p = pointAt(sPos);
+    var camX = Math.min(Math.max(p.x - stageW * 0.42, 0), Math.max(0, worldW - stageW));
     world.style.transform = 'translate3d(' + (-camX) + 'px,0,0)';
     return camX;
   }
 
-  /* ---------- the art, local-first with CDN placeholder fallback ---------- */
+  function begin() {
+    renderNodes();
+    layout();
+    sPos = nearestS(worldW * 0.05, pointAt(0).y);
+    sTarget = sPos;
+    placeCapy();
+    drawCapy(0);
+    camera();
+    ready = true;
+    veil.classList.add('is-gone');
+    if (editing) enterEditor();
+  }
+
   (function loadArt() {
     var srcs = realm.img.slice();
     var i = 0;
     bg.onerror = function () {
-      if (i < srcs.length) bg.src = srcs[i++];
-      else document.getElementById('rw-veil-text').textContent =
-        'the placeholder art could not load \u2014 the realm is still here, just invisible';
+      if (i < srcs.length) { bg.src = srcs[i++]; return; }
+      bg.remove();                              // dark stage, still walkable
+      begin();
     };
-    bg.onload = function () {
-      layout();
-      capyX = Math.round(worldW * 0.05);
-      targetX = capyX;
-      drawCapy(0);
-      camera();
-      ready = true;
-      veil.classList.add('is-gone');
-    };
+    bg.onload = begin;
     bg.src = srcs[i++];
   })();
 
@@ -155,40 +267,47 @@
     im.src = srcs[i++];
   }
 
-  /* ---------- input: tap ahead, or hold the arrows ---------- */
+  /* ---------- input ---------- */
+  function worldPoint(e) {
+    var p = pointAt(sPos);
+    var camX = Math.min(Math.max(p.x - stageW * 0.42, 0), Math.max(0, worldW - stageW));
+    return { x: e.clientX + camX, y: e.clientY };
+  }
   stage.addEventListener('click', function (e) {
-    if (e.target.closest('.rw-hud') || e.target.closest('.rw-popup')) return;
+    if (e.target.closest('.rw-hud') || e.target.closest('.rw-popup') || e.target.closest('.rw-editor')) return;
     if (!ready) return;
+    var w = worldPoint(e);
+    if (editing) { editorClick(w); return; }
     if (!popup.hidden) { popup.hidden = true; return; }
-    var camX = Math.min(Math.max(capyX + capyW / 2 - stageW * 0.42, 0), Math.max(0, worldW - stageW));
-    targetX = Math.min(Math.max(e.clientX + camX - capyW / 2, 0), worldW - capyW);
+    sTarget = nearestS(w.x, w.y);
     hint.classList.add('is-gone');
   });
   document.addEventListener('keydown', function (e) {
+    if (editing) { editorKey(e); return; }
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keyDir = 1;
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keyDir = -1;
   });
   document.addEventListener('keyup', function (e) {
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || /^[adAD]$/.test(e.key)) keyDir = 0;
   });
-  window.addEventListener('resize', function () { layout(); camera(); });
+  window.addEventListener('resize', function () { if (ready) { layout(); placeCapy(); camera(); } });
 
-  /* ---------- the walk ---------- */
+  /* ---------- the walk (arc-length along the polyline) ---------- */
   var lastT = 0, stepT = 0, walkFrame = 1, idleT = 0, idleStep = 0;
   var IDLE = [[0, 1900], [3, 150], [0, 1250], [3, 150]];
   function tick(t) {
     window.requestAnimationFrame(tick);
-    if (!ready) return;
+    if (!ready || editing) return;
     var dt = Math.min(50, t - lastT || 16);
     lastT = t;
-    if (keyDir !== 0) targetX = Math.min(Math.max(capyX + keyDir * 60, 0), worldW - capyW);
-    var dx = targetX - capyX;
-    var speed = stageH * 0.55 * (dt / 1000); // ~0.55 stage-heights per second
-    if (Math.abs(dx) > 2 && !reduceMotion) {
+    if (keyDir !== 0) sTarget = Math.min(Math.max(sPos + keyDir * 60, 0), totalLen);
+    var ds = sTarget - sPos;
+    var speed = stageH * 0.55 * (dt / 1000);
+    if (Math.abs(ds) > 2 && !reduceMotion) {
       walking = true;
-      facing = dx > 0 ? 1 : -1;
-      capyX += Math.sign(dx) * Math.min(Math.abs(dx), speed);
-      capy.style.left = Math.round(capyX) + 'px';
+      sPos += Math.sign(ds) * Math.min(Math.abs(ds), speed);
+      var p = placeCapy();
+      facing = Math.sign(ds) >= 0 ? (p.dx >= 0 ? 1 : -1) : (p.dx >= 0 ? -1 : 1);
       stepT += dt;
       if (stepT > 165) {
         stepT = 0;
@@ -197,19 +316,132 @@
         if (window.SQSfx && window.SQSfx.step) window.SQSfx.step();
       }
     } else {
-      if (reduceMotion && Math.abs(dx) > 2) { capyX = targetX; capy.style.left = Math.round(capyX) + 'px'; }
+      if (reduceMotion && Math.abs(ds) > 2) { sPos = sTarget; placeCapy(); }
       if (walking) { walking = false; idleT = 0; idleStep = 0; drawCapy(0); }
       idleT += dt;
       var fr = IDLE[idleStep % IDLE.length];
       if (idleT > fr[1]) { idleT = 0; idleStep += 1; drawCapy(IDLE[idleStep % IDLE.length][0]); }
     }
     camera();
-    if (capyX > worldW * 0.55) prefetchNext();
-    if (!bossShown && capyX > worldW - stageW * 0.28) {
+    visitNodes();
+    if (sPos > totalLen * 0.55) prefetchNext();
+    if (!bossShown && sPos > totalLen - stageW * 0.22) {
       bossShown = true;
       door.classList.add('is-near');
       popup.hidden = false;
     }
   }
   window.requestAnimationFrame(tick);
+
+  /* ============================================================
+     PATH EDITOR — trace the truth
+     ============================================================ */
+  var edPath = [], edNodes = [], edMode = 'path';
+  var edBar = null;
+
+  function drawTrace() {
+    if (!trace) return;
+    trace.width = worldW; trace.height = worldH;
+    var tc = null;
+    try { tc = trace.getContext('2d'); } catch (e) {}
+    if (!tc) return;
+    tc.clearRect(0, 0, worldW, worldH);
+    if (!editing) return;
+    var line = edPath.length ? edPath : norm;
+    tc.lineWidth = 3;
+    tc.strokeStyle = 'rgba(242,182,60,0.9)';
+    tc.beginPath();
+    line.forEach(function (p, i) {
+      var x = p[0] * worldW, y = p[1] * worldH;
+      if (i === 0) tc.moveTo(x, y); else tc.lineTo(x, y);
+    });
+    tc.stroke();
+    line.forEach(function (p) {
+      tc.fillStyle = '#F2B63C';
+      tc.fillRect(p[0] * worldW - 4, p[1] * worldH - 4, 8, 8);
+    });
+    (edNodes.length ? edNodes : (realm.nodes || [])).forEach(function (p) {
+      tc.fillStyle = '#7FE3C0';
+      tc.beginPath();
+      tc.arc(p[0] * worldW, p[1] * worldH, 7, 0, Math.PI * 2);
+      tc.fill();
+    });
+  }
+
+  function edJSON() {
+    var r3 = function (v) { return Math.round(v * 1000) / 1000; };
+    return JSON.stringify({
+      path: (edPath.length ? edPath : norm).map(function (p) { return [r3(p[0]), r3(p[1])]; }),
+      nodes: (edNodes.length ? edNodes : (realm.nodes || [])).map(function (p) { return [r3(p[0]), r3(p[1])]; })
+    });
+  }
+
+  function editorClick(w) {
+    var p = [w.x / worldW, w.y / worldH];
+    if (edMode === 'path') edPath.push(p);
+    else {
+      // snap markers onto the traced line
+      var save = norm;
+      if (edPath.length >= 2) { norm = edPath; buildPolyline(); }
+      var s = nearestS(w.x, w.y);
+      var q = pointAt(s);
+      edNodes.push([q.x / worldW, q.y / worldH]);
+      norm = save; buildPolyline();
+    }
+    if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
+    drawTrace();
+    syncEditorBar();
+  }
+  function editorKey(e) {
+    if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
+      if (edMode === 'path') edPath.pop(); else edNodes.pop();
+      drawTrace(); syncEditorBar();
+    }
+    if (e.key === 'c' || e.key === 'C') { edPath = []; edNodes = []; drawTrace(); syncEditorBar(); }
+    if (e.key === 'n' || e.key === 'N') { edMode = edMode === 'path' ? 'nodes' : 'path'; syncEditorBar(); }
+  }
+  function syncEditorBar() {
+    if (!edBar) return;
+    edBar.querySelector('#rw-ed-mode').textContent = edMode === 'path' ? 'Tracing: path' : 'Placing: markers';
+    edBar.querySelector('#rw-ed-count').textContent = edPath.length + ' pts \u00B7 ' + edNodes.length + ' markers';
+    edBar.querySelector('#rw-ed-json').value = edJSON();
+  }
+  function enterEditor() {
+    document.body.classList.add('is-editing');
+    edBar = document.createElement('div');
+    edBar.className = 'rw-editor pixel-frame';
+    edBar.innerHTML =
+      '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span></p>' +
+      '<p class="rw-ed-help">Click along the walkable path, left to right. N toggles marker placing, Z undoes, C clears.</p>' +
+      '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
+      '<div class="rw-ed-row">' +
+        '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Markers mode (N)</button>' +
+        '<button class="btn btn-outline" id="rw-ed-copy" type="button">Copy JSON</button>' +
+        '<button class="btn btn-gold" id="rw-ed-save" type="button">Save preview &amp; walk it</button>' +
+      '</div>';
+    stage.appendChild(edBar);
+    edBar.querySelector('#rw-ed-toggle').addEventListener('click', function (e) {
+      e.stopPropagation();
+      edMode = edMode === 'path' ? 'nodes' : 'path';
+      this.textContent = edMode === 'path' ? 'Markers mode (N)' : 'Path mode (N)';
+      syncEditorBar();
+    });
+    edBar.querySelector('#rw-ed-copy').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var ta = edBar.querySelector('#rw-ed-json');
+      ta.select();
+      try { navigator.clipboard.writeText(ta.value); } catch (err) { document.execCommand('copy'); }
+      this.textContent = 'Copied!';
+    });
+    edBar.querySelector('#rw-ed-save').addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (edPath.length < 2) { this.textContent = 'Trace at least 2 points first'; return; }
+      try {
+        window.localStorage.setItem(PREVIEW_KEY, edJSON());
+      } catch (err) {}
+      window.location.href = 'realm.html?realm=' + realm.id;
+    });
+    drawTrace();
+    syncEditorBar();
+  }
 })();
