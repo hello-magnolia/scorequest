@@ -1315,3 +1315,84 @@ a { color: inherit; }
 .hub-name { color: var(--parchment); font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
 .hub-domain { color: var(--parchment-dim); font-size: 0.95rem; }
 @media (max-width: 640px) { .realm-hub { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   Paw loader — reusable capybara paw-print loading animation.
+   White prints marching on a dark background. Usage: an empty
+   <div class="paw-loader"></div> anywhere js/paws.js is loaded
+   (or SQPaw.mount(el) for dynamic containers). Size with --pp
+   (the pixel size), color with `color`.
+   ============================================================ */
+.paw-loader {
+  --pp: 3px;
+  display: flex;
+  gap: calc(var(--pp) * 3);
+  color: #fff;
+}
+.paw-loader .paw {
+  position: relative;
+  width: calc(var(--pp) * 7);
+  height: calc(var(--pp) * 7);
+  opacity: 0;
+  animation: paw-march 2.2s linear infinite;
+}
+.paw-loader .paw::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: var(--pp);
+  height: var(--pp);
+  box-shadow:
+    calc(var(--pp)*1) calc(var(--pp)*0) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*0) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*0) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*6) 0 0 currentColor;
+}
+/* alternate feet: a walking gait, not a stamp sheet */
+.paw-loader .paw:nth-child(odd) { transform: translateY(calc(var(--pp) * -2)); }
+.paw-loader .paw:nth-child(even) { transform: translateY(calc(var(--pp) * 2)); }
+.paw-loader .paw:nth-child(1) { animation-delay: 0s; }
+.paw-loader .paw:nth-child(2) { animation-delay: 0.22s; }
+.paw-loader .paw:nth-child(3) { animation-delay: 0.44s; }
+.paw-loader .paw:nth-child(4) { animation-delay: 0.66s; }
+.paw-loader .paw:nth-child(5) { animation-delay: 0.88s; }
+.paw-loader .paw:nth-child(6) { animation-delay: 1.10s; }
+@keyframes paw-march {
+  0% { opacity: 0; }
+  6% { opacity: 1; }
+  55% { opacity: 1; }
+  68% { opacity: 0; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .paw-loader .paw { animation: none; opacity: 1; }
+}
+
+/* the realm veil wears it */
+.rw-veil { flex-direction: column; gap: 22px; }
