@@ -36,7 +36,7 @@ const load = async (path) => {
   await new Promise(r => setTimeout(r, 700)); // let the art chain exhaust to the dark fallback
   check('Path editor mode opens with instructions and a JSON export',
     !!d.querySelector('.rw-editor') &&
-    /Click along the walkable path/.test(d.querySelector('.rw-ed-help').textContent) &&
+    /Click along Pomelo/.test(d.querySelector('.rw-ed-help').textContent) &&
     !!d.getElementById('rw-ed-json'));
   const before = d.getElementById('rw-ed-count').textContent;
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 200, clientY: 300 }));
@@ -46,16 +46,13 @@ const load = async (path) => {
     /^2 path/.test(d.getElementById('rw-ed-count').textContent) &&
     /"realm":"lorewood"/.test(d.getElementById('rw-ed-json').value),
     before + ' -> ' + d.getElementById('rw-ed-count').textContent);
-  // cycle path -> markers -> Mango, then trace her track
+  // N switches to the marker layer; markers snap onto the traced path
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
-  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
-  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 600, clientY: 260 }));
-  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 700, clientY: 280 }));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 300, clientY: 320 }));
   await new Promise(r => setTimeout(r, 60));
-  check('N cycles to Mango\u2019s layer and her track exports under tracks.mango',
-    /Tracing: Mango/.test(d.getElementById('rw-ed-mode').textContent) &&
-    /1 markers|0 markers/.test(d.getElementById('rw-ed-count').textContent) &&
-    /"tracks":\{"mango":\[\[/.test(d.getElementById('rw-ed-json').value),
+  check('N switches to marker placing, snapped onto the traced path',
+    /Placing: markers/.test(d.getElementById('rw-ed-mode').textContent) &&
+    /1 markers/.test(d.getElementById('rw-ed-count').textContent),
     d.getElementById('rw-ed-count').textContent);
   /* back to the walkabout for the remaining checks */
   w = await load('realm.html');

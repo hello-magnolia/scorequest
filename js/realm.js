@@ -73,11 +73,10 @@
   var traceOverride = false;
   try {
     var saved = JSON.parse(window.localStorage.getItem(PREVIEW_KEY));
-    if (saved && (saved.path || saved.tracks || saved.nodes)) {
+    if (saved && (saved.path || saved.nodes)) {
       realm = Object.assign({}, realm);
       if (saved.path && saved.path.length >= 2) realm.path = saved.path;
       if (saved.nodes) realm.nodes = saved.nodes;
-      if (saved.tracks) realm.tracks = Object.assign({}, realm.tracks || {}, saved.tracks);
       traceOverride = true;
     }
   } catch (e) {}
@@ -220,25 +219,6 @@
     });
   }
 
-  /* Mango, waiting at the end of her traced track (if the realm has one) */
-  function renderMangoTrack() {
-    var mc = document.getElementById('rw-mango');
-    if (!mc) return;
-    var track = realm.tracks && realm.tracks.mango;
-    if (!track || !track.length || !window.SQMango) { mc.hidden = true; return; }
-    mc.width = window.SQMango.w;
-    mc.height = window.SQMango.h;
-    var mctx = null;
-    try { mctx = mc.getContext('2d'); } catch (e) {}
-    if (!mctx) { mc.hidden = true; return; }
-    window.SQMango.draw(mctx, 0);
-    mc.hidden = false;
-    var mw = mc.clientWidth || 120;
-    var mh = mc.clientHeight || Math.round(mw * 40 / 49);
-    var end = track[track.length - 1];
-    mc.style.left = Math.round(end[0] * worldW - mw / 2) + 'px';
-    mc.style.top = Math.round(end[1] * worldH - mh) + 'px';
-  }
 
   var ctx = null;
   try { ctx = capy.getContext('2d'); } catch (e) {}
@@ -264,7 +244,6 @@
     door.style.left = Math.round(Math.min(end[0], worldW - stageW * 0.16)) + 'px';
     door.style.top = Math.round(end[1] - stageH * 0.30) + 'px';
     layoutNodes();
-    renderMangoTrack();
     drawTrace();
   }
 
@@ -378,15 +357,15 @@
 
   /* ============================================================
      PATH EDITOR — trace the truth, in layers
-     Layers: path (gold, the player's walk line) -> markers (mint,
-     snapped onto the path) -> mango (pink, her own track). N or
-     the mode button cycles layers; Z undoes in the active layer;
-     C clears the active layer. Copy JSON yields a realm-tagged
-     snippet to paste back for committing.
+     Layers: path (gold — Pomelo's walk line) and markers (mint,
+     snapped onto the path). N or the mode button switches layers;
+     Z undoes in the active layer; C clears the active layer.
+     Copy JSON yields a realm-tagged snippet to paste back for
+     committing.
      ============================================================ */
-  var edPath = [], edNodes = [], edMango = [], edMode = 'path';
-  var ED_MODES = ['path', 'nodes', 'mango'];
-  var ED_LABEL = { path: 'Tracing: path', nodes: 'Placing: markers', mango: 'Tracing: Mango' };
+  var edPath = [], edNodes = [], edMode = 'path';
+  var ED_MODES = ['path', 'nodes'];
+  var ED_LABEL = { path: 'Tracing: Pomelo\u2019s path', nodes: 'Placing: markers' };
   var edBar = null;
 
   function drawTrace() {
@@ -413,7 +392,6 @@
       });
     }
     line(edPath.length ? edPath : norm, 'rgba(242,182,60,0.9)');
-    line(edMango.length ? edMango : ((realm.tracks && realm.tracks.mango) || []), 'rgba(229,139,165,0.95)');
     (edNodes.length ? edNodes : (realm.nodes || [])).forEach(function (p) {
       tc.fillStyle = '#7FE3C0';
       tc.beginPath();
@@ -425,18 +403,15 @@
   function edJSON() {
     var r3 = function (v) { return Math.round(v * 1000) / 1000; };
     var rr = function (list) { return list.map(function (p) { return [r3(p[0]), r3(p[1])]; }); };
-    var out = {
+    return JSON.stringify({
       realm: realm.id,
       path: rr(edPath.length ? edPath : norm),
       nodes: rr(edNodes.length ? edNodes : (realm.nodes || []))
-    };
-    var mango = edMango.length ? edMango : ((realm.tracks && realm.tracks.mango) || []);
-    if (mango.length) out.tracks = { mango: rr(mango) };
-    return JSON.stringify(out);
+    });
   }
 
   function edLayer() {
-    return edMode === 'path' ? edPath : edMode === 'nodes' ? edNodes : edMango;
+    return edMode === 'path' ? edPath : edNodes;
   }
   function editorClick(w) {
     var p = [w.x / worldW, w.y / worldH];
@@ -471,11 +446,10 @@
     if (!edBar) return;
     edBar.querySelector('#rw-ed-mode').textContent = ED_LABEL[edMode];
     edBar.querySelector('#rw-ed-count').textContent =
-      edPath.length + ' path \u00B7 ' + edNodes.length + ' markers \u00B7 ' + edMango.length + ' mango';
+      edPath.length + ' path \u00B7 ' + edNodes.length + ' markers';
     edBar.querySelector('#rw-ed-json').value = edJSON();
-    var nextMode = ED_MODES[(ED_MODES.indexOf(edMode) + 1) % ED_MODES.length];
     edBar.querySelector('#rw-ed-toggle').textContent =
-      'Next: ' + (nextMode === 'path' ? 'path' : nextMode === 'nodes' ? 'markers' : 'Mango') + ' (N)';
+      edMode === 'path' ? 'Switch to markers (N)' : 'Switch to path (N)';
   }
   function enterEditor() {
     document.body.classList.add('is-editing');
@@ -483,10 +457,10 @@
     edBar.className = 'rw-editor pixel-frame';
     edBar.innerHTML =
       '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span></p>' +
-      '<p class="rw-ed-help">Click along the walkable path, left to right. N cycles path \u2192 markers \u2192 Mango\u2019s track; Z undoes, C clears the active layer. Paste the JSON back to Claude to commit it for everyone.</p>' +
+      '<p class="rw-ed-help">Click along Pomelo\u2019s walkable path, left to right (stairs: one click at the top, one at the bottom). N switches to marker placing; Z undoes, C clears the active layer. Paste the JSON back to Claude to commit it for everyone.</p>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
-        '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Next: markers (N)</button>' +
+        '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Switch to markers (N)</button>' +
         '<button class="btn btn-outline" id="rw-ed-copy" type="button">Copy JSON</button>' +
         '<button class="btn btn-gold" id="rw-ed-save" type="button">Save preview &amp; walk it</button>' +
       '</div>';
@@ -504,7 +478,7 @@
     });
     edBar.querySelector('#rw-ed-save').addEventListener('click', function (e) {
       e.stopPropagation();
-      if (edPath.length < 2 && !edNodes.length && !edMango.length) {
+      if (edPath.length < 2 && !edNodes.length) {
         this.textContent = 'Trace something first';
         return;
       }
