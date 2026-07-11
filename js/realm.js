@@ -33,11 +33,13 @@
     { id: 'lorewood', name: 'Lorewood', domain: 'Information & Ideas',
       boss: 'The shrine doors are sealed. Whatever twists the old texts is waiting behind them.',
       img: ['assets/realms/lorewood.png', CDN + '/hf_20260711_215833_948a0475-28db-41fa-94bf-14fca55664f1.png'],
-      /* educated guess at the terrace line — trace the real one with &edit=1 */
-      path: [[0.02, 0.70], [0.10, 0.70], [0.13, 0.74], [0.17, 0.74], [0.20, 0.78],
-             [0.30, 0.78], [0.40, 0.80], [0.55, 0.80], [0.62, 0.76], [0.70, 0.76],
-             [0.78, 0.72], [0.88, 0.72], [0.97, 0.70]],
-      nodes: [[0.12, 0.72], [0.28, 0.78], [0.46, 0.80], [0.66, 0.76], [0.84, 0.72]] },
+      /* traced from the actual render: upper terrace -> staircase -> torii walk -> shrine steps */
+      path: [[0.015, 0.57], [0.06, 0.57], [0.085, 0.60], [0.105, 0.63], [0.125, 0.66],
+             [0.145, 0.69], [0.17, 0.70], [0.20, 0.71], [0.225, 0.745], [0.25, 0.75],
+             [0.33, 0.755], [0.42, 0.76], [0.50, 0.765], [0.58, 0.76], [0.65, 0.745],
+             [0.72, 0.73], [0.775, 0.72], [0.80, 0.70], [0.82, 0.675], [0.84, 0.65],
+             [0.865, 0.63], [0.90, 0.625]],
+      nodes: [[0.27, 0.752], [0.35, 0.757], [0.50, 0.765], [0.62, 0.752], [0.775, 0.72]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', ground: 0.80,
       boss: 'The forge-hall doors are barred. Inside, something is bolting itself together in the wrong order.',
       img: ['assets/realms/storyforge.png', CDN + '/hf_20260711_215841_068ad0e5-1c08-4d92-beb5-7f038637027d.png'] },
