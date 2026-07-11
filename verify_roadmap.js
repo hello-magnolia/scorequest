@@ -4,6 +4,8 @@
 const { JSDOM, VirtualConsole } = require('jsdom');
 const results = [];
 const check = (n, ok, d) => { results.push(ok); console.log((ok?'PASS':'FAIL')+'  '+n+(d?'  — '+d:'')); };
+// poll a condition instead of racing animation timers with fixed sleeps
+const until = async (fn, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await new Promise(r => setTimeout(r, 40)); } return fn(); };
 const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{});
 const OPTS = {
   resources: 'usable', virtualConsole: vc, runScripts: 'dangerously', pretendToBeVisual: true,
@@ -164,14 +166,13 @@ const OPTS = {
   /* click-to-flop: down to a nap, click again to rise */
   const capy = document.querySelector('.companion-sprite');
   capy.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 80));
-  check('Clicking the capybara starts the flop', ['down','flat'].includes(window.__SQ_SPRITE.flop));
-  await new Promise(r => setTimeout(r, 900));
-  check('It settles fully flat for a nap', window.__SQ_SPRITE.flop === 'flat');
+  check('Clicking the capybara starts the flop',
+    await until(() => ['down','flat'].includes(window.__SQ_SPRITE.flop), 1500));
+  check('It settles fully flat for a nap',
+    await until(() => window.__SQ_SPRITE.flop === 'flat', 2500));
   capy.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 900));
   check('A second click wakes it back up to sitting',
-    window.__SQ_SPRITE.flop === null && window.__SQ_SPRITE.sitting === true);
+    await until(() => window.__SQ_SPRITE.flop === null && window.__SQ_SPRITE.sitting === true, 2500));
 
   /* 2 — nodes: 5 per segment, one boss each */
   const nodes = document.querySelectorAll('.rnode');
@@ -275,19 +276,18 @@ const OPTS = {
   check('Mango positioned in the final biome',
     parseFloat(mangoEl.style.top) > lastSegEl.offsetTop);
   mangoEl.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 80));
-  check('Clicking Mango starts her flop', ['flop-down','flat'].includes(window.__SQ_MANGO.mode));
-  await new Promise(r => setTimeout(r, 800));
-  check('Mango settles flat for a nap', window.__SQ_MANGO.mode === 'flat');
+  check('Clicking Mango starts her flop',
+    await until(() => ['flop-down','flat'].includes(window.__SQ_MANGO.mode), 1500));
+  check('Mango settles flat for a nap',
+    await until(() => window.__SQ_MANGO.mode === 'flat', 2500));
   mangoEl.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 800));
-  check('A second click brings Mango back up to sitting', window.__SQ_MANGO.mode === 'sit');
+  check('A second click brings Mango back up to sitting',
+    await until(() => window.__SQ_MANGO.mode === 'sit', 2500));
   window.__SQ_MANGO.nextIdle = 0;
-  await new Promise(r => setTimeout(r, 150));
   check('Passive idle fires on its own (scratch or sulky turn)',
-    ['scratch','turn'].includes(window.__SQ_MANGO.mode));
-  await new Promise(r => setTimeout(r, 3200));
-  check('Passive idle resolves back to sitting', window.__SQ_MANGO.mode === 'sit');
+    await until(() => ['scratch','turn'].includes(window.__SQ_MANGO.mode), 1500));
+  check('Passive idle resolves back to sitting',
+    await until(() => window.__SQ_MANGO.mode === 'sit', 5000));
 
   /* 8c — the journey waits for Return to map when the drawer is open */
   infoNodes[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
