@@ -97,11 +97,6 @@
     document.querySelectorAll('.card[data-realm]').forEach(function (card) {
       var id = card.getAttribute('data-realm');
       var st = s.realms[id];
-      var chip = card.querySelector('.chip-lvl');
-      if (chip) {
-        var pips = '▮'.repeat(st.level) + '▯'.repeat(Math.max(0, G.MAX_LEVEL - st.level));
-        chip.textContent = pips + ' Level ' + st.level;
-      }
       var fill = card.querySelector('.card-bar-fill');
       if (fill) fill.style.width = (st.cleared ? 100 : st.pct) + '%';
       var btn = card.querySelector('.btn-quest');

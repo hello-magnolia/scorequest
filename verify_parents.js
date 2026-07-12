@@ -106,7 +106,7 @@ const OPTS = {
 
   /* 8 — official domain names, not biome names, in the report */
   check('Report uses official SAT domain names, not biome names',
-    /Information & Ideas/.test(sectionText) && !/Gloamwood|Copperpeak|Inkmarsh/.test(sectionText));
+    /Information & Ideas/.test(sectionText) && !/Lorewood|Mirror Mines|Ink Reef/.test(sectionText));
 
   /* 8a — the two-page deck: peeking back page flips to the front on hover */
   const pages = [...document.querySelectorAll('.ppage')];

@@ -58,9 +58,6 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   // card overlays present + reflect progress
   const infoCard = document.querySelector('.card[data-realm="info"]');
   check('Card progress overlay injected', !!infoCard && !!infoCard.querySelector('.card-bar-fill') && !!infoCard.querySelector('.btn-quest'));
-  const chip = infoCard.querySelector('.chip-lvl');
-  check('Card level pip shows Lv 2', /Level 2/.test(chip.textContent), chip.textContent.trim());
-
   // clear info fully -> cleared state
   for (let i=0;i<20;i++) G.completeQuest('info', 5, 5); // pile on XP past 900
   const cleared = G.realmState('info');

@@ -42,25 +42,25 @@
       nodes: [[0.10, 0.35], [0.33, 0.51], [0.55, 0.663], [0.64, 0.673], [0.82, 0.545]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', ground: 0.80,
       boss: 'The forge-hall doors are barred. Inside, something is bolting itself together in the wrong order.',
-      img: ['assets/realms/storyforge.png', CDN + '/hf_20260711_215841_068ad0e5-1c08-4d92-beb5-7f038637027d.png'] },
+      img: ['assets/realms/storyforge.png', CDN + '/hf_20260711_230052_cd161907-7401-47e7-a33c-42b70abe3904.png'] },
     { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', ground: 0.82,
       boss: 'The grotto is dark with drifting ink. The water will not clear on its own.',
-      img: ['assets/realms/inkreef.png', CDN + '/hf_20260711_215850_bf770aa9-d4bb-463c-83fd-d4a2fdf89591.png'] },
+      img: ['assets/realms/inkreef.png', CDN + '/hf_20260711_230540_3f451865-ff4e-41ca-a71a-fe4aacf6705a.png'] },
     { id: 'syntaxcitadel', name: 'Syntax Citadel', domain: 'Conventions', ground: 0.80,
       boss: 'The keep gate opens only for a complete sentence. The one on the throne is in pieces.',
-      img: ['assets/realms/syntaxcitadel.png', CDN + '/hf_20260711_215858_1813c097-6ef9-4d3a-a80f-3b3bd4951f49.png'] },
+      img: ['assets/realms/syntaxcitadel.png', CDN + '/hf_20260711_232640_5add5ec2-516c-4675-b10c-7c7242441029.png'] },
     { id: 'mirrormines', name: 'Mirror Mines', domain: 'Algebra', ground: 0.81,
       boss: 'The mirror chamber. Whatever is done on one side happens on the other.',
-      img: ['assets/realms/mirrormines.png', CDN + '/hf_20260711_215907_1207e44a-7be5-4ce7-a7c7-4ecb611cfd92.png'] },
+      img: ['assets/realms/mirrormines.png', CDN + '/hf_20260711_233112_1b52ca12-d9d4-4d93-99c7-8ad6befb0545.png'] },
     { id: 'infinityisles', name: 'Infinity Isles', domain: 'Advanced Math', ground: 0.78,
       boss: 'The archway hums. Something on the far side keeps doubling.',
-      img: ['assets/realms/infinityisles.png', CDN + '/hf_20260711_215917_16d5dfbf-cd4e-4539-a965-f5f89ad37a06.png'] },
+      img: ['assets/realms/infinityisles.png', CDN + '/hf_20260712_030318_cb25b618-de99-4606-abc4-0c021da75913.png'] },
     { id: 'datadocks', name: 'Data Docks', domain: 'Problem-Solving & Data', ground: 0.80,
       boss: 'The gangplank is up. The captain\u2019s charts never quite add up.',
-      img: ['assets/realms/datadocks.png', CDN + '/hf_20260711_215928_64b58b73-a2bc-45ad-a8f8-9528e0d1ca18.png'] },
+      img: ['assets/realms/datadocks.png', CDN + '/hf_20260712_000405_578c3562-4fdd-4209-9609-3de599f599d3.png'] },
     { id: 'prismpeaks', name: 'Prism Peaks', domain: 'Geometry & Trigonometry', ground: 0.80, vertical: true,
       boss: 'The nest at the summit. You know who it belongs to \u2014 and who is waiting in it.',
-      img: ['assets/realms/prismpeaks.png', CDN + '/hf_20260711_215940_56575c68-08a5-4a44-a5c8-91faa81f0ad3.png'] }
+      img: ['assets/realms/prismpeaks.png', CDN + '/hf_20260712_030734_4484dc45-3614-4e52-9af2-b4813c9f6499.png'] }
   ];
 
   var params = new URLSearchParams(window.location.search);
