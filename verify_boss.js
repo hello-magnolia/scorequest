@@ -24,23 +24,24 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   let w = await load('boss.html?realm=lorewood');
   let d = w.document;
   const S = w.__SQ_BOSS;
-  check('The Archivist’s bar runs twice Pomelo’s length, both brimming, no cell lines',
+  check('Nine tails, nine hit points: the fan is full and the bars scale to max HP',
     /Nine-Tailed Archivist/.test(d.getElementById('bf-boss-name').textContent) &&
-    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '276px' &&
-    d.querySelector('#bf-pomelo-hp .bf-hp-track').style.width === '138px' &&
+    d.querySelectorAll('.bf-tail').length === 9 &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '342px' &&
+    d.querySelector('#bf-pomelo-hp .bf-hp-track').style.width === '114px' &&
     d.querySelector('#bf-boss-hp .bf-hp-fill').style.width === '100%' &&
-    d.querySelectorAll('.bf-cell').length === 0 &&
-    /assets\/boss\/lorewood/.test(d.getElementById('bf-boss-img').src));
+    /boss\/lorewood\/neutral/.test(d.getElementById('bf-boss-img').src));
   check('A question is on the table with four choices',
     d.getElementById('bf-question').textContent.length > 20 &&
     d.querySelectorAll('.bf-choice').length === 4);
 
   /* right answer: Pomelo strikes */
   clickChoice(w, S.correctIndex);
-  check('Right answer: the boss loses a heart and the fill drains smoothly',
-    await until(() => S.bossHp === 5, 800) &&
-    Math.abs(parseFloat(d.querySelector('#bf-boss-hp .bf-hp-fill').style.width) - 83.33) < 0.5 &&
-    /Pomelo strikes/.test(d.getElementById('bf-feedback').textContent));
+  check('Right answer: a tail vanishes with the hit point',
+    await until(() => S.bossHp === 8, 800) &&
+    Math.abs(parseFloat(d.querySelector('#bf-boss-hp .bf-hp-fill').style.width) - 88.89) < 0.5 &&
+    await until(() => d.querySelectorAll('.bf-tail:not(.is-gone)').length === 8, 1200) &&
+    /loses a tail/.test(d.getElementById('bf-feedback').textContent));
   check('Choices lock after answering', d.querySelector('.bf-choice').disabled === true);
 
   /* wrong answer: the guardian strikes, and teaches */
@@ -52,15 +53,16 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
 
   /* the win path */
   let hops = 0;
-  while (S.bossHp > 0 && hops < 12) {
+  while (S.bossHp > 0 && hops < 15) {
     await until(() => !d.querySelector('.bf-choice').disabled || S.over, 3000);
     if (S.over) break;
     clickChoice(w, S.correctIndex);
     await until(() => d.querySelector('.bf-choice').disabled, 500);
     hops++;
   }
-  check('Boss at zero: the shrine opens and the clear persists',
-    await until(() => d.getElementById('bf-victory').hidden === false, 2000) &&
+  check('Boss at zero: nine tails down, the Archivist faints, the clear persists',
+    await until(() => d.getElementById('bf-victory').hidden === false, 3500) &&
+    /boss\/lorewood\/faint/.test(d.getElementById('bf-boss-img').src) &&
     w.localStorage.getItem('sq_boss_lorewood') === 'cleared' &&
     /Onward to Story Forge/.test(d.getElementById('bf-onward').textContent));
 
@@ -78,7 +80,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     /snack break/.test(d.getElementById('bf-defeat').textContent));
   d.getElementById('bf-retry').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
   check('Retry resets both sides and asks again',
-    S2.bossHp === 6 && S2.pomeloHp === 3 && !S2.over &&
+    S2.bossHp === 9 && S2.pomeloHp === 3 && !S2.over &&
     d.querySelectorAll('.bf-choice').length === 4);
 
   /* the realm's sealed door leads here */

@@ -22,9 +22,17 @@
     lorewood: {
       name: 'The Nine-Tailed Archivist',
       taunt: 'Every scroll in this shrine says what I say it says.',
-      sprite: 'assets/boss/lorewood.png',
+      sprites: {
+        neutral: 'assets/boss/lorewood/neutral.png',
+        tail:    'assets/boss/lorewood/tail.png',
+        attack1: 'assets/boss/lorewood/attack1.png',
+        attack2: 'assets/boss/lorewood/attack2.png',
+        hurt1:   'assets/boss/lorewood/hurt1.png',
+        hurt2:   'assets/boss/lorewood/hurt2.png',
+        faint:   'assets/boss/lorewood/faint.png'
+      },
       bg: 'assets/realms/lorewood.png',
-      hp: 6,
+      hp: 9,   /* nine tails, nine hit points: one tail per wound */
       next: { id: 'storyforge', name: 'Story Forge' },
       questions: [
         { q: 'The lanterns of Lorewood are lit every evening, though no keeper has been seen in ten years. Which question does the passage most directly raise?',
@@ -69,7 +77,51 @@
   document.getElementById('bf-boss-name').textContent = B.name;
   document.getElementById('bf-taunt').textContent = '\u201C' + B.taunt + '\u201D';
   document.getElementById('bf-stage').style.backgroundImage = 'url(' + B.bg + ')';
-  document.getElementById('bf-boss-img').src = B.sprite;
+  var bodyEl = document.getElementById('bf-boss-img');
+  var SP = B.sprites;
+  Object.keys(SP).forEach(function (k) { var im = new Image(); im.src = SP[k]; });
+  function setBody(k) { bodyEl.src = SP[k]; }
+  setBody('neutral');
+
+  /* frame sequences: attack when the guardian strikes, hurt when struck */
+  var animT = [];
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function playBody(seq) {
+    animT.forEach(clearTimeout); animT = [];
+    if (reduceMotion) return;
+    var t = 0;
+    seq.forEach(function (s) {
+      animT.push(setTimeout(function () { setBody(s[0]); }, t));
+      t += s[1];
+    });
+    animT.push(setTimeout(function () { if (!state.over) setBody('neutral'); }, t));
+  }
+
+  /* the nine tails, fanned behind the rump; the newest wound takes a tail */
+  var tailsEl = document.getElementById('bf-tails');
+  var tailEls = [];
+  function buildTails(n) {
+    tailsEl.innerHTML = '';
+    tailEls = [];
+    for (var i = 0; i < n; i++) {
+      var t = document.createElement('img');
+      t.className = 'bf-tail';
+      t.src = SP.tail;
+      t.alt = '';
+      var rot = -100 + i * 14;             // fan: low-left sweeping over the back
+      t.style.setProperty('--tr', rot + 'deg');
+      t.style.transform = 'rotate(' + rot + 'deg)';
+      tailsEl.appendChild(t);
+      tailEls.push(t);
+    }
+  }
+  function syncTails(hp) {
+    while (tailEls.length > hp) {
+      var t = tailEls.pop();
+      t.classList.add('is-gone');
+      setTimeout(function (el) { return function () { el.remove(); }; }(t), 320);
+    }
+  }
   var back = document.getElementById('bf-retreat');
   back.href = 'realm.html?realm=' + realmId;
 
@@ -85,7 +137,7 @@
     window.SQCompanion.draw(ctx, 0);
   })();
 
-  var PX_PER_HP = 46; // bar length scales with max HP, fill drains smoothly
+  var PX_PER_HP = 38; // bar length scales with max HP, fill drains smoothly
   function bar(el, hp, max) {
     var track = el.querySelector('.bf-hp-track');
     if (!track) {
@@ -134,12 +186,15 @@
     state.qi += 1;
     if (i === item.a) {
       state.bossHp = Math.max(0, state.bossHp - 1);
-      feedEl.textContent = 'Pomelo strikes! The Archivist reels.';
+      feedEl.textContent = 'Pomelo strikes! The Archivist loses a tail.';
       feedEl.className = 'bf-feedback is-hit';
+      playBody([['hurt1', 240], ['hurt2', 360]]);
+      syncTails(state.bossHp);
       flash(document.getElementById('bf-boss-side'));
       if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
     } else {
       state.pomeloHp = Math.max(0, state.pomeloHp - 1);
+      playBody([['attack1', 260], ['attack2', 420]]);
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
       feedEl.className = 'bf-feedback is-miss';
@@ -161,13 +216,15 @@
   function win() {
     state.over = true;
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
+    animT.forEach(clearTimeout);
+    setBody('faint');                       // nine tails down, the Archivist rests
     var p = document.getElementById('bf-victory');
     if (B.next) {
       var onward = document.getElementById('bf-onward');
       onward.href = 'realm.html?realm=' + B.next.id;
       onward.textContent = 'Onward to ' + B.next.name + ' \u2192';
     }
-    p.hidden = false;
+    setTimeout(function () { p.hidden = false; }, 800);
     if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
   }
   function lose() {
@@ -180,10 +237,13 @@
     state.qi = 0;
     state.over = false;
     document.getElementById('bf-defeat').hidden = true;
+    setBody('neutral');
+    buildTails(state.bossMax);
     renderHp();
     ask();
   });
 
+  buildTails(state.bossMax);
   renderHp();
   ask();
 })();

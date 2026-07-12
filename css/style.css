@@ -1464,17 +1464,33 @@ a { color: inherit; }
 .bf-side { display: flex; align-items: flex-end; }
 /* the bars live in fixed corners of the frame, unrelated to who stands where:
    Pomelo's heart on the left edge, the guardian's heart on the right */
-.bf-hpbar.bf-hp-left { position: absolute; top: 30px; left: 34px; }
-.bf-hpbar.bf-hp-right { position: absolute; top: 30px; right: 34px; }
+.bf-hpbar.bf-hp-left { position: absolute; top: 20px; left: 34px; }
+.bf-hpbar.bf-hp-right { position: absolute; top: 20px; right: 34px; }
 .bf-hp-flip { flex-direction: row-reverse; }
 .bf-hp-flip .bf-hp-track { margin-left: 0; margin-right: -8px; }
 .bf-hp-flip .bf-hp-cap { margin-left: 0; margin-right: -7px; }
 .bf-capy { width: clamp(140px, 21vh, 230px); height: auto; image-rendering: pixelated; }
+.bf-boss-rig {
+  position: relative;
+  width: clamp(180px, 29vh, 320px);
+  transform: scaleX(-1);  /* the whole rig faces Pomelo */
+}
 .bf-boss-img {
-  width: clamp(190px, 32vh, 340px); height: auto;
-  transform: scaleX(-1);  /* face Pomelo */
+  position: relative; z-index: 2;
+  width: 100%; height: auto; display: block;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
 }
+/* nine tails fan from behind the rump (source space: rump on the left);
+   bases tuck behind the body so they read as connected. One vanishes
+   per hit point. */
+.bf-tails { position: absolute; inset: 0; z-index: 1; }
+.bf-tail {
+  position: absolute; left: -13%; bottom: 24%;
+  width: 65%; transform-origin: 16% 92%;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.bf-tail.is-gone { opacity: 0; transform: scale(0.6) rotate(var(--tr)) !important; }
+@media (prefers-reduced-motion: reduce) { .bf-tail { transition: none; } }
 
 /* ---- HP bar: medallion heart, gold pixel frame, continuous fill ----
    No cell divisions: the fill drains proportionally, and each side's
