@@ -1458,18 +1458,25 @@ a { color: inherit; }
   position: relative; z-index: 2;
   width: min(940px, 96vw); height: clamp(280px, 40vh, 440px);
   margin: 10px auto 14px; flex: none;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: flex-end; justify-content: center;
   gap: clamp(30px, 8vw, 130px);
+  padding-bottom: clamp(22px, 5vh, 48px);
   border: 2px solid var(--line); background: rgba(16, 12, 32, 0.42);
 }
-.bf-side { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.bf-side { display: flex; align-items: flex-end; }
+/* the bars live in fixed corners of the frame, unrelated to who stands where:
+   Pomelo's heart on the left edge, the guardian's heart on the right */
+.bf-hpbar.bf-hp-left { position: absolute; top: 16px; left: 18px; }
+.bf-hpbar.bf-hp-right { position: absolute; top: 16px; right: 18px; }
+.bf-hp-flip { flex-direction: row-reverse; }
+.bf-hp-flip .bf-hp-track { margin-left: 0; margin-right: -8px; }
+.bf-hp-flip .bf-hp-cap { margin-left: 0; margin-right: -7px; }
 .bf-capy { width: clamp(140px, 21vh, 230px); height: auto; image-rendering: pixelated; }
 .bf-boss-img {
   width: clamp(190px, 32vh, 340px); height: auto;
   transform: scaleX(-1);  /* face Pomelo */
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
 }
-.bf-name { margin: 0; color: var(--parchment); letter-spacing: 0.08em; }
 
 /* ---- HP bar: medallion heart, gold pixel frame, continuous fill ----
    No cell divisions: the fill drains proportionally, and each side's
@@ -1484,10 +1491,10 @@ a { color: inherit; }
   display: flex; align-items: center; justify-content: center;
 }
 .bf-hp-heart {
-  position: relative; width: 3px; height: 3px; margin: -9px 0 0 -9px;
+  position: relative; width: 21px; height: 18px;
 }
 .bf-hp-heart::before {
-  content: ''; position: absolute; width: 3px; height: 3px;
+  content: ''; position: absolute; top: 0; left: -3px; width: 3px; height: 3px;
   background: transparent;
   box-shadow:
     3px 0 0 0 #ff5a4e, 6px 0 0 0 #ff5a4e, 12px 0 0 0 #ff5a4e, 15px 0 0 0 #ff5a4e,
