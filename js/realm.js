@@ -321,7 +321,13 @@
 
   /* ---------- the walk (arc-length along the polyline) ---------- */
   var lastT = 0, stepT = 0, walkFrame = 1, idleT = 0, idleStep = 0;
-  var IDLE = [[0, 1900], [3, 150], [0, 1250], [3, 150]];
+  // stand, blink, and every so often settle in for a proper graze:
+  // sit -> crouch -> graze -> chew, chew, a little more grass, back up
+  var IDLE = [
+    [0, 1900], [3, 150], [0, 1250], [3, 150], [0, 900],
+    [4, 700], [5, 220], [6, 800], [7, 260], [8, 260], [7, 260], [8, 260],
+    [6, 500], [7, 260], [8, 260], [5, 220], [4, 600], [0, 400]
+  ];
   function tick(t) {
     window.requestAnimationFrame(tick);
     if (!ready || editing) return;
