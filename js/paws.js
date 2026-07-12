@@ -11,7 +11,7 @@
     if (!el || el.childElementCount) return;
     for (var i = 0; i < 6; i++) {
       var s = document.createElement('span');
-      s.className = i % 2 ? 'paw paw-hind' : 'paw';  // front, hind, front... like the animal
+      s.className = 'paw';
       el.appendChild(s);
     }
   }

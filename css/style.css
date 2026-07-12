@@ -1318,12 +1318,12 @@ a { color: inherit; }
 
 /* ============================================================
    Paw loader — reusable capybara paw-print loading animation.
-   White prints marching on a dark background, toes pointing the
-   way they're walking. Front paws carry four toes, hind paws
-   three (alternating, like the animal). Usage: an empty
-   <div class="paw-loader"></div> anywhere js/paws.js is loaded
-   (or SQPaw.mount(el) for dynamic containers). Size with --pp
-   (the pixel size), color with `color`.
+   White three-toed prints marching on a dark background, toes
+   pointing the way they're walking. Each step POPS in (no fade),
+   the trail holds, then every print vanishes at once and the walk
+   begins again. Usage: an empty <div class="paw-loader"></div>
+   anywhere js/paws.js is loaded (or SQPaw.mount(el) for dynamic
+   containers). Size with --pp, color with `color`.
    ============================================================ */
 .paw-loader {
   --pp: 3px;
@@ -1336,7 +1336,7 @@ a { color: inherit; }
   width: calc(var(--pp) * 11);
   height: calc(var(--pp) * 10);
   opacity: 0;
-  animation: paw-march 2.2s linear infinite;
+  animation: paw-walk-1 3.8s linear infinite;
 }
 .paw-loader .paw::before {
   content: '';
@@ -1344,55 +1344,6 @@ a { color: inherit; }
   top: 0; left: 0;
   width: var(--pp);
   height: var(--pp);
-  box-shadow:
-    calc(var(--pp)*1) calc(var(--pp)*2) 0 0 currentColor,
-    calc(var(--pp)*2) calc(var(--pp)*2) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*2) 0 0 currentColor,
-    calc(var(--pp)*0) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*1) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*2) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*4) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*0) calc(var(--pp)*4) 0 0 currentColor,
-    calc(var(--pp)*1) calc(var(--pp)*4) 0 0 currentColor,
-    calc(var(--pp)*2) calc(var(--pp)*4) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*4) 0 0 currentColor,
-    calc(var(--pp)*4) calc(var(--pp)*4) 0 0 currentColor,
-    calc(var(--pp)*0) calc(var(--pp)*5) 0 0 currentColor,
-    calc(var(--pp)*1) calc(var(--pp)*5) 0 0 currentColor,
-    calc(var(--pp)*2) calc(var(--pp)*5) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*5) 0 0 currentColor,
-    calc(var(--pp)*4) calc(var(--pp)*5) 0 0 currentColor,
-    calc(var(--pp)*0) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*1) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*2) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*4) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*1) calc(var(--pp)*7) 0 0 currentColor,
-    calc(var(--pp)*2) calc(var(--pp)*7) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*7) 0 0 currentColor,
-    calc(var(--pp)*6) calc(var(--pp)*0) 0 0 currentColor,
-    calc(var(--pp)*7) calc(var(--pp)*0) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*1) 0 0 currentColor,
-    calc(var(--pp)*6) calc(var(--pp)*1) 0 0 currentColor,
-    calc(var(--pp)*7) calc(var(--pp)*1) 0 0 currentColor,
-    calc(var(--pp)*8) calc(var(--pp)*2) 0 0 currentColor,
-    calc(var(--pp)*9) calc(var(--pp)*2) 0 0 currentColor,
-    calc(var(--pp)*10) calc(var(--pp)*2) 0 0 currentColor,
-    calc(var(--pp)*8) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*9) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*8) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*9) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*8) calc(var(--pp)*7) 0 0 currentColor,
-    calc(var(--pp)*9) calc(var(--pp)*7) 0 0 currentColor,
-    calc(var(--pp)*10) calc(var(--pp)*7) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*8) 0 0 currentColor,
-    calc(var(--pp)*6) calc(var(--pp)*8) 0 0 currentColor,
-    calc(var(--pp)*7) calc(var(--pp)*8) 0 0 currentColor,
-    calc(var(--pp)*6) calc(var(--pp)*9) 0 0 currentColor,
-    calc(var(--pp)*7) calc(var(--pp)*9) 0 0 currentColor;
-}
-.paw-loader .paw.paw-hind::before {
   box-shadow:
     calc(var(--pp)*1) calc(var(--pp)*2) 0 0 currentColor,
     calc(var(--pp)*2) calc(var(--pp)*2) 0 0 currentColor,
@@ -1436,22 +1387,45 @@ a { color: inherit; }
     calc(var(--pp)*6) calc(var(--pp)*9) 0 0 currentColor,
     calc(var(--pp)*7) calc(var(--pp)*9) 0 0 currentColor;
 }
+@keyframes paw-walk-1 {
+  0% { opacity: 0; }
+  0.1%, 88.0% { opacity: 1; }
+  88.1%, 100% { opacity: 0; }
+}
+.paw-loader .paw:nth-child(1) { animation-name: paw-walk-1; }
+@keyframes paw-walk-2 {
+  0%, 11.8% { opacity: 0; }
+  11.9%, 88.0% { opacity: 1; }
+  88.1%, 100% { opacity: 0; }
+}
+.paw-loader .paw:nth-child(2) { animation-name: paw-walk-2; }
+@keyframes paw-walk-3 {
+  0%, 23.7% { opacity: 0; }
+  23.8%, 88.0% { opacity: 1; }
+  88.1%, 100% { opacity: 0; }
+}
+.paw-loader .paw:nth-child(3) { animation-name: paw-walk-3; }
+@keyframes paw-walk-4 {
+  0%, 35.5% { opacity: 0; }
+  35.6%, 88.0% { opacity: 1; }
+  88.1%, 100% { opacity: 0; }
+}
+.paw-loader .paw:nth-child(4) { animation-name: paw-walk-4; }
+@keyframes paw-walk-5 {
+  0%, 47.4% { opacity: 0; }
+  47.5%, 88.0% { opacity: 1; }
+  88.1%, 100% { opacity: 0; }
+}
+.paw-loader .paw:nth-child(5) { animation-name: paw-walk-5; }
+@keyframes paw-walk-6 {
+  0%, 59.2% { opacity: 0; }
+  59.3%, 88.0% { opacity: 1; }
+  88.1%, 100% { opacity: 0; }
+}
+.paw-loader .paw:nth-child(6) { animation-name: paw-walk-6; }
 /* alternate feet: a walking gait, not a stamp sheet */
 .paw-loader .paw:nth-child(odd) { transform: translateY(calc(var(--pp) * -2)); }
 .paw-loader .paw:nth-child(even) { transform: translateY(calc(var(--pp) * 2)); }
-.paw-loader .paw:nth-child(1) { animation-delay: 0s; }
-.paw-loader .paw:nth-child(2) { animation-delay: 0.22s; }
-.paw-loader .paw:nth-child(3) { animation-delay: 0.44s; }
-.paw-loader .paw:nth-child(4) { animation-delay: 0.66s; }
-.paw-loader .paw:nth-child(5) { animation-delay: 0.88s; }
-.paw-loader .paw:nth-child(6) { animation-delay: 1.10s; }
-@keyframes paw-march {
-  0% { opacity: 0; }
-  6% { opacity: 1; }
-  55% { opacity: 1; }
-  68% { opacity: 0; }
-  100% { opacity: 0; }
-}
 @media (prefers-reduced-motion: reduce) {
   .paw-loader .paw { animation: none; opacity: 1; }
 }

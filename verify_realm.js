@@ -31,7 +31,7 @@ const load = async (path) => {
     !!d.getElementById('rw-trace'));
   check('The entering-veil walks in on capybara paw prints (reusable loader)',
     d.querySelectorAll('#rw-veil .paw-loader .paw').length === 6 &&
-    d.querySelectorAll('#rw-veil .paw-loader .paw-hind').length === 3);
+    d.querySelectorAll('#rw-veil .paw-loader .paw-hind').length === 0);
 
   /* the editor */
   w = await load('realm.html?realm=lorewood&edit=1');
