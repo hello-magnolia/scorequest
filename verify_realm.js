@@ -32,6 +32,20 @@ const load = async (path) => {
   check('The entering-veil walks in on capybara paw prints (reusable loader)',
     d.querySelectorAll('#rw-veil .paw-loader .paw').length === 6 &&
     d.querySelectorAll('#rw-veil .paw-loader .paw-hind').length === 0);
+  // click-to-flop: tap him and he settles flat; tap again and he rises
+  const until = async (fn, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await new Promise(r => setTimeout(r, 40)); } return fn(); };
+  await until(() => w.document.getElementById('rw-veil').classList.contains('is-gone'), 3000);
+  const capyEl = d.getElementById('rw-capy');
+  const cx = parseInt(capyEl.style.left || '0') + 60;
+  const cy = parseInt(capyEl.style.top || '0') + 45;
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: cx, clientY: cy }));
+  check('Tapping Pomelo starts the flop',
+    await until(() => ['down', 'flat'].includes(w.__SQ_REALM_FLOP), 1500), String(w.__SQ_REALM_FLOP));
+  check('He settles fully flat for a nap',
+    await until(() => w.__SQ_REALM_FLOP === 'flat', 2500));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: cx, clientY: cy }));
+  check('A second tap brings him back up',
+    await until(() => w.__SQ_REALM_FLOP === null, 2500), String(w.__SQ_REALM_FLOP));
 
   /* the editor */
   w = await load('realm.html?realm=lorewood&edit=1');

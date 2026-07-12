@@ -234,6 +234,47 @@
     window.SQCompanion.draw(ctx, frame);
   }
 
+  /* ---------- click-to-flop: tap him, he naps ----------
+     Frames 9-12 tween relaxed sit -> recline -> lying -> fully flat.
+     Tap him again (or ask him to walk) and he gets back up first. */
+  var flop = null; // null | 'down' | 'flat' | 'up'
+  var flopTimers = [];
+  function setFlop(v) { flop = v; window.__SQ_REALM_FLOP = v; }
+  function clearFlopTimers() { flopTimers.forEach(clearTimeout); flopTimers = []; }
+  function playSeq(frames, ms, done) {
+    var i = 0;
+    (function step() {
+      if (i >= frames.length) { if (done) done(); return; }
+      drawCapy(frames[i]);
+      i += 1;
+      flopTimers.push(setTimeout(step, ms));
+    })();
+  }
+  function flopDown() {
+    clearFlopTimers();
+    setFlop('down');
+    sTarget = sPos;                       // he is going nowhere
+    if (window.SQSfx && window.SQSfx.step) window.SQSfx.step();
+    if (reduceMotion) { drawCapy(12); setFlop('flat'); return; }
+    playSeq([9, 10, 11, 12], 140, function () { setFlop('flat'); });
+  }
+  function flopUp(then) {
+    clearFlopTimers();
+    setFlop('up');
+    if (reduceMotion) { drawCapy(0); setFlop(null); idleT = 0; idleStep = 0; if (then) then(); return; }
+    playSeq([11, 10, 9, 0], 120, function () {
+      setFlop(null);
+      idleT = 0; idleStep = 0;
+      if (then) then();
+    });
+  }
+  function capyHit(wx, wy) {
+    var p = pointAt(sPos);
+    var left = p.x - capyW / 2 - 8;
+    var top = p.y - capyH * FEET - 8;
+    return wx >= left && wx <= left + capyW + 16 && wy >= top && wy <= top + capyH + 16;
+  }
+
   function layout() {
     stageW = stage.clientWidth || 960;
     stageH = stage.clientHeight || 540;
@@ -306,6 +347,16 @@
     var w = worldPoint(e);
     if (editing) { editorClick(w); return; }
     if (!popup.hidden) { popup.hidden = true; return; }
+    if (capyHit(w.x, w.y)) {                       // tapping him toggles the flop
+      if (flop === 'flat') flopUp();
+      else if (!flop) flopDown();
+      return;
+    }
+    if (flop) {                                    // asked to walk while napping: up first
+      var wakeTarget = nearestS(w.x, w.y);
+      if (flop === 'flat') flopUp(function () { sTarget = wakeTarget; });
+      return;
+    }
     sTarget = nearestS(w.x, w.y);
     hint.classList.add('is-gone');
   });
@@ -333,6 +384,11 @@
     if (!ready || editing) return;
     var dt = Math.min(50, t - lastT || 16);
     lastT = t;
+    if (flop) {                                    // napping: no walking, no idle
+      if (keyDir !== 0 && flop === 'flat') flopUp();
+      camera();
+      return;
+    }
     if (keyDir !== 0) sTarget = Math.min(Math.max(sPos + keyDir * 60, 0), totalLen);
     var ds = sTarget - sPos;
     var speed = stageH * 0.38 * (dt / 1000); // an unhurried capybara pace
