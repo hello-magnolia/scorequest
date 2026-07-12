@@ -109,8 +109,11 @@
       t.src = SP.tail;
       t.alt = '';
       var rot = -100 + i * 14;             // fan: low-left sweeping over the back
+      // the outer tails run slightly smaller than the middle of the fan
+      var s = 1 - 0.18 * Math.pow((i - 4) / 4, 2);
       t.style.setProperty('--tr', rot + 'deg');
-      t.style.transform = 'rotate(' + rot + 'deg)';
+      t.style.setProperty('--ts', s.toFixed(3));
+      t.style.transform = 'rotate(' + rot + 'deg) scale(' + s.toFixed(3) + ')';
       tailsEl.appendChild(t);
       tailEls.push(t);
     }

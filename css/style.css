@@ -1464,8 +1464,8 @@ a { color: inherit; }
 .bf-side { display: flex; align-items: flex-end; }
 /* the bars live in fixed corners of the frame, unrelated to who stands where:
    Pomelo's heart on the left edge, the guardian's heart on the right */
-.bf-hpbar.bf-hp-left { position: absolute; top: 20px; left: 34px; }
-.bf-hpbar.bf-hp-right { position: absolute; top: 20px; right: 34px; }
+.bf-hpbar.bf-hp-left { position: absolute; top: 20px; left: 34px; z-index: 3; }
+.bf-hpbar.bf-hp-right { position: absolute; top: 20px; right: 34px; z-index: 3; }
 .bf-hp-flip { flex-direction: row-reverse; }
 .bf-hp-flip .bf-hp-track { margin-left: 0; margin-right: -8px; }
 .bf-hp-flip .bf-hp-cap { margin-left: 0; margin-right: -7px; }
@@ -1485,11 +1485,11 @@ a { color: inherit; }
    per hit point. */
 .bf-tails { position: absolute; inset: 0; z-index: 1; }
 .bf-tail {
-  position: absolute; left: -13%; bottom: 24%;
-  width: 65%; transform-origin: 16% 92%;
+  position: absolute; left: -4%; bottom: 28%;
+  width: 40%; transform-origin: 16% 92%;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.bf-tail.is-gone { opacity: 0; transform: scale(0.6) rotate(var(--tr)) !important; }
+.bf-tail.is-gone { opacity: 0; transform: rotate(var(--tr)) scale(calc(var(--ts) * 0.5)) !important; }
 @media (prefers-reduced-motion: reduce) { .bf-tail { transition: none; } }
 
 /* ---- HP bar: medallion heart, gold pixel frame, continuous fill ----
