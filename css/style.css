@@ -1455,30 +1455,67 @@ a { color: inherit; }
 .bf-taunt { margin: 0; color: var(--parchment-dim); font-family: var(--font-utility); font-size: 1.1rem; }
 
 .bf-arena {
-  position: relative; z-index: 2; flex: 1; display: flex;
-  align-items: center; justify-content: center;
-  gap: clamp(36px, 9vw, 150px);
-  padding: 0 4vw; margin-top: -3vh;
+  position: relative; z-index: 2;
+  width: min(940px, 96vw); height: clamp(280px, 40vh, 440px);
+  margin: 10px auto 14px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(30px, 8vw, 130px);
+  border: 2px solid var(--line); background: rgba(16, 12, 32, 0.42);
 }
-.bf-side { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.bf-capy { width: clamp(170px, 27vh, 300px); height: auto; image-rendering: pixelated; }
+.bf-side { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.bf-capy { width: clamp(140px, 21vh, 230px); height: auto; image-rendering: pixelated; }
 .bf-boss-img {
-  width: clamp(224px, 42vh, 448px); height: auto;
-  image-rendering: pixelated; transform: scaleX(-1);  /* face Pomelo */
+  width: clamp(190px, 32vh, 340px); height: auto;
+  transform: scaleX(-1);  /* face Pomelo */
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
 }
 .bf-name { margin: 0; color: var(--parchment); letter-spacing: 0.08em; }
-/* pixel HP bar: chunky cells in a hard-edged frame */
-.bf-hpbar {
-  display: flex; gap: 3px; padding: 4px;
-  background: var(--ink);
-  border: 3px solid var(--parchment);
-  box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.5);
+
+/* ---- HP bar: medallion heart, gold pixel frame, continuous fill ----
+   No cell divisions: the fill drains proportionally, and each side's
+   bar LENGTH scales with max HP (Pomelo's is half the Archivist's). */
+.bf-hpbar { display: flex; align-items: center; }
+.bf-hp-medal {
+  width: 34px; height: 34px; flex: none; z-index: 1;
+  border-radius: 50%;
+  background: #6d4a30;
+  border: 3px solid #e8b64c;
+  box-shadow: 0 0 0 2px #241708, inset 0 0 0 2px #8a6038;
+  display: flex; align-items: center; justify-content: center;
 }
-.bf-cell { width: 18px; height: 12px; background: rgba(255, 255, 255, 0.08); }
-.bf-cell.is-full {
-  background: linear-gradient(#ff8a6b 0 30%, #e8433f 30% 68%, #a81f19 68% 100%);
+.bf-hp-heart {
+  position: relative; width: 3px; height: 3px; margin: -9px 0 0 -9px;
 }
+.bf-hp-heart::before {
+  content: ''; position: absolute; width: 3px; height: 3px;
+  background: transparent;
+  box-shadow:
+    3px 0 0 0 #ff5a4e, 6px 0 0 0 #ff5a4e, 12px 0 0 0 #ff5a4e, 15px 0 0 0 #ff5a4e,
+    0 3px 0 0 #e8433f, 3px 3px 0 0 #ffb3a8, 6px 3px 0 0 #e8433f, 9px 3px 0 0 #e8433f, 12px 3px 0 0 #e8433f, 15px 3px 0 0 #e8433f, 18px 3px 0 0 #e8433f,
+    0 6px 0 0 #e8433f, 3px 6px 0 0 #e8433f, 6px 6px 0 0 #e8433f, 9px 6px 0 0 #e8433f, 12px 6px 0 0 #e8433f, 15px 6px 0 0 #e8433f, 18px 6px 0 0 #e8433f,
+    3px 9px 0 0 #c22a24, 6px 9px 0 0 #c22a24, 9px 9px 0 0 #c22a24, 12px 9px 0 0 #c22a24, 15px 9px 0 0 #c22a24,
+    6px 12px 0 0 #c22a24, 9px 12px 0 0 #c22a24, 12px 12px 0 0 #c22a24,
+    9px 15px 0 0 #a81f19;
+}
+.bf-hp-track {
+  height: 20px; margin-left: -8px;
+  background: #241708;
+  border: 3px solid #e8b64c;
+  box-shadow: 0 0 0 2px #241708, 3px 3px 0 2px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+.bf-hp-fill {
+  display: block; height: 100%;
+  background: linear-gradient(#ff8a7a 0 28%, #e8433f 28% 66%, #a81f19 66% 100%);
+  transition: width 0.3s ease;
+}
+.bf-hp-cap {
+  width: 14px; height: 14px; flex: none; margin-left: -7px;
+  transform: rotate(45deg);
+  background: #e8b64c;
+  box-shadow: 0 0 0 2px #241708;
+}
+@media (prefers-reduced-motion: reduce) { .bf-hp-fill { transition: none; } }
 .is-flash { animation: bf-flash 0.45s ease; }
 @keyframes bf-flash {
   0%, 100% { filter: none; }

@@ -85,13 +85,17 @@
     window.SQCompanion.draw(ctx, 0);
   })();
 
+  var PX_PER_HP = 46; // bar length scales with max HP, fill drains smoothly
   function bar(el, hp, max) {
-    el.innerHTML = '';
-    for (var i = 0; i < max; i++) {
-      var s = document.createElement('span');
-      s.className = 'bf-cell' + (i < hp ? ' is-full' : '');
-      el.appendChild(s);
+    var track = el.querySelector('.bf-hp-track');
+    if (!track) {
+      el.innerHTML = '<span class="bf-hp-medal"><span class="bf-hp-heart"></span></span>' +
+        '<span class="bf-hp-track"><span class="bf-hp-fill"></span></span>' +
+        '<span class="bf-hp-cap"></span>';
+      track = el.querySelector('.bf-hp-track');
+      track.style.width = (max * PX_PER_HP) + 'px';
     }
+    el.querySelector('.bf-hp-fill').style.width = (hp / max * 100) + '%';
   }
   function renderHp() {
     bar(document.getElementById('bf-boss-hp'), state.bossHp, state.bossMax);

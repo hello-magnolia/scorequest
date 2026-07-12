@@ -24,10 +24,12 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   let w = await load('boss.html?realm=lorewood');
   let d = w.document;
   const S = w.__SQ_BOSS;
-  check('The Archivist waits with six hearts; Pomelo brings three',
+  check('The Archivist’s bar runs twice Pomelo’s length, both brimming, no cell lines',
     /Nine-Tailed Archivist/.test(d.getElementById('bf-boss-name').textContent) &&
-    d.querySelectorAll('#bf-boss-hp .bf-cell.is-full').length === 6 &&
-    d.querySelectorAll('#bf-pomelo-hp .bf-cell.is-full').length === 3 &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '276px' &&
+    d.querySelector('#bf-pomelo-hp .bf-hp-track').style.width === '138px' &&
+    d.querySelector('#bf-boss-hp .bf-hp-fill').style.width === '100%' &&
+    d.querySelectorAll('.bf-cell').length === 0 &&
     /assets\/boss\/lorewood/.test(d.getElementById('bf-boss-img').src));
   check('A question is on the table with four choices',
     d.getElementById('bf-question').textContent.length > 20 &&
@@ -35,9 +37,9 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
 
   /* right answer: Pomelo strikes */
   clickChoice(w, S.correctIndex);
-  check('Right answer: the boss loses a heart and the hit lands',
+  check('Right answer: the boss loses a heart and the fill drains smoothly',
     await until(() => S.bossHp === 5, 800) &&
-    d.querySelectorAll('#bf-boss-hp .bf-cell.is-full').length === 5 &&
+    Math.abs(parseFloat(d.querySelector('#bf-boss-hp .bf-hp-fill').style.width) - 83.33) < 0.5 &&
     /Pomelo strikes/.test(d.getElementById('bf-feedback').textContent));
   check('Choices lock after answering', d.querySelector('.bf-choice').disabled === true);
 
