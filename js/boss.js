@@ -157,7 +157,7 @@
       t.className = 'bf-tail';
       t.src = SP.tail;
       t.alt = '';
-      var rot = -10 + i * 14;              // fan, rotated a further 60deg clockwise
+      var rot = -100 + i * 14;             // fan, swung 90deg anticlockwise
       // the outer tails run slightly smaller than the middle of the fan
       var s = 1 - 0.18 * Math.pow((i - 4) / 4, 2);
       t.style.setProperty('--tr', rot + 'deg');
