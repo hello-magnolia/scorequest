@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Boss fight, ScoreQuest</title>
+<meta name="description" content="The guardian at the end of the realm. Answer true, strike true." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=b20260711r" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
+</head>
+<body class="page-boss">
+
+<div class="bf-stage" id="bf-stage">
+  <div class="bf-shade"></div>
+
+  <div class="bf-hud">
+    <a class="bf-retreat type-utility" id="bf-retreat" href="realm.html">&larr; Retreat</a>
+    <div class="bf-title-wrap">
+      <p class="bf-kicker type-utility" id="bf-realm">Lorewood</p>
+      <h1 class="bf-boss-name" id="bf-boss-name">&nbsp;</h1>
+      <p class="bf-taunt" id="bf-taunt">&nbsp;</p>
+    </div>
+    <span class="bf-hud-spacer"></span>
+  </div>
+
+  <div class="bf-arena">
+    <div class="bf-side" id="bf-pomelo-side">
+      <div class="bf-hp" id="bf-pomelo-hp" aria-label="Pomelo's health"></div>
+      <canvas class="bf-capy" id="bf-capy" width="57" height="45" aria-label="Pomelo"></canvas>
+      <p class="bf-name type-utility">Pomelo</p>
+    </div>
+    <div class="bf-side bf-side-boss" id="bf-boss-side">
+      <div class="bf-hp" id="bf-boss-hp" aria-label="The guardian's health"></div>
+      <img class="bf-boss-img" id="bf-boss-img" alt="The realm's guardian" draggable="false" />
+    </div>
+  </div>
+
+  <div class="bf-box pixel-frame">
+    <p class="bf-question" id="bf-question">&nbsp;</p>
+    <div class="bf-choices" id="bf-choices"></div>
+    <p class="bf-feedback" id="bf-feedback"></p>
+  </div>
+
+  <div class="bf-panel pixel-frame" id="bf-victory" hidden>
+    <h2 class="bf-panel-title">The shrine opens.</h2>
+    <p class="bf-panel-text">The Archivist bows and returns every twisted word. The way forward is clear.</p>
+    <div class="bf-panel-row">
+      <a class="btn btn-outline" id="bf-return" href="map.html">Return to realms</a>
+      <a class="btn btn-gold" id="bf-onward" href="realm.html">Onward &rarr;</a>
+    </div>
+  </div>
+
+  <div class="bf-panel pixel-frame" id="bf-defeat" hidden>
+    <h2 class="bf-panel-title">Pomelo needs a snack break.</h2>
+    <p class="bf-panel-text">No harm done. The guardian will wait, and the questions will be the same kind. Ready when u are.</p>
+    <div class="bf-panel-row">
+      <button class="btn btn-gold" id="bf-retry" type="button">Try again</button>
+      <a class="btn btn-outline" href="realm.html?realm=lorewood">Back to the realm</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/sfx.js?v=b20260711r"></script>
+<script src="js/companion.js?v=b20260711r"></script>
+<script src="js/boss.js?v=b20260711r"></script>
+</body>
+</html>

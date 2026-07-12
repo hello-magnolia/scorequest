@@ -30,7 +30,7 @@
   var CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01';
 
   var REALMS = [
-    { id: 'lorewood', name: 'Lorewood', domain: 'Information & Ideas',
+    { id: 'lorewood', name: 'Lorewood', domain: 'Information & Ideas', fight: true,
       boss: 'The shrine doors are sealed. Whatever twists the old texts is waiting behind them.',
       img: ['assets/realms/lorewood.png', CDN + '/hf_20260711_215833_948a0475-28db-41fa-94bf-14fca55664f1.png'],
       /* band-verified against the render: upper terrace (0.35) -> stairs -> terrace 2
@@ -124,6 +124,17 @@
     popupNext.textContent = 'Onward to ' + REALMS[idx + 1].name + ' \u2192';
   } else {
     popupNext.hidden = true;
+  }
+  if (realm.fight) {
+    var fightBtn = document.createElement('a');
+    fightBtn.className = 'btn btn-gold';
+    fightBtn.id = 'rw-fight';
+    fightBtn.href = 'boss.html?realm=' + realm.id;
+    fightBtn.textContent = '\u2694 Face the guardian';
+    var row = popup.querySelector('.rw-popup-row');
+    row.insertBefore(fightBtn, row.firstChild);
+    popupNext.classList.remove('btn-gold');
+    popupNext.classList.add('btn-outline');
   }
 
   /* ---------- world & path state ---------- */
