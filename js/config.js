@@ -15,8 +15,8 @@
    nothing is saved to a real account.
    ============================================================ */
 window.SCOREQUEST_CONFIG = {
-  SUPABASE_URL: "__SUPABASE_URL__",
-  SUPABASE_ANON_KEY: "__SUPABASE_ANON_KEY__",
+  SUPABASE_URL: "https://moasnmwcikwybriwaoip.supabase.co/rest/v1/",
+  SUPABASE_ANON_KEY: "sb_publishable_1wAdb8Ok-hOb4gWqKCuqcw_cBfyyTdc",
 
   /* ----------------------------------------------------------
      Stripe Payment Links - one per plan x billing period.
