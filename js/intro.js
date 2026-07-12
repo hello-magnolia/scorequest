@@ -327,10 +327,10 @@
         frame = frame === 1 ? 2 : 1;                 // the two walk frames
         drawPomelo(ctx, frame);
         if (window.SQSfx && window.SQSfx.step) window.SQSfx.step();
-        walkTimers.push(setTimeout(stepFrames, 175));
+        walkTimers.push(setTimeout(stepFrames, 125));
       })();
       var start = performance.now();
-      var DUR = 2200;
+      var DUR = 3000;
       (function move(now) {
         if (!walking) return;
         var p = Math.min(1, (now - start) / DUR);

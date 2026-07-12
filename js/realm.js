@@ -329,14 +329,14 @@
     lastT = t;
     if (keyDir !== 0) sTarget = Math.min(Math.max(sPos + keyDir * 60, 0), totalLen);
     var ds = sTarget - sPos;
-    var speed = stageH * 0.55 * (dt / 1000);
+    var speed = stageH * 0.38 * (dt / 1000); // an unhurried capybara pace
     if (Math.abs(ds) > 2 && !reduceMotion) {
       walking = true;
       sPos += Math.sign(ds) * Math.min(Math.abs(ds), speed);
       var p = placeCapy();
       facing = Math.sign(ds) >= 0 ? (p.dx >= 0 ? 1 : -1) : (p.dx >= 0 ? -1 : 1);
       stepT += dt;
-      if (stepT > 165) {
+      if (stepT > 125) {   // quicker cadence: more little steps per stretch
         stepT = 0;
         walkFrame = walkFrame === 1 ? 2 : 1;
         drawCapy(walkFrame);
