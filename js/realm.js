@@ -336,7 +336,7 @@
       var p = placeCapy();
       facing = Math.sign(ds) >= 0 ? (p.dx >= 0 ? 1 : -1) : (p.dx >= 0 ? -1 : 1);
       stepT += dt;
-      if (stepT > 125) {   // quicker cadence: more little steps per stretch
+      if (stepT > 90) {    // busier still: a proper capybara scurry
         stepT = 0;
         walkFrame = walkFrame === 1 ? 2 : 1;
         drawCapy(walkFrame);
