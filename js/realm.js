@@ -374,13 +374,14 @@
   var lastT = 0, stepT = 0, walkFrame = 1, idleT = 0, idleStep = 0;
   // stand, blink, and every so often settle in for a proper graze:
   // sit -> crouch -> graze -> chew, chew, a little more grass, back up
+  // one-shot idle: stand and blink, settle in, ONE dip for grass, then chew
+  // for a very long time (42 slow jaws, ~23s), and finally sit — and stay
+  // sitting until asked to move. No second dip: chewing ends in rest.
   var IDLE = [
     [0, 1900], [3, 150], [0, 1250], [3, 150], [0, 900],
     [4, 700], [5, 220], [6, 900],
-    [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
-    [6, 650],
-    [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
-    [5, 220], [4, 700], [0, 400]
+    [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
+    [4, 999999]
   ];
   function tick(t) {
     window.requestAnimationFrame(tick);
@@ -411,8 +412,12 @@
       if (reduceMotion && Math.abs(ds) > 2) { sPos = sTarget; placeCapy(); }
       if (walking) { walking = false; idleT = 0; idleStep = 0; drawCapy(0); }
       idleT += dt;
-      var fr = IDLE[idleStep % IDLE.length];
-      if (idleT > fr[1]) { idleT = 0; idleStep += 1; drawCapy(IDLE[idleStep % IDLE.length][0]); }
+      var fr = IDLE[Math.min(idleStep, IDLE.length - 1)];
+      if (idleT > fr[1] && idleStep < IDLE.length - 1) {
+        idleT = 0;
+        idleStep += 1;
+        drawCapy(IDLE[Math.min(idleStep, IDLE.length - 1)][0]);
+      }
     }
     camera();
     visitNodes();
