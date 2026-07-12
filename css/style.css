@@ -1458,16 +1458,14 @@ a { color: inherit; }
   position: relative; z-index: 2;
   width: min(940px, 96vw); height: clamp(280px, 40vh, 440px);
   margin: 10px auto 14px; flex: none;
-  display: flex; align-items: flex-end; justify-content: center;
-  gap: clamp(30px, 8vw, 130px);
-  padding-bottom: clamp(22px, 5vh, 48px);
-  border: 2px solid var(--line); background: rgba(16, 12, 32, 0.42);
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 0 clamp(30px, 4.5vw, 52px) clamp(22px, 5vh, 48px);
 }
 .bf-side { display: flex; align-items: flex-end; }
 /* the bars live in fixed corners of the frame, unrelated to who stands where:
    Pomelo's heart on the left edge, the guardian's heart on the right */
-.bf-hpbar.bf-hp-left { position: absolute; top: 16px; left: 18px; }
-.bf-hpbar.bf-hp-right { position: absolute; top: 16px; right: 18px; }
+.bf-hpbar.bf-hp-left { position: absolute; top: 30px; left: 34px; }
+.bf-hpbar.bf-hp-right { position: absolute; top: 30px; right: 34px; }
 .bf-hp-flip { flex-direction: row-reverse; }
 .bf-hp-flip .bf-hp-track { margin-left: 0; margin-right: -8px; }
 .bf-hp-flip .bf-hp-cap { margin-left: 0; margin-right: -7px; }
