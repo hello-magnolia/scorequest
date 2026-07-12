@@ -1456,7 +1456,7 @@ a { color: inherit; }
 
 .bf-arena {
   position: relative; z-index: 2;
-  width: min(940px, 96vw); height: clamp(280px, 40vh, 440px);
+  width: min(940px, 96vw); height: clamp(300px, 44vh, 490px);
   margin: 10px auto 14px; flex: none;
   display: flex; align-items: flex-end; justify-content: space-between;
   padding: 0 clamp(30px, 4.5vw, 52px) clamp(22px, 5vh, 48px);
@@ -1485,8 +1485,8 @@ a { color: inherit; }
    per hit point. */
 .bf-tails { position: absolute; inset: 0; z-index: 1; }
 .bf-tail {
-  position: absolute; left: -4%; bottom: 28%;
-  width: 40%; transform-origin: 16% 92%;
+  position: absolute; left: 45%; bottom: 64%;
+  width: 50%; transform-origin: 20% 120%;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .bf-tail.is-gone { opacity: 0; transform: rotate(var(--tr)) scale(calc(var(--ts) * 0.5)) !important; }
