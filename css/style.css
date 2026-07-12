@@ -1318,7 +1318,9 @@ a { color: inherit; }
 
 /* ============================================================
    Paw loader — reusable capybara paw-print loading animation.
-   White prints marching on a dark background. Usage: an empty
+   White prints marching on a dark background, toes pointing the
+   way they're walking. Front paws carry four toes, hind paws
+   three (alternating, like the animal). Usage: an empty
    <div class="paw-loader"></div> anywhere js/paws.js is loaded
    (or SQPaw.mount(el) for dynamic containers). Size with --pp
    (the pixel size), color with `color`.
@@ -1331,8 +1333,8 @@ a { color: inherit; }
 }
 .paw-loader .paw {
   position: relative;
-  width: calc(var(--pp) * 7);
-  height: calc(var(--pp) * 7);
+  width: calc(var(--pp) * 11);
+  height: calc(var(--pp) * 10);
   opacity: 0;
   animation: paw-march 2.2s linear infinite;
 }
@@ -1343,36 +1345,96 @@ a { color: inherit; }
   width: var(--pp);
   height: var(--pp);
   box-shadow:
-    calc(var(--pp)*1) calc(var(--pp)*0) 0 0 currentColor,
-    calc(var(--pp)*1) calc(var(--pp)*1) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*0) 0 0 currentColor,
-    calc(var(--pp)*3) calc(var(--pp)*1) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*0) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*3) 0 0 currentColor,
     calc(var(--pp)*1) calc(var(--pp)*3) 0 0 currentColor,
     calc(var(--pp)*2) calc(var(--pp)*3) 0 0 currentColor,
     calc(var(--pp)*3) calc(var(--pp)*3) 0 0 currentColor,
     calc(var(--pp)*4) calc(var(--pp)*3) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*3) 0 0 currentColor,
     calc(var(--pp)*0) calc(var(--pp)*4) 0 0 currentColor,
     calc(var(--pp)*1) calc(var(--pp)*4) 0 0 currentColor,
     calc(var(--pp)*2) calc(var(--pp)*4) 0 0 currentColor,
     calc(var(--pp)*3) calc(var(--pp)*4) 0 0 currentColor,
     calc(var(--pp)*4) calc(var(--pp)*4) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*4) 0 0 currentColor,
-    calc(var(--pp)*6) calc(var(--pp)*4) 0 0 currentColor,
     calc(var(--pp)*0) calc(var(--pp)*5) 0 0 currentColor,
     calc(var(--pp)*1) calc(var(--pp)*5) 0 0 currentColor,
     calc(var(--pp)*2) calc(var(--pp)*5) 0 0 currentColor,
     calc(var(--pp)*3) calc(var(--pp)*5) 0 0 currentColor,
     calc(var(--pp)*4) calc(var(--pp)*5) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*5) 0 0 currentColor,
-    calc(var(--pp)*6) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*6) 0 0 currentColor,
     calc(var(--pp)*1) calc(var(--pp)*6) 0 0 currentColor,
     calc(var(--pp)*2) calc(var(--pp)*6) 0 0 currentColor,
     calc(var(--pp)*3) calc(var(--pp)*6) 0 0 currentColor,
     calc(var(--pp)*4) calc(var(--pp)*6) 0 0 currentColor,
-    calc(var(--pp)*5) calc(var(--pp)*6) 0 0 currentColor;
+    calc(var(--pp)*1) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*0) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*0) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*8) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*9) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*10) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*8) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*9) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*8) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*9) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*8) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*9) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*10) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*8) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*8) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*8) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*9) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*9) 0 0 currentColor;
+}
+.paw-loader .paw.paw-hind::before {
+  box-shadow:
+    calc(var(--pp)*1) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*2) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*3) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*0) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*4) calc(var(--pp)*6) 0 0 currentColor,
+    calc(var(--pp)*1) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*2) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*3) calc(var(--pp)*7) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*0) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*0) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*1) 0 0 currentColor,
+    calc(var(--pp)*8) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*9) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*10) calc(var(--pp)*4) 0 0 currentColor,
+    calc(var(--pp)*8) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*9) calc(var(--pp)*5) 0 0 currentColor,
+    calc(var(--pp)*5) calc(var(--pp)*8) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*8) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*8) 0 0 currentColor,
+    calc(var(--pp)*6) calc(var(--pp)*9) 0 0 currentColor,
+    calc(var(--pp)*7) calc(var(--pp)*9) 0 0 currentColor;
 }
 /* alternate feet: a walking gait, not a stamp sheet */
 .paw-loader .paw:nth-child(odd) { transform: translateY(calc(var(--pp) * -2)); }
