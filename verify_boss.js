@@ -26,8 +26,8 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   const S = w.__SQ_BOSS;
   check('The Archivist waits with six hearts; Pomelo brings three',
     /Nine-Tailed Archivist/.test(d.getElementById('bf-boss-name').textContent) &&
-    d.querySelectorAll('#bf-boss-hp .bf-heart.is-full').length === 6 &&
-    d.querySelectorAll('#bf-pomelo-hp .bf-heart.is-full').length === 3 &&
+    d.querySelectorAll('#bf-boss-hp .bf-cell.is-full').length === 6 &&
+    d.querySelectorAll('#bf-pomelo-hp .bf-cell.is-full').length === 3 &&
     /assets\/boss\/lorewood/.test(d.getElementById('bf-boss-img').src));
   check('A question is on the table with four choices',
     d.getElementById('bf-question').textContent.length > 20 &&
@@ -37,7 +37,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   clickChoice(w, S.correctIndex);
   check('Right answer: the boss loses a heart and the hit lands',
     await until(() => S.bossHp === 5, 800) &&
-    d.querySelectorAll('#bf-boss-hp .bf-heart.is-full').length === 5 &&
+    d.querySelectorAll('#bf-boss-hp .bf-cell.is-full').length === 5 &&
     /Pomelo strikes/.test(d.getElementById('bf-feedback').textContent));
   check('Choices lock after answering', d.querySelector('.bf-choice').disabled === true);
 

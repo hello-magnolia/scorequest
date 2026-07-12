@@ -85,17 +85,17 @@
     window.SQCompanion.draw(ctx, 0);
   })();
 
-  function hearts(el, hp, max) {
+  function bar(el, hp, max) {
     el.innerHTML = '';
     for (var i = 0; i < max; i++) {
       var s = document.createElement('span');
-      s.className = 'bf-heart' + (i < hp ? ' is-full' : '');
+      s.className = 'bf-cell' + (i < hp ? ' is-full' : '');
       el.appendChild(s);
     }
   }
   function renderHp() {
-    hearts(document.getElementById('bf-boss-hp'), state.bossHp, state.bossMax);
-    hearts(document.getElementById('bf-pomelo-hp'), state.pomeloHp, state.pomeloMax);
+    bar(document.getElementById('bf-boss-hp'), state.bossHp, state.bossMax);
+    bar(document.getElementById('bf-pomelo-hp'), state.pomeloHp, state.pomeloMax);
   }
 
   var qEl = document.getElementById('bf-question');
