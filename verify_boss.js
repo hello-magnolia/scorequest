@@ -47,9 +47,13 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   /* wrong answer: the guardian strikes, and teaches */
   await until(() => !d.querySelector('.bf-choice').disabled, 2000);
   clickChoice(w, (S.correctIndex + 1) % 4);
-  check('Wrong answer: Pomelo loses a heart and the correct answer is shown',
-    await until(() => S.pomeloHp === 2, 800) &&
+  check('Wrong answer: the fireball flies before any damage lands',
+    await until(() => ['form', 'fly', 'hit'].includes(S.fireball), 800) &&
+    d.getElementById('bf-fireball').hidden === false &&
     /The answer was [A-D]:/.test(d.getElementById('bf-feedback').textContent));
+  check('Damage lands only on contact',
+    await until(() => S.pomeloHp === 2, 2500) &&
+    await until(() => S.fireball === null, 1500));
 
   /* the win path */
   let hops = 0;

@@ -1571,4 +1571,12 @@ a { color: inherit; }
 .bf-panel-title { margin: 0 0 10px; font-size: 1.6rem; }
 .bf-panel-text { color: var(--parchment-dim); margin: 0 0 18px; }
 .bf-panel-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.bf-fireball {
+  position: absolute; z-index: 4; width: 74px; height: auto;
+  image-rendering: pixelated; pointer-events: none;
+  transition: transform 0.52s linear;
+}
+.bf-fireball.is-hit { width: 116px; transition: none; }
+@media (prefers-reduced-motion: reduce) { .bf-fireball { transition: none; } }
+
 @media (max-width: 640px) { .bf-choices { grid-template-columns: 1fr; } .bf-boss-img { width: clamp(140px, 26vh, 240px); } }

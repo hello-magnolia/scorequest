@@ -29,7 +29,10 @@
         attack2: 'assets/boss/lorewood/attack2.png',
         hurt1:   'assets/boss/lorewood/hurt1.png',
         hurt2:   'assets/boss/lorewood/hurt2.png',
-        faint:   'assets/boss/lorewood/faint.png'
+        faint:   'assets/boss/lorewood/faint.png',
+        fbForm:  'assets/fx/fireball/form.png',
+        fbFly:   'assets/fx/fireball/fly.png',
+        fbHit:   'assets/fx/fireball/hit.png'
       },
       bg: 'assets/realms/lorewood.png',
       hp: 9,   /* nine tails, nine hit points: one tail per wound */
@@ -66,7 +69,8 @@
     pomeloMax: 3,
     qi: 0,
     over: false,
-    correctIndex: null
+    correctIndex: null,
+    fireball: null
   };
   window.__SQ_BOSS = state;
 
@@ -95,6 +99,51 @@
       t += s[1];
     });
     animT.push(setTimeout(function () { if (!state.over) setBody('neutral'); }, t));
+  }
+
+  /* ---------- the fireball: forms at the open mouth, flies, and only
+     then does the damage land ---------- */
+  var fbEl = document.getElementById('bf-fireball');
+  var arenaEl = document.querySelector('.bf-arena');
+  var fbTimers = [];
+  function launchFireball(onImpact) {
+    fbTimers.forEach(clearTimeout); fbTimers = [];
+    var FORM = 300, FLY = 520, HIT = 320;
+    if (reduceMotion) { fbTimers.push(setTimeout(onImpact, 200)); return; }
+    var a = arenaEl.getBoundingClientRect();
+    var br = bodyEl.getBoundingClientRect();
+    var cr = document.getElementById('bf-capy').getBoundingClientRect();
+    // the mouth sits at the face side (screen-left of the mirrored rig), upper third
+    var sx = br.left - a.left + br.width * 0.06;
+    var sy = br.top - a.top + br.height * 0.28;
+    var tx = cr.left - a.left + cr.width * 0.55;
+    var ty = cr.top - a.top + cr.height * 0.40;
+    state.fireball = 'form';
+    fbEl.src = SP.fbForm;
+    fbEl.classList.remove('is-hit');
+    fbEl.style.transition = 'none';
+    fbEl.style.transform = 'translate(0,0)';
+    fbEl.style.left = Math.round(sx - 37) + 'px';
+    fbEl.style.top = Math.round(sy - 37) + 'px';
+    fbEl.hidden = false;
+    fbTimers.push(setTimeout(function () {
+      state.fireball = 'fly';
+      fbEl.src = SP.fbFly;
+      fbEl.style.transition = '';
+      // force layout so the transition actually animates the launch
+      void fbEl.offsetWidth;
+      fbEl.style.transform = 'translate(' + Math.round(tx - sx) + 'px,' + Math.round(ty - sy) + 'px)';
+    }, FORM));
+    fbTimers.push(setTimeout(function () {
+      state.fireball = 'hit';
+      fbEl.src = SP.fbHit;
+      fbEl.classList.add('is-hit');
+      onImpact();
+    }, FORM + FLY));
+    fbTimers.push(setTimeout(function () {
+      state.fireball = null;
+      fbEl.hidden = true;
+    }, FORM + FLY + HIT));
   }
 
   /* the nine tails, fanned behind the rump; the newest wound takes a tail */
@@ -196,17 +245,20 @@
       flash(document.getElementById('bf-boss-side'));
       if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
     } else {
-      state.pomeloHp = Math.max(0, state.pomeloHp - 1);
       playBody([['attack1', 260], ['attack2', 420]]);
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
       feedEl.className = 'bf-feedback is-miss';
-      flash(document.getElementById('bf-pomelo-side'));
-      if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
+      launchFireball(function () {           // the damage lands with the fireball
+        state.pomeloHp = Math.max(0, state.pomeloHp - 1);
+        renderHp();
+        flash(document.getElementById('bf-pomelo-side'));
+        if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
+        if (state.pomeloHp === 0) lose();
+      });
     }
     renderHp();
     if (state.bossHp === 0) return win();
-    if (state.pomeloHp === 0) return lose();
     setTimeout(ask, i === item.a ? 900 : 2300);
   }
 
@@ -240,6 +292,9 @@
     state.qi = 0;
     state.over = false;
     document.getElementById('bf-defeat').hidden = true;
+    fbTimers.forEach(clearTimeout);
+    fbEl.hidden = true;
+    state.fireball = null;
     setBody('neutral');
     buildTails(state.bossMax);
     renderHp();
