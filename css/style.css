@@ -1585,7 +1585,11 @@ a { color: inherit; }
 .bf-side { position: relative; }
 /* the throw pose overlays the standing sprite exactly: feet planted
    in the same spot, body rearing upward from there */
-.bf-capy-attack { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; }
+.bf-capy-attack {
+  position: absolute; left: 50%; bottom: 0;
+  transform: translateX(-50%);
+  width: 66%; height: auto;   /* matches the standing body: rearing adds height, not bulk */
+}
 .bf-orange {
   position: absolute; z-index: 4; width: 42px; height: auto;
   image-rendering: pixelated; pointer-events: none;
