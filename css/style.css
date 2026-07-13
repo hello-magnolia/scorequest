@@ -1469,12 +1469,17 @@ a { color: inherit; }
 .bf-hp-flip { flex-direction: row-reverse; }
 .bf-hp-flip .bf-hp-track { margin-left: 0; margin-right: -8px; }
 .bf-hp-flip .bf-hp-cap { margin-left: 0; margin-right: -7px; }
-.bf-capy { width: clamp(140px, 21vh, 230px); height: auto; image-rendering: pixelated; }
+.bf-capy {
+  width: clamp(140px, 21vh, 230px); height: auto; image-rendering: pixelated;
+  animation: bf-idle-bob 1.1s ease-in-out infinite;
+}
 .bf-boss-rig {
   position: relative;
   width: clamp(180px, 29vh, 320px);
   transform: scaleX(-1);  /* the whole rig faces Pomelo */
+  animation: bf-idle-bob-flip 1.35s ease-in-out infinite;
 }
+.bf-boss-rig.is-down { animation: none; }  /* the fainted don't bounce */
 .bf-boss-img {
   position: relative; z-index: 2;
   width: 100%; height: auto; display: block;
@@ -1580,6 +1585,21 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) { .bf-fireball { transition: none; } }
 
 @media (max-width: 640px) { .bf-choices { grid-template-columns: 1fr; } .bf-boss-img { width: clamp(140px, 26vh, 240px); } }
+
+/* fighting-game idle: both fighters bob on their own beat.
+   The rig's keyframes carry the mirror, since animation transforms
+   replace the base transform outright. */
+@keyframes bf-idle-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes bf-idle-bob-flip {
+  0%, 100% { transform: scaleX(-1) translateY(0); }
+  50% { transform: scaleX(-1) translateY(-7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bf-capy, .bf-boss-rig { animation: none; }
+}
 
 /* Pomelo's throw + the orange projectile */
 .bf-side { position: relative; }
