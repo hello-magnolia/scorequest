@@ -31,6 +31,9 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     d.querySelector('#bf-pomelo-hp .bf-hp-track').style.width === '114px' &&
     d.querySelector('#bf-boss-hp .bf-hp-fill').style.width === '100%' &&
     /boss\/lorewood\/neutral/.test(d.getElementById('bf-boss-img').src));
+  check('The arena is dressed: eight lantern glows flicker, twelve leaves drift',
+    d.querySelectorAll('#bf-fx .bf-glow').length === 8 &&
+    d.querySelectorAll('#bf-fx .bf-leaf').length === 12);
   check('A question is on the table with four choices',
     d.getElementById('bf-question').textContent.length > 20 &&
     d.querySelectorAll('.bf-choice').length === 4);

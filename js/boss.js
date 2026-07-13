@@ -50,6 +50,10 @@
       projectile: { form: 'fbForm', fly: 'fbFly', hit: 'fbHit', delay: 260,
         formMs: 300, flyMs: 520, hitMs: 320, formW: 74, flyW: 74, hitW: 116,
         ox: 0.06, oy: 0.28 },
+      bgFx: { aspect: 1672 / 941, leaves: 12, lamps: [
+        [0.131, 0.161, 9], [0.268, 0.162, 8], [0.727, 0.161, 8], [0.875, 0.161, 9],
+        [0.445, 0.430, 4], [0.555, 0.430, 4], [0.249, 0.813, 5], [0.744, 0.814, 5]
+      ] },
       next: { id: 'storyforge', name: 'Story Forge' },
       questions: [
         { q: 'The lanterns of Lorewood are lit every evening, though no keeper has been seen in ten years. Which question does the passage most directly raise?',
@@ -152,6 +156,51 @@
   document.getElementById('bf-boss-name').textContent = B.name;
   document.getElementById('bf-taunt').textContent = '\u201C' + B.taunt + '\u201D';
   document.getElementById('bf-stage').style.backgroundImage = 'url(' + B.bg + ')';
+
+  /* the arena breathes: lantern flicker mapped onto the backdrop, leaves adrift */
+  (function dressStage() {
+    var fx = document.getElementById('bf-fx');
+    var cfg = B.bgFx;
+    var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!fx || !cfg || rm) return;
+    var glowEls = [];
+    (cfg.lamps || []).forEach(function (l) {
+      var g = document.createElement('span');
+      g.className = 'bf-glow';
+      g.style.animationDuration = (2 + Math.random() * 1.6).toFixed(2) + 's';
+      g.style.animationDelay = (-Math.random() * 3).toFixed(2) + 's';
+      fx.appendChild(g);
+      glowEls.push([g, l]);
+    });
+    function place() {                        // replicate background-size: cover
+      var sw = fx.clientWidth, sh = fx.clientHeight;
+      if (!sw || !sh) return;
+      var drawnH = Math.max(sh, sw / cfg.aspect);
+      var drawnW = drawnH * cfg.aspect;
+      var offX = (sw - drawnW) / 2;
+      var offY = (sh - drawnH) * 0.3;         // matches background-position: center 30%
+      glowEls.forEach(function (pair) {
+        var g = pair[0], l = pair[1];
+        var d = Math.round(l[2] / 100 * drawnW * 2);
+        g.style.width = d + 'px';
+        g.style.height = d + 'px';
+        g.style.left = Math.round(offX + l[0] * drawnW) + 'px';
+        g.style.top = Math.round(offY + l[1] * drawnH) + 'px';
+      });
+    }
+    place();
+    window.addEventListener('resize', place);
+    var palette = ['#c23b22', '#d95d39', '#a8341e', '#e07a3f'];
+    for (var i = 0; i < (cfg.leaves || 0); i++) {
+      var leaf = document.createElement('span');
+      leaf.className = 'bf-leaf';
+      leaf.style.left = (2 + Math.random() * 94).toFixed(1) + '%';
+      leaf.style.color = palette[i % palette.length];
+      leaf.style.animationDuration = (11 + Math.random() * 8).toFixed(1) + 's';
+      leaf.style.animationDelay = (-Math.random() * 16).toFixed(1) + 's';
+      fx.appendChild(leaf);
+    }
+  })();
   if (!B.flip) document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   var bodyEl = document.getElementById('bf-boss-img');
   var SP = B.sprites;

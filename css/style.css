@@ -1582,6 +1582,39 @@ a { color: inherit; }
 
 @media (max-width: 640px) { .bf-choices { grid-template-columns: 1fr; } .bf-boss-img { width: clamp(140px, 26vh, 240px); } }
 
+/* animated arena dressing: lantern glow + drifting leaves */
+.bf-fx { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
+.bf-glow {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 196, 110, 0.5) 0%, rgba(255, 150, 50, 0.22) 45%, rgba(255, 120, 30, 0) 70%);
+  mix-blend-mode: screen;
+  transform: translate(-50%, -50%);
+  animation: bf-flicker 2.6s ease-in-out infinite;
+}
+@keyframes bf-flicker {
+  0%, 100% { opacity: 0.75; }
+  18% { opacity: 0.95; }
+  34% { opacity: 0.68; }
+  52% { opacity: 1; }
+  71% { opacity: 0.8; }
+  86% { opacity: 0.92; }
+}
+.bf-leaf { position: absolute; top: -30px; animation: bf-leaf-fall linear infinite; }
+.bf-leaf::before {
+  content: ''; position: absolute; width: 4px; height: 4px;
+  background: currentColor;
+  box-shadow: 4px 0 0 0 currentColor, 0 4px 0 0 currentColor,
+    4px -4px 0 0 currentColor, -4px 4px 0 0 currentColor;
+}
+@keyframes bf-leaf-fall {
+  0%   { transform: translate(0, -4vh); }
+  25%  { transform: translate(26px, 24vh); }
+  50%  { transform: translate(-16px, 50vh); }
+  75%  { transform: translate(22px, 76vh); }
+  100% { transform: translate(-10px, 106vh); }
+}
+@media (prefers-reduced-motion: reduce) { .bf-fx { display: none; } }
+
 /* Pomelo's throw + the orange projectile */
 .bf-side { position: relative; }
 /* the throw pose overlays the standing sprite exactly: feet planted
