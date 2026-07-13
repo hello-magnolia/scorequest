@@ -33,7 +33,9 @@
         fbForm:  'assets/fx/fireball/form.png',
         fbFly:   'assets/fx/fireball/fly.png',
         fbHit:   'assets/fx/fireball/hit.png',
-        pomeloAttack: 'assets/pomelo/attack.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/lorewood.png',
@@ -155,14 +157,17 @@
      the Archivist's damage lands when the orange does ---------- */
   var capyAtkEl = document.getElementById('bf-capy-attack');
   var orangeEl = document.getElementById('bf-orange');
-  capyAtkEl.src = SP.pomeloAttack;
+  capyAtkEl.src = SP.pomeloAtk1;
   function launchOrange(onImpact) {
     if (reduceMotion) { after(200, onImpact); return; }
     var a = arenaEl.getBoundingClientRect();
     var cr = capy.getBoundingClientRect();
     var br = bodyEl.getBoundingClientRect();
     capy.style.visibility = 'hidden';
+    capyAtkEl.src = SP.pomeloAtk1;
     capyAtkEl.hidden = false;
+    after(150, function () { capyAtkEl.src = SP.pomeloAtk2; });
+    after(300, function () { capyAtkEl.src = SP.pomeloAtk3; });
     var sx = cr.left - a.left + cr.width * 0.82;
     var sy = cr.top - a.top + cr.height * 0.18;
     var tx = br.left - a.left + br.width * 0.42;
