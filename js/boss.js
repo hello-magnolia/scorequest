@@ -41,6 +41,7 @@
       },
       bg: 'assets/boss/lorewood/bg.png',
       hp: 9,   /* nine tails, nine hit points: one tail per wound */
+      flip: true,   /* source faces right; mirror her toward Pomelo */
       base: 'neutral',
       tails: 9,
       attackSeq: [['attack1', 260], ['attack2', 420]],
@@ -96,6 +97,7 @@
       },
       bg: 'assets/realms/storyforge.png',
       hp: 7,
+      flip: false,  /* the spider already faces Pomelo */
       base: 'idle1',
       idleSeq: ['idle1', 'idle2', 'idle3'],
       idleMs: 460,
@@ -150,6 +152,7 @@
   document.getElementById('bf-boss-name').textContent = B.name;
   document.getElementById('bf-taunt').textContent = '\u201C' + B.taunt + '\u201D';
   document.getElementById('bf-stage').style.backgroundImage = 'url(' + B.bg + ')';
+  if (!B.flip) document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   var bodyEl = document.getElementById('bf-boss-img');
   var SP = B.sprites;
   Object.keys(SP).forEach(function (k) { var im = new Image(); im.src = SP[k]; });

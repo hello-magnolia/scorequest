@@ -1475,6 +1475,7 @@ a { color: inherit; }
   width: clamp(180px, 29vh, 320px);
   transform: scaleX(-1);  /* the whole rig faces Pomelo */
 }
+.bf-boss-rig.bf-no-flip { transform: none; }  /* for sprites that already face him */
 .bf-boss-img {
   position: relative; z-index: 2;
   width: 100%; height: auto; display: block;
