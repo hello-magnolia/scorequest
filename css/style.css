@@ -1580,3 +1580,12 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) { .bf-fireball { transition: none; } }
 
 @media (max-width: 640px) { .bf-choices { grid-template-columns: 1fr; } .bf-boss-img { width: clamp(140px, 26vh, 240px); } }
+
+/* Pomelo's throw + the orange projectile */
+.bf-capy-attack { width: clamp(140px, 21vh, 230px); height: auto; image-rendering: pixelated; }
+.bf-orange {
+  position: absolute; z-index: 4; width: 42px; height: auto;
+  image-rendering: pixelated; pointer-events: none;
+  transition: transform 0.48s linear;
+}
+@media (prefers-reduced-motion: reduce) { .bf-orange { transition: none; } }

@@ -32,7 +32,9 @@
         faint:   'assets/boss/lorewood/faint.png',
         fbForm:  'assets/fx/fireball/form.png',
         fbFly:   'assets/fx/fireball/fly.png',
-        fbHit:   'assets/fx/fireball/hit.png'
+        fbHit:   'assets/fx/fireball/hit.png',
+        pomeloAttack: 'assets/pomelo/attack.png',
+        orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/lorewood.png',
       hp: 9,   /* nine tails, nine hit points: one tail per wound */
@@ -105,11 +107,12 @@
      then does the damage land ---------- */
   var fbEl = document.getElementById('bf-fireball');
   var arenaEl = document.querySelector('.bf-arena');
-  var fbTimers = [];
-  function launchFireball(onImpact) {
-    fbTimers.forEach(clearTimeout); fbTimers = [];
+  var projTimers = [];
+  function after(ms, fn) { projTimers.push(setTimeout(fn, ms)); }
+  function launchFireball(onImpact, delay) {
+    delay = delay || 0;
     var FORM = 300, FLY = 520, HIT = 320;
-    if (reduceMotion) { fbTimers.push(setTimeout(onImpact, 200)); return; }
+    if (reduceMotion) { after(delay + 200, onImpact); return; }
     var a = arenaEl.getBoundingClientRect();
     var br = bodyEl.getBoundingClientRect();
     var cr = document.getElementById('bf-capy').getBoundingClientRect();
@@ -118,32 +121,71 @@
     var sy = br.top - a.top + br.height * 0.28;
     var tx = cr.left - a.left + cr.width * 0.55;
     var ty = cr.top - a.top + cr.height * 0.40;
-    state.fireball = 'form';
-    fbEl.src = SP.fbForm;
-    fbEl.classList.remove('is-hit');
-    fbEl.style.transition = 'none';
-    fbEl.style.transform = 'translate(0,0)';
-    fbEl.style.left = Math.round(sx - 37) + 'px';
-    fbEl.style.top = Math.round(sy - 37) + 'px';
-    fbEl.hidden = false;
-    fbTimers.push(setTimeout(function () {
+    after(delay, function () {
+      state.fireball = 'form';
+      fbEl.src = SP.fbForm;
+      fbEl.classList.remove('is-hit');
+      fbEl.style.transition = 'none';
+      fbEl.style.transform = 'translate(0,0)';
+      fbEl.style.left = Math.round(sx - 37) + 'px';
+      fbEl.style.top = Math.round(sy - 37) + 'px';
+      fbEl.hidden = false;
+    });
+    after(delay + FORM, function () {
       state.fireball = 'fly';
       fbEl.src = SP.fbFly;
       fbEl.style.transition = '';
       // force layout so the transition actually animates the launch
       void fbEl.offsetWidth;
       fbEl.style.transform = 'translate(' + Math.round(tx - sx) + 'px,' + Math.round(ty - sy) + 'px)';
-    }, FORM));
-    fbTimers.push(setTimeout(function () {
+    });
+    after(delay + FORM + FLY, function () {
       state.fireball = 'hit';
       fbEl.src = SP.fbHit;
       fbEl.classList.add('is-hit');
       onImpact();
-    }, FORM + FLY));
-    fbTimers.push(setTimeout(function () {
+    });
+    after(delay + FORM + FLY + HIT, function () {
       state.fireball = null;
       fbEl.hidden = true;
-    }, FORM + FLY + HIT));
+    });
+  }
+
+  /* ---------- Pomelo's answer: rear up and throw the orange;
+     the Archivist's damage lands when the orange does ---------- */
+  var capyAtkEl = document.getElementById('bf-capy-attack');
+  var orangeEl = document.getElementById('bf-orange');
+  capyAtkEl.src = SP.pomeloAttack;
+  function launchOrange(onImpact) {
+    if (reduceMotion) { after(200, onImpact); return; }
+    var a = arenaEl.getBoundingClientRect();
+    var cr = capy.getBoundingClientRect();
+    var br = bodyEl.getBoundingClientRect();
+    capy.style.visibility = 'hidden';
+    capyAtkEl.hidden = false;
+    var sx = cr.left - a.left + cr.width * 0.82;
+    var sy = cr.top - a.top + cr.height * 0.18;
+    var tx = br.left - a.left + br.width * 0.42;
+    var ty = br.top - a.top + br.height * 0.48;
+    after(180, function () {
+      orangeEl.src = SP.orange;
+      orangeEl.style.transition = 'none';
+      orangeEl.style.transform = 'translate(0,0)';
+      orangeEl.style.left = Math.round(sx - 21) + 'px';
+      orangeEl.style.top = Math.round(sy - 21) + 'px';
+      orangeEl.hidden = false;
+      void orangeEl.offsetWidth;
+      orangeEl.style.transition = '';
+      orangeEl.style.transform = 'translate(' + Math.round(tx - sx) + 'px,' + Math.round(ty - sy) + 'px)';
+    });
+    after(180 + 480, function () {
+      orangeEl.hidden = true;
+      onImpact();
+    });
+    after(180 + 480 + 260, function () {
+      capyAtkEl.hidden = true;
+      capy.style.visibility = '';
+    });
   }
 
   /* the nine tails, fanned behind the rump; the newest wound takes a tail */
@@ -237,13 +279,17 @@
     lockChoices();
     state.qi += 1;
     if (i === item.a) {
-      state.bossHp = Math.max(0, state.bossHp - 1);
       feedEl.textContent = 'Pomelo strikes! The Archivist loses a tail.';
       feedEl.className = 'bf-feedback is-hit';
-      playBody([['hurt1', 240], ['hurt2', 360]]);
-      syncTails(state.bossHp);
-      flash(document.getElementById('bf-boss-side'));
-      if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
+      launchOrange(function () {             // her damage lands with the orange
+        state.bossHp = Math.max(0, state.bossHp - 1);
+        playBody([['hurt1', 240], ['hurt2', 360]]);
+        syncTails(state.bossHp);
+        flash(document.getElementById('bf-boss-side'));
+        renderHp();
+        if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
+        if (state.bossHp === 0) win();
+      });
     } else {
       playBody([['attack1', 260], ['attack2', 420]]);
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
@@ -255,11 +301,10 @@
         flash(document.getElementById('bf-pomelo-side'));
         if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
         if (state.pomeloHp === 0) lose();
-      });
+      }, 260);                               // ...and forms only at attack part two
     }
     renderHp();
-    if (state.bossHp === 0) return win();
-    setTimeout(ask, i === item.a ? 900 : 2300);
+    setTimeout(ask, i === item.a ? 1500 : 2400);
   }
 
   function flash(el) {
@@ -292,8 +337,12 @@
     state.qi = 0;
     state.over = false;
     document.getElementById('bf-defeat').hidden = true;
-    fbTimers.forEach(clearTimeout);
+    projTimers.forEach(clearTimeout);
+    projTimers = [];
     fbEl.hidden = true;
+    orangeEl.hidden = true;
+    capyAtkEl.hidden = true;
+    capy.style.visibility = '';
     state.fireball = null;
     setBody('neutral');
     buildTails(state.bossMax);

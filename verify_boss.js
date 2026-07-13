@@ -37,10 +37,10 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
 
   /* right answer: Pomelo strikes */
   clickChoice(w, S.correctIndex);
-  check('Right answer: a tail vanishes with the hit point',
-    await until(() => S.bossHp === 8, 800) &&
+  check('Right answer: the orange flies and a tail vanishes on contact',
+    await until(() => S.bossHp === 8, 2000) &&
     Math.abs(parseFloat(d.querySelector('#bf-boss-hp .bf-hp-fill').style.width) - 88.89) < 0.5 &&
-    await until(() => d.querySelectorAll('.bf-tail:not(.is-gone)').length === 8, 1200) &&
+    await until(() => d.querySelectorAll('.bf-tail:not(.is-gone)').length === 8, 2200) &&
     /loses a tail/.test(d.getElementById('bf-feedback').textContent));
   check('Choices lock after answering', d.querySelector('.bf-choice').disabled === true);
 
