@@ -327,7 +327,6 @@
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
     animT.forEach(clearTimeout);
     setBody('faint');                       // nine tails down, the Archivist rests
-    document.getElementById('bf-boss-rig').classList.add('is-down');
     var p = document.getElementById('bf-victory');
     if (B.next) {
       var onward = document.getElementById('bf-onward');
@@ -355,7 +354,6 @@
     capy.style.visibility = '';
     state.fireball = null;
     setBody('neutral');
-    document.getElementById('bf-boss-rig').classList.remove('is-down');
     buildTails(state.bossMax);
     renderHp();
     ask();
