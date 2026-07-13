@@ -36,9 +36,10 @@
         pomeloAtk1: 'assets/pomelo/attack1.png',
         pomeloAtk2: 'assets/pomelo/attack2.png',
         pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
         orange:  'assets/fx/orange.png'
       },
-      bg: 'assets/realms/lorewood.png',
+      bg: 'assets/boss/lorewood/bg.png',
       hp: 9,   /* nine tails, nine hit points: one tail per wound */
       next: { id: 'storyforge', name: 'Story Forge' },
       questions: [
@@ -161,33 +162,36 @@
   function launchOrange(onImpact) {
     if (reduceMotion) { after(200, onImpact); return; }
     var a = arenaEl.getBoundingClientRect();
-    var cr = capy.getBoundingClientRect();
     var br = bodyEl.getBoundingClientRect();
     capy.style.visibility = 'hidden';
-    capyAtkEl.src = SP.pomeloAtk1;
+    capyAtkEl.src = SP.pomeloAtk1;                // orange still on his head
     capyAtkEl.hidden = false;
     after(150, function () { capyAtkEl.src = SP.pomeloAtk2; });
     after(300, function () { capyAtkEl.src = SP.pomeloAtk3; });
-    var sx = cr.left - a.left + cr.width * 0.82;
-    var sy = cr.top - a.top + cr.height * 0.04;   // launches a touch higher
-    var tx = br.left - a.left + br.width * 0.42;
-    var ty = br.top - a.top + br.height * 0.40;
-    after(180, function () {
+    after(450, function () {
+      capyAtkEl.src = SP.pomeloAtk4;              // the orangeless release frame:
+      var ar = capyAtkEl.getBoundingClientRect(); // the throwable pops up over his head
+      var sx = ar.left - a.left + ar.width * 0.62;
+      var sy = ar.top - a.top - 6;
+      var tx = br.left - a.left + br.width * 0.42;
+      var ty = br.top - a.top + br.height * 0.40;
       orangeEl.src = SP.orange;
       orangeEl.style.transition = 'none';
       orangeEl.style.transform = 'translate(0,0)';
       orangeEl.style.left = Math.round(sx - 42) + 'px';
       orangeEl.style.top = Math.round(sy - 42) + 'px';
       orangeEl.hidden = false;
-      void orangeEl.offsetWidth;
-      orangeEl.style.transition = '';
-      orangeEl.style.transform = 'translate(' + Math.round(tx - sx) + 'px,' + Math.round(ty - sy) + 'px)';
+      after(190, function () {
+        void orangeEl.offsetWidth;
+        orangeEl.style.transition = '';
+        orangeEl.style.transform = 'translate(' + Math.round(tx - sx) + 'px,' + Math.round(ty - sy) + 'px)';
+      });
     });
-    after(180 + 480, function () {
+    after(450 + 190 + 480, function () {
       orangeEl.hidden = true;
       onImpact();
     });
-    after(180 + 480 + 260, function () {
+    after(450 + 190 + 480 + 260, function () {
       capyAtkEl.hidden = true;
       capy.style.visibility = '';
     });
@@ -309,7 +313,7 @@
       }, 260);                               // ...and forms only at attack part two
     }
     renderHp();
-    setTimeout(ask, i === item.a ? 1500 : 2400);
+    setTimeout(ask, i === item.a ? 2000 : 2400);
   }
 
   function flash(el) {
