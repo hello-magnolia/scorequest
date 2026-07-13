@@ -94,6 +94,21 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     !!d.querySelector('#rw-fight[href="boss.html?realm=lorewood"]') &&
     /Face the guardian/.test(d.getElementById('rw-fight').textContent));
 
+  /* the second guardian: the Boilerback Weaver of Story Forge */
+  w = await load('boss.html?realm=storyforge');
+  d = w.document;
+  check('Story Forge: the Boilerback Weaver waits, breathing, no tails, seven HP',
+    /Boilerback Weaver/.test(d.getElementById('bf-boss-name').textContent) &&
+    /boss\/storyforge\/idle/.test(d.getElementById('bf-boss-img').src) &&
+    d.querySelectorAll('.bf-tail').length === 0 &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '266px' &&
+    d.querySelectorAll('.bf-choice').length === 4);
+  const S3 = w.__SQ_BOSS;
+  d.querySelectorAll('.bf-choice')[(S3.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('The Weaver\u2019s web flies before Pomelo\u2019s damage lands',
+    await until(() => ['form', 'fly', 'hit'].includes(S3.fireball), 1800) &&
+    await until(() => S3.pomeloHp === 2, 3200));
+
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');
   process.exit(passed === results.length ? 0 : 1);

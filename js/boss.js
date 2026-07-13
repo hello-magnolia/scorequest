@@ -41,6 +41,14 @@
       },
       bg: 'assets/boss/lorewood/bg.png',
       hp: 9,   /* nine tails, nine hit points: one tail per wound */
+      base: 'neutral',
+      tails: 9,
+      attackSeq: [['attack1', 260], ['attack2', 420]],
+      hurtSeq: [['hurt1', 240], ['hurt2', 360]],
+      faintSeq: [['faint', 300]],
+      projectile: { form: 'fbForm', fly: 'fbFly', hit: 'fbHit', delay: 260,
+        formMs: 300, flyMs: 520, hitMs: 320, formW: 74, flyW: 74, hitW: 116,
+        ox: 0.06, oy: 0.28 },
       next: { id: 'storyforge', name: 'Story Forge' },
       questions: [
         { q: 'The lanterns of Lorewood are lit every evening, though no keeper has been seen in ten years. Which question does the passage most directly raise?',
@@ -59,6 +67,62 @@
           choices: ['improve the stories', 'discourage those who read them', 'shorten the archive', 'honor the heroes'], a: 1 },
         { q: 'Which of these is an OPINION rather than a fact from the passage about Lorewood?',
           choices: ['The path passes under three torii gates.', 'Autumn is the most beautiful season here.', 'The shrine stands at the path\u2019s end.', 'Paper wishes hang from the branches.'], a: 1 }
+      ]
+    },
+    storyforge: {
+      name: 'The Boilerback Weaver',
+      taunt: 'I respin every bridge you build to my own design.',
+      sprites: {
+        idle1:   'assets/boss/storyforge/idle1.png',
+        idle2:   'assets/boss/storyforge/idle2.png',
+        idle3:   'assets/boss/storyforge/idle3.png',
+        attack1: 'assets/boss/storyforge/attack1.png',
+        attack2: 'assets/boss/storyforge/attack2.png',
+        attack3: 'assets/boss/storyforge/attack3.png',
+        hurt1:   'assets/boss/storyforge/hurt1.png',
+        hurt2:   'assets/boss/storyforge/hurt2.png',
+        hurt3:   'assets/boss/storyforge/hurt3.png',
+        faint1:  'assets/boss/storyforge/faint1.png',
+        faint2:  'assets/boss/storyforge/faint2.png',
+        faint3:  'assets/boss/storyforge/faint3.png',
+        webForm: 'assets/fx/web/form.png',
+        webFly:  'assets/fx/web/fly.png',
+        webHit:  'assets/fx/web/hit.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
+        orange:  'assets/fx/orange.png'
+      },
+      bg: 'assets/realms/storyforge.png',
+      hp: 7,
+      base: 'idle1',
+      idleSeq: ['idle1', 'idle2', 'idle3'],
+      idleMs: 460,
+      attackSeq: [['attack1', 260], ['attack2', 280], ['attack3', 340]],
+      hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 320]],
+      faintSeq: [['faint1', 280], ['faint2', 280], ['faint3', 300]],
+      projectile: { form: 'webForm', fly: 'webFly', hit: 'webHit', delay: 520,
+        formMs: 280, flyMs: 480, hitMs: 340, formW: 56, flyW: 118, hitW: 152,
+        ox: 0.10, oy: 0.55 },
+      next: { id: 'inkreef', name: 'Ink Reef' },
+      questions: [
+        { q: 'The Weaver\u2019s manual opens with a warning, then lists parts, then assembly steps. Its structure is best described as\u2026',
+          choices: ['Alphabetical order', 'A safety-first sequence', 'Cause and effect', 'A comparison of models'], a: 1 },
+        { q: 'In \u201Cthe forge hissed, sighed, and finally slept,\u201D the word choice makes the forge seem\u2026',
+          choices: ['dangerous', 'brand new', 'alive', 'broken'], a: 2 },
+        { q: 'A paragraph about iron ends: \u201CSteel, however, tells a different story.\u201D The sentence mainly serves to\u2026',
+          choices: ['define steel', 'summarize the passage', 'signal a shift to a new subject', 'correct an earlier error'], a: 2 },
+        { q: 'The web is described as \u201Cmeasured, load-bearing, and exactly as long as needed.\u201D The description mainly presents the Weaver as\u2026',
+          choices: ['fragile and hesitant', 'hurried and careless', 'decorative and vain', 'a careful engineer'], a: 3 },
+        { q: '\u201CThe bellows failed. ___, the fires cooled.\u201D Which transition fits the logic?',
+          choices: ['Meanwhile', 'Therefore', 'Although', 'For example'], a: 1 },
+        { q: 'A set of tempering instructions is interrupted by a memory of the smith\u2019s old teacher. The interruption mainly adds\u2026',
+          choices: ['a personal dimension', 'technical detail', 'a counterargument', 'statistics'], a: 0 },
+        { q: 'The phrase \u201Cevery joint riveted twice\u201D most strongly conveys\u2026',
+          choices: ['caution and thoroughness', 'haste', 'decoration', 'weakness'], a: 0 },
+        { q: 'The passage compares stories to bridges three separate times. The repetition mainly helps the reader\u2026',
+          choices: ['memorize dates', 'see structure as something built and crossed', 'learn bridge engineering', 'doubt the narrator'], a: 1 }
       ]
     }
   };
@@ -90,20 +154,33 @@
   var SP = B.sprites;
   Object.keys(SP).forEach(function (k) { var im = new Image(); im.src = SP[k]; });
   function setBody(k) { bodyEl.src = SP[k]; }
-  setBody('neutral');
+  setBody(B.base);
+  if (B.idleSeq && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+    var idleIdx = 0;               // breathing: cycle idle frames while at rest
+    setInterval(function () {
+      if (busy || state.over) return;
+      idleIdx = (idleIdx + 1) % B.idleSeq.length;
+      setBody(B.idleSeq[idleIdx]);
+    }, B.idleMs || 420);
+  }
 
   /* frame sequences: attack when the guardian strikes, hurt when struck */
   var animT = [];
+  var busy = false;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function playBody(seq) {
+  function playBody(seq, hold) {
     animT.forEach(clearTimeout); animT = [];
-    if (reduceMotion) return;
+    if (reduceMotion) { if (hold) setBody(seq[seq.length - 1][0]); return; }
+    busy = true;
     var t = 0;
     seq.forEach(function (s) {
       animT.push(setTimeout(function () { setBody(s[0]); }, t));
       t += s[1];
     });
-    animT.push(setTimeout(function () { if (!state.over) setBody('neutral'); }, t));
+    animT.push(setTimeout(function () {
+      busy = false;
+      if (!hold && !state.over) setBody(B.base);
+    }, t));
   }
 
   /* ---------- the fireball: forms at the open mouth, flies, and only
@@ -114,29 +191,32 @@
   function after(ms, fn) { projTimers.push(setTimeout(fn, ms)); }
   function launchFireball(onImpact, delay) {
     delay = delay || 0;
-    var FORM = 300, FLY = 520, HIT = 320;
+    var P = B.projectile;
+    var FORM = P.formMs, FLY = P.flyMs, HIT = P.hitMs;
     if (reduceMotion) { after(delay + 200, onImpact); return; }
     var a = arenaEl.getBoundingClientRect();
     var br = bodyEl.getBoundingClientRect();
     var cr = document.getElementById('bf-capy').getBoundingClientRect();
     // the mouth sits at the face side (screen-left of the mirrored rig), upper third
-    var sx = br.left - a.left + br.width * 0.06;
-    var sy = br.top - a.top + br.height * 0.28;
+    var sx = br.left - a.left + br.width * P.ox;
+    var sy = br.top - a.top + br.height * P.oy;
     var tx = cr.left - a.left + cr.width * 0.55;
     var ty = cr.top - a.top + cr.height * 0.40;
     after(delay, function () {
       state.fireball = 'form';
-      fbEl.src = SP.fbForm;
+      fbEl.src = SP[P.form];
       fbEl.classList.remove('is-hit');
+      fbEl.style.width = P.formW + 'px';
       fbEl.style.transition = 'none';
       fbEl.style.transform = 'translate(0,0)';
-      fbEl.style.left = Math.round(sx - 37) + 'px';
-      fbEl.style.top = Math.round(sy - 37) + 'px';
+      fbEl.style.left = Math.round(sx - P.formW / 2) + 'px';
+      fbEl.style.top = Math.round(sy - P.formW / 2) + 'px';
       fbEl.hidden = false;
     });
     after(delay + FORM, function () {
       state.fireball = 'fly';
-      fbEl.src = SP.fbFly;
+      fbEl.src = SP[P.fly];
+      fbEl.style.width = P.flyW + 'px';
       fbEl.style.transition = '';
       // force layout so the transition actually animates the launch
       void fbEl.offsetWidth;
@@ -144,7 +224,8 @@
     });
     after(delay + FORM + FLY, function () {
       state.fireball = 'hit';
-      fbEl.src = SP.fbHit;
+      fbEl.src = SP[P.hit];
+      fbEl.style.width = P.hitW + 'px';
       fbEl.classList.add('is-hit');
       onImpact();
     });
@@ -203,6 +284,7 @@
   function buildTails(n) {
     tailsEl.innerHTML = '';
     tailEls = [];
+    if (!B.tails) return;
     for (var i = 0; i < n; i++) {
       var t = document.createElement('img');
       t.className = 'bf-tail';
@@ -219,6 +301,7 @@
     }
   }
   function syncTails(hp) {
+    if (!B.tails) return;
     while (tailEls.length > hp) {
       var t = tailEls.pop();
       t.classList.add('is-gone');
@@ -292,7 +375,7 @@
       feedEl.className = 'bf-feedback is-hit';
       launchOrange(function () {             // her damage lands with the orange
         state.bossHp = Math.max(0, state.bossHp - 1);
-        playBody([['hurt1', 240], ['hurt2', 360]]);
+        playBody(B.hurtSeq);
         syncTails(state.bossHp);
         flash(document.getElementById('bf-boss-side'));
         renderHp();
@@ -300,7 +383,7 @@
         if (state.bossHp === 0) win();
       });
     } else {
-      playBody([['attack1', 260], ['attack2', 420]]);
+      playBody(B.attackSeq);
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
       feedEl.className = 'bf-feedback is-miss';
@@ -310,7 +393,7 @@
         flash(document.getElementById('bf-pomelo-side'));
         if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
         if (state.pomeloHp === 0) lose();
-      }, 260);                               // ...and forms only at attack part two
+      }, B.projectile.delay);   // timed to the open mouth, or the aimed spinneret
     }
     renderHp();
     setTimeout(ask, i === item.a ? 2000 : 2400);
@@ -325,15 +408,14 @@
   function win() {
     state.over = true;
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
-    animT.forEach(clearTimeout);
-    setBody('faint');                       // nine tails down, the Archivist rests
+    playBody(B.faintSeq, true);             // the guardian goes down, and stays down
     var p = document.getElementById('bf-victory');
     if (B.next) {
       var onward = document.getElementById('bf-onward');
       onward.href = 'realm.html?realm=' + B.next.id;
       onward.textContent = 'Onward to ' + B.next.name + ' \u2192';
     }
-    setTimeout(function () { p.hidden = false; }, 800);
+    setTimeout(function () { p.hidden = false; }, 1200);
     if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
   }
   function lose() {
@@ -353,7 +435,8 @@
     capyAtkEl.hidden = true;
     capy.style.visibility = '';
     state.fireball = null;
-    setBody('neutral');
+    busy = false;
+    setBody(B.base);
     buildTails(state.bossMax);
     renderHp();
     ask();

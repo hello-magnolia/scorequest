@@ -40,7 +40,7 @@
              [0.455, 0.652], [0.55, 0.665], [0.62, 0.675], [0.70, 0.665], [0.735, 0.66],
              [0.792, 0.55], [0.838, 0.545], [0.852, 0.515]],
       nodes: [[0.10, 0.35], [0.33, 0.51], [0.55, 0.663], [0.64, 0.673], [0.82, 0.545]] },
-    { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', ground: 0.80,
+    { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', fight: true, ground: 0.80,
       boss: 'The forge-hall doors are barred. Inside, something is bolting itself together in the wrong order.',
       img: ['assets/realms/storyforge.png', CDN + '/hf_20260711_230052_cd161907-7401-47e7-a33c-42b70abe3904.png'] },
     { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', ground: 0.82,
