@@ -169,15 +169,15 @@
     after(150, function () { capyAtkEl.src = SP.pomeloAtk2; });
     after(300, function () { capyAtkEl.src = SP.pomeloAtk3; });
     var sx = cr.left - a.left + cr.width * 0.82;
-    var sy = cr.top - a.top + cr.height * 0.18;
+    var sy = cr.top - a.top + cr.height * 0.04;   // launches a touch higher
     var tx = br.left - a.left + br.width * 0.42;
-    var ty = br.top - a.top + br.height * 0.48;
+    var ty = br.top - a.top + br.height * 0.40;
     after(180, function () {
       orangeEl.src = SP.orange;
       orangeEl.style.transition = 'none';
       orangeEl.style.transform = 'translate(0,0)';
-      orangeEl.style.left = Math.round(sx - 21) + 'px';
-      orangeEl.style.top = Math.round(sy - 21) + 'px';
+      orangeEl.style.left = Math.round(sx - 42) + 'px';
+      orangeEl.style.top = Math.round(sy - 42) + 'px';
       orangeEl.hidden = false;
       void orangeEl.offsetWidth;
       orangeEl.style.transition = '';

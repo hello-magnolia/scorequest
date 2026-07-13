@@ -1591,7 +1591,7 @@ a { color: inherit; }
   width: 66%; height: auto;   /* matches the standing body: rearing adds height, not bulk */
 }
 .bf-orange {
-  position: absolute; z-index: 4; width: 42px; height: auto;
+  position: absolute; z-index: 4; width: 84px; height: auto;
   image-rendering: pixelated; pointer-events: none;
   transition: transform 0.48s linear;
 }
