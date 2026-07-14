@@ -130,6 +130,65 @@
         { q: 'The passage compares stories to bridges three separate times. The repetition mainly helps the reader\u2026',
           choices: ['memorize dates', 'see structure as something built and crossed', 'learn bridge engineering', 'doubt the narrator'], a: 1 }
       ]
+    },
+    inkreef: {
+      name: 'The Grotto Sophist',
+      taunt: 'Your thesis is soggy and your transitions leak. Revise.',
+      sprites: {
+        idle1:   'assets/boss/inkreef/idle1.png',
+        idle2:   'assets/boss/inkreef/idle2.png',
+        idle3:   'assets/boss/inkreef/idle3.png',
+        attack1: 'assets/boss/inkreef/attack1.png',
+        attack2: 'assets/boss/inkreef/attack2.png',
+        attack3: 'assets/boss/inkreef/attack3.png',
+        attack4: 'assets/boss/inkreef/attack4.png',
+        attack5: 'assets/boss/inkreef/attack5.png',
+        attack6: 'assets/boss/inkreef/attack6.png',
+        hurt1:   'assets/boss/inkreef/hurt1.png',
+        hurt2:   'assets/boss/inkreef/hurt2.png',
+        hurt3:   'assets/boss/inkreef/hurt3.png',
+        faint1:  'assets/boss/inkreef/faint1.png',
+        faint2:  'assets/boss/inkreef/faint2.png',
+        faint3:  'assets/boss/inkreef/faint3.png',
+        scroll:  'assets/fx/scroll/scroll.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
+        orange:  'assets/fx/orange.png'
+      },
+      bg: 'assets/realms/inkreef.png',
+      hp: 8,
+      flip: false,  /* he throws leftward, toward Pomelo, as drawn */
+      base: 'idle1',
+      idleSeq: ['idle1', 'idle2', 'idle3'],
+      idleMs: 480,
+      attackSeq: [['attack1', 420], ['attack2', 480], ['attack3', 420],
+                  ['attack4', 360], ['attack5', 300], ['attack6', 340]],
+      hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 320]],
+      faintSeq: [['faint1', 300], ['faint2', 320], ['faint3', 340]],
+      projectile: { form: 'scroll', fly: 'scroll', hit: 'scroll', delay: 1680,
+        formMs: 120, flyMs: 480, hitMs: 300, formW: 44, flyW: 66, hitW: 84,
+        ox: 0.06, oy: 0.42 },
+      next: { id: 'syntaxcitadel', name: 'Syntax Citadel' },
+      questions: [
+        { q: 'Which revision of \u201CDue to the fact that the tide was high, we waited\u201D is most concise?',
+          choices: ['Due to the fact the tide was high, we waited.', 'Because the tide was high, we waited.', 'In light of the fact that the tide was high, we waited.', 'The tide being high in nature, we waited.'], a: 1 },
+        { q: 'A formal report should replace \u201Cthe results were pretty great\u201D with\u2026',
+          choices: ['the results were favorable', 'the results rocked', 'the results were kind of good', 'the results were the best ever'], a: 0 },
+        { q: '\u201CThe current was strong. ___, the divers pressed on.\u201D Which transition fits?',
+          choices: ['Therefore', 'For instance', 'Nevertheless', 'Similarly'], a: 2 },
+        { q: 'Which word most precisely describes water you can see through?',
+          choices: ['clear', 'nice', 'wet', 'watery'], a: 0 },
+        { q: 'Which combination of \u201CThe reef glows. The glow comes from tiny creatures.\u201D reads best?',
+          choices: ['The reef glows, the glow comes from tiny creatures.', 'The reef glows and glowing comes from creatures that are tiny.', 'The reef glows because of tiny creatures.', 'Tiny creatures, the reef glows from them.'], a: 2 },
+        { q: 'In \u201CThe final outcome was a small little victory,\u201D which pair is redundant?',
+          choices: ['final outcome', 'small little', 'a victory', 'was a'], a: 1 },
+        { q: 'Writing for young students, which opening fits the audience best?',
+          choices: ['Per the aforementioned crustacean data\u2026', 'Crabs have a secret superpower.', 'It is incumbent upon us to examine crabs.', 'Crustacean locomotion warrants rigorous analysis.'], a: 1 },
+        { q: 'The paragraph states a rule, then continues: \u201C___ example, the anglerfish\u2026\u201D',
+          choices: ['In', 'As', 'For', 'By'], a: 2 }
+      ]
     }
   };
 

@@ -71,7 +71,7 @@
                [0.339, 0.862], [0.557, 0.863], [0.593, 0.803], [0.629, 0.76], [0.628, 0.636]],
       bossArea: [[0.862, 0.451], [0.859, 0.323], [0.88, 0.279], [0.902, 0.278],
                  [0.929, 0.32], [0.928, 0.449]] },
-    { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', ground: 0.82,
+    { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', fight: true, ground: 0.82,
       boss: 'The grotto is dark with drifting ink. The water will not clear on its own.',
       img: ['assets/realms/inkreef.png', CDN + '/hf_20260711_230540_3f451865-ff4e-41ca-a71a-fe4aacf6705a.png'],
       /* hand-traced in the editor: down the shelf, across the reef terraces,

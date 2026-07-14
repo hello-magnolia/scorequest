@@ -112,6 +112,21 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => ['form', 'fly', 'hit'].includes(S3.fireball), 1800) &&
     await until(() => S3.pomeloHp === 2, 3200));
 
+  /* the third guardian: the Grotto Sophist of Ink Reef */
+  w = await load('boss.html?realm=inkreef');
+  d = w.document;
+  check('Ink Reef: the Grotto Sophist breathes over his scroll, eight HP, no tails',
+    /Grotto Sophist/.test(d.getElementById('bf-boss-name').textContent) &&
+    /boss\/inkreef\/idle/.test(d.getElementById('bf-boss-img').src) &&
+    d.querySelectorAll('.bf-tail').length === 0 &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '304px' &&
+    d.querySelectorAll('.bf-choice').length === 4);
+  const S4 = w.__SQ_BOSS;
+  d.querySelectorAll('.bf-choice')[(S4.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('The Sophist reads aloud, then the scroll flies and lands',
+    await until(() => ['form', 'fly', 'hit'].includes(S4.fireball), 2700) &&
+    await until(() => S4.pomeloHp === 2, 4400));
+
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');
   process.exit(passed === results.length ? 0 : 1);
