@@ -1204,15 +1204,13 @@ a { color: inherit; }
   position: absolute; left: 0; width: clamp(115px, 17vh, 195px); height: auto;
   image-rendering: pixelated; pointer-events: none;
 }
-.rw-door {
-  position: absolute; width: clamp(60px, 12vh, 120px); height: clamp(90px, 26vh, 220px);
-  border: 3px dashed rgba(242, 182, 60, 0.45); border-radius: 6px;
-  box-shadow: 0 0 24px rgba(242, 182, 60, 0.12); pointer-events: none;
+.rw-bosszone {
+  position: absolute; inset: 0; pointer-events: none;
+  animation: rw-zone-breathe 2.8s ease-in-out infinite;
 }
-.rw-door.is-near {
-  border-color: var(--gold);
-  box-shadow: 0 0 34px rgba(242, 182, 60, 0.35);
-  animation: rw-door-pulse 1.4s ease-in-out infinite;
+@keyframes rw-zone-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
 }
 @keyframes rw-door-pulse { 0%,100% { opacity: 0.85; } 50% { opacity: 0.45; } }
 
@@ -1280,7 +1278,7 @@ a { color: inherit; }
   animation: none;
 }
 @keyframes rw-node-pulse { 0%,100% { box-shadow: 0 0 14px rgba(242,182,60,0.5); } 50% { box-shadow: 0 0 4px rgba(242,182,60,0.25); } }
-@media (prefers-reduced-motion: reduce) { .rw-node, .rw-door.is-near { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .rw-node, .rw-bosszone { animation: none; } }
 
 .is-editing .rw-stage { cursor: crosshair; }
 .rw-editor {

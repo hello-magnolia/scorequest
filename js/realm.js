@@ -210,7 +210,7 @@
   var stage = document.getElementById('rw-stage');
   var world = document.getElementById('rw-world');
   var bg = document.getElementById('rw-bg');
-  var door = document.getElementById('rw-door');
+  var bossZoneEl = document.getElementById('rw-bosszone');
   var capy = document.getElementById('rw-capy');
   var veil = document.getElementById('rw-veil');
   var hint = document.getElementById('rw-hint');
@@ -541,9 +541,7 @@
     capyW = capy.clientWidth || 120;
     capyH = capy.clientHeight || Math.round(capyW * 45 / 57);
     buildPolyline();
-    var end = pts[pts.length - 1];
-    door.style.left = Math.round(Math.min(end[0], worldW - stageW * 0.16)) + 'px';
-    door.style.top = Math.round(end[1] - stageH * 0.30) + 'px';
+    drawBossZone();
     layoutNodes();
     drawTrace();
   }
@@ -645,8 +643,31 @@
     [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
     [4, 999999]
   ];
+  function drawBossZone() {
+    if (!bossZoneEl) return;
+    bossZoneEl.width = worldW;
+    bossZoneEl.height = worldH;
+    var zc = null;
+    try { zc = bossZoneEl.getContext('2d'); } catch (e) {}
+    if (!zc || !realm.bossArea || realm.bossArea.length < 3) return;
+    zc.beginPath();
+    realm.bossArea.forEach(function (p, i) {
+      var x = p[0] * worldW, y = p[1] * worldH;
+      if (i === 0) zc.moveTo(x, y); else zc.lineTo(x, y);
+    });
+    zc.closePath();
+    zc.fillStyle = 'rgba(242, 182, 60, 0.08)';
+    zc.fill();
+    zc.lineWidth = 3;
+    zc.strokeStyle = 'rgba(242, 182, 60, 0.85)';
+    zc.shadowColor = 'rgba(242, 182, 60, 0.8)';
+    zc.shadowBlur = 14;
+    zc.stroke();
+    zc.shadowBlur = 0;
+  }
+
   function tick(t) {
-    function pointInBossArea(fx, fy) {
+  function pointInBossArea(fx, fy) {
     var inside = false;
     for (var i = 0, k = realm.bossArea.length - 1; i < realm.bossArea.length; k = i++) {
       var a = realm.bossArea[i], b = realm.bossArea[k];
@@ -721,7 +742,6 @@
     if (sPos > totalLen * 0.55) prefetchNext();
     if (!bossShown && inBossZone()) {
       bossShown = true;
-      door.classList.add('is-near');
       popup.hidden = false;
     }
   }

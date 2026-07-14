@@ -110,8 +110,8 @@ const load = async (path) => {
     (!bgEl && !!d.getElementById('rw-capy')));
   check('Pomelo rides the padded companion canvas (sized for the tween frames)',
     d.getElementById('rw-capy').width === 57 && d.getElementById('rw-capy').height === 45);
-  check('The boss area waits at the end (door marker + sealed-door text ready)',
-    !!d.getElementById('rw-door') &&
+  check('The boss room wears Magnolia\u2019s outline (zone canvas + sealed-door text ready)',
+    !!d.getElementById('rw-bosszone') &&
     /sealed/.test(d.getElementById('rw-popup-text').textContent) &&
     d.getElementById('rw-popup').hidden === true);
   check('First realm: back-arrow off, next leads to Story Forge',
