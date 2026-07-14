@@ -1585,18 +1585,14 @@ a { color: inherit; }
 .bf-fx { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
 .bf-glow {
   position: absolute; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 196, 110, 0.5) 0%, rgba(255, 150, 50, 0.22) 45%, rgba(255, 120, 30, 0) 70%);
+  background: radial-gradient(circle, rgba(255, 196, 110, 0.30) 0%, rgba(255, 150, 50, 0.13) 45%, rgba(255, 120, 30, 0) 70%);
   mix-blend-mode: screen;
   transform: translate(-50%, -50%);
-  animation: bf-flicker 2.6s ease-in-out infinite;
+  animation: bf-flicker 3.6s ease-in-out infinite;
 }
 @keyframes bf-flicker {
-  0%, 100% { opacity: 0.75; }
-  18% { opacity: 0.95; }
-  34% { opacity: 0.68; }
-  52% { opacity: 1; }
-  71% { opacity: 0.8; }
-  86% { opacity: 0.92; }
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.75; }
 }
 .bf-leaf { position: absolute; top: -30px; animation: bf-leaf-fall linear infinite; }
 .bf-leaf::before {
@@ -1674,3 +1670,16 @@ a { color: inherit; }
   50% { box-shadow: 0 0 0 9px rgba(242, 182, 60, 0); }
 }
 @media (prefers-reduced-motion: reduce) { .rw-node.is-next { animation: none; } }
+
+/* realm biome dressing: lantern glow anchored to the world (percent
+   positioning rides resizes for free), leaves falling over the stage */
+.rw-fx { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.rw-glow {
+  position: absolute; transform: translate(-50%, -50%);
+  border-radius: 50%; aspect-ratio: 1;
+  background: radial-gradient(circle, rgba(255, 196, 110, 0.28) 0%, rgba(255, 150, 50, 0.12) 45%, rgba(255, 120, 30, 0) 70%);
+  mix-blend-mode: screen;
+  animation: bf-flicker 3.6s ease-in-out infinite;
+}
+.rw-weather { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 4; }
+@media (prefers-reduced-motion: reduce) { .rw-glow { animation: none; } .rw-weather { display: none; } }

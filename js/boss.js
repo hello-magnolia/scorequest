@@ -167,8 +167,6 @@
     (cfg.lamps || []).forEach(function (l) {
       var g = document.createElement('span');
       g.className = 'bf-glow';
-      g.style.animationDuration = (2 + Math.random() * 1.6).toFixed(2) + 's';
-      g.style.animationDelay = (-Math.random() * 3).toFixed(2) + 's';
       fx.appendChild(g);
       glowEls.push([g, l]);
     });
