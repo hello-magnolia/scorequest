@@ -56,20 +56,22 @@ const load = async (path) => {
     /Click along Pomelo/.test(d.querySelector('.rw-ed-help').textContent) &&
     !!d.getElementById('rw-ed-json'));
   const before = d.getElementById('rw-ed-count').textContent;
+  const pathBefore = parseInt(before) || 0;
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 200, clientY: 300 }));
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 420, clientY: 340 }));
   await new Promise(r => setTimeout(r, 60));
-  check('Clicking the stage drops waypoints and updates the export',
-    /^2 path/.test(d.getElementById('rw-ed-count').textContent) &&
+  check('Clicking the stage drops waypoints and updates the export (layers seed from committed data)',
+    parseInt(d.getElementById('rw-ed-count').textContent) === pathBefore + 2 &&
     /"realm":"lorewood"/.test(d.getElementById('rw-ed-json').value),
     before + ' -> ' + d.getElementById('rw-ed-count').textContent);
   // N switches to the marker layer; markers snap onto the traced path
+  const markersBefore = parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) markers/) || [0, 0])[1]);
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 300, clientY: 320 }));
   await new Promise(r => setTimeout(r, 60));
   check('N switches to marker placing, snapped onto the traced path',
     /Placing: markers/.test(d.getElementById('rw-ed-mode').textContent) &&
-    /1 markers/.test(d.getElementById('rw-ed-count').textContent),
+    parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) markers/) || [0, 0])[1]) === markersBefore + 1,
     d.getElementById('rw-ed-count').textContent);
   /* back to the walkabout for the remaining checks */
   w = await load('realm.html');

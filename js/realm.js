@@ -595,6 +595,7 @@
   }
   function editorKey(e) {
     if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
+      e.preventDefault();                    // keep the browser's own undo out of it
       if (edMode === 'start') edStart = null; else edLayer().pop();
       drawTrace(); syncEditorBar();
     }
@@ -624,6 +625,14 @@
   }
   function enterEditor() {
     document.body.classList.add('is-editing');
+    // seed the editing layers from committed data, so committed points are
+    // real, editable, undoable items — not a phantom fallback that reappears
+    // the moment a layer empties (the "undo isn't working" illusion)
+    edPath = (realm.path || []).map(function (p) { return p.slice(); });
+    edNodes = (realm.nodes || []).map(function (p) { return p.slice(); });
+    edStairs = (realm.stairs || []).map(function (p) { return p.slice(); });
+    edBossA = (realm.bossArea || []).map(function (p) { return p.slice(); });
+    edStart = realm.start ? realm.start.slice() : null;
     edBar = document.createElement('div');
     edBar.className = 'rw-editor pixel-frame';
     edBar.innerHTML =
