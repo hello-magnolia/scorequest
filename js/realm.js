@@ -166,7 +166,24 @@
                  [0.945, 0.504]] },
     { id: 'prismpeaks', name: 'Prism Peaks', domain: 'Geometry & Trigonometry', ground: 0.80, vertical: true,
       boss: 'The nest at the summit. You know who it belongs to \u2014 and who is waiting in it.',
-      img: ['assets/realms/prismpeaks.png', CDN + '/hf_20260712_030734_4484dc45-3614-4e52-9af2-b4813c9f6499.png'] }
+      img: ['assets/realms/prismpeaks.png', CDN + '/hf_20260712_030734_4484dc45-3614-4e52-9af2-b4813c9f6499.png'],
+      /* hand-traced in the editor: across the snowfield, up the ridge to the
+         bridges, the spur to the far ledge and back, then the long switchback
+         climb to the nest. No stair markers: this mountain is all slopes */
+      path: [[0.043, 0.813], [0.145, 0.816], [0.191, 0.768], [0.239, 0.811], [0.329, 0.796],
+             [0.381, 0.779], [0.429, 0.676], [0.456, 0.637], [0.473, 0.619], [0.504, 0.619],
+             [0.526, 0.624], [0.586, 0.568], [0.603, 0.576], [0.613, 0.621], [0.631, 0.653],
+             [0.667, 0.702], [0.74, 0.754], [0.776, 0.741], [0.798, 0.73], [0.831, 0.778],
+             [0.893, 0.773], [0.823, 0.772], [0.782, 0.731], [0.736, 0.759], [0.713, 0.73],
+             [0.653, 0.69], [0.609, 0.616], [0.598, 0.57], [0.595, 0.551], [0.613, 0.527],
+             [0.63, 0.507], [0.665, 0.487], [0.693, 0.447], [0.733, 0.381], [0.745, 0.36],
+             [0.765, 0.33], [0.791, 0.304], [0.817, 0.303], [0.848, 0.33], [0.862, 0.323],
+             [0.892, 0.207]],
+      nodes: [[0.191, 0.768], [0.333, 0.795], [0.548, 0.603], [0.893, 0.773],
+              [0.74, 0.756], [0.789, 0.306]],
+      start: [0.044, 0.813],
+      bossArea: [[0.861, 0.21], [0.865, 0.158], [0.901, 0.148], [0.937, 0.181],
+                 [0.915, 0.234]] }
   ];
 
   var params = new URLSearchParams(window.location.search);
