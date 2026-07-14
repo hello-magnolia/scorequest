@@ -170,6 +170,15 @@
       projectile: { form: 'scroll', fly: 'scroll', hit: 'scroll', delay: 1680,
         formMs: 120, flyMs: 480, hitMs: 300, formW: 44, flyW: 66, hitW: 84,
         ox: 0.06, oy: 0.42 },
+      /* the verdict he yells on a wrong answer, from the open mouth of the
+         third attack frame (mouth center measured at 85,172 in the 470x448
+         sheet); the word bursts leftward, toward Pomelo */
+      yell: { frame: 2, ox: 0.18, oy: 0.38, phrases: [
+        'Illogical!', 'Fallacious!', 'Unsound!', 'Contradiction!',
+        'Absurd!', 'Erroneous!', 'Unproven!', 'Invalid!', 'Misreasoned!',
+        'Impossible!', 'Incoherent!', 'Falsehood!', 'Sophistry!',
+        'Nonsense!', 'Unwise!'
+      ] },
       next: { id: 'syntaxcitadel', name: 'Syntax Citadel' },
       questions: [
         { q: 'Which revision of \u201CDue to the fact that the tide was high, we waited\u201D is most concise?',
@@ -344,6 +353,39 @@
     });
   }
 
+  /* ---------- the yell: a one-word verdict bursts from the open mouth
+     while the configured attack frame is up, then fades ---------- */
+  var yellEl = document.getElementById('bf-yell');
+  var lastYell = -1;
+  function playYell() {
+    var Y = B.yell;
+    if (!Y || !yellEl || reduceMotion) return;
+    var t = 0;                                  // when the frame arrives...
+    for (var i = 0; i < Y.frame; i++) t += B.attackSeq[i][1];
+    var holdMs = B.attackSeq[Y.frame][1];       // ...and how long it stays
+    var pick = Math.floor(Math.random() * Y.phrases.length);
+    if (pick === lastYell) pick = (pick + 1) % Y.phrases.length;
+    lastYell = pick;
+    after(t, function () {
+      var a = arenaEl.getBoundingClientRect();
+      var br = bodyEl.getBoundingClientRect();
+      var mx = br.left - a.left + br.width * Y.ox;
+      var my = br.top - a.top + br.height * Y.oy;
+      yellEl.textContent = Y.phrases[pick];
+      yellEl.classList.remove('is-yelling');
+      yellEl.style.right = Math.round(a.width - mx) + 'px';
+      yellEl.style.top = Math.round(my - 14) + 'px';
+      yellEl.style.animationDuration = (holdMs + 220) + 'ms';
+      yellEl.hidden = false;
+      void yellEl.offsetWidth;                  // restart the pop
+      yellEl.classList.add('is-yelling');
+    });
+    after(t + holdMs + 220, function () {       // gone once the fade lands
+      yellEl.hidden = true;
+      yellEl.classList.remove('is-yelling');
+    });
+  }
+
   /* ---------- Pomelo's answer: rear up and throw the orange;
      the Archivist's damage lands when the orange does ---------- */
   var capyAtkEl = document.getElementById('bf-capy-attack');
@@ -493,6 +535,7 @@
       });
     } else {
       playBody(B.attackSeq);
+      playYell();
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
       feedEl.className = 'bf-feedback is-miss';
@@ -541,6 +584,8 @@
     projTimers = [];
     fbEl.hidden = true;
     orangeEl.hidden = true;
+    yellEl.hidden = true;
+    yellEl.classList.remove('is-yelling');
     capyAtkEl.hidden = true;
     capy.style.visibility = '';
     state.fireball = null;

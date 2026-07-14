@@ -24,7 +24,12 @@ Serve with `(setsid python3 -m http.server 8000 >/dev/null 2>&1 < /dev/null &)`
 (server dies between tool calls; restart per call). Run ALL suites before any
 push; push only on all-green:
 verify_realm, verify_boss, verify_hub, verify_map, verify, verify_auth,
-verify_payment, verify_parents (jsdom + @napi-rs/canvas; ~202 checks).
+verify_payment, verify_parents (jsdom + @napi-rs/canvas; ~204 checks).
+Deps: `npm i --legacy-peer-deps jsdom canvas@npm:@napi-rs/canvas` — the
+ALIAS is load-bearing. jsdom require()s a package literally named
+`canvas`; installing plain @napi-rs/canvas leaves getContext() null and
+half the suites fail on timing/animation checks while static checks
+pass (misleads toward flakiness; it's a missing canvas backend).
 Timing checks POLL (loop + until), never fixed sleeps. `window.__SQ_TICKS`
 must advance (tripwire against silent per-frame throws; jsdom swallows them).
 

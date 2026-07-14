@@ -56,7 +56,8 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     /The answer was [A-D]:/.test(d.getElementById('bf-feedback').textContent));
   check('Damage lands only on contact',
     await until(() => S.pomeloHp === 2, 2500) &&
-    await until(() => S.fireball === null, 1500));
+    await until(() => S.fireball === null, 1500) &&
+    d.getElementById('bf-yell').hidden === true);  /* no yell config: silence */
 
   /* the win path */
   let hops = 0;
@@ -123,6 +124,22 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     d.querySelectorAll('.bf-choice').length === 4);
   const S4 = w.__SQ_BOSS;
   d.querySelectorAll('.bf-choice')[(S4.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  /* the yelled verdict: it must burst from the mouth ON the third attack
+     frame, wearing one of the fifteen phrases, then fade away */
+  const yellEl = d.getElementById('bf-yell');
+  const VERDICTS = /^(Illogical|Fallacious|Unsound|Contradiction|Absurd|Erroneous|Unproven|Invalid|Misreasoned|Impossible|Incoherent|Falsehood|Sophistry|Nonsense|Unwise)!$/;
+  let srcAtYell = '';
+  await until(() => {
+    if (!yellEl.hidden && !srcAtYell) srcAtYell = d.getElementById('bf-boss-img').src;
+    return !!srcAtYell;
+  }, 1600);
+  check('A verdict bursts from the Sophist\u2019s open mouth on attack frame three',
+    /inkreef\/attack3/.test(srcAtYell) &&
+    VERDICTS.test(yellEl.textContent) &&
+    yellEl.classList.contains('is-yelling') &&
+    yellEl.style.right !== '' && yellEl.style.top !== '');
+  check('The verdict fades once the frame has passed',
+    await until(() => yellEl.hidden, 1400));
   check('The Sophist reads aloud, then the scroll flies and lands',
     await until(() => ['form', 'fly', 'hit'].includes(S4.fireball), 2700) &&
     await until(() => S4.pomeloHp === 2, 4400));

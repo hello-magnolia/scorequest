@@ -1579,6 +1579,26 @@ a { color: inherit; }
 .bf-fireball.is-hit { width: 116px; transition: none; }
 @media (prefers-reduced-motion: reduce) { .bf-fireball { transition: none; } }
 
+/* the yelled verdict: a word bursting from the guardian's open mouth,
+   right-anchored at the mouth so it flies out toward Pomelo */
+.bf-yell {
+  position: absolute; z-index: 5; pointer-events: none;
+  font-family: 'Pixelify Sans', monospace; font-weight: 700;
+  font-size: clamp(18px, 3.2vh, 27px); letter-spacing: 0.04em;
+  white-space: nowrap; color: #fdf6e3;
+  text-shadow: 2px 0 0 #16112B, -2px 0 0 #16112B, 0 2px 0 #16112B,
+    0 -2px 0 #16112B, 2px 2px 0 #16112B, -2px 2px 0 #16112B;
+  opacity: 0; transform-origin: right center;
+}
+.bf-yell.is-yelling { animation: bf-yell-pop 0.64s ease-out forwards; }
+@keyframes bf-yell-pop {
+  0%   { opacity: 0; transform: translateY(4px) scale(0.4) rotate(-6deg); }
+  18%  { opacity: 1; transform: translateY(-2px) scale(1.1) rotate(2deg); }
+  32%  { transform: translateY(-4px) scale(1) rotate(0deg); }
+  78%  { opacity: 1; transform: translateY(-9px) scale(1); }
+  100% { opacity: 0; transform: translateY(-15px) scale(0.96); }
+}
+
 @media (max-width: 640px) { .bf-choices { grid-template-columns: 1fr; } .bf-boss-img { width: clamp(140px, 26vh, 240px); } }
 
 /* animated arena dressing: lantern glow + drifting leaves */
