@@ -1206,8 +1206,9 @@ a { color: inherit; }
 }
 .rw-bosszone {
   position: absolute; inset: 0; pointer-events: none;
-  animation: rw-zone-breathe 2.8s ease-in-out infinite;
+  opacity: 0; transition: opacity 0.7s ease;
 }
+.rw-bosszone.is-near { opacity: 1; animation: rw-zone-breathe 2.8s ease-in-out infinite; }
 @keyframes rw-zone-breathe {
   0%, 100% { opacity: 0.55; }
   50% { opacity: 1; }
@@ -1278,7 +1279,7 @@ a { color: inherit; }
   animation: none;
 }
 @keyframes rw-node-pulse { 0%,100% { box-shadow: 0 0 14px rgba(242,182,60,0.5); } 50% { box-shadow: 0 0 4px rgba(242,182,60,0.25); } }
-@media (prefers-reduced-motion: reduce) { .rw-node, .rw-bosszone { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .rw-node, .rw-bosszone.is-near { animation: none; opacity: 1; } }
 
 .is-editing .rw-stage { cursor: crosshair; }
 .rw-editor {

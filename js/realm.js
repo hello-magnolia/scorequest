@@ -643,6 +643,7 @@
     [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
     [4, 999999]
   ];
+  var zoneCX = null, zoneCY = null;
   function drawBossZone() {
     if (!bossZoneEl) return;
     bossZoneEl.width = worldW;
@@ -650,6 +651,8 @@
     var zc = null;
     try { zc = bossZoneEl.getContext('2d'); } catch (e) {}
     if (!zc || !realm.bossArea || realm.bossArea.length < 3) return;
+    zoneCX = realm.bossArea.reduce(function (s, p) { return s + p[0]; }, 0) / realm.bossArea.length * worldW;
+    zoneCY = realm.bossArea.reduce(function (s, p) { return s + p[1]; }, 0) / realm.bossArea.length * worldH;
     zc.beginPath();
     realm.bossArea.forEach(function (p, i) {
       var x = p[0] * worldW, y = p[1] * worldH;
@@ -738,12 +741,17 @@
       }
     }
     camera();
-    visitNodes();
     if (sPos > totalLen * 0.55) prefetchNext();
     if (!bossShown && inBossZone()) {
       bossShown = true;
       popup.hidden = false;
     }
+    if (bossZoneEl && zoneCX !== null) {   // the outline reveals itself as he nears
+      var zp = pointAt(sPos);
+      var near = Math.abs(zp.x - zoneCX) < stageW * 0.6 && Math.abs(zp.y - zoneCY) < stageH * 0.8;
+      bossZoneEl.classList.toggle('is-near', near);
+    }
+    window.__SQ_TICKS = (window.__SQ_TICKS || 0) + 1;   // proof the whole tick ran
   }
   window.requestAnimationFrame(tick);
 

@@ -70,6 +70,10 @@ const load = async (path) => {
   const leftBefore = d.getElementById('rw-capy').style.left;
   d.querySelector('.rw-node.is-passed').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 700));
+  const ticksAt = w.__SQ_TICKS || 0;
+  await new Promise(r => setTimeout(r, 350));
+  check('The tick loop runs to completion every frame (no silent mid-tick throws)',
+    (w.__SQ_TICKS || 0) > ticksAt + 3, (w.__SQ_TICKS || 0) + ' vs ' + ticksAt);
   check('A passed node reopens as extra practice, and Pomelo stays put',
     w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true &&
     /EXTRA PRACTICE/.test(d.getElementById('rw-quiz-kicker').textContent) &&
