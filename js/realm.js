@@ -214,6 +214,32 @@
   var capy = document.getElementById('rw-capy');
   var veil = document.getElementById('rw-veil');
   var hint = document.getElementById('rw-hint');
+
+  /* ---------- forward-only progression ----------
+     Pomelo advances waypoint by waypoint (space, or clicking the next
+     node). Each waypoint asks a question; passing unlocks the next leg.
+     Passed nodes reopen as extra practice. He never walks backward. */
+  var PROG_KEY = 'sq_realm_prog_' + realm.id;
+  var prog = 0;
+  try { prog = Math.max(0, parseInt(window.localStorage.getItem(PROG_KEY), 10) || 0); } catch (e) {}
+  var nodeS = [];        // arc-length position of each node
+  var sortedIdx = [];    // node indices in walk order
+  var quizOpen = false;
+  var PRACTICE = [       // placeholder items until the real banks arrive
+    { q: 'Which of these is a complete sentence?',
+      choices: ['Running through the trees.', 'The lanterns glow.', 'Because the path turned.', 'After the second gate.'], a: 1 },
+    { q: 'Pomelo reads 12 pages a day. At that pace, how many pages in a week?',
+      choices: ['74', '84', '96', '112'], a: 1 },
+    { q: 'Which word best replaces the vague word in: \u201CThe view from the peak was nice\u201D?',
+      choices: ['good', 'fine', 'breathtaking', 'okay'], a: 2 },
+    { q: 'If 3x + 5 = 20, then x equals\u2026',
+      choices: ['3', '5', '15', '25'], a: 1 },
+    { q: 'An author lists three examples right after a claim. The examples mainly serve to\u2026',
+      choices: ['contradict the claim', 'support the claim', 'summarize the passage', 'introduce a new topic'], a: 1 },
+    { q: 'A recipe doubles. If it needed 3/4 cup before, it now needs\u2026',
+      choices: ['1 cup', '1 1/4 cups', '1 1/2 cups', '2 cups'], a: 2 }
+  ];
+  var qOffset = 0;
   var popup = document.getElementById('rw-popup');
   var trace = document.getElementById('rw-trace');
 
@@ -267,7 +293,7 @@
   var stageW = 0, stageH = 0, worldW = 0, worldH = 0;
   var capyW = 0, capyH = 0;
   var ready = false, bossShown = false, prefetched = false;
-  var facing = 1, walking = false, keyDir = 0;
+  var facing = 1, walking = false;
 
   // the path as normalized points -> pixel polyline with cumulative arc length
   var norm = realm.path && realm.path.length >= 2
@@ -331,11 +357,21 @@
       var el = document.createElement('div');
       el.className = 'rw-node';
       el.setAttribute('data-node', i + 1);
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        onNodeClick(i);
+      });
       world.appendChild(el);
       nodeEls.push(el);
     });
   }
   function layoutNodes() {
+    nodeS = (realm.nodes || []).map(function (n) {
+      return nearestS(n[0] * worldW, n[1] * worldH);
+    });
+    sortedIdx = nodeS.map(function (_, i) { return i; })
+      .sort(function (a, b) { return nodeS[a] - nodeS[b]; });
+    syncNodeStates();
     (realm.nodes || []).forEach(function (n, i) {
       var el = nodeEls[i];
       if (!el) return;
@@ -343,18 +379,100 @@
       el.style.top = Math.round(n[1] * worldH) + 'px';
     });
   }
-  function visitNodes() {
-    var p = pointAt(sPos);
-    (realm.nodes || []).forEach(function (n, i) {
-      var el = nodeEls[i];
-      if (!el || el.classList.contains('is-visited')) return;
-      var dx = n[0] * worldW - p.x, dy = n[1] * worldH - p.y;
-      if (dx * dx + dy * dy < (capyW * 0.6) * (capyW * 0.6)) {
-        el.classList.add('is-visited');
-        if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
-      }
+  function syncNodeStates() {
+    sortedIdx.forEach(function (origIdx, rank) {
+      var el = nodeEls[origIdx];
+      if (!el) return;
+      el.classList.toggle('is-passed', rank < prog);
+      el.classList.toggle('is-next', rank === prog);
+      el.classList.toggle('is-locked', rank > prog);
     });
+    window.__SQ_REALM_PROG = prog;
   }
+  function onNodeClick(origIdx) {
+    if (editing) return;
+    var rank = sortedIdx.indexOf(origIdx);
+    if (rank < prog) openQuiz(rank, true);        // passed: extra practice, no walking back
+    else if (rank === prog) advance();            // the next waypoint: go
+    // locked nodes beyond the next stay quiet
+  }
+  function advance() {
+    if (!ready || quizOpen || walking) return;
+    if (flop === 'flat') { flopUp(function () { advance(); }); return; }
+    if (flop) return;
+    var count = (realm.nodes || []).length;
+    sTarget = prog < count ? nodeS[sortedIdx[prog]] : totalLen;
+    hint.classList.add('is-gone');
+  }
+
+  /* ---------- the waypoint quiz ---------- */
+  var quizEl = document.getElementById('rw-quiz');
+  var quizRank = 0, quizPractice = false;
+  function quizItem() {
+    var count = (realm.nodes || []).length || 1;
+    return PRACTICE[(idx * 2 + quizRank + qOffset) % PRACTICE.length];
+  }
+  function openQuiz(rank, practice) {
+    quizRank = rank;
+    quizPractice = practice;
+    quizOpen = true;
+    renderQuiz();
+    quizEl.hidden = false;
+  }
+  function renderQuiz() {
+    var item = quizItem();
+    document.getElementById('rw-quiz-kicker').textContent =
+      (quizPractice ? 'EXTRA PRACTICE \u00B7 ' : '') + 'Waypoint ' + (quizRank + 1) + ' of ' + (realm.nodes || []).length;
+    document.getElementById('rw-quiz-q').textContent = item.q;
+    var box = document.getElementById('rw-quiz-choices');
+    var feed = document.getElementById('rw-quiz-feedback');
+    feed.textContent = '';
+    feed.className = 'rw-quiz-feedback';
+    document.getElementById('rw-quiz-continue').hidden = true;
+    box.innerHTML = '';
+    item.choices.forEach(function (choice, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = String.fromCharCode(65 + i) + '.  ' + choice;
+      b.addEventListener('click', function (e) { e.stopPropagation(); answerQuiz(i, item); });
+      box.appendChild(b);
+    });
+    window.__SQ_QUIZ = { rank: quizRank, practice: quizPractice, correctIndex: item.a };
+  }
+  function answerQuiz(i, item) {
+    var feed = document.getElementById('rw-quiz-feedback');
+    document.getElementById('rw-quiz-choices').querySelectorAll('button')
+      .forEach(function (b) { b.disabled = true; });
+    if (i === item.a) {
+      feed.textContent = quizPractice ? 'Right again. Pomelo approves.' : 'Passed! The way forward is open.';
+      feed.className = 'rw-quiz-feedback is-hit';
+      if (!quizPractice && quizRank === prog) {
+        prog += 1;
+        try { window.localStorage.setItem(PROG_KEY, String(prog)); } catch (e) {}
+        syncNodeStates();
+      }
+      document.getElementById('rw-quiz-continue').hidden = false;
+      if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
+    } else {
+      feed.textContent = 'The answer was ' + String.fromCharCode(65 + item.a) + ': ' +
+        item.choices[item.a] + '. Here is another\u2026';
+      feed.className = 'rw-quiz-feedback is-miss';
+      qOffset += 1;
+      setTimeout(function () { if (quizOpen) renderQuiz(); }, 1800);
+      if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
+    }
+  }
+  function closeQuiz() {
+    quizOpen = false;
+    quizEl.hidden = true;
+    window.__SQ_QUIZ = null;
+  }
+  document.getElementById('rw-quiz-close').addEventListener('click', function (e) {
+    e.stopPropagation(); closeQuiz();
+  });
+  document.getElementById('rw-quiz-continue').addEventListener('click', function (e) {
+    e.stopPropagation(); closeQuiz();
+  });
 
 
   var ctx = null;
@@ -498,21 +616,19 @@
       else if (!flop) flopDown();
       return;
     }
-    if (flop) {                                    // asked to walk while napping: up first
-      var wakeTarget = nearestS(w.x, w.y);
-      if (flop === 'flat') flopUp(function () { sTarget = wakeTarget; });
-      return;
-    }
-    sTarget = nearestS(w.x, w.y);
-    hint.classList.add('is-gone');
+    if (flop === 'flat') { flopUp(); return; }     // wake, but walking is space's job now
   });
   document.addEventListener('keydown', function (e) {
     if (editing) { editorKey(e); return; }
-    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keyDir = 1;
-    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keyDir = -1;
-  });
-  document.addEventListener('keyup', function (e) {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || /^[adAD]$/.test(e.key)) keyDir = 0;
+    if (e.code === 'Space' || e.key === ' ') {
+      e.preventDefault();
+      if (quizOpen) {
+        // space closes a passed quiz (the Continue button), otherwise waits
+        if (!document.getElementById('rw-quiz-continue').hidden) closeQuiz();
+        return;
+      }
+      advance();
+    }
   });
   window.addEventListener('resize', function () { if (ready) { layout(); placeCapy(); camera(); } });
 
@@ -565,11 +681,9 @@
     var dt = Math.min(50, t - lastT || 16);
     lastT = t;
     if (flop) {                                    // napping: no walking, no idle
-      if (keyDir !== 0 && flop === 'flat') flopUp();
       camera();
       return;
     }
-    if (keyDir !== 0) sTarget = Math.min(Math.max(sPos + keyDir * 60, 0), totalLen);
     var ds = sTarget - sPos;
     var speed = stageH * 0.38 * (dt / 1000); // an unhurried capybara pace
     if (Math.abs(ds) > 2 && !reduceMotion) {
@@ -586,7 +700,14 @@
       }
     } else {
       if (reduceMotion && Math.abs(ds) > 2) { sPos = sTarget; placeCapy(); }
-      if (walking) { walking = false; idleT = 0; idleStep = 0; drawCapy(0); }
+      if (walking) {
+        walking = false; idleT = 0; idleStep = 0; drawCapy(0);
+        // arrived: if this stop is the next waypoint, its trial begins
+        var count = (realm.nodes || []).length;
+        if (!quizOpen && prog < count && Math.abs(sPos - nodeS[sortedIdx[prog]]) < 3) {
+          openQuiz(prog, false);
+        }
+      }
       idleT += dt;
       var fr = IDLE[Math.min(idleStep, IDLE.length - 1)];
       if (idleT > fr[1] && idleStep < IDLE.length - 1) {

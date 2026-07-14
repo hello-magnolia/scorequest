@@ -47,6 +47,34 @@ const load = async (path) => {
   check('A second tap brings him back up',
     await until(() => w.__SQ_REALM_FLOP === null, 2500), String(w.__SQ_REALM_FLOP));
 
+  /* forward-only progression: space walks him to waypoint one, where a
+     quiz gates the way; passed nodes reopen as practice; no walking back */
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+  check('Space walks Pomelo to the first waypoint, where the quiz opens',
+    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === false, 9000) &&
+    d.getElementById('rw-quiz').hidden === false &&
+    d.querySelectorAll('#rw-quiz-choices button').length === 4);
+  const wrongIdx = (w.__SQ_QUIZ.correctIndex + 1) % 4;
+  d.querySelectorAll('#rw-quiz-choices button')[wrongIdx].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('A miss teaches and re-asks; progress holds at zero',
+    /The answer was [A-D]:/.test(d.getElementById('rw-quiz-feedback').textContent) &&
+    (w.__SQ_REALM_PROG || 0) === 0 &&
+    await until(() => !d.querySelector('#rw-quiz-choices button').disabled, 3000));
+  d.querySelectorAll('#rw-quiz-choices button')[w.__SQ_QUIZ.correctIndex].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('A pass unlocks the leg: progress one, node marked, continue offered',
+    await until(() => w.__SQ_REALM_PROG === 1, 1500) &&
+    d.getElementById('rw-quiz-continue').hidden === false &&
+    d.querySelectorAll('.rw-node.is-passed').length === 1);
+  d.getElementById('rw-quiz-continue').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await until(() => d.getElementById('rw-quiz').hidden === true, 1500);
+  const leftBefore = d.getElementById('rw-capy').style.left;
+  d.querySelector('.rw-node.is-passed').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 700));
+  check('A passed node reopens as extra practice, and Pomelo stays put',
+    w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true &&
+    /EXTRA PRACTICE/.test(d.getElementById('rw-quiz-kicker').textContent) &&
+    d.getElementById('rw-capy').style.left === leftBefore);
+
   /* the editor */
   w = await load('realm.html?realm=lorewood&edit=1');
   d = w.document;
