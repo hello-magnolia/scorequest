@@ -148,7 +148,22 @@
                  [0.903, 0.264], [0.906, 0.299], [0.905, 0.399], [0.903, 0.436]] },
     { id: 'datadocks', name: 'Data Docks', domain: 'Problem-Solving & Data', ground: 0.80,
       boss: 'The gangplank is up. The captain\u2019s charts never quite add up.',
-      img: ['assets/realms/datadocks.png', CDN + '/hf_20260712_000405_578c3562-4fdd-4209-9609-3de599f599d3.png'] },
+      img: ['assets/realms/datadocks.png', CDN + '/hf_20260712_000405_578c3562-4fdd-4209-9609-3de599f599d3.png'],
+      /* hand-traced in the editor: along the quay with a climb up the crane
+         mast and back, out to the low jetty spur, then the long pier east
+         to the captain's ship */
+      path: [[0.078, 0.604], [0.077, 0.601], [0.156, 0.602], [0.195, 0.32], [0.162, 0.603],
+             [0.205, 0.61], [0.219, 0.621], [0.259, 0.653], [0.295, 0.658], [0.329, 0.648],
+             [0.361, 0.621], [0.387, 0.623], [0.476, 0.619], [0.496, 0.72], [0.47, 0.734],
+             [0.434, 0.738], [0.493, 0.723], [0.481, 0.628], [0.522, 0.611], [0.581, 0.49],
+             [0.59, 0.484], [0.697, 0.487], [0.735, 0.466], [0.811, 0.46], [0.877, 0.464],
+             [0.903, 0.487], [0.927, 0.496]],
+      nodes: [[0.435, 0.737], [0.195, 0.321], [0.412, 0.622], [0.646, 0.485], [0.808, 0.46]],
+      start: [0.078, 0.603],
+      stairs: [[0.481, 0.646], [0.494, 0.721], [0.496, 0.717], [0.483, 0.627],
+               [0.524, 0.605], [0.581, 0.491]],
+      bossArea: [[0.915, 0.473], [0.915, 0.32], [0.931, 0.274], [0.947, 0.33],
+                 [0.945, 0.504]] },
     { id: 'prismpeaks', name: 'Prism Peaks', domain: 'Geometry & Trigonometry', ground: 0.80, vertical: true,
       boss: 'The nest at the summit. You know who it belongs to \u2014 and who is waiting in it.',
       img: ['assets/realms/prismpeaks.png', CDN + '/hf_20260712_030734_4484dc45-3614-4e52-9af2-b4813c9f6499.png'] }
