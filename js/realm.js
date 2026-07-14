@@ -77,6 +77,9 @@
       realm = Object.assign({}, realm);
       if (saved.path && saved.path.length >= 2) realm.path = saved.path;
       if (saved.nodes) realm.nodes = saved.nodes;
+      if (saved.start && saved.start.length === 2) realm.start = saved.start;
+      if (saved.stairs) realm.stairs = saved.stairs;
+      if (saved.bossArea && saved.bossArea.length >= 3) realm.bossArea = saved.bossArea;
       traceOverride = true;
     }
   } catch (e) {}
@@ -304,9 +307,18 @@
     drawTrace();
   }
 
+  var camNow = 0;
+  var edCam = 0;   // in the editor, YOU drive the camera (arrows / A / D)
   function camera() {
-    var p = pointAt(sPos);
-    var camX = Math.min(Math.max(p.x - stageW * 0.42, 0), Math.max(0, worldW - stageW));
+    var camX;
+    if (editing) {
+      edCam = Math.min(Math.max(edCam, 0), Math.max(0, worldW - stageW));
+      camX = edCam;
+    } else {
+      var p = pointAt(sPos);
+      camX = Math.min(Math.max(p.x - stageW * 0.42, 0), Math.max(0, worldW - stageW));
+    }
+    camNow = camX;
     world.style.transform = 'translate3d(' + (-camX) + 'px,0,0)';
     return camX;
   }
@@ -314,7 +326,9 @@
   function begin() {
     renderNodes();
     layout();
-    sPos = nearestS(worldW * 0.05, pointAt(0).y);
+    sPos = (realm.start && realm.start.length === 2)
+      ? nearestS(realm.start[0] * worldW, realm.start[1] * worldH)
+      : nearestS(worldW * 0.05, pointAt(0).y);
     sTarget = sPos;
     placeCapy();
     drawCapy(0);
@@ -348,9 +362,7 @@
 
   /* ---------- input ---------- */
   function worldPoint(e) {
-    var p = pointAt(sPos);
-    var camX = Math.min(Math.max(p.x - stageW * 0.42, 0), Math.max(0, worldW - stageW));
-    return { x: e.clientX + camX, y: e.clientY };
+    return { x: e.clientX + camNow, y: e.clientY };
   }
   stage.addEventListener('click', function (e) {
     if (e.target.closest('.rw-hud') || e.target.closest('.rw-popup') || e.target.closest('.rw-editor')) return;
@@ -395,7 +407,21 @@
     [4, 999999]
   ];
   function tick(t) {
-    window.requestAnimationFrame(tick);
+    function inBossZone() {
+    if (realm.bossArea && realm.bossArea.length >= 3) {
+      var p = pointAt(sPos);
+      var fx = p.x / worldW, fy = p.y / worldH;
+      var inside = false;
+      for (var i = 0, k = realm.bossArea.length - 1; i < realm.bossArea.length; k = i++) {
+        var a = realm.bossArea[i], b = realm.bossArea[k];
+        if ((a[1] > fy) !== (b[1] > fy) &&
+            fx < (b[0] - a[0]) * (fy - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+      }
+      return inside;
+    }
+    return sPos > totalLen - stageW * 0.22;
+  }
+  window.requestAnimationFrame(tick);
     if (!ready || editing) return;
     var dt = Math.min(50, t - lastT || 16);
     lastT = t;
@@ -433,7 +459,7 @@
     camera();
     visitNodes();
     if (sPos > totalLen * 0.55) prefetchNext();
-    if (!bossShown && sPos > totalLen - stageW * 0.22) {
+    if (!bossShown && inBossZone()) {
       bossShown = true;
       door.classList.add('is-near');
       popup.hidden = false;
@@ -449,9 +475,16 @@
      Copy JSON yields a realm-tagged snippet to paste back for
      committing.
      ============================================================ */
-  var edPath = [], edNodes = [], edMode = 'path';
-  var ED_MODES = ['path', 'nodes'];
-  var ED_LABEL = { path: 'Tracing: Pomelo\u2019s path', nodes: 'Placing: markers' };
+  var edPath = [], edNodes = [], edStairs = [], edBossA = [], edStart = null;
+  var edMode = 'path';
+  var ED_MODES = ['path', 'nodes', 'start', 'stairs', 'boss'];
+  var ED_LABEL = {
+    path: 'Tracing: Pomelo\u2019s path (1)',
+    nodes: 'Placing: markers (2)',
+    start: 'Placing: START point (3)',
+    stairs: 'Placing: stair markers (4)',
+    boss: 'Outlining: boss room (5)'
+  };
   var edBar = null;
 
   function drawTrace() {
@@ -484,34 +517,68 @@
       tc.arc(p[0] * worldW, p[1] * worldH, 7, 0, Math.PI * 2);
       tc.fill();
     });
+    (edStairs.length ? edStairs : (realm.stairs || [])).forEach(function (p) {
+      tc.fillStyle = '#b48ce8';
+      tc.fillRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
+    });
+    var bz = edBossA.length ? edBossA : (realm.bossArea || []);
+    if (bz.length) {
+      tc.lineWidth = 3;
+      tc.strokeStyle = 'rgba(226,105,90,0.95)';
+      tc.fillStyle = 'rgba(226,105,90,0.14)';
+      tc.beginPath();
+      bz.forEach(function (p, i) {
+        var x = p[0] * worldW, y = p[1] * worldH;
+        if (i === 0) tc.moveTo(x, y); else tc.lineTo(x, y);
+      });
+      if (bz.length >= 3) { tc.closePath(); tc.fill(); }
+      tc.stroke();
+      bz.forEach(function (p) {
+        tc.fillStyle = 'rgba(226,105,90,0.95)';
+        tc.fillRect(p[0] * worldW - 4, p[1] * worldH - 4, 8, 8);
+      });
+    }
+    var stp = edStart || realm.start;
+    if (stp) {   // the start point: a blue diamond
+      var sx = stp[0] * worldW, sy = stp[1] * worldH;
+      tc.fillStyle = '#58a6ff';
+      tc.beginPath();
+      tc.moveTo(sx, sy - 10); tc.lineTo(sx + 10, sy); tc.lineTo(sx, sy + 10); tc.lineTo(sx - 10, sy);
+      tc.closePath(); tc.fill();
+    }
   }
 
   function edJSON() {
     var r3 = function (v) { return Math.round(v * 1000) / 1000; };
     var rr = function (list) { return list.map(function (p) { return [r3(p[0]), r3(p[1])]; }); };
+    var start = edStart || realm.start || null;
     return JSON.stringify({
       realm: realm.id,
       path: rr(edPath.length ? edPath : norm),
-      nodes: rr(edNodes.length ? edNodes : (realm.nodes || []))
+      nodes: rr(edNodes.length ? edNodes : (realm.nodes || [])),
+      start: start ? [r3(start[0]), r3(start[1])] : null,
+      stairs: rr(edStairs.length ? edStairs : (realm.stairs || [])),
+      bossArea: rr(edBossA.length ? edBossA : (realm.bossArea || []))
     });
   }
 
   function edLayer() {
-    return edMode === 'path' ? edPath : edNodes;
+    return { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[edMode];
+  }
+  function snapToPath(w) {
+    var save = norm;
+    if (edPath.length >= 2) { norm = edPath; buildPolyline(); }
+    var s = nearestS(w.x, w.y);
+    var q = pointAt(s);
+    norm = save; buildPolyline();
+    return [q.x / worldW, q.y / worldH];
   }
   function editorClick(w) {
-    var p = [w.x / worldW, w.y / worldH];
-    if (edMode === 'nodes') {
-      // snap markers onto the traced (or committed) player line
-      var save = norm;
-      if (edPath.length >= 2) { norm = edPath; buildPolyline(); }
-      var s = nearestS(w.x, w.y);
-      var q = pointAt(s);
-      edNodes.push([q.x / worldW, q.y / worldH]);
-      norm = save; buildPolyline();
-    } else {
-      edLayer().push(p);
-    }
+    if (edMode === 'nodes') edNodes.push(snapToPath(w));          // snapped to the line
+    else if (edMode === 'stairs') edStairs.push(snapToPath(w));   // snapped to the line
+    else if (edMode === 'start') edStart = snapToPath(w);         // one only; re-click moves it
+    else if (edMode === 'boss') edBossA.push([w.x / worldW, w.y / worldH]);
+    else edPath.push([w.x / worldW, w.y / worldH]);
     if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
     drawTrace();
     syncEditorBar();
@@ -522,20 +589,32 @@
   }
   function editorKey(e) {
     if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
-      edLayer().pop();
+      if (edMode === 'start') edStart = null; else edLayer().pop();
       drawTrace(); syncEditorBar();
     }
-    if (e.key === 'c' || e.key === 'C') { edLayer().length = 0; drawTrace(); syncEditorBar(); }
+    if (e.key === 'c' || e.key === 'C') {
+      if (edMode === 'start') edStart = null; else edLayer().length = 0;
+      drawTrace(); syncEditorBar();
+    }
     if (e.key === 'n' || e.key === 'N') cycleMode();
+    var digits = { '1': 'path', '2': 'nodes', '3': 'start', '4': 'stairs', '5': 'boss' };
+    if (digits[e.key]) { edMode = digits[e.key]; syncEditorBar(); }
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+      edCam += stageW * 0.35; camera(); e.preventDefault();
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+      edCam -= stageW * 0.35; camera(); e.preventDefault();
+    }
   }
   function syncEditorBar() {
     if (!edBar) return;
     edBar.querySelector('#rw-ed-mode').textContent = ED_LABEL[edMode];
     edBar.querySelector('#rw-ed-count').textContent =
-      edPath.length + ' path \u00B7 ' + edNodes.length + ' markers';
+      edPath.length + ' path \u00B7 ' + edNodes.length + ' markers \u00B7 ' +
+      edStairs.length + ' stairs \u00B7 ' + edBossA.length + ' boss pts \u00B7 start ' +
+      (edStart || realm.start ? '\u2713' : '\u2014');
     edBar.querySelector('#rw-ed-json').value = edJSON();
-    edBar.querySelector('#rw-ed-toggle').textContent =
-      edMode === 'path' ? 'Switch to markers (N)' : 'Switch to path (N)';
+    edBar.querySelector('#rw-ed-toggle').textContent = 'Next tool (N)';
   }
   function enterEditor() {
     document.body.classList.add('is-editing');
@@ -543,7 +622,7 @@
     edBar.className = 'rw-editor pixel-frame';
     edBar.innerHTML =
       '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span></p>' +
-      '<p class="rw-ed-help">Click along Pomelo\u2019s walkable path, left to right (stairs: one click at the top, one at the bottom). N switches to marker placing; Z undoes, C clears the active layer. Paste the JSON back to Claude to commit it for everyone.</p>' +
+      '<p class="rw-ed-help">Click along Pomelo\u2019s walkable path, left to right. Tools: 1 path \u00B7 2 markers \u00B7 3 start point \u00B7 4 stair markers \u00B7 5 boss room outline (N cycles). Arrow keys or A/D pan the camera to reach the whole biome. Z undoes, C clears the active tool. Paste the JSON back to Claude to commit it for everyone.</p>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
         '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Switch to markers (N)</button>' +
