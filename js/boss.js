@@ -99,7 +99,7 @@
         pomeloAtk4: 'assets/pomelo/attack4.png',
         orange:  'assets/fx/orange.png'
       },
-      bg: 'assets/realms/storyforge.png',
+      bg: 'assets/boss/storyforge/bg.png',
       hp: 7,
       flip: false,  /* the spider already faces Pomelo */
       base: 'idle1',
@@ -110,7 +110,7 @@
       faintSeq: [['faint1', 280], ['faint2', 280], ['faint3', 300]],
       projectile: { form: 'webForm', fly: 'webFly', hit: 'webHit', delay: 520,
         formMs: 280, flyMs: 480, hitMs: 340, formW: 56, flyW: 118, hitW: 152,
-        ox: 0.10, oy: 0.55 },
+        ox: 0.10, oy: 0.64 },
       next: { id: 'inkreef', name: 'Ink Reef' },
       questions: [
         { q: 'The Weaver\u2019s manual opens with a warning, then lists parts, then assembly steps. Its structure is best described as\u2026',
