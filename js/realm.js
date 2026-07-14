@@ -45,6 +45,10 @@
       stairs: [[0.241, 0.351], [0.292, 0.478], [0.414, 0.507], [0.466, 0.633],
                [0.717, 0.666], [0.767, 0.547]],
       bossArea: [[0.869, 0.444], [0.851, 0.431], [0.854, 0.313], [0.899, 0.339], [0.898, 0.456]],
+      fx: { leaves: 10, lamps: [
+        [0.072, 0.606, 3.5], [0.11, 0.469, 3.5], [0.129, 0.531, 3], [0.134, 0.675, 4],
+        [0.242, 0.573, 3], [0.709, 0.682, 3.5], [0.764, 0.502, 3], [0.85, 0.649, 4]
+      ] },
       nodes: [[0.363, 0.503], [0.501, 0.663], [0.613, 0.666], [0.817, 0.534]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', fight: true, ground: 0.80,
       boss: 'The forge-hall doors are barred. Inside, something is bolting itself together in the wrong order.',
@@ -574,6 +578,7 @@
     camera();
     ready = true;
     veil.classList.add('is-gone');
+    dressRealm();
     if (editing) enterEditor();
   }
 
@@ -643,6 +648,35 @@
     [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
     [4, 999999]
   ];
+  function dressRealm() {
+    var cfg = realm.fx;
+    var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!cfg || editing || rm) return;
+    var fx = document.getElementById('rw-fx');
+    if (fx && !fx.childElementCount) {
+      (cfg.lamps || []).forEach(function (l) {
+        var g = document.createElement('span');
+        g.className = 'rw-glow';
+        g.style.left = (l[0] * 100) + '%';
+        g.style.top = (l[1] * 100) + '%';
+        g.style.width = (l[2] * 2) + '%';    // aspect-ratio keeps it round
+        fx.appendChild(g);
+      });
+    }
+    var weather = document.getElementById('rw-weather');
+    if (weather && !weather.childElementCount) {
+      var palette = ['#c23b22', '#d95d39', '#a8341e', '#e07a3f'];
+      for (var i = 0; i < (cfg.leaves || 0); i++) {
+        var leaf = document.createElement('span');
+        leaf.className = 'bf-leaf';
+        leaf.style.left = (2 + Math.random() * 94).toFixed(1) + '%';
+        leaf.style.color = palette[i % palette.length];
+        leaf.style.animationDuration = (11 + Math.random() * 8).toFixed(1) + 's';
+        leaf.style.animationDelay = (-Math.random() * 16).toFixed(1) + 's';
+        weather.appendChild(leaf);
+      }
+    }
+  }
   var zoneCX = null, zoneCY = null;
   function drawBossZone() {
     if (!bossZoneEl) return;

@@ -114,6 +114,9 @@ const load = async (path) => {
     (!bgEl && !!d.getElementById('rw-capy')));
   check('Pomelo rides the padded companion canvas (sized for the tween frames)',
     d.getElementById('rw-capy').width === 57 && d.getElementById('rw-capy').height === 45);
+  check('Lorewood is dressed: eight lantern glows on the world, ten drifting leaves',
+    d.querySelectorAll('#rw-fx .rw-glow').length === 8 &&
+    d.querySelectorAll('#rw-weather .bf-leaf').length === 10);
   check('The boss room wears Magnolia\u2019s outline (zone canvas + sealed-door text ready)',
     !!d.getElementById('rw-bosszone') &&
     /sealed/.test(d.getElementById('rw-popup-text').textContent) &&
