@@ -33,13 +33,19 @@
     { id: 'lorewood', name: 'Lorewood', domain: 'Information & Ideas', fight: true,
       boss: 'The shrine doors are sealed. Whatever twists the old texts is waiting behind them.',
       img: ['assets/realms/lorewood.png', CDN + '/hf_20260711_215833_948a0475-28db-41fa-94bf-14fca55664f1.png'],
-      /* band-verified against the render: upper terrace (0.35) -> stairs -> terrace 2
-         (0.51) -> stairs -> main torii walk (0.665) -> stairs up -> shrine steps */
-      path: [[0.03, 0.345], [0.125, 0.352], [0.185, 0.358], [0.232, 0.368],
-             [0.285, 0.50], [0.33, 0.512], [0.395, 0.52],
-             [0.455, 0.652], [0.55, 0.665], [0.62, 0.675], [0.70, 0.665], [0.735, 0.66],
-             [0.792, 0.55], [0.838, 0.545], [0.852, 0.515]],
-      nodes: [[0.10, 0.35], [0.33, 0.51], [0.55, 0.663], [0.64, 0.673], [0.82, 0.545]] },
+      /* hand-traced in the editor: terrace -> stairs -> terrace 2 -> stairs ->
+         torii walk -> stairs up -> the shrine approach */
+      path: [[0.127, 0.352], [0.127, 0.355], [0.158, 0.348], [0.192, 0.347], [0.24, 0.349],
+             [0.292, 0.478], [0.314, 0.499], [0.335, 0.501], [0.363, 0.503], [0.39, 0.504],
+             [0.414, 0.507], [0.466, 0.633], [0.481, 0.65], [0.501, 0.663], [0.524, 0.663],
+             [0.554, 0.667], [0.595, 0.668], [0.613, 0.666], [0.657, 0.664], [0.699, 0.664],
+             [0.717, 0.666], [0.767, 0.547], [0.794, 0.538], [0.817, 0.534], [0.833, 0.527],
+             [0.853, 0.495], [0.869, 0.457]],
+      start: [0.127, 0.355],
+      stairs: [[0.241, 0.351], [0.292, 0.478], [0.414, 0.507], [0.466, 0.633],
+               [0.717, 0.666], [0.767, 0.547]],
+      bossArea: [[0.869, 0.444], [0.851, 0.431], [0.854, 0.313], [0.899, 0.339], [0.898, 0.456]],
+      nodes: [[0.363, 0.503], [0.501, 0.663], [0.613, 0.666], [0.817, 0.534]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', fight: true, ground: 0.80,
       boss: 'The forge-hall doors are barred. Inside, something is bolting itself together in the wrong order.',
       img: ['assets/realms/storyforge.png', CDN + '/hf_20260711_230052_cd161907-7401-47e7-a33c-42b70abe3904.png'] },

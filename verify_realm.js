@@ -26,8 +26,8 @@ const load = async (path) => {
     d.getElementById('rw-title').textContent === 'Lorewood' &&
     /Realm 1 of 8/.test(d.getElementById('rw-meta').textContent) &&
     /Information & Ideas/.test(d.getElementById('rw-meta').textContent));
-  check('Lorewood carries a waypoint path with five node markers on it',
-    d.querySelectorAll('.rw-node').length === 5 &&
+  check('Lorewood carries the hand-traced path with four node markers on it',
+    d.querySelectorAll('.rw-node').length === 4 &&
     !!d.getElementById('rw-trace'));
   check('The entering-veil walks in on capybara paw prints (reusable loader)',
     d.querySelectorAll('#rw-veil .paw-loader .paw').length === 6 &&
