@@ -627,7 +627,8 @@
     edBar = document.createElement('div');
     edBar.className = 'rw-editor pixel-frame';
     edBar.innerHTML =
-      '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span></p>' +
+      '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span>' +
+      '<button class="rw-ed-min type-utility" id="rw-ed-min" type="button" title="Minimize">\u2013</button></p>' +
       '<p class="rw-ed-help">Click along Pomelo\u2019s walkable path, left to right. Tools: 1 path \u00B7 2 markers \u00B7 3 start point \u00B7 4 stair markers \u00B7 5 boss room outline (N cycles). Arrow keys or A/D pan the camera to reach the whole biome. Z undoes, C clears the active tool. Paste the JSON back to Claude to commit it for everyone.</p>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
@@ -636,6 +637,12 @@
         '<button class="btn btn-gold" id="rw-ed-save" type="button">Save preview &amp; walk it</button>' +
       '</div>';
     stage.appendChild(edBar);
+    edBar.querySelector('#rw-ed-min').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var min = edBar.classList.toggle('is-min');
+      this.textContent = min ? '+' : '\u2013';
+      this.title = min ? 'Expand' : 'Minimize';
+    });
     edBar.querySelector('#rw-ed-toggle').addEventListener('click', function (e) {
       e.stopPropagation();
       cycleMode();
