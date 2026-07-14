@@ -413,17 +413,33 @@
     [4, 999999]
   ];
   function tick(t) {
-    function inBossZone() {
+    function pointInBossArea(fx, fy) {
+    var inside = false;
+    for (var i = 0, k = realm.bossArea.length - 1; i < realm.bossArea.length; k = i++) {
+      var a = realm.bossArea[i], b = realm.bossArea[k];
+      if ((a[1] > fy) !== (b[1] > fy) &&
+          fx < (b[0] - a[0]) * (fy - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+    }
+    return inside;
+  }
+  function inBossZone() {
     if (realm.bossArea && realm.bossArea.length >= 3) {
+      // Pomelo is "there" when any part of him overlaps the room, not just
+      // his soles: his feet ride the path, which often skirts BELOW the
+      // room a human outlines around a doorway
       var p = pointAt(sPos);
-      var fx = p.x / worldW, fy = p.y / worldH;
-      var inside = false;
-      for (var i = 0, k = realm.bossArea.length - 1; i < realm.bossArea.length; k = i++) {
-        var a = realm.bossArea[i], b = realm.bossArea[k];
-        if ((a[1] > fy) !== (b[1] > fy) &&
-            fx < (b[0] - a[0]) * (fy - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+      var hw = (capyW * 0.4) / worldW;
+      var probes = [
+        [p.x / worldW, p.y / worldH],                                  // feet
+        [p.x / worldW, (p.y - capyH * 0.5) / worldH],                  // body
+        [p.x / worldW, (p.y - capyH * 0.9) / worldH],                  // head
+        [p.x / worldW - hw, (p.y - capyH * 0.5) / worldH],             // rump side
+        [p.x / worldW + hw, (p.y - capyH * 0.5) / worldH]              // nose side
+      ];
+      for (var i = 0; i < probes.length; i++) {
+        if (pointInBossArea(probes[i][0], probes[i][1])) return true;
       }
-      return inside;
+      return false;
     }
     return sPos > totalLen - stageW * 0.22;
   }
