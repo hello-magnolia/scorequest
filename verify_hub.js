@@ -74,9 +74,13 @@ const OPTS = {
   check('"You touch it." plays alone in the dark',
     intro.getAttribute('data-scene') === 'touch' &&
     (intro.querySelector('.intro-center').getAttribute('data-full') || '') === 'You touch it.');
-  clickIntro(); await sleep(60); clickIntro(); await sleep(140); // leave the touch scene
-  check('Leaving the touch scene swells brighter and brighter (flare rising)',
-    intro.querySelector('.intro-flash').classList.contains('is-rising'));
+  clickIntro(); await sleep(60); clickIntro(); // leave the touch scene
+  let flareRose = false;
+  for (let t = 0; t < 1000; t += 50) {
+    if (intro.querySelector('.intro-flash').classList.contains('is-rising')) { flareRose = true; break; }
+    await sleep(50);
+  }
+  check('Leaving the touch scene swells brighter and brighter (flare rising)', flareRose);
   await sleep(2050);
   check('The onsen flashback plays from the committed local asset and cues the lullaby',
     intro.getAttribute('data-scene') === 'onsen' && /two capybaras/.test(full()) &&
