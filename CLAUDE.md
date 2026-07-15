@@ -78,7 +78,12 @@ drain in boss fights, no performance pressure on teen surfaces.
   clamps at the next unpassed waypoint, whose quiz opens on arrival;
   backward roams free), waypoint quizzes (sq_realm_prog_<id>),
   boss-zone proximity glow + five-body-probe entry trigger, lorewood
-  biome fx, editor (tools 1-5, pan, seeded layers). STAIRS data =
+  biome fx, editor (tools 1-5, pan, seeded layers). Realm manifests may
+  set ui: '<skin>' -> body.rw-ui-<skin> scopes popup/text-box styling;
+  lorewood wears 'shrinewood', a pixel-ring recreation of Magnolia's
+  wooden frame (palette #4b1e09/#a0531d/#b76925/#dd8830/#f8c566,
+  translucent warm interior; detailed source art parked at
+  assets/ui/frame-shrinewood.png). STAIRS data =
   markers in PAIRS: bottom then top of each flight brackets an
   arc-length range. In the editor, path clicks near an earlier vertex
   SNAP to it exactly (gold ring) so loops close without a seam.
