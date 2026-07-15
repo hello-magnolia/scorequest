@@ -198,6 +198,62 @@
         { q: 'The paragraph states a rule, then continues: \u201C___ example, the anglerfish\u2026\u201D',
           choices: ['In', 'As', 'For', 'By'], a: 2 }
       ]
+    },
+    syntaxcitadel: {
+      name: 'The Parapet Pedant',
+      taunt: 'Six centuries on this ledge and I have never once excused a comma splice.',
+      sprites: {
+        idle1:   'assets/boss/syntaxcitadel/idle1.png',
+        idle2:   'assets/boss/syntaxcitadel/idle2.png',
+        idle3:   'assets/boss/syntaxcitadel/idle3.png',
+        attack1: 'assets/boss/syntaxcitadel/attack1.png',
+        attack2: 'assets/boss/syntaxcitadel/attack2.png',
+        attack3: 'assets/boss/syntaxcitadel/attack3.png',
+        hurt1:   'assets/boss/syntaxcitadel/hurt1.png',
+        hurt2:   'assets/boss/syntaxcitadel/hurt2.png',
+        hurt3:   'assets/boss/syntaxcitadel/hurt3.png',
+        faint1:  'assets/boss/syntaxcitadel/faint1.png',
+        faint2:  'assets/boss/syntaxcitadel/faint2.png',
+        faint3:  'assets/boss/syntaxcitadel/faint3.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
+        orange:  'assets/fx/orange.png'
+      },
+      bg: 'assets/boss/syntaxcitadel/bg.png',
+      hp: 9,   /* stone takes patience */
+      flip: false,  /* carved facing Pomelo's side of the arena */
+      base: 'idle1',
+      idleSeq: ['idle1', 'idle2', 'idle3'],
+      idleMs: 520,  /* stone breathes slowly */
+      attackSeq: [['attack1', 380], ['attack2', 420], ['attack3', 520]],
+      hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 320]],
+      faintSeq: [['faint1', 300], ['faint2', 320], ['faint3', 360]],
+      /* no thrown projectile: the maw gathers light and fires a beam.
+         delay lands the charge at the start of the roar (attack3);
+         maw centroid measured at 149,137 in the 468x448 sheet */
+      beam: { delay: 800, chargeMs: 260, fireMs: 220, holdMs: 320, fadeMs: 240,
+        ox: 0.318, oy: 0.306 },
+      next: { id: 'mirrormines', name: 'Mirror Mines' },
+      questions: [
+        { q: 'Which sentence is punctuated correctly?',
+          choices: ['The gate was locked, the keys were gone.', 'The gate was locked; the keys were gone.', 'The gate was locked the keys were gone.', 'The gate was locked, and, the keys were gone.'], a: 1 },
+        { q: '\u201CThe flock of gargoyles ___ at dusk.\u201D Which verb agrees?',
+          choices: ['stir', 'stirs', 'are stirring', 'have stirred'], a: 1 },
+        { q: '\u201CThe citadel opens ___ gates at dawn.\u201D Which word completes it?',
+          choices: ['it\u2019s', 'its', 'their', 'there'], a: 1 },
+        { q: 'Which revision fixes \u201CPerched on the tower, the city looked small\u201D?',
+          choices: ['Perched on the tower, small was the city.', 'Perched on the tower, the sentinel found the city small.', 'The city, perched on the tower, looked small.', 'Perched on the tower the city looked small.'], a: 1 },
+        { q: '\u201CNeither the sentries nor the mason ___ the missing stone.\u201D',
+          choices: ['notice', 'notices', 'are noticing', 'were noticing'], a: 1 },
+        { q: 'Which sentence uses the colon correctly?',
+          choices: ['The vault holds: gold, maps, and ink.', 'The vault holds three things: gold, maps, and ink.', 'The vault: holds gold, maps, and ink.', 'The vault holds three things, gold: maps and ink.'], a: 1 },
+        { q: '\u201CBy the time the bell rang, the drawbridge ___.\u201D',
+          choices: ['already rose', 'had already risen', 'has already risen', 'already been rising'], a: 1 },
+        { q: 'Which choice fixes the run-on \u201CThe torches guttered we climbed anyway\u201D?',
+          choices: ['The torches guttered, we climbed anyway.', 'The torches guttered. We climbed anyway.', 'The torches guttered we, climbed anyway.', 'The torches, guttered we climbed anyway.'], a: 1 }
+      ]
     }
   };
 
@@ -350,6 +406,54 @@
     after(delay + FORM + FLY + HIT, function () {
       state.fireball = null;
       fbEl.hidden = true;
+    });
+  }
+
+  /* ---------- the beam: light gathers at the maw, crosses the arena in
+     one stroke, and the damage lands when it connects. Reuses the
+     form/fly/hit lifecycle keys so state introspection stays uniform ---------- */
+  var beamEl = document.getElementById('bf-beam');
+  function launchBeam(onImpact, delay) {
+    delay = delay || 0;
+    var C = B.beam;
+    if (reduceMotion) { after(delay + 200, onImpact); return; }
+    var a = arenaEl.getBoundingClientRect();
+    var br = bodyEl.getBoundingClientRect();
+    var cr = document.getElementById('bf-capy').getBoundingClientRect();
+    var sx = br.left - a.left + br.width * C.ox;
+    var sy = br.top - a.top + br.height * C.oy;
+    var tx = cr.left - a.left + cr.width * 0.55;
+    var ty = cr.top - a.top + cr.height * 0.40;
+    var len = Math.round(Math.hypot(tx - sx, ty - sy));
+    var rot = 'rotate(' + (Math.atan2(ty - sy, tx - sx) * 180 / Math.PI).toFixed(2) + 'deg)';
+    after(delay, function () {                          // light gathers at the maw
+      state.fireball = 'form';
+      beamEl.style.transition = 'none';
+      beamEl.style.left = Math.round(sx) + 'px';
+      beamEl.style.top = Math.round(sy) + 'px';
+      beamEl.style.width = len + 'px';
+      beamEl.style.opacity = '1';
+      beamEl.style.transform = rot + ' scaleX(0.04)';
+      beamEl.hidden = false;
+    });
+    after(delay + C.chargeMs, function () {             // the stroke crosses
+      state.fireball = 'fly';
+      void beamEl.offsetWidth;
+      beamEl.style.transition = 'transform ' + C.fireMs + 'ms ease-out';
+      beamEl.style.transform = rot + ' scaleX(1)';
+    });
+    after(delay + C.chargeMs + C.fireMs, function () {  // it connects
+      state.fireball = 'hit';
+      onImpact();
+    });
+    after(delay + C.chargeMs + C.fireMs + C.holdMs, function () {
+      beamEl.style.transition = 'opacity ' + C.fadeMs + 'ms linear';
+      beamEl.style.opacity = '0';
+    });
+    after(delay + C.chargeMs + C.fireMs + C.holdMs + C.fadeMs, function () {
+      state.fireball = null;
+      beamEl.hidden = true;
+      beamEl.style.transition = 'none';
     });
   }
 
@@ -557,13 +661,14 @@
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
       feedEl.className = 'bf-feedback is-miss';
-      launchFireball(function () {           // the damage lands with the fireball
+      var strike = B.beam ? launchBeam : launchFireball;
+      strike(function () {                   // the damage lands on contact
         state.pomeloHp = Math.max(0, state.pomeloHp - 1);
         renderHp();
         flash(document.getElementById('bf-pomelo-side'));
         if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
         if (state.pomeloHp === 0) lose();
-      }, B.projectile.delay);   // timed to the open mouth, or the aimed spinneret
+      }, B.beam ? B.beam.delay : B.projectile.delay);   // timed to the open maw, mouth, or spinneret
     }
     renderHp();
     setTimeout(ask, i === item.a ? 2000 : 2400);
@@ -601,6 +706,8 @@
     projTimers.forEach(clearTimeout);
     projTimers = [];
     fbEl.hidden = true;
+    beamEl.hidden = true;
+    beamEl.style.opacity = '0';
     orangeEl.hidden = true;
     yellEl.hidden = true;
     yellEl.classList.remove('is-yelling');

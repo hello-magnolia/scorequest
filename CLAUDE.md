@@ -81,6 +81,11 @@ drain in boss fights, no performance pressure on teen surfaces.
   Bosses: lorewood Nine-Tailed Archivist (9hp, tails, fireball),
   storyforge Boilerback Weaver (7hp, web), inkreef Grotto Sophist (8hp,
   scroll). New boss = sprites + manifest entry ONLY.
+  Attacks: a manifest defines either projectile (form/fly/hit sprites,
+  thrown from ox/oy) or beam (a light beam from ox/oy: delay, chargeMs,
+  fireMs, holdMs, fadeMs). Both report through state.fireball with the
+  same form/fly/hit lifecycle. A yell block (frame, ox, oy, phrases)
+  shouts a random word from the mouth on that attackSeq frame index.
 - Suites live at repo root, verify_*.js.
 
 ## Current backlog

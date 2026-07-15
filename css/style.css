@@ -1579,6 +1579,18 @@ a { color: inherit; }
 .bf-fireball.is-hit { width: 116px; transition: none; }
 @media (prefers-reduced-motion: reduce) { .bf-fireball { transition: none; } }
 
+/* the beam of light: anchored at the guardian's maw, rotated toward
+   Pomelo; JS drives scaleX for the crossing and opacity for the fade */
+.bf-beam {
+  position: absolute; z-index: 4; height: 12px; margin-top: -6px;
+  transform-origin: 0 50%; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #ffffff 32%,
+    #ffe9a3 50%, #ffffff 68%, rgba(255,255,255,0) 100%);
+  box-shadow: 0 0 12px 3px rgba(255, 230, 150, 0.85),
+    0 0 28px 9px rgba(150, 220, 255, 0.35);
+}
+@media (prefers-reduced-motion: reduce) { .bf-beam { transition: none !important; } }
+
 /* TEMP-SKIP (testing): remove this block with the buttons when done */
 .sq-skip-test {
   font-family: 'Pixelify Sans', monospace; font-size: 13px;

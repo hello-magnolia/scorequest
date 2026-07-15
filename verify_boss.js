@@ -144,6 +144,24 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => ['form', 'fly', 'hit'].includes(S4.fireball), 2700) &&
     await until(() => S4.pomeloHp === 2, 4400));
 
+  /* the fourth guardian: the Parapet Pedant of Syntax Citadel */
+  w = await load('boss.html?realm=syntaxcitadel');
+  d = w.document;
+  check('Syntax Citadel: the Parapet Pedant stands in stone, nine HP, no tails',
+    /Parapet Pedant/.test(d.getElementById('bf-boss-name').textContent) &&
+    /boss\/syntaxcitadel\/idle/.test(d.getElementById('bf-boss-img').src) &&
+    d.querySelectorAll('.bf-tail').length === 0 &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '342px' &&
+    d.querySelectorAll('.bf-choice').length === 4);
+  const S5 = w.__SQ_BOSS;
+  d.querySelectorAll('.bf-choice')[(S5.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  const beam = d.getElementById('bf-beam');
+  check('The maw gathers light and the beam crosses before any damage lands',
+    await until(() => !beam.hidden && ['form', 'fly', 'hit'].includes(S5.fireball), 1800) &&
+    S5.pomeloHp === 3 &&
+    await until(() => S5.pomeloHp === 2, 3000) &&
+    await until(() => S5.fireball === null && beam.hidden, 2200));
+
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');
   process.exit(passed === results.length ? 0 : 1);
