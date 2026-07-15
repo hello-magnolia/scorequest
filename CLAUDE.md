@@ -73,9 +73,15 @@ drain in boss fights, no performance pressure on teen surfaces.
   parents.
 - js/realm.js: eight hand-traced realm manifests (path, nodes, start,
   stairs, bossArea polygons; ids key saved progress, never change them),
-  forward-only SPACE progression with waypoint quizzes
-  (sq_realm_prog_<id>), boss-zone proximity glow + five-body-probe entry
-  trigger, lorewood biome fx, editor (tools 1-5, pan, seeded layers).
+  SPACE auto-walk plus FREE WALKING on the rails (arrows/WASD: left and
+  right run the path, up and down work only on stair stretches; forward
+  clamps at the next unpassed waypoint, whose quiz opens on arrival;
+  backward roams free), waypoint quizzes (sq_realm_prog_<id>),
+  boss-zone proximity glow + five-body-probe entry trigger, lorewood
+  biome fx, editor (tools 1-5, pan, seeded layers). STAIRS data =
+  markers in PAIRS: bottom then top of each flight brackets an
+  arc-length range. In the editor, path clicks near an earlier vertex
+  SNAP to it exactly (gold ring) so loops close without a seam.
 - js/boss.js: per-boss manifests (base, idleSeq breathing, attack/hurt/
   faint seqs, optional tails, projectile config, bgFx, flip, questions).
   Bosses: lorewood Nine-Tailed Archivist (9hp, tails, fireball),

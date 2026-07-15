@@ -347,6 +347,47 @@
     return best;
   }
 
+  /* ---------- stairs: markers pair up in click order, bottom and top of
+     each flight; a pair brackets an arc-length range where the up and
+     down keys climb and descend ---------- */
+  var stairRanges = [];
+  function layoutStairs() {
+    stairRanges = [];
+    var st = realm.stairs || [];
+    for (var i = 0; i + 1 < st.length; i += 2) {
+      var a = nearestS(st[i][0] * worldW, st[i][1] * worldH);
+      var b = nearestS(st[i + 1][0] * worldW, st[i + 1][1] * worldH);
+      stairRanges.push([Math.min(a, b) - 6, Math.max(a, b) + 6]);  // a step of grace at each end
+    }
+  }
+  function onStairs(s) {
+    for (var i = 0; i < stairRanges.length; i++) {
+      if (s >= stairRanges[i][0] && s <= stairRanges[i][1]) return true;
+    }
+    return false;
+  }
+  function stairUpDir(s) {          // +1 when walking onward climbs the screen
+    var e = 8;
+    var y1 = pointAt(Math.max(0, s - e)).y;
+    var y2 = pointAt(Math.min(totalLen, s + e)).y;
+    return y2 <= y1 ? 1 : -1;
+  }
+
+  /* ---------- free walking: held keys nudge the walk target along the
+     rails; the path itself is the only place he can be ---------- */
+  var held = { fwd: false, back: false, up: false, down: false };
+  function freeDir() {
+    var d = 0;
+    if (held.fwd) d += 1;
+    if (held.back) d -= 1;
+    if ((held.up || held.down) && onStairs(sPos)) {
+      var up = stairUpDir(sPos);
+      if (held.up) d += up;
+      if (held.down) d -= up;
+    }
+    return Math.sign(d);
+  }
+
   function placeCapy() {
     var p = pointAt(sPos);
     capy.style.left = Math.round(p.x - capyW / 2) + 'px';
@@ -563,6 +604,7 @@
     buildPolyline();
     drawBossZone();
     layoutNodes();
+    layoutStairs();
     drawTrace();
   }
 
@@ -637,6 +679,12 @@
     }
     if (flop === 'flat') { flopUp(); return; }     // wake, but walking is space's job now
   });
+  var KEYMAP = {
+    ArrowRight: 'fwd', d: 'fwd', D: 'fwd',
+    ArrowLeft: 'back', a: 'back', A: 'back',
+    ArrowUp: 'up', w: 'up', W: 'up',
+    ArrowDown: 'down', s: 'down', S: 'down'
+  };
   document.addEventListener('keydown', function (e) {
     if (editing) { editorKey(e); return; }
     if (e.code === 'Space' || e.key === ' ') {
@@ -648,6 +696,21 @@
       }
       advance();
     }
+    var dir = KEYMAP[e.key];
+    if (dir) {
+      if (e.key.indexOf('Arrow') === 0) e.preventDefault();  // the page must not scroll
+      if (quizOpen) return;
+      if (flop) { if (flop === 'flat') flopUp(); return; }   // a step wakes him first
+      held[dir] = true;
+      hint.classList.add('is-gone');
+    }
+  });
+  document.addEventListener('keyup', function (e) {
+    var dir = KEYMAP[e.key];
+    if (dir) held[dir] = false;
+  });
+  window.addEventListener('blur', function () {              // no stuck keys
+    held.fwd = held.back = held.up = held.down = false;
   });
   window.addEventListener('resize', function () { if (ready) { layout(); placeCapy(); camera(); } });
 
@@ -760,6 +823,16 @@
     }
     var ds = sTarget - sPos;
     var speed = stageH * 0.38 * (dt / 1000); // an unhurried capybara pace
+    /* free walking rides the same tween: held keys pull the target a few
+       steps ahead (or behind), clamped between the trailhead and the next
+       unpassed waypoint; the rails do the rest */
+    var free = quizOpen ? 0 : freeDir();
+    if (free) {
+      var count0 = (realm.nodes || []).length;
+      var fwdLimit = prog < count0 ? nodeS[sortedIdx[prog]] : totalLen;
+      sTarget = Math.min(Math.max(sPos + free * speed * 3, 0), fwdLimit);
+      ds = sTarget - sPos;
+    }
     if (Math.abs(ds) > 2 && !reduceMotion) {
       walking = true;
       sPos += Math.sign(ds) * Math.min(Math.abs(ds), speed);
@@ -802,6 +875,7 @@
       bossZoneEl.classList.toggle('is-near', near);
     }
     window.__SQ_TICKS = (window.__SQ_TICKS || 0) + 1;   // proof the whole tick ran
+    window.__SQ_REALM_S = Math.round(sPos);
   }
   window.requestAnimationFrame(tick);
 
@@ -820,7 +894,7 @@
     path: 'Tracing: Pomelo\u2019s path (1)',
     nodes: 'Placing: markers (2)',
     start: 'Placing: START point (3)',
-    stairs: 'Placing: stair markers (4)',
+    stairs: 'Placing: stair pairs (4)',
     boss: 'Outlining: boss room (5)'
   };
   var edBar = null;
@@ -855,10 +929,45 @@
       tc.arc(p[0] * worldW, p[1] * worldH, 7, 0, Math.PI * 2);
       tc.fill();
     });
-    (edStairs.length ? edStairs : (realm.stairs || [])).forEach(function (p) {
+    /* stair pairs paint the actual stretch of path they bracket, so a
+       flight reads as a flight and not two lonely squares */
+    var stActive = edStairs.length ? edStairs : (realm.stairs || []);
+    var pActive = edPath.length >= 2 ? edPath : norm;
+    var save = norm;
+    norm = pActive; buildPolyline();
+    for (var si = 0; si + 1 < stActive.length; si += 2) {
+      var sA = nearestS(stActive[si][0] * worldW, stActive[si][1] * worldH);
+      var sB = nearestS(stActive[si + 1][0] * worldW, stActive[si + 1][1] * worldH);
+      var lo = Math.min(sA, sB), hi = Math.max(sA, sB);
+      tc.lineWidth = 7;
+      tc.strokeStyle = 'rgba(180,140,232,0.85)';
+      tc.beginPath();
+      var p0 = pointAt(lo);
+      tc.moveTo(p0.x, p0.y);
+      for (var ci = 1; ci < pts.length - 1; ci++) {
+        if (cum[ci] > lo && cum[ci] < hi) tc.lineTo(pts[ci][0], pts[ci][1]);
+      }
+      var p1 = pointAt(hi);
+      tc.lineTo(p1.x, p1.y);
+      tc.stroke();
+    }
+    norm = save; buildPolyline();
+    stActive.forEach(function (p, i) {
       tc.fillStyle = '#b48ce8';
-      tc.fillRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
+      if (i === stActive.length - 1 && stActive.length % 2) {   // waiting for its top
+        tc.strokeStyle = '#b48ce8'; tc.lineWidth = 2;
+        tc.strokeRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
+      } else {
+        tc.fillRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
+      }
     });
+    if (edMode === 'path' && edHover) {   // this click would reuse that vertex
+      tc.lineWidth = 2;
+      tc.strokeStyle = '#ffd97a';
+      tc.beginPath();
+      tc.arc(edHover[0] * worldW, edHover[1] * worldH, 11, 0, Math.PI * 2);
+      tc.stroke();
+    }
     var bz = edBossA.length ? edBossA : (realm.bossArea || []);
     if (bz.length) {
       tc.lineWidth = 3;
@@ -903,6 +1012,29 @@
   function edLayer() {
     return { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[edMode];
   }
+  /* loop snapping: a path click within range of an earlier vertex reuses
+     that vertex EXACTLY, so a loop closes instead of almost-closing and
+     getting cut off at the seam */
+  var SNAP = 14, edHover = null;
+  function snapVertex(w) {
+    var best = null, bestD = SNAP * SNAP;
+    edPath.forEach(function (p) {
+      var dx = p[0] * worldW - w.x, dy = p[1] * worldH - w.y;
+      var d = dx * dx + dy * dy;
+      if (d <= bestD) { bestD = d; best = p; }
+    });
+    return best;
+  }
+  var hoverRaf = 0;
+  stage.addEventListener('mousemove', function (e) {
+    if (!editing || edMode !== 'path' || hoverRaf) return;
+    hoverRaf = window.requestAnimationFrame(function () {
+      hoverRaf = 0;
+      var prev = edHover;
+      edHover = snapVertex(worldPoint(e));
+      if (prev !== edHover) drawTrace();
+    });
+  });
   function snapToPath(w) {
     var save = norm;
     if (edPath.length >= 2) { norm = edPath; buildPolyline(); }
@@ -913,10 +1045,13 @@
   }
   function editorClick(w) {
     if (edMode === 'nodes') edNodes.push(snapToPath(w));          // snapped to the line
-    else if (edMode === 'stairs') edStairs.push(snapToPath(w));   // snapped to the line
+    else if (edMode === 'stairs') edStairs.push(snapToPath(w));   // snapped to the line, in pairs
     else if (edMode === 'start') edStart = snapToPath(w);         // one only; re-click moves it
     else if (edMode === 'boss') edBossA.push([w.x / worldW, w.y / worldH]);
-    else edPath.push([w.x / worldW, w.y / worldH]);
+    else {
+      var sv = snapVertex(w);                                     // loops close exactly
+      edPath.push(sv ? sv.slice() : [w.x / worldW, w.y / worldH]);
+    }
     if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
     drawTrace();
     syncEditorBar();
@@ -948,9 +1083,10 @@
   function syncEditorBar() {
     if (!edBar) return;
     edBar.querySelector('#rw-ed-mode').textContent = ED_LABEL[edMode];
+    var flights = Math.floor(edStairs.length / 2) + ' flights' + (edStairs.length % 2 ? ' +1 pending' : '');
     edBar.querySelector('#rw-ed-count').textContent =
       edPath.length + ' path \u00B7 ' + edNodes.length + ' markers \u00B7 ' +
-      edStairs.length + ' stairs \u00B7 ' + edBossA.length + ' boss pts \u00B7 start ' +
+      flights + ' \u00B7 ' + edBossA.length + ' boss pts \u00B7 start ' +
       (edStart || realm.start ? '\u2713' : '\u2014');
     edBar.querySelector('#rw-ed-json').value = edJSON();
     edBar.querySelector('#rw-ed-toggle').textContent = 'Next tool (N)';
@@ -970,7 +1106,7 @@
     edBar.innerHTML =
       '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span>' +
       '<button class="rw-ed-min type-utility" id="rw-ed-min" type="button" title="Minimize">\u2013</button></p>' +
-      '<p class="rw-ed-help">Click along Pomelo\u2019s walkable path, left to right. Tools: 1 path \u00B7 2 markers \u00B7 3 start point \u00B7 4 stair markers \u00B7 5 boss room outline (N cycles). Arrow keys or A/D pan the camera to reach the whole biome. Z undoes, C clears the active tool. Paste the JSON back to Claude to commit it for everyone.</p>' +
+      '<p class="rw-ed-help">Click along Pomelo\u2019s walkable path. In path mode, a click near an earlier point snaps to it exactly (gold ring shows the catch): that is how loops close instead of getting cut off at the seam. Stair markers land in PAIRS: bottom of the flight, then top; the violet stretch between them is where the up and down keys climb. Tools: 1 path \u00B7 2 markers \u00B7 3 start point \u00B7 4 stair pairs \u00B7 5 boss room outline (N cycles). Arrow keys or A/D pan the camera. Z undoes, C clears the active tool. Paste the JSON back to Claude to commit it for everyone.</p>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
         '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Switch to markers (N)</button>' +

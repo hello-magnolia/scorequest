@@ -157,6 +157,75 @@ const load = async (path) => {
     d.querySelectorAll('.hub-realm[href^="realm.html?realm="]').length === 8 &&
     /The Realms/.test(d.querySelector('.mappage-title').textContent));
 
+  /* free walking: an injected preview trace gives a short deterministic
+     rail — a flat stretch, one stair flight, a nearby waypoint */
+  const TRACE = JSON.stringify({
+    realm: 'lorewood',
+    path: [[0.05, 0.6], [0.30, 0.6], [0.40, 0.45], [0.55, 0.45], [0.95, 0.45]],
+    nodes: [[0.55, 0.45]],
+    start: [0.35, 0.525],
+    stairs: [[0.30, 0.6], [0.40, 0.45]],
+    bossArea: []
+  });
+  const domF = await JSDOM.fromURL('http://localhost:8000/realm.html?realm=lorewood', {
+    ...OPTS,
+    beforeParse(win) {
+      OPTS.beforeParse(win);
+      win.localStorage.setItem('sq_realm_trace_lorewood', TRACE);
+      win.localStorage.removeItem('sq_realm_prog_lorewood');
+    }
+  });
+  w = domF.window;
+  await new Promise(r => w.addEventListener('load', r));
+  d = w.document;
+  await until(() => typeof w.__SQ_REALM_S === 'number', 3500);
+  const key = (type, k) => d.dispatchEvent(new w.KeyboardEvent(type, { key: k, bubbles: true, cancelable: true }));
+  const s0 = w.__SQ_REALM_S;
+  key('keydown', 'ArrowUp');   // he starts mid-flight: up should climb
+  check('On a stair pair, the up key climbs the flight',
+    await until(() => w.__SQ_REALM_S > s0 + 25, 2500), s0 + ' -> ' + w.__SQ_REALM_S);
+  key('keyup', 'ArrowUp');
+  await new Promise(r => setTimeout(r, 200));
+  const s1 = w.__SQ_REALM_S;
+  key('keydown', 'ArrowLeft'); // free roaming backward over open ground
+  check('Held left walks him back down the rails',
+    await until(() => w.__SQ_REALM_S < s1 - 25, 2500), s1 + ' -> ' + w.__SQ_REALM_S);
+  key('keyup', 'ArrowLeft');
+  key('keydown', 'ArrowRight');
+  check('Held forward clamps at the next waypoint, whose trial opens itself',
+    await until(() => !d.getElementById('rw-quiz').hidden, 7000));
+  key('keyup', 'ArrowRight');
+  const sQuiz = w.__SQ_REALM_S;
+  key('keydown', 'ArrowLeft');
+  await new Promise(r => setTimeout(r, 500));
+  key('keyup', 'ArrowLeft');
+  check('Keys go quiet while the quiz is up', w.__SQ_REALM_S === sQuiz);
+
+  /* the editor: loop snapping and stair pairs */
+  w = await load('realm.html?realm=lorewood&edit=1');
+  d = w.document;
+  await new Promise(r => setTimeout(r, 700));
+  const stg = d.getElementById('rw-stage');
+  const click = (x, y) => stg.dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
+  const key2 = (k) => d.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true }));
+  key2('1');                       // path tool
+  click(200, 300); click(420, 340);
+  click(206, 305);                 // within snap range of the first click
+  await new Promise(r => setTimeout(r, 60));
+  const pj = JSON.parse(d.getElementById('rw-ed-json').value);
+  const lastP = pj.path[pj.path.length - 1];
+  check('Editor: a path click near an earlier vertex snaps to it exactly (loops close)',
+    pj.path.slice(0, -1).some(p => p[0] === lastP[0] && p[1] === lastP[1]));
+  const stairsBefore = pj.stairs.length;
+  key2('4');                       // stair pairs tool
+  click(260, 310); click(390, 335);
+  await new Promise(r => setTimeout(r, 60));
+  const pj2 = JSON.parse(d.getElementById('rw-ed-json').value);
+  check('Editor: stair markers land in pairs and the bar counts flights',
+    pj2.stairs.length === stairsBefore + 2 &&
+    /\d+ flights/.test(d.getElementById('rw-ed-count').textContent) &&
+    /stair pairs/i.test(d.querySelector('.rw-ed-help').textContent));
+
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');
   process.exit(passed === results.length ? 0 : 1);
