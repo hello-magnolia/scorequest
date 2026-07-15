@@ -1579,6 +1579,50 @@ a { color: inherit; }
 .bf-fireball.is-hit { width: 116px; transition: none; }
 @media (prefers-reduced-motion: reduce) { .bf-fireball { transition: none; } }
 
+/* ============ SHRINE FRAME UI SKIN (realm manifest: ui 'shrinewood') ============
+   Lorewood's popups and text boxes wear Magnolia's wooden shrine frame.
+   The paper is the element; the frame is an oversized ::after border-image
+   (assets/ui/frame-shrinewood.png, 1274x1144, slices T360 R151 B148 L153)
+   so beams, ropes, and corner charms hang over the paper naturally.
+   --fs scales the whole frame per element. */
+.rw-ui-shrinewood .rw-quiz,
+.rw-ui-shrinewood .rw-popup,
+.rw-ui-shrinewood .rw-hint {
+  --fs: 0.25;
+  background: #f2ecdd;              /* the neutral paper */
+  color: #2e2822;                   /* neutral ink */
+  border: none; box-shadow: none;
+}
+.rw-ui-shrinewood .rw-hint { --fs: 0.13; padding: 8px 18px; color: #4a4136; }
+.rw-ui-shrinewood .rw-quiz { padding: 30px 42px 26px; }
+.rw-ui-shrinewood .rw-quiz::after,
+.rw-ui-shrinewood .rw-popup::after,
+.rw-ui-shrinewood .rw-hint::after {
+  content: ''; position: absolute; pointer-events: none; z-index: 4;
+  inset: calc(-100px * var(--fs));
+  border-style: solid;
+  border-width: calc(360px * var(--fs)) calc(151px * var(--fs))
+    calc(148px * var(--fs)) calc(153px * var(--fs));
+  border-image: url('../assets/ui/frame-shrinewood.png') 360 151 148 153 stretch;
+  image-rendering: pixelated;
+}
+.rw-ui-shrinewood .rw-quiz-kicker { color: #7a6a52; }
+.rw-ui-shrinewood .rw-quiz-q { color: #2e2822; }
+.rw-ui-shrinewood .rw-quiz-choices button {
+  background: #faf5ea; color: #2e2822; border: 2px solid #b8956a;
+}
+.rw-ui-shrinewood .rw-quiz-choices button:hover:not(:disabled) {
+  background: #f1e6cf; border-color: #8a6a44;
+}
+.rw-ui-shrinewood .rw-quiz-choices button:disabled { opacity: 0.55; }
+.rw-ui-shrinewood .rw-quiz-feedback.is-hit { color: #2c6b46; }
+.rw-ui-shrinewood .rw-quiz-feedback.is-miss { color: #a03d32; }
+.rw-ui-shrinewood .rw-popup p, .rw-ui-shrinewood .rw-popup h2 { color: #2e2822; }
+.rw-ui-shrinewood .sq-skip-test {
+  color: rgba(46, 40, 34, 0.5); border-color: rgba(46, 40, 34, 0.35);
+}
+.rw-ui-shrinewood .sq-skip-test:hover { color: #2e2822; border-color: #2e2822; }
+
 /* the beam of light: anchored at the guardian's maw, rotated toward
    Pomelo; JS drives scaleX for the crossing and opacity for the fade */
 .bf-beam {

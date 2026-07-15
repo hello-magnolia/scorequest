@@ -31,6 +31,7 @@
 
   var REALMS = [
     { id: 'lorewood', name: 'Lorewood', domain: 'Information & Ideas', fight: true,
+      ui: 'shrinewood',   /* popups and text boxes wear the wooden shrine frame */
       boss: 'The shrine doors are sealed. Whatever twists the old texts is waiting behind them.',
       img: ['assets/realms/lorewood.png', CDN + '/hf_20260711_215833_948a0475-28db-41fa-94bf-14fca55664f1.png'],
       /* hand-traced in the editor: terrace -> stairs -> terrace 2 -> stairs ->
@@ -250,6 +251,7 @@
   /* ---------- HUD ---------- */
   document.title = realm.name + ', ScoreQuest';
   document.getElementById('rw-title').textContent = realm.name;
+  if (realm.ui) document.body.classList.add('rw-ui-' + realm.ui);   // per-realm ui skin
   document.getElementById('rw-meta').textContent =
     'Realm ' + (idx + 1) + ' of ' + REALMS.length + ' \u00B7 ' + realm.domain;
   if (traceOverride) {

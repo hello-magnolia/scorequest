@@ -149,6 +149,12 @@ const load = async (path) => {
   d = w.document;
   check('Unknown realm ids fall back to Lorewood',
     d.getElementById('rw-title').textContent === 'Lorewood');
+  check('Lorewood wears the shrinewood ui skin; other realms do not',
+    d.body.classList.contains('rw-ui-shrinewood') &&
+    await (async () => {
+      const w2 = await load('realm.html?realm=storyforge');
+      return !w2.document.body.classList.contains('rw-ui-shrinewood');
+    })());
 
   /* hub strip */
   w = await load('map.html');
