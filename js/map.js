@@ -196,7 +196,14 @@
           return '<button class="quest-answer" data-idx="' + idx + '">' + opt + '</button>';
         }).join('') +
       '</div>' +
+      /* TEMP-SKIP (testing): moves on without scoring */
+      '<button class="sq-skip-test" type="button">Skip (testing)</button>' +
       '<div class="quest-fbslot"></div>';
+
+    stage.querySelector('.sq-skip-test').addEventListener('click', function () {
+      session.i++;
+      renderQuestStep();
+    });
 
     var fbslot = stage.querySelector('.quest-fbslot');
     stage.querySelectorAll('.quest-answer').forEach(function (btn) {

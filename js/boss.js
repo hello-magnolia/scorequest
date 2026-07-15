@@ -511,6 +511,24 @@
       b.addEventListener('click', function () { answer(i, item); });
       choicesEl.appendChild(b);
     });
+    /* TEMP-SKIP (testing): counts as a quiet hit so fights stay finishable */
+    var sk = document.createElement('button');
+    sk.type = 'button';
+    sk.className = 'sq-skip-test';
+    sk.textContent = 'Skip (testing)';
+    sk.addEventListener('click', function () {
+      if (state.over) return;
+      lockChoices();
+      state.qi += 1;
+      state.bossHp = Math.max(0, state.bossHp - 1);
+      syncTails(state.bossHp);
+      renderHp();
+      feedEl.textContent = 'Skipped.';
+      feedEl.className = 'bf-feedback';
+      if (state.bossHp === 0) { win(); return; }
+      setTimeout(ask, 500);
+    });
+    choicesEl.appendChild(sk);
   }
 
   function lockChoices() {

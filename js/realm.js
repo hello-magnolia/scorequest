@@ -471,6 +471,22 @@
     quizEl.hidden = true;
     window.__SQ_QUIZ = null;
   }
+  /* TEMP-SKIP (testing): a quiet pass; advances the waypoint like a
+     correct answer, minus the fanfare */
+  document.getElementById('rw-quiz-skip').addEventListener('click', function (e) {
+    e.stopPropagation();
+    document.getElementById('rw-quiz-choices').querySelectorAll('button')
+      .forEach(function (b) { b.disabled = true; });
+    var feed = document.getElementById('rw-quiz-feedback');
+    feed.textContent = 'Skipped.';
+    feed.className = 'rw-quiz-feedback';
+    if (!quizPractice && quizRank === prog) {
+      prog += 1;
+      try { window.localStorage.setItem(PROG_KEY, String(prog)); } catch (err) {}
+      syncNodeStates();
+    }
+    document.getElementById('rw-quiz-continue').hidden = false;
+  });
   document.getElementById('rw-quiz-close').addEventListener('click', function (e) {
     e.stopPropagation(); closeQuiz();
   });

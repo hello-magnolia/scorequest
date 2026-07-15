@@ -1579,6 +1579,16 @@ a { color: inherit; }
 .bf-fireball.is-hit { width: 116px; transition: none; }
 @media (prefers-reduced-motion: reduce) { .bf-fireball { transition: none; } }
 
+/* TEMP-SKIP (testing): remove this block with the buttons when done */
+.sq-skip-test {
+  font-family: 'Pixelify Sans', monospace; font-size: 13px;
+  color: rgba(253, 246, 227, 0.55); background: transparent;
+  border: 1px dashed rgba(253, 246, 227, 0.35); border-radius: 4px;
+  padding: 4px 10px; cursor: pointer; align-self: center;
+}
+.sq-skip-test:hover { color: rgba(253, 246, 227, 0.9); border-color: rgba(253, 246, 227, 0.7); }
+.sq-skip-test:disabled { opacity: 0.35; cursor: default; }
+
 /* the yelled verdict: a word bursting from the guardian's open mouth,
    right-anchored at the mouth so it flies out toward Pomelo */
 .bf-yell {
