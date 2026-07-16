@@ -254,6 +254,69 @@
         { q: 'Which choice fixes the run-on \u201CThe torches guttered we climbed anyway\u201D?',
           choices: ['The torches guttered, we climbed anyway.', 'The torches guttered. We climbed anyway.', 'The torches guttered we, climbed anyway.', 'The torches, guttered we climbed anyway.'], a: 1 }
       ]
+    },
+    mirrormines: {
+      name: 'The Twin Signs',
+      taunt: 'One of us adds, one of us takes away. Answer wrong and we both do the second thing.',
+      sprites: {
+        plus_idle1: 'assets/boss/mirrormines/plus_idle1.png',
+        plus_idle2: 'assets/boss/mirrormines/plus_idle2.png',
+        plus_idle3: 'assets/boss/mirrormines/plus_idle3.png',
+        plus_attack1: 'assets/boss/mirrormines/plus_attack1.png',
+        plus_attack2: 'assets/boss/mirrormines/plus_attack2.png',
+        plus_attack3: 'assets/boss/mirrormines/plus_attack3.png',
+        plus_hurt1: 'assets/boss/mirrormines/plus_hurt1.png',
+        plus_hurt2: 'assets/boss/mirrormines/plus_hurt2.png',
+        plus_hurt3: 'assets/boss/mirrormines/plus_hurt3.png',
+        minus_idle1: 'assets/boss/mirrormines/minus_idle1.png',
+        minus_idle2: 'assets/boss/mirrormines/minus_idle2.png',
+        minus_idle3: 'assets/boss/mirrormines/minus_idle3.png',
+        minus_attack1: 'assets/boss/mirrormines/minus_attack1.png',
+        minus_attack2: 'assets/boss/mirrormines/minus_attack2.png',
+        minus_attack3: 'assets/boss/mirrormines/minus_attack3.png',
+        minus_hurt1: 'assets/boss/mirrormines/minus_hurt1.png',
+        minus_hurt2: 'assets/boss/mirrormines/minus_hurt2.png',
+        minus_hurt3: 'assets/boss/mirrormines/minus_hurt3.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
+        orange:  'assets/fx/orange.png'
+      },
+      bg: 'assets/realms/mirrormines.png',   /* stand-in until a chamber bg lands */
+      hp: 10,
+      /* two guardians flank Pomelo: minus from the left tunnel (as drawn,
+         striking right), plus from the right (mirrored). Both drawn
+         striking rightward, so the right side flips */
+      twin: { left: 'minus', right: 'plus', leftFlip: false, rightFlip: true },
+      flip: true,
+      base: 'idle1',
+      idleSeq: ['idle1', 'idle2', 'idle3'],
+      idleMs: 460,
+      attackSeq: [['attack1', 340], ['attack2', 300], ['attack3', 460]],
+      hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 300]],
+      /* no projectile art: the strike IS the attack. Fangs land mid-lunge
+         on the third frame */
+      strike: { delay: 900 },
+      next: { id: 'infinityisles', name: 'Infinity Isles' },
+      questions: [
+        { q: 'Solve for x: x + 7 = 12',
+          choices: ['4', '19', '5', '7'], a: 2 },
+        { q: '\u201CWhatever is done to one side must be done to the other.\u201D To solve x \u2212 5 = 9, both sides need\u2026',
+          choices: ['minus 5', 'plus 5', 'divide by 5', 'plus 9'], a: 1 },
+        { q: 'If 3x = 21, then x = ?',
+          choices: ['18', '63', '6', '7'], a: 3 },
+        { q: '2x + 3 = 11. What is x?',
+          choices: ['4', '7', '3', '5'], a: 0 },
+        { q: 'Which move keeps the equation balanced?',
+          choices: ['x + 2 = 5 becomes x = 7', 'x + 2 = 5 becomes x = 3', 'x + 2 = 5 becomes x = 10', 'x + 2 = 5 becomes 2x = 5'], a: 1 },
+        { q: 'If x / 4 = 6, then x = ?',
+          choices: ['24', '10', '2', '1.5'], a: 0 },
+        { q: '5x \u2212 2 = 3x + 8. What is x?',
+          choices: ['3', '10', '5', '4'], a: 2 },
+        { q: 'Simplify: 4(x + 2) \u2212 3x',
+          choices: ['7x + 8', 'x + 2', 'x + 8', 'x + 6'], a: 2 }
+      ]
     }
   };
 
@@ -323,18 +386,35 @@
       fx.appendChild(leaf);
     }
   })();
-  if (!B.flip) document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
+  var TW = B.twin || null;         // twin guardians flank Pomelo from both tunnels
   var bodyEl = document.getElementById('bf-boss-img');
+  var bodyElL = document.getElementById('bf-boss-img-left');
+  var sideElR = document.getElementById('bf-boss-side');
+  var sideElL = document.getElementById('bf-boss-side-left');
+  if (TW) {
+    document.querySelector('.bf-arena').classList.add('is-twin');
+    sideElL.removeAttribute('aria-hidden');
+    bodyElL.alt = 'The guardian\u2019s twin';
+    if (!TW.rightFlip) document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
+    if (!TW.leftFlip) document.getElementById('bf-boss-rig-left').classList.add('bf-no-flip');
+  } else if (!B.flip) {
+    document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
+  }
   var SP = B.sprites;
   Object.keys(SP).forEach(function (k) { var im = new Image(); im.src = SP[k]; });
-  function setBody(k) { bodyEl.src = SP[k]; }
+  function spKey(k, side) { return TW ? (side ? TW.left : TW.right) + '_' + k : k; }
+  function setBody(k, side) {
+    (side ? bodyElL : bodyEl).src = SP[spKey(k, side || 0)];
+  }
   setBody(B.base);
+  if (TW) setBody(B.base, 1);
   if (B.idleSeq && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-    var idleIdx = 0;               // breathing: cycle idle frames while at rest
-    setInterval(function () {
+    var idleIdx = 0;               // breathing: cycle idle frames while at rest;
+    setInterval(function () {      // twins breathe in eerie unison
       if (busy || state.over) return;
       idleIdx = (idleIdx + 1) % B.idleSeq.length;
       setBody(B.idleSeq[idleIdx]);
+      if (TW) setBody(B.idleSeq[idleIdx], 1);
     }, B.idleMs || 420);
   }
 
@@ -342,19 +422,32 @@
   var animT = [];
   var busy = false;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function playBody(seq, hold) {
+  function playBody(seq, hold, side) {
+    side = side || 0;
     animT.forEach(clearTimeout); animT = [];
-    if (reduceMotion) { if (hold) setBody(seq[seq.length - 1][0]); return; }
+    if (reduceMotion) { if (hold) setBody(seq[seq.length - 1][0], side); return; }
     busy = true;
     var t = 0;
     seq.forEach(function (s) {
-      animT.push(setTimeout(function () { setBody(s[0]); }, t));
+      animT.push(setTimeout(function () { setBody(s[0], side); }, t));
       t += s[1];
     });
     animT.push(setTimeout(function () {
       busy = false;
-      if (!hold && !state.over) setBody(B.base);
+      if (!hold && !state.over) setBody(B.base, side);
     }, t));
+  }
+
+  /* ---------- the strike: no projectile, the lunge itself lands.
+     The striking side leans in; damage arrives with the fangs ---------- */
+  function launchStrike(onImpact, delay, side) {
+    var sideEl = side ? sideElL : sideElR;
+    if (!reduceMotion) after(Math.max(0, delay - 220), function () { sideEl.classList.add('is-lunging'); });
+    after(delay, function () { state.fireball = 'hit'; onImpact(); });
+    after(delay + 320, function () {
+      state.fireball = null;
+      sideEl.classList.remove('is-lunging');
+    });
   }
 
   /* ---------- the fireball: forms at the open mouth, flies, and only
@@ -495,10 +588,10 @@
   var capyAtkEl = document.getElementById('bf-capy-attack');
   var orangeEl = document.getElementById('bf-orange');
   capyAtkEl.src = SP.pomeloAtk1;
-  function launchOrange(onImpact) {
+  function launchOrange(onImpact, targetEl) {
     if (reduceMotion) { after(200, onImpact); return; }
     var a = arenaEl.getBoundingClientRect();
-    var br = bodyEl.getBoundingClientRect();
+    var br = (targetEl || bodyEl).getBoundingClientRect();
     capy.style.visibility = 'hidden';
     capyAtkEl.src = SP.pomeloAtk1;                // orange still on his head
     capyAtkEl.hidden = false;
@@ -643,32 +736,35 @@
     if (state.over) return;
     lockChoices();
     state.qi += 1;
+    var side = 0;
+    if (TW) { state.atkSide = state.atkSide ? 0 : 1; side = state.atkSide; }
     if (i === item.a) {
       feedEl.textContent = 'Pomelo strikes! The Archivist loses a tail.';
       feedEl.className = 'bf-feedback is-hit';
       launchOrange(function () {             // her damage lands with the orange
         state.bossHp = Math.max(0, state.bossHp - 1);
-        playBody(B.hurtSeq);
+        playBody(B.hurtSeq, false, side);
         syncTails(state.bossHp);
-        flash(document.getElementById('bf-boss-side'));
+        flash(side ? sideElL : sideElR);
         renderHp();
         if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
         if (state.bossHp === 0) win();
-      });
+      }, side ? bodyElL : bodyEl);
     } else {
-      playBody(B.attackSeq);
+      playBody(B.attackSeq, false, side);
       playYell();
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
       feedEl.className = 'bf-feedback is-miss';
-      var strike = B.beam ? launchBeam : launchFireball;
+      var strike = B.strike ? function (fn, delay) { launchStrike(fn, delay, side); }
+        : (B.beam ? launchBeam : launchFireball);
       strike(function () {                   // the damage lands on contact
         state.pomeloHp = Math.max(0, state.pomeloHp - 1);
         renderHp();
         flash(document.getElementById('bf-pomelo-side'));
         if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
         if (state.pomeloHp === 0) lose();
-      }, B.beam ? B.beam.delay : B.projectile.delay);   // timed to the open maw, mouth, or spinneret
+      }, B.strike ? B.strike.delay : (B.beam ? B.beam.delay : B.projectile.delay));   // timed to the fangs, maw, mouth, or spinneret
     }
     renderHp();
     setTimeout(ask, i === item.a ? 2000 : 2400);
@@ -683,7 +779,12 @@
   function win() {
     state.over = true;
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
-    playBody(B.faintSeq, true);             // the guardian goes down, and stays down
+    if (B.faintSeq) {
+      playBody(B.faintSeq, true);           // the guardian goes down, and stays down
+    } else {                                // no faint frames: back into the tunnels
+      sideElR.classList.add('is-retreating');
+      if (TW) sideElL.classList.add('is-retreating');
+    }
     var p = document.getElementById('bf-victory');
     if (B.next) {
       var onward = document.getElementById('bf-onward');
@@ -709,6 +810,9 @@
     beamEl.hidden = true;
     beamEl.style.opacity = '0';
     orangeEl.hidden = true;
+    state.atkSide = 0;
+    sideElR.classList.remove('is-retreating', 'is-lunging');
+    sideElL.classList.remove('is-retreating', 'is-lunging');
     yellEl.hidden = true;
     yellEl.classList.remove('is-yelling');
     capyAtkEl.hidden = true;

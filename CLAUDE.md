@@ -100,11 +100,18 @@ drain in boss fights, no performance pressure on teen surfaces.
   Bosses: lorewood Nine-Tailed Archivist (9hp, tails, fireball),
   storyforge Boilerback Weaver (7hp, web), inkreef Grotto Sophist (8hp,
   scroll). New boss = sprites + manifest entry ONLY.
-  Attacks: a manifest defines either projectile (form/fly/hit sprites,
-  thrown from ox/oy) or beam (a light beam from ox/oy: delay, chargeMs,
-  fireMs, holdMs, fadeMs). Both report through state.fireball with the
-  same form/fly/hit lifecycle. A yell block (frame, ox, oy, phrases)
+  Attacks: a manifest defines projectile (form/fly/hit sprites, thrown
+  from ox/oy), beam (a light beam from ox/oy: delay, chargeMs, fireMs,
+  holdMs, fadeMs), or strike (melee, no art: {delay}; the side lunges
+  via CSS and damage lands at delay). All report through state.fireball
+  (strike sets 'hit' only). A yell block (frame, ox, oy, phrases)
   shouts a random word from the mouth on that attackSeq frame index.
+  TWIN bosses: twin {left, right, leftFlip, rightFlip} renders two rigs
+  flanking Pomelo (sprites prefixed left_/right_ names per side, e.g.
+  minus_idle1); attacks and hurts alternate sides, idles sync. With no
+  faintSeq, victory retreats both sides offscreen (.is-retreating).
+  Mirror Mines' Twin Signs use twin + strike; its arena bg is the realm
+  art as a stand-in until a chamber backdrop is uploaded.
 - Suites live at repo root, verify_*.js.
 
 ## Current backlog

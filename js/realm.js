@@ -84,7 +84,7 @@
       nodes: [[0.219,0.62],[0.317,0.848],[0.444,0.689],[0.597,0.888],[0.528,0.571],[0.655,0.567]],
       start: [0.138,0.467],
       bossArea: [[0.851,0.438],[0.851,0.241],[0.882,0.172],[0.91,0.273],[0.911,0.511]] },
-    { id: 'mirrormines', name: 'Mirror Mines', domain: 'Algebra', ground: 0.81,
+    { id: 'mirrormines', name: 'Mirror Mines', domain: 'Algebra', fight: true, ground: 0.81,
       boss: 'The mirror chamber. Whatever is done on one side happens on the other.',
       img: ['assets/realms/mirrormines.png', CDN + '/hf_20260711_233112_1b52ca12-d9d4-4d93-99c7-8ad6befb0545.png'],
       /* traced by Magnolia in the graph editor: a four-junction maze of drifts and galleries */

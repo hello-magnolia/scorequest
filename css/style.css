@@ -1629,6 +1629,21 @@ a { color: inherit; }
 }
 .rw-ui-shrinewood .sq-skip-test:hover { color: #4a2a10; border-color: #4a2a10; }
 
+/* twin guardians: a second rig flanks Pomelo from the left tunnel.
+   Lunges nudge a side toward the center; with no faint frames, defeat
+   is a retreat back into the tunnels */
+.bf-side-boss-left { display: none; }
+.bf-arena.is-twin .bf-side-boss-left { display: flex; }
+.bf-side-boss { transition: transform 0.2s ease-out, opacity 0.9s ease; }
+.bf-side-boss.is-lunging { transform: translateX(-9%); }
+.bf-side-boss-left.is-lunging { transform: translateX(9%); }
+.bf-side-boss.is-retreating { transform: translateX(115%); opacity: 0; transition: transform 0.9s ease-in, opacity 0.9s ease; }
+.bf-side-boss-left.is-retreating { transform: translateX(-115%); }
+@media (prefers-reduced-motion: reduce) {
+  .bf-side-boss { transition: none; }
+  .bf-side-boss.is-lunging { transform: none; }
+}
+
 /* the beam of light: anchored at the guardian's maw, rotated toward
    Pomelo; JS drives scaleX for the crossing and opacity for the fade */
 .bf-beam {

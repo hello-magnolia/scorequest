@@ -162,6 +162,45 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => S5.pomeloHp === 2, 3000) &&
     await until(() => S5.fireball === null && beam.hidden, 2200));
 
+  /* the fifth fight: the Twin Signs flank Pomelo from both tunnels */
+  w = await load('boss.html?realm=mirrormines');
+  d = w.document;
+  const S6 = w.__SQ_BOSS;
+  check('Mirror Mines: the Twin Signs stand on BOTH sides, ten HP',
+    /Twin Signs/.test(d.getElementById('bf-boss-name').textContent) &&
+    d.querySelector('.bf-arena').classList.contains('is-twin') &&
+    /minus_idle/.test(d.getElementById('bf-boss-img-left').src) &&
+    /plus_idle/.test(d.getElementById('bf-boss-img').src) &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '380px');
+  d.querySelectorAll('.bf-choice')[(S6.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  const lungedFirst = await (async () => {
+    await until(() => d.getElementById('bf-boss-side').classList.contains('is-lunging') ||
+      d.getElementById('bf-boss-side-left').classList.contains('is-lunging'), 1500);
+    return d.getElementById('bf-boss-side-left').classList.contains('is-lunging') ? 'left' : 'right';
+  })();
+  check('A wrong answer brings a lunge, and the fangs land with no projectile',
+    d.getElementById('bf-fireball').hidden && d.getElementById('bf-beam').hidden &&
+    await until(() => S6.pomeloHp === 2, 2500));
+  await until(() => !d.querySelector('.bf-choice').disabled, 4000);
+  d.querySelectorAll('.bf-choice')[(w.__SQ_BOSS.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('The next strike comes from the other tunnel',
+    await until(() => {
+      const other = lungedFirst === 'left' ? 'bf-boss-side' : 'bf-boss-side-left';
+      return d.getElementById(other).classList.contains('is-lunging');
+    }, 2200));
+  await until(() => !d.querySelector('.bf-choice').disabled, 4000);
+  let drain = 0;
+  while (!S6.over && drain++ < 12) {
+    const sk = d.querySelector('.sq-skip-test');
+    if (sk && !sk.disabled) sk.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 620));
+  }
+  check('With no faint frames, victory sends both serpents back into their tunnels',
+    S6.over &&
+    d.getElementById('bf-boss-side').classList.contains('is-retreating') &&
+    d.getElementById('bf-boss-side-left').classList.contains('is-retreating') &&
+    await until(() => d.getElementById('bf-victory').hidden === false, 3500));
+
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');
   process.exit(passed === results.length ? 0 : 1);
