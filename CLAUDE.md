@@ -86,14 +86,16 @@ drain in boss fights, no performance pressure on teen surfaces.
   assets/ui/frame-shrinewood.png). STAIRS data =
   markers in PAIRS: bottom then top of each flight brackets an
   arc-length range. In the editor, path clicks near an earlier vertex
-  SNAP-ADD it exactly on SHIFT+CLICK so loops close without a seam.
-  Editor point EDITING: a plain click on a point of the active tool
-  SELECTS it (solid ring; hover shows a faint aiming ring); drag moves
-  it (nodes/stairs/start re-snap to the line), Del/X removes the
-  selection (or trims the tail when nothing is selected), a click ON
-  the path line inserts a vertex there, empty clicks add, Z is a real
-  undo stack (adds, inserts, moves, deletes, clears). The bar shows a
-  compact key legend, not prose.
+  SNAP-ADD it exactly so loops close without a seam. The editor has two
+  interaction modes, toggled with V (or the bar button): ADD (default)
+  is pure tracing, every click places a point and near-vertex clicks
+  snap; EDIT is pure editing, a click SELECTS a point of the active
+  tool (solid ring; hover = faint aiming ring), drag moves it with a
+  4px jitter threshold (nodes/stairs/start re-snap to the line), a
+  click ON the path line inserts a vertex, Del/X removes the selection
+  (or trims the tail), empty clicks deselect. Shift+click force-adds in
+  either mode. Z is a real undo stack (adds, inserts, moves, deletes,
+  clears). The bar shows a compact key legend, not prose.
 - js/boss.js: per-boss manifests (base, idleSeq breathing, attack/hurt/
   faint seqs, optional tails, projectile config, bgFx, flip, questions).
   Bosses: lorewood Nine-Tailed Archivist (9hp, tails, fireball),

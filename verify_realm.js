@@ -214,13 +214,13 @@ const load = async (path) => {
   const stg = d.getElementById('rw-stage');
   const click = (x, y) => stg.dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
   const key2 = (k) => d.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true }));
-  key2('1');                       // path tool
+  key2('1');                       // path tool, ADD mode by default
   click(200, 300); click(420, 340);
-  stg.dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 206, clientY: 305, shiftKey: true }));
+  click(206, 305);                 // near the first vertex: snap-add closes the loop
   await new Promise(r => setTimeout(r, 60));
   const pj = JSON.parse(d.getElementById('rw-ed-json').value);
   const lastP = pj.path[pj.path.length - 1];
-  check('Editor: shift-click near an earlier vertex snap-adds it exactly (loops close)',
+  check('Editor (add): a click near an earlier vertex snap-adds it exactly (loops close)',
     pj.path.slice(0, -1).some(p => p[0] === lastP[0] && p[1] === lastP[1]));
   const stairsBefore = pj.stairs.length;
   key2('4');                       // stair pairs tool
@@ -238,27 +238,31 @@ const load = async (path) => {
     !d.querySelector('.rw-ed-help') &&
     d.querySelector('.rw-ed-legend').textContent.length < 220);
   key2('1');
+  key2('v');                       // EDIT mode: select, move, insert, delete
   const insBefore = JSON.parse(d.getElementById('rw-ed-json').value).path;
   click(310, 320);                 // exactly on the line between the two test points
   await new Promise(r => setTimeout(r, 40));
   const afterIns = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  check('Editor: a click on the path line inserts a vertex there, not at the end',
+  check('Editor (edit): a click on the path line inserts a vertex there, not at the end',
     afterIns.length === insBefore.length + 1 &&
     JSON.stringify(afterIns[afterIns.length - 1]) === JSON.stringify(insBefore[insBefore.length - 1]));
-  click(420, 340);                 // plain click on a point SELECTS it
+  const move = (x, y) => stg.dispatchEvent(new w.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
+  stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 420, clientY: 340 }));
+  move(421, 341);                  // one pixel of real-mouse jitter must not steal the click
+  d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true }));
+  click(420, 340);                 // the click SELECTS (no add, no move)
   await new Promise(r => setTimeout(r, 40));
   const afterSel = JSON.parse(d.getElementById('rw-ed-json').value).path;
   key2('Delete');                  // ...and Delete removes the selection
   await new Promise(r => setTimeout(r, 40));
   const afterDel = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  check('Editor: clicking a point selects it (no add) and Delete removes it',
-    afterSel.length === afterIns.length &&
+  check('Editor (edit): clicking a point selects it despite jitter, and Delete removes it',
+    JSON.stringify(afterSel) === JSON.stringify(afterIns) &&
     afterDel.length === afterIns.length - 1);
   key2('z');
   await new Promise(r => setTimeout(r, 40));
   const afterUndo = JSON.parse(d.getElementById('rw-ed-json').value).path;
   check('Editor: Z undoes the delete', afterUndo.length === afterIns.length);
-  const move = (x, y) => stg.dispatchEvent(new w.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
   stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 200, clientY: 300 }));
   move(238, 328); move(240, 330);
   d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true }));

@@ -1036,9 +1036,11 @@
      it (gold ring); drag moves it, Delete removes it, a click on the path
      line inserts a vertex there; Z is a true undo stack ---------- */
   var GRAB = 12, edHoverIdx = -1;
+  var edEdit = false;              // false: ADD (tracing) · true: EDIT (select/move/delete)
   var edSel = -1;                  // the selected point of the active tool
   var edUndo = [];
   var edDrag = false, edDragMoved = false, edPendingSnap = null;
+  var edDownX = 0, edDownY = 0;    // real mice jitter: a drag needs >4px of travel
   function layerSnapshot() {
     return { mode: edMode,
       arr: edMode === 'start' ? (edStart ? [edStart.slice()] : [])
@@ -1097,6 +1099,8 @@
     if (!editing) return;
     var w = worldPoint(e);
     if (edDrag) {                              // moving the grabbed point
+      if (!edDragMoved &&
+          Math.hypot(w.x - edDownX, w.y - edDownY) <= 4) return;   // just jitter
       if (edPendingSnap) { pushUndo(edPendingSnap); edPendingSnap = null; }
       edDragMoved = true;
       var p = edMode === 'start' ? edStart : edLayer()[edSel];
@@ -1118,13 +1122,15 @@
     });
   });
   stage.addEventListener('mousedown', function (e) {
-    if (!editing) return;
+    if (!editing || !edEdit) return;
     if (e.target.closest('.rw-editor') || e.target.closest('.rw-hud')) return;
-    var h = handleAt(worldPoint(e));
+    var w0 = worldPoint(e);
+    var h = handleAt(w0);
     if (h > -1) {
       edSel = h;
       edDrag = true; edDragMoved = false;
-      edPendingSnap = layerSnapshot();         // undo lands only if it moves
+      edDownX = w0.x; edDownY = w0.y;
+      edPendingSnap = layerSnapshot();         // undo lands only if it truly moves
       drawTrace();
     }
   });
@@ -1141,12 +1147,24 @@
   }
   function editorClick(w, ev) {
     if (edDragMoved) { edDragMoved = false; return; }           // that was a drag
+    var force = ev && ev.shiftKey;                              // shift always adds
     var h = handleAt(w);
-    if (h > -1 && !(ev && ev.shiftKey)) {                       // click a point: select it
-      edSel = h;
-      drawTrace();
+    if (edEdit && !force) {                                     // EDIT: select / insert / deselect
+      if (h > -1) { edSel = h; drawTrace(); return; }
+      if (edMode === 'path') {
+        var seg = segmentAt(w);
+        if (seg > -1) {                                         // on the line: insert a vertex
+          pushUndo();
+          edPath.splice(seg, 0, [w.x / worldW, w.y / worldH]);
+          if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
+          drawTrace(); syncEditorBar();
+          return;
+        }
+      }
+      edSel = -1; drawTrace();                                  // empty click deselects
       return;
     }
+    if (h > -1 && edMode !== 'path' && !force) return;          // no accidental marker dupes
     edSel = -1;
     pushUndo();
     if (edMode === 'nodes') edNodes.push(snapToPath(w));          // snapped to the line
@@ -1155,12 +1173,7 @@
     else if (edMode === 'boss') edBossA.push([w.x / worldW, w.y / worldH]);
     else {
       var sv = snapVertex(w);
-      if (sv) edPath.push(sv.slice());                            // loops close exactly
-      else {
-        var seg = segmentAt(w);
-        if (seg > -1) edPath.splice(seg, 0, [w.x / worldW, w.y / worldH]);  // mid-line insert
-        else edPath.push([w.x / worldW, w.y / worldH]);
-      }
+      edPath.push(sv ? sv.slice() : [w.x / worldW, w.y / worldH]);  // near a vertex: loops close
     }
     if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
     drawTrace();
@@ -1190,6 +1203,12 @@
       edSel = -1; edHoverIdx = -1;
       drawTrace(); syncEditorBar();
     }
+    if (e.key === 'v' || e.key === 'V') {
+      edEdit = !edEdit;
+      if (!edEdit) edSel = -1;
+      edHoverIdx = -1;
+      drawTrace(); syncEditorBar();
+    }
     if (e.key === 'n' || e.key === 'N') { edSel = -1; edHoverIdx = -1; cycleMode(); }
     var digits = { '1': 'path', '2': 'nodes', '3': 'start', '4': 'stairs', '5': 'boss' };
     if (digits[e.key]) { edMode = digits[e.key]; edSel = -1; edHoverIdx = -1; syncEditorBar(); }
@@ -1202,7 +1221,9 @@
   }
   function syncEditorBar() {
     if (!edBar) return;
-    edBar.querySelector('#rw-ed-mode').textContent = ED_LABEL[edMode];
+    edBar.querySelector('#rw-ed-mode').textContent =
+      ED_LABEL[edMode] + ' \u00B7 ' + (edEdit ? 'EDIT' : 'ADD');
+    edBar.querySelector('#rw-ed-editbtn').textContent = edEdit ? 'Add mode (V)' : 'Edit mode (V)';
     var flights = Math.floor(edStairs.length / 2) + ' flights' + (edStairs.length % 2 ? ' +1 pending' : '');
     edBar.querySelector('#rw-ed-count').textContent =
       edPath.length + ' path \u00B7 ' + edNodes.length + ' markers \u00B7 ' +
@@ -1229,10 +1250,11 @@
       '<div class="rw-ed-legend type-utility">' +
         '<span><b>1\u20135</b> tools</span>' +
         '<span><b>N</b> next</span>' +
-        '<span><b>click</b> select \u00B7 empty: add \u00B7 line: insert</span>' +
-        '<span><b>shift+click</b> add/snap (loops)</span>' +
+        '<span><b>V</b> add\u21C4edit</span>' +
+        '<span>add: <b>click</b> places \u00B7 near vertex snaps</span>' +
+        '<span>edit: <b>click</b> selects \u00B7 line inserts</span>' +
         '<span><b>drag</b> move</span>' +
-        '<span><b>del</b> remove sel</span>' +
+        '<span><b>del</b> remove</span>' +
         '<span><b>Z</b> undo</span>' +
         '<span><b>C</b> clear</span>' +
         '<span><b>\u2190\u2192</b> pan</span>' +
@@ -1241,6 +1263,7 @@
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
         '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Switch to markers (N)</button>' +
+        '<button class="btn btn-outline" id="rw-ed-editbtn" type="button">Edit mode (V)</button>' +
         '<button class="btn btn-outline" id="rw-ed-copy" type="button">Copy JSON</button>' +
         '<button class="btn btn-gold" id="rw-ed-save" type="button">Save preview &amp; walk it</button>' +
       '</div>';
@@ -1254,6 +1277,12 @@
     edBar.querySelector('#rw-ed-toggle').addEventListener('click', function (e) {
       e.stopPropagation();
       cycleMode();
+    });
+    edBar.querySelector('#rw-ed-editbtn').addEventListener('click', function (e) {
+      e.stopPropagation();
+      edEdit = !edEdit;
+      if (!edEdit) edSel = -1;
+      drawTrace(); syncEditorBar();
     });
     edBar.querySelector('#rw-ed-copy').addEventListener('click', function (e) {
       e.stopPropagation();
