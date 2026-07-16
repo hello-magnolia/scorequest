@@ -672,7 +672,7 @@
     if (e.target.closest('.rw-hud') || e.target.closest('.rw-popup') || e.target.closest('.rw-editor')) return;
     if (!ready) return;
     var w = worldPoint(e);
-    if (editing) { editorClick(w); return; }
+    if (editing) { editorClick(w, e); return; }
     if (!popup.hidden) { popup.hidden = true; return; }
     if (capyHit(w.x, w.y)) {                       // tapping him toggles the flop
       if (flop === 'flat') flopUp();
@@ -963,18 +963,26 @@
         tc.fillRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
       }
     });
-    var ringPt = null;
-    if (edMode === 'path' && edHover) ringPt = edHover;
-    else if (edHoverIdx > -1) {
-      ringPt = edMode === 'start' ? edStart
-        : { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[edMode][edHoverIdx];
+    function activePt(i) {
+      return edMode === 'start' ? edStart
+        : { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[edMode][i];
     }
-    if (ringPt) {   // this point is the target: click snaps, drag moves, del removes
-      tc.lineWidth = 2;
-      tc.strokeStyle = '#ffd97a';
-      tc.beginPath();
-      tc.arc(ringPt[0] * worldW, ringPt[1] * worldH, 11, 0, Math.PI * 2);
-      tc.stroke();
+    if (edHoverIdx > -1 && edHoverIdx !== edSel) {   // aiming ring
+      var hp = activePt(edHoverIdx);
+      if (hp) {
+        tc.lineWidth = 1.5;
+        tc.strokeStyle = 'rgba(255,217,122,0.7)';
+        tc.beginPath(); tc.arc(hp[0] * worldW, hp[1] * worldH, 11, 0, Math.PI * 2); tc.stroke();
+      }
+    }
+    if (edSel > -1 || (edMode === 'start' && edSel === 0)) {   // the selection
+      var sp = activePt(edSel);
+      if (sp) {
+        tc.lineWidth = 3;
+        tc.strokeStyle = '#ffd97a';
+        tc.beginPath(); tc.arc(sp[0] * worldW, sp[1] * worldH, 12, 0, Math.PI * 2); tc.stroke();
+        tc.beginPath(); tc.arc(sp[0] * worldW, sp[1] * worldH, 4, 0, Math.PI * 2); tc.stroke();
+      }
     }
     var bz = edBossA.length ? edBossA : (realm.bossArea || []);
     if (bz.length) {
@@ -1028,6 +1036,7 @@
      it (gold ring); drag moves it, Delete removes it, a click on the path
      line inserts a vertex there; Z is a true undo stack ---------- */
   var GRAB = 12, edHoverIdx = -1;
+  var edSel = -1;                  // the selected point of the active tool
   var edUndo = [];
   var edDrag = false, edDragMoved = false, edPendingSnap = null;
   function layerSnapshot() {
@@ -1048,7 +1057,7 @@
       arr.length = 0;
       u.arr.forEach(function (p) { arr.push(p); });
     }
-    edMode = u.mode; edHoverIdx = -1;
+    edMode = u.mode; edSel = -1; edHoverIdx = -1;
   }
   function handleAt(w) {
     var arr = edMode === 'start' ? (edStart ? [edStart] : []) : edLayer();
@@ -1090,7 +1099,7 @@
     if (edDrag) {                              // moving the grabbed point
       if (edPendingSnap) { pushUndo(edPendingSnap); edPendingSnap = null; }
       edDragMoved = true;
-      var p = edMode === 'start' ? edStart : edLayer()[edHoverIdx];
+      var p = edMode === 'start' ? edStart : edLayer()[edSel];
       if (p) {
         var q = (edMode === 'nodes' || edMode === 'stairs' || edMode === 'start')
           ? snapToPath(w)                      // path-bound markers stay on the line
@@ -1103,12 +1112,9 @@
     if (hoverRaf) return;
     hoverRaf = window.requestAnimationFrame(function () {
       hoverRaf = 0;
-      var prevI = edHoverIdx, prev = edHover;
+      var prevI = edHoverIdx;
       edHoverIdx = handleAt(w);
-      edHover = (edMode === 'path')
-        ? (edHoverIdx > -1 ? edPath[edHoverIdx] : snapVertex(w))
-        : null;
-      if (prevI !== edHoverIdx || prev !== edHover) drawTrace();
+      if (prevI !== edHoverIdx) drawTrace();
     });
   });
   stage.addEventListener('mousedown', function (e) {
@@ -1116,9 +1122,10 @@
     if (e.target.closest('.rw-editor') || e.target.closest('.rw-hud')) return;
     var h = handleAt(worldPoint(e));
     if (h > -1) {
-      edHoverIdx = h;
+      edSel = h;
       edDrag = true; edDragMoved = false;
       edPendingSnap = layerSnapshot();         // undo lands only if it moves
+      drawTrace();
     }
   });
   document.addEventListener('mouseup', function () {
@@ -1132,10 +1139,15 @@
     norm = save; buildPolyline();
     return [q.x / worldW, q.y / worldH];
   }
-  function editorClick(w) {
+  function editorClick(w, ev) {
     if (edDragMoved) { edDragMoved = false; return; }           // that was a drag
     var h = handleAt(w);
-    if (h > -1 && edMode !== 'path') return;                    // grabbed, not adding
+    if (h > -1 && !(ev && ev.shiftKey)) {                       // click a point: select it
+      edSel = h;
+      drawTrace();
+      return;
+    }
+    edSel = -1;
     pushUndo();
     if (edMode === 'nodes') edNodes.push(snapToPath(w));          // snapped to the line
     else if (edMode === 'stairs') edStairs.push(snapToPath(w));   // snapped to the line, in pairs
@@ -1166,21 +1178,21 @@
     }
     if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'x' || e.key === 'X') {
       e.preventDefault();
-      if (edMode === 'start') { if (edStart) { pushUndo(); edStart = null; } }
-      else if (edHoverIdx > -1) { pushUndo(); edLayer().splice(edHoverIdx, 1); edHoverIdx = -1; }
-      else if (edLayer().length) { pushUndo(); edLayer().pop(); }   // nothing hovered: trim the tail
+      if (edMode === 'start') { if (edStart) { pushUndo(); edStart = null; edSel = -1; } }
+      else if (edSel > -1) { pushUndo(); edLayer().splice(edSel, 1); edSel = -1; }
+      else if (edLayer().length) { pushUndo(); edLayer().pop(); }   // nothing selected: trim the tail
       drawTrace(); syncEditorBar();
     }
-    if (e.key === 'Escape') { edHoverIdx = -1; drawTrace(); }
+    if (e.key === 'Escape') { edSel = -1; edHoverIdx = -1; drawTrace(); }
     if (e.key === 'c' || e.key === 'C') {
       pushUndo();
       if (edMode === 'start') edStart = null; else edLayer().length = 0;
-      edHoverIdx = -1;
+      edSel = -1; edHoverIdx = -1;
       drawTrace(); syncEditorBar();
     }
-    if (e.key === 'n' || e.key === 'N') { edHoverIdx = -1; cycleMode(); }
+    if (e.key === 'n' || e.key === 'N') { edSel = -1; edHoverIdx = -1; cycleMode(); }
     var digits = { '1': 'path', '2': 'nodes', '3': 'start', '4': 'stairs', '5': 'boss' };
-    if (digits[e.key]) { edMode = digits[e.key]; edHoverIdx = -1; syncEditorBar(); }
+    if (digits[e.key]) { edMode = digits[e.key]; edSel = -1; edHoverIdx = -1; syncEditorBar(); }
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
       edCam += stageW * 0.35; camera(); e.preventDefault();
     }
@@ -1217,13 +1229,14 @@
       '<div class="rw-ed-legend type-utility">' +
         '<span><b>1\u20135</b> tools</span>' +
         '<span><b>N</b> next</span>' +
-        '<span><b>click</b> add \u00B7 on line: insert</span>' +
+        '<span><b>click</b> select \u00B7 empty: add \u00B7 line: insert</span>' +
+        '<span><b>shift+click</b> add/snap (loops)</span>' +
         '<span><b>drag</b> move</span>' +
-        '<span><b>del</b> remove</span>' +
+        '<span><b>del</b> remove sel</span>' +
         '<span><b>Z</b> undo</span>' +
         '<span><b>C</b> clear</span>' +
         '<span><b>\u2190\u2192</b> pan</span>' +
-        '<span class="rw-ed-note">clicks near a vertex snap (loops close) \u00B7 stairs pair bottom\u2192top</span>' +
+        '<span class="rw-ed-note">stairs pair bottom\u2192top</span>' +
       '</div>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +

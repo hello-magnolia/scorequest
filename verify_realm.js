@@ -216,11 +216,11 @@ const load = async (path) => {
   const key2 = (k) => d.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true }));
   key2('1');                       // path tool
   click(200, 300); click(420, 340);
-  click(206, 305);                 // within snap range of the first click
+  stg.dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 206, clientY: 305, shiftKey: true }));
   await new Promise(r => setTimeout(r, 60));
   const pj = JSON.parse(d.getElementById('rw-ed-json').value);
   const lastP = pj.path[pj.path.length - 1];
-  check('Editor: a path click near an earlier vertex snaps to it exactly (loops close)',
+  check('Editor: shift-click near an earlier vertex snap-adds it exactly (loops close)',
     pj.path.slice(0, -1).some(p => p[0] === lastP[0] && p[1] === lastP[1]));
   const stairsBefore = pj.stairs.length;
   key2('4');                       // stair pairs tool
@@ -245,18 +245,20 @@ const load = async (path) => {
   check('Editor: a click on the path line inserts a vertex there, not at the end',
     afterIns.length === insBefore.length + 1 &&
     JSON.stringify(afterIns[afterIns.length - 1]) === JSON.stringify(insBefore[insBefore.length - 1]));
-  const move = (x, y) => stg.dispatchEvent(new w.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
-  move(420, 340);                  // hover the second test point...
-  await new Promise(r => setTimeout(r, 120));
-  key2('Delete');                  // ...and remove it
+  click(420, 340);                 // plain click on a point SELECTS it
+  await new Promise(r => setTimeout(r, 40));
+  const afterSel = JSON.parse(d.getElementById('rw-ed-json').value).path;
+  key2('Delete');                  // ...and Delete removes the selection
   await new Promise(r => setTimeout(r, 40));
   const afterDel = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  check('Editor: Delete removes the hovered point',
+  check('Editor: clicking a point selects it (no add) and Delete removes it',
+    afterSel.length === afterIns.length &&
     afterDel.length === afterIns.length - 1);
   key2('z');
   await new Promise(r => setTimeout(r, 40));
   const afterUndo = JSON.parse(d.getElementById('rw-ed-json').value).path;
   check('Editor: Z undoes the delete', afterUndo.length === afterIns.length);
+  const move = (x, y) => stg.dispatchEvent(new w.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
   stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 200, clientY: 300 }));
   move(238, 328); move(240, 330);
   d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true }));
