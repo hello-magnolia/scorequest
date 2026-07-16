@@ -83,9 +83,9 @@ const load = async (path) => {
   w = await load('realm.html?realm=lorewood&edit=1');
   d = w.document;
   await new Promise(r => setTimeout(r, 700)); // let the art chain exhaust to the dark fallback
-  check('Path editor mode opens with instructions and a JSON export',
+  check('Path editor mode opens with a key legend and a JSON export',
     !!d.querySelector('.rw-editor') &&
-    /Click along Pomelo/.test(d.querySelector('.rw-ed-help').textContent) &&
+    /undo/i.test(d.querySelector('.rw-ed-legend').textContent) &&
     !!d.getElementById('rw-ed-json'));
   const before = d.getElementById('rw-ed-count').textContent;
   const pathBefore = parseInt(before) || 0;
@@ -230,7 +230,41 @@ const load = async (path) => {
   check('Editor: stair markers land in pairs and the bar counts flights',
     pj2.stairs.length === stairsBefore + 2 &&
     /\d+ flights/.test(d.getElementById('rw-ed-count').textContent) &&
-    /stair pairs/i.test(d.querySelector('.rw-ed-help').textContent));
+    /stair/i.test(d.querySelector('.rw-ed-legend').textContent));
+
+  /* point editing: insert on the line, delete the hovered point, undo, drag */
+  check('Editor: the legend is compact rows, not a paragraph',
+    d.querySelectorAll('.rw-ed-legend span').length >= 8 &&
+    !d.querySelector('.rw-ed-help') &&
+    d.querySelector('.rw-ed-legend').textContent.length < 220);
+  key2('1');
+  const insBefore = JSON.parse(d.getElementById('rw-ed-json').value).path;
+  click(310, 320);                 // exactly on the line between the two test points
+  await new Promise(r => setTimeout(r, 40));
+  const afterIns = JSON.parse(d.getElementById('rw-ed-json').value).path;
+  check('Editor: a click on the path line inserts a vertex there, not at the end',
+    afterIns.length === insBefore.length + 1 &&
+    JSON.stringify(afterIns[afterIns.length - 1]) === JSON.stringify(insBefore[insBefore.length - 1]));
+  const move = (x, y) => stg.dispatchEvent(new w.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
+  move(420, 340);                  // hover the second test point...
+  await new Promise(r => setTimeout(r, 120));
+  key2('Delete');                  // ...and remove it
+  await new Promise(r => setTimeout(r, 40));
+  const afterDel = JSON.parse(d.getElementById('rw-ed-json').value).path;
+  check('Editor: Delete removes the hovered point',
+    afterDel.length === afterIns.length - 1);
+  key2('z');
+  await new Promise(r => setTimeout(r, 40));
+  const afterUndo = JSON.parse(d.getElementById('rw-ed-json').value).path;
+  check('Editor: Z undoes the delete', afterUndo.length === afterIns.length);
+  stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 200, clientY: 300 }));
+  move(238, 328); move(240, 330);
+  d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 40));
+  const afterDrag = JSON.parse(d.getElementById('rw-ed-json').value).path;
+  check('Editor: dragging moves a point without changing the count',
+    afterDrag.length === afterUndo.length &&
+    JSON.stringify(afterDrag) !== JSON.stringify(afterUndo));
 
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');

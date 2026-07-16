@@ -963,11 +963,17 @@
         tc.fillRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
       }
     });
-    if (edMode === 'path' && edHover) {   // this click would reuse that vertex
+    var ringPt = null;
+    if (edMode === 'path' && edHover) ringPt = edHover;
+    else if (edHoverIdx > -1) {
+      ringPt = edMode === 'start' ? edStart
+        : { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[edMode][edHoverIdx];
+    }
+    if (ringPt) {   // this point is the target: click snaps, drag moves, del removes
       tc.lineWidth = 2;
       tc.strokeStyle = '#ffd97a';
       tc.beginPath();
-      tc.arc(edHover[0] * worldW, edHover[1] * worldH, 11, 0, Math.PI * 2);
+      tc.arc(ringPt[0] * worldW, ringPt[1] * worldH, 11, 0, Math.PI * 2);
       tc.stroke();
     }
     var bz = edBossA.length ? edBossA : (realm.bossArea || []);
@@ -1018,6 +1024,56 @@
      that vertex EXACTLY, so a loop closes instead of almost-closing and
      getting cut off at the seam */
   var SNAP = 14, edHover = null;
+  /* ---------- point editing: hover a point of the active tool to target
+     it (gold ring); drag moves it, Delete removes it, a click on the path
+     line inserts a vertex there; Z is a true undo stack ---------- */
+  var GRAB = 12, edHoverIdx = -1;
+  var edUndo = [];
+  var edDrag = false, edDragMoved = false, edPendingSnap = null;
+  function layerSnapshot() {
+    return { mode: edMode,
+      arr: edMode === 'start' ? (edStart ? [edStart.slice()] : [])
+                              : edLayer().map(function (p) { return p.slice(); }) };
+  }
+  function pushUndo(snap) {
+    edUndo.push(snap || layerSnapshot());
+    if (edUndo.length > 60) edUndo.shift();
+  }
+  function popUndo() {
+    var u = edUndo.pop();
+    if (!u) return;
+    if (u.mode === 'start') { edStart = u.arr.length ? u.arr[0] : null; }
+    else {
+      var arr = { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[u.mode];
+      arr.length = 0;
+      u.arr.forEach(function (p) { arr.push(p); });
+    }
+    edMode = u.mode; edHoverIdx = -1;
+  }
+  function handleAt(w) {
+    var arr = edMode === 'start' ? (edStart ? [edStart] : []) : edLayer();
+    var best = -1, bestD = GRAB * GRAB;
+    arr.forEach(function (p, i) {
+      var dx = p[0] * worldW - w.x, dy = p[1] * worldH - w.y;
+      var d = dx * dx + dy * dy;
+      if (d <= bestD) { bestD = d; best = i; }
+    });
+    return best;
+  }
+  function segmentAt(w) {          // nearest path segment, for mid-line inserts
+    var best = -1, bestD = 100;    // within 10px of the line
+    for (var i = 1; i < edPath.length; i++) {
+      var ax = edPath[i - 1][0] * worldW, ay = edPath[i - 1][1] * worldH;
+      var bx = edPath[i][0] * worldW, by = edPath[i][1] * worldH;
+      var vx = bx - ax, vy = by - ay, L2 = vx * vx + vy * vy || 1;
+      var t = ((w.x - ax) * vx + (w.y - ay) * vy) / L2;
+      if (t <= 0.02 || t >= 0.98) continue;      // vertex zones aren't the line
+      var px = ax + vx * t, py = ay + vy * t;
+      var d = (w.x - px) * (w.x - px) + (w.y - py) * (w.y - py);
+      if (d <= bestD) { bestD = d; best = i; }
+    }
+    return best;
+  }
   function snapVertex(w) {
     var best = null, bestD = SNAP * SNAP;
     edPath.forEach(function (p) {
@@ -1029,13 +1085,44 @@
   }
   var hoverRaf = 0;
   stage.addEventListener('mousemove', function (e) {
-    if (!editing || edMode !== 'path' || hoverRaf) return;
+    if (!editing) return;
+    var w = worldPoint(e);
+    if (edDrag) {                              // moving the grabbed point
+      if (edPendingSnap) { pushUndo(edPendingSnap); edPendingSnap = null; }
+      edDragMoved = true;
+      var p = edMode === 'start' ? edStart : edLayer()[edHoverIdx];
+      if (p) {
+        var q = (edMode === 'nodes' || edMode === 'stairs' || edMode === 'start')
+          ? snapToPath(w)                      // path-bound markers stay on the line
+          : [w.x / worldW, w.y / worldH];
+        p[0] = q[0]; p[1] = q[1];
+      }
+      drawTrace(); syncEditorBar();
+      return;
+    }
+    if (hoverRaf) return;
     hoverRaf = window.requestAnimationFrame(function () {
       hoverRaf = 0;
-      var prev = edHover;
-      edHover = snapVertex(worldPoint(e));
-      if (prev !== edHover) drawTrace();
+      var prevI = edHoverIdx, prev = edHover;
+      edHoverIdx = handleAt(w);
+      edHover = (edMode === 'path')
+        ? (edHoverIdx > -1 ? edPath[edHoverIdx] : snapVertex(w))
+        : null;
+      if (prevI !== edHoverIdx || prev !== edHover) drawTrace();
     });
+  });
+  stage.addEventListener('mousedown', function (e) {
+    if (!editing) return;
+    if (e.target.closest('.rw-editor') || e.target.closest('.rw-hud')) return;
+    var h = handleAt(worldPoint(e));
+    if (h > -1) {
+      edHoverIdx = h;
+      edDrag = true; edDragMoved = false;
+      edPendingSnap = layerSnapshot();         // undo lands only if it moves
+    }
+  });
+  document.addEventListener('mouseup', function () {
+    if (edDrag) { edDrag = false; edPendingSnap = null; }
   });
   function snapToPath(w) {
     var save = norm;
@@ -1046,13 +1133,22 @@
     return [q.x / worldW, q.y / worldH];
   }
   function editorClick(w) {
+    if (edDragMoved) { edDragMoved = false; return; }           // that was a drag
+    var h = handleAt(w);
+    if (h > -1 && edMode !== 'path') return;                    // grabbed, not adding
+    pushUndo();
     if (edMode === 'nodes') edNodes.push(snapToPath(w));          // snapped to the line
     else if (edMode === 'stairs') edStairs.push(snapToPath(w));   // snapped to the line, in pairs
     else if (edMode === 'start') edStart = snapToPath(w);         // one only; re-click moves it
     else if (edMode === 'boss') edBossA.push([w.x / worldW, w.y / worldH]);
     else {
-      var sv = snapVertex(w);                                     // loops close exactly
-      edPath.push(sv ? sv.slice() : [w.x / worldW, w.y / worldH]);
+      var sv = snapVertex(w);
+      if (sv) edPath.push(sv.slice());                            // loops close exactly
+      else {
+        var seg = segmentAt(w);
+        if (seg > -1) edPath.splice(seg, 0, [w.x / worldW, w.y / worldH]);  // mid-line insert
+        else edPath.push([w.x / worldW, w.y / worldH]);
+      }
     }
     if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
     drawTrace();
@@ -1063,18 +1159,28 @@
     syncEditorBar();
   }
   function editorKey(e) {
-    if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
-      e.preventDefault();                    // keep the browser's own undo out of it
-      if (edMode === 'start') edStart = null; else edLayer().pop();
+    if (e.key === 'z' || e.key === 'Z') {
+      e.preventDefault();
+      popUndo();
       drawTrace(); syncEditorBar();
     }
+    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'x' || e.key === 'X') {
+      e.preventDefault();
+      if (edMode === 'start') { if (edStart) { pushUndo(); edStart = null; } }
+      else if (edHoverIdx > -1) { pushUndo(); edLayer().splice(edHoverIdx, 1); edHoverIdx = -1; }
+      else if (edLayer().length) { pushUndo(); edLayer().pop(); }   // nothing hovered: trim the tail
+      drawTrace(); syncEditorBar();
+    }
+    if (e.key === 'Escape') { edHoverIdx = -1; drawTrace(); }
     if (e.key === 'c' || e.key === 'C') {
+      pushUndo();
       if (edMode === 'start') edStart = null; else edLayer().length = 0;
+      edHoverIdx = -1;
       drawTrace(); syncEditorBar();
     }
-    if (e.key === 'n' || e.key === 'N') cycleMode();
+    if (e.key === 'n' || e.key === 'N') { edHoverIdx = -1; cycleMode(); }
     var digits = { '1': 'path', '2': 'nodes', '3': 'start', '4': 'stairs', '5': 'boss' };
-    if (digits[e.key]) { edMode = digits[e.key]; syncEditorBar(); }
+    if (digits[e.key]) { edMode = digits[e.key]; edHoverIdx = -1; syncEditorBar(); }
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
       edCam += stageW * 0.35; camera(); e.preventDefault();
     }
@@ -1108,7 +1214,17 @@
     edBar.innerHTML =
       '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span>' +
       '<button class="rw-ed-min type-utility" id="rw-ed-min" type="button" title="Minimize">\u2013</button></p>' +
-      '<p class="rw-ed-help">Click along Pomelo\u2019s walkable path. In path mode, a click near an earlier point snaps to it exactly (gold ring shows the catch): that is how loops close instead of getting cut off at the seam. Stair markers land in PAIRS: bottom of the flight, then top; the violet stretch between them is where the up and down keys climb. Tools: 1 path \u00B7 2 markers \u00B7 3 start point \u00B7 4 stair pairs \u00B7 5 boss room outline (N cycles). Arrow keys or A/D pan the camera. Z undoes, C clears the active tool. Paste the JSON back to Claude to commit it for everyone.</p>' +
+      '<div class="rw-ed-legend type-utility">' +
+        '<span><b>1\u20135</b> tools</span>' +
+        '<span><b>N</b> next</span>' +
+        '<span><b>click</b> add \u00B7 on line: insert</span>' +
+        '<span><b>drag</b> move</span>' +
+        '<span><b>del</b> remove</span>' +
+        '<span><b>Z</b> undo</span>' +
+        '<span><b>C</b> clear</span>' +
+        '<span><b>\u2190\u2192</b> pan</span>' +
+        '<span class="rw-ed-note">clicks near a vertex snap (loops close) \u00B7 stairs pair bottom\u2192top</span>' +
+      '</div>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
         '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Switch to markers (N)</button>' +

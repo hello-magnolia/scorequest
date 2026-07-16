@@ -86,7 +86,12 @@ drain in boss fights, no performance pressure on teen surfaces.
   assets/ui/frame-shrinewood.png). STAIRS data =
   markers in PAIRS: bottom then top of each flight brackets an
   arc-length range. In the editor, path clicks near an earlier vertex
-  SNAP to it exactly (gold ring) so loops close without a seam.
+  SNAP to it exactly (gold ring) so loops close without a seam. Editor
+  point EDITING: hovering a point of the active tool targets it (ring);
+  drag moves it (nodes/stairs/start re-snap to the line), Del/X removes
+  it, a click ON the path line inserts a vertex there, Z is a real undo
+  stack (adds, inserts, moves, deletes, clears). The bar shows a compact
+  key legend, not prose.
 - js/boss.js: per-boss manifests (base, idleSeq breathing, attack/hurt/
   faint seqs, optional tails, projectile config, bgFx, flip, questions).
   Bosses: lorewood Nine-Tailed Archivist (9hp, tails, fireball),
