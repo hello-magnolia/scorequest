@@ -1590,13 +1590,20 @@ a { color: inherit; }
 .rw-ui-shrinewood .rw-hint {
   background: rgba(249, 205, 130, 0.9);   /* golden parchment, world glowing through */
   color: #4a2a10;                          /* rustic ink */
-  border: 5px solid #a85419;               /* the wood band */
-  border-radius: 12px;
+  border: 9px solid #a85419;               /* the wood band, thick cut */
+  border-radius: 6px;                       /* blockier corners */
   box-shadow:
-    0 0 0 3px #7a3a10,                     /* band shade */
-    0 0 0 6px #2b1507,                     /* the dark outline */
-    inset 0 0 0 2px #7a3a10,               /* inner seam */
-    inset 0 0 0 4px #e7a160;               /* inner highlight */
+    0 0 0 5px #7a3a10,                     /* band shade */
+    0 0 0 10px #2b1507,                    /* the dark outline */
+    inset 0 0 0 3px #7a3a10,               /* inner seam */
+    inset 0 0 0 6px #e7a160,               /* inner highlight */
+    inset 0 0 0 8px #c97e3a;               /* highlight falloff step */
+}
+.rw-ui-shrinewood .rw-hint {                /* the pill takes a lighter cut */
+  border-width: 5px;
+  box-shadow:
+    0 0 0 3px #7a3a10, 0 0 0 6px #2b1507,
+    inset 0 0 0 2px #7a3a10, inset 0 0 0 4px #e7a160;
 }
 .rw-ui-shrinewood .rw-quiz { padding: 24px 30px 20px; bottom: 13vh; }
 .rw-ui-shrinewood .rw-hint { padding: 8px 16px; color: #5c3a18; }
@@ -1604,7 +1611,8 @@ a { color: inherit; }
 .rw-ui-shrinewood .rw-quiz-q { color: #4a2a10; }
 .rw-ui-shrinewood .rw-quiz-choices button {
   background: rgba(252, 226, 168, 0.95); color: #4a2a10;
-  border: 3px solid #7a3a10; border-radius: 8px;
+  border: 4px solid #7a3a10; border-radius: 4px;
+  box-shadow: 0 0 0 2px #2b1507, inset 0 0 0 2px #f4dfae;
 }
 .rw-ui-shrinewood .rw-quiz-choices button:hover:not(:disabled) {
   background: #f6cf8d; border-color: #2b1507;
