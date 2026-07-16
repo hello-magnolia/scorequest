@@ -96,14 +96,14 @@ const load = async (path) => {
     parseInt(d.getElementById('rw-ed-count').textContent) === pathBefore + 2 &&
     /"realm":"lorewood"/.test(d.getElementById('rw-ed-json').value),
     before + ' -> ' + d.getElementById('rw-ed-count').textContent);
-  // N switches to the marker layer; markers snap onto the traced path
-  const markersBefore = parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) markers/) || [0, 0])[1]);
+  // N switches to the trial-marker tool; markers snap onto the walk graph
+  const markersBefore = parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) trials/) || [0, 0])[1]);
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 300, clientY: 320 }));
   await new Promise(r => setTimeout(r, 60));
-  check('N switches to marker placing, snapped onto the traced path',
-    /Placing: markers/.test(d.getElementById('rw-ed-mode').textContent) &&
-    parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) markers/) || [0, 0])[1]) === markersBefore + 1,
+  check('N switches to trial markers, snapped onto the walk graph',
+    /Trial markers/.test(d.getElementById('rw-ed-mode').textContent) &&
+    parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) trials/) || [0, 0])[1]) === markersBefore + 1,
     d.getElementById('rw-ed-count').textContent);
   /* back to the walkabout for the remaining checks */
   w = await load('realm.html');
@@ -163,14 +163,14 @@ const load = async (path) => {
     d.querySelectorAll('.hub-realm[href^="realm.html?realm="]').length === 8 &&
     /The Realms/.test(d.querySelector('.mappage-title').textContent));
 
-  /* free walking: an injected preview trace gives a short deterministic
-     rail — a flat stretch, one stair flight, a nearby waypoint */
+  /* free walking on the graph: an injected preview trace gives a
+     deterministic T-fork — A—B—C along the ground, D up from B */
   const TRACE = JSON.stringify({
     realm: 'lorewood',
-    path: [[0.05, 0.6], [0.30, 0.6], [0.40, 0.45], [0.55, 0.45], [0.95, 0.45]],
-    nodes: [[0.55, 0.45]],
-    start: [0.35, 0.525],
-    stairs: [[0.30, 0.6], [0.40, 0.45]],
+    path: { nodes: [[0.1, 0.6], [0.4, 0.6], [0.7, 0.6], [0.4, 0.3]],
+      edges: [[0, 1], [1, 2], [1, 3]], stairs: [2] },
+    nodes: [[0.55, 0.6]],
+    start: [0.4, 0.6],
     bossArea: []
   });
   const domF = await JSDOM.fromURL('http://localhost:8000/realm.html?realm=lorewood', {
@@ -184,93 +184,112 @@ const load = async (path) => {
   w = domF.window;
   await new Promise(r => w.addEventListener('load', r));
   d = w.document;
-  await until(() => typeof w.__SQ_REALM_S === 'number', 3500);
+  await until(() => Array.isArray(w.__SQ_REALM_XY), 3500);
   const key = (type, k) => d.dispatchEvent(new w.KeyboardEvent(type, { key: k, bubbles: true, cancelable: true }));
-  const s0 = w.__SQ_REALM_S;
-  key('keydown', 'ArrowUp');   // he starts mid-flight: up should climb
-  check('On a stair pair, the up key climbs the flight',
-    await until(() => w.__SQ_REALM_S > s0 + 25, 2500), s0 + ' -> ' + w.__SQ_REALM_S);
+  const xy = () => w.__SQ_REALM_XY.slice();
+  const p0 = xy();                 // he starts at the fork node B
+  key('keydown', 'ArrowUp');       // up must take the upward branch to D
+  check('At a fork, the up key takes the branch that climbs',
+    await until(() => xy()[1] < p0[1] - 20, 2500), p0[1] + ' -> ' + xy()[1]);
   key('keyup', 'ArrowUp');
-  await new Promise(r => setTimeout(r, 200));
-  const s1 = w.__SQ_REALM_S;
-  key('keydown', 'ArrowLeft'); // free roaming backward over open ground
-  check('Held left walks him back down the rails',
-    await until(() => w.__SQ_REALM_S < s1 - 25, 2500), s1 + ' -> ' + w.__SQ_REALM_S);
+  key('keydown', 'ArrowDown');     // and down walks back toward the fork
+  await until(() => Math.abs(xy()[1] - p0[1]) < 8, 2500);
+  key('keyup', 'ArrowDown');
+  key('keydown', 'ArrowLeft');     // left roams the open ground freely
+  check('Held left walks him down the left branch',
+    await until(() => xy()[0] < p0[0] - 20, 2500), p0[0] + ' -> ' + xy()[0]);
   key('keyup', 'ArrowLeft');
-  key('keydown', 'ArrowRight');
-  check('Held forward clamps at the next waypoint, whose trial opens itself',
+  key('keydown', 'ArrowRight');    // right runs into the locked trial marker
+  check('A locked trial blocks the way and opens itself on arrival',
     await until(() => !d.getElementById('rw-quiz').hidden, 7000));
   key('keyup', 'ArrowRight');
-  const sQuiz = w.__SQ_REALM_S;
+  const pQuiz = xy();
   key('keydown', 'ArrowLeft');
   await new Promise(r => setTimeout(r, 500));
   key('keyup', 'ArrowLeft');
-  check('Keys go quiet while the quiz is up', w.__SQ_REALM_S === sQuiz);
+  check('Keys go quiet while the quiz is up', xy()[0] === pQuiz[0] && xy()[1] === pQuiz[1]);
+  const cov = w.__SQ_JUNCTION(1);  // the fork node: every branch has a key
+  check('No dead paths: every branch at the fork answers to some key',
+    cov.branches.length === 3 &&
+    cov.branches.every(b => cov.reachable.indexOf(b) > -1),
+    JSON.stringify(cov));
 
-  /* the editor: loop snapping and stair pairs */
+  /* the editor: select-first graph editing */
   w = await load('realm.html?realm=lorewood&edit=1');
   d = w.document;
   await new Promise(r => setTimeout(r, 700));
   const stg = d.getElementById('rw-stage');
   const click = (x, y) => stg.dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
   const key2 = (k) => d.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true }));
-  key2('1');                       // path tool, ADD mode by default
-  click(200, 300); click(420, 340);
-  click(206, 305);                 // near the first vertex: snap-add closes the loop
-  await new Promise(r => setTimeout(r, 60));
-  const pj = JSON.parse(d.getElementById('rw-ed-json').value);
-  const lastP = pj.path[pj.path.length - 1];
-  check('Editor (add): a click near an earlier vertex snap-adds it exactly (loops close)',
-    pj.path.slice(0, -1).some(p => p[0] === lastP[0] && p[1] === lastP[1]));
-  const stairsBefore = pj.stairs.length;
-  key2('4');                       // stair pairs tool
-  click(260, 310); click(390, 335);
-  await new Promise(r => setTimeout(r, 60));
-  const pj2 = JSON.parse(d.getElementById('rw-ed-json').value);
-  check('Editor: stair markers land in pairs and the bar counts flights',
-    pj2.stairs.length === stairsBefore + 2 &&
-    /\d+ flights/.test(d.getElementById('rw-ed-count').textContent) &&
-    /stair/i.test(d.querySelector('.rw-ed-legend').textContent));
-
-  /* point editing: insert on the line, delete the hovered point, undo, drag */
+  const gj = () => JSON.parse(d.getElementById('rw-ed-json').value);
   check('Editor: the legend is compact rows, not a paragraph',
     d.querySelectorAll('.rw-ed-legend span').length >= 8 &&
     !d.querySelector('.rw-ed-help') &&
-    d.querySelector('.rw-ed-legend').textContent.length < 220);
+    d.querySelector('.rw-ed-legend').textContent.length < 240);
   key2('1');
-  key2('v');                       // EDIT mode: select, move, insert, delete
-  const insBefore = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  click(310, 320);                 // exactly on the line between the two test points
+  const g0 = gj().path;
+  click(200, 200); click(340, 200); click(480, 260);   // tracing: each click chains
+  await new Promise(r => setTimeout(r, 60));
+  const g1 = gj().path;
+  check('Editor: tracing chains — three empty clicks give three connected nodes',
+    g1.nodes.length === g0.nodes.length + 3 &&
+    g1.edges.length === g0.edges.length + 2);
+  key2('Escape');
+  click(200, 320);                                     // a fresh disconnected node
   await new Promise(r => setTimeout(r, 40));
-  const afterIns = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  check('Editor (edit): a click on the path line inserts a vertex there, not at the end',
-    afterIns.length === insBefore.length + 1 &&
-    JSON.stringify(afterIns[afterIns.length - 1]) === JSON.stringify(insBefore[insBefore.length - 1]));
-  const move = (x, y) => stg.dispatchEvent(new w.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
-  stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 420, clientY: 340 }));
-  move(421, 341);                  // one pixel of real-mouse jitter must not steal the click
-  d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true }));
-  click(420, 340);                 // the click SELECTS (no add, no move)
+  const g2 = gj().path;
+  check('Editor: Escape breaks the chain — the next click starts an island',
+    g2.nodes.length === g1.nodes.length + 1 && g2.edges.length === g1.edges.length);
+  click(200, 200);                                     // island is selected: node -> node connects
   await new Promise(r => setTimeout(r, 40));
-  const afterSel = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  key2('Delete');                  // ...and Delete removes the selection
+  const g3 = gj().path;
+  check('Editor: node then node connects them with a path',
+    g3.edges.length === g2.edges.length + 1);
+  key2('Escape');
+  click(200, 260);                                     // the new path's midpoint: selects it
   await new Promise(r => setTimeout(r, 40));
-  const afterDel = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  check('Editor (edit): clicking a point selects it despite jitter, and Delete removes it',
-    JSON.stringify(afterSel) === JSON.stringify(afterIns) &&
-    afterDel.length === afterIns.length - 1);
+  key2('s');                                           // stairs toggle on the selected path
+  await new Promise(r => setTimeout(r, 40));
+  const g4 = gj().path;
+  check('Editor: S marks the selected path as stairs',
+    g4.stairs.length === g3.stairs.length + 1);
+  key2('Delete');                                      // path-delete keeps the nodes
+  await new Promise(r => setTimeout(r, 40));
+  const g5 = gj().path;
+  check('Editor: deleting a selected path removes only the path',
+    g5.edges.length === g4.edges.length - 1 &&
+    g5.nodes.length === g4.nodes.length &&
+    g5.stairs.length === g4.stairs.length - 1);
+  key2('Escape');
+  click(340, 200);                                     // select the mid trace node
+  await new Promise(r => setTimeout(r, 40));
+  key2('Delete');                                      // node-delete takes its paths too
+  await new Promise(r => setTimeout(r, 40));
+  const g6 = gj().path;
+  check('Editor: deleting a selected node removes it and its attached paths',
+    g6.nodes.length === g5.nodes.length - 1 &&
+    g6.edges.length === g5.edges.length - 2);
   key2('z');
   await new Promise(r => setTimeout(r, 40));
-  const afterUndo = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  check('Editor: Z undoes the delete', afterUndo.length === afterIns.length);
-  stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 200, clientY: 300 }));
-  move(238, 328); move(240, 330);
+  const g7 = gj().path;
+  check('Editor: Z undoes the node delete in one step',
+    g7.nodes.length === g5.nodes.length && g7.edges.length === g5.edges.length);
+  const move = (x, y) => stg.dispatchEvent(new w.MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
+  stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 480, clientY: 260 }));
+  move(481, 261);                                      // jitter must not steal the click
   d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true }));
   await new Promise(r => setTimeout(r, 40));
-  const afterDrag = JSON.parse(d.getElementById('rw-ed-json').value).path;
-  check('Editor: dragging moves a point without changing the count',
-    afterDrag.length === afterUndo.length &&
-    JSON.stringify(afterDrag) !== JSON.stringify(afterUndo));
+  const g8 = gj().path;
+  check('Editor: a jittery click still selects, moving nothing',
+    JSON.stringify(g8) === JSON.stringify(g7));
+  stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: 480, clientY: 260 }));
+  move(520, 300); move(524, 304);
+  d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 40));
+  const g9 = gj().path;
+  check('Editor: dragging moves a node without changing counts',
+    g9.nodes.length === g7.nodes.length &&
+    JSON.stringify(g9.nodes) !== JSON.stringify(g7.nodes));
 
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');

@@ -71,31 +71,30 @@ drain in boss fights, no performance pressure on teen surfaces.
 - Pages: index (hub head, intro), map.html (realm hub cards), realm.html
   (walkabout + path editor at ?edit=1), boss.html, checkout, success,
   parents.
-- js/realm.js: eight hand-traced realm manifests (path, nodes, start,
-  stairs, bossArea polygons; ids key saved progress, never change them),
-  SPACE auto-walk plus FREE WALKING on the rails (arrows/WASD: left and
-  right run the path, up and down work only on stair stretches; forward
-  clamps at the next unpassed waypoint, whose quiz opens on arrival;
-  backward roams free), waypoint quizzes (sq_realm_prog_<id>),
-  boss-zone proximity glow + five-body-probe entry trigger, lorewood
-  biome fx, editor (tools 1-5, pan, seeded layers). Realm manifests may
-  set ui: '<skin>' -> body.rw-ui-<skin> scopes popup/text-box styling;
-  lorewood wears 'shrinewood', a pixel-ring recreation of Magnolia's
-  wooden frame (palette #4b1e09/#a0531d/#b76925/#dd8830/#f8c566,
-  translucent warm interior; detailed source art parked at
-  assets/ui/frame-shrinewood.png). STAIRS data =
-  markers in PAIRS: bottom then top of each flight brackets an
-  arc-length range. In the editor, path clicks near an earlier vertex
-  SNAP-ADD it exactly so loops close without a seam. The editor has two
-  interaction modes, toggled with V (or the bar button): ADD (default)
-  is pure tracing, every click places a point and near-vertex clicks
-  snap; EDIT is pure editing, a click SELECTS a point of the active
-  tool (solid ring; hover = faint aiming ring), drag moves it with a
-  4px jitter threshold (nodes/stairs/start re-snap to the line), a
-  click ON the path line inserts a vertex, Del/X removes the selection
-  (or trims the tail), empty clicks deselect. Shift+click force-adds in
-  either mode. Z is a real undo stack (adds, inserts, moves, deletes,
-  clears). The bar shows a compact key legend, not prose.
+- js/realm.js: eight realm manifests. realm.path is a WALK GRAPH
+  {nodes, edges, stairs:[edgeIdx]} (normalized); legacy point-chain
+  paths auto-migrate at load (repeat coords merge into junctions,
+  stair PAIRS become edge flags) so committed data needs no rewrite.
+  Pomelo's position is {edge, t}. Movement: arrows/WASD steer; at a
+  junction the 8 key directions claim branches one-to-one (greedy,
+  best match first) so EVERY branch answers to some key — no dead
+  paths. SPACE dijkstra-routes to the nearest open trial marker.
+  Trial markers are order-free: any locked marker blocks passage and
+  opens its quiz on arrival; progress is a passed-set (JSON array in
+  sq_realm_prog_<id>; legacy integers migrate). Realm manifests may
+  set ui: '<skin>' -> body.rw-ui-<skin> scopes popup styling;
+  lorewood wears 'shrinewood' (pixel rings, palette
+  #4b1e09/#a0531d/#b76925/#dd8830/#f8c566; detailed source art parked
+  at assets/ui/frame-shrinewood.png).
+  EDITOR (&edit=1), select-first, no modes: tools 1 walk graph ·
+  2 trial markers · 3 start · 4 boss. Click selects (RED) a node or
+  path; selected node + click node = connect; selected node + click
+  empty = new connected node (tracing chains; Escape breaks the
+  chain); empty click with no selection = island node. Drag moves
+  nodes only (4px jitter threshold; markers/start re-snap to the
+  graph). Del: node deletes WITH its paths, path deletes alone. S
+  toggles stairs on a selected path. Z = one undo stack across all
+  layers. Copy JSON exports the graph shape.
 - js/boss.js: per-boss manifests (base, idleSeq breathing, attack/hurt/
   faint seqs, optional tails, projectile config, bgFx, flip, questions).
   Bosses: lorewood Nine-Tailed Archivist (9hp, tails, fireball),

@@ -203,7 +203,7 @@
     var saved = JSON.parse(window.localStorage.getItem(PREVIEW_KEY));
     if (saved && (saved.path || saved.nodes)) {
       realm = Object.assign({}, realm);
-      if (saved.path && saved.path.length >= 2) realm.path = saved.path;
+      if (saved.path && (saved.path.nodes || saved.path.length >= 2)) realm.path = saved.path;
       if (saved.nodes) realm.nodes = saved.nodes;
       if (saved.start && saved.start.length === 2) realm.start = saved.start;
       if (saved.stairs) realm.stairs = saved.stairs;
@@ -225,10 +225,21 @@
      node). Each waypoint asks a question; passing unlocks the next leg.
      Passed nodes reopen as extra practice. He never walks backward. */
   var PROG_KEY = 'sq_realm_prog_' + realm.id;
-  var prog = 0;
-  try { prog = Math.max(0, parseInt(window.localStorage.getItem(PROG_KEY), 10) || 0); } catch (e) {}
-  var nodeS = [];        // arc-length position of each node
-  var sortedIdx = [];    // node indices in walk order
+  var passed = {};                 // markerIdx -> true (order-free waypoints)
+  try {
+    var rawProg = window.localStorage.getItem(PROG_KEY);
+    if (rawProg && rawProg.charAt(0) === '[') {
+      JSON.parse(rawProg).forEach(function (i) { passed[i] = true; });
+    } else {
+      var n0 = Math.max(0, parseInt(rawProg, 10) || 0);
+      for (var pi = 0; pi < n0; pi++) passed[pi] = true;   // legacy counter
+    }
+  } catch (e) {}
+  function passedCount() { return Object.keys(passed).length; }
+  function savePassed() {
+    try { window.localStorage.setItem(PROG_KEY, JSON.stringify(
+      Object.keys(passed).map(Number))); } catch (e) {}
+  }
   var quizOpen = false;
   var PRACTICE = [       // placeholder items until the real banks arrive
     { q: 'Which of these is a complete sentence?',
@@ -301,97 +312,257 @@
   var ready = false, bossShown = false, prefetched = false;
   var facing = 1, walking = false;
 
-  // the path as normalized points -> pixel polyline with cumulative arc length
-  var norm = realm.path && realm.path.length >= 2
-    ? realm.path.slice()
-    : [[0.02, realm.ground || 0.8], [0.98, realm.ground || 0.8]];
-  var pts = [], cum = [], totalLen = 0;
-  var sPos = 0, sTarget = 0;
-  var nodeEls = [];
-
-  function buildPolyline() {
-    pts = norm.map(function (p) { return [p[0] * worldW, p[1] * worldH]; });
-    cum = [0];
-    for (var i = 1; i < pts.length; i++) {
-      var dx = pts[i][0] - pts[i - 1][0], dy = pts[i][1] - pts[i - 1][1];
-      cum.push(cum[i - 1] + Math.sqrt(dx * dx + dy * dy));
+  /* ---------- the walk graph ----------
+     realm.path is a graph {nodes:[[x,y]..], edges:[[a,b]..], stairs:[edgeIdx..]}
+     (normalized). Legacy array-of-points chains migrate automatically:
+     repeated coordinates merge into one node, so old snap-closed loops
+     become true junctions. Pomelo's position is {e, t}: edge + fraction. */
+  function migratePath() {
+    var p = realm.path;
+    if (p && p.nodes) {
+      return { nodes: p.nodes.map(function (n) { return n.slice(); }),
+               edges: (p.edges || []).map(function (e) { return e.slice(); }),
+               stairs: (p.stairs || []).slice() };
     }
-    totalLen = cum[cum.length - 1] || 1;
-  }
-  function pointAt(s) {
-    s = Math.min(Math.max(s, 0), totalLen);
-    for (var i = 1; i < pts.length; i++) {
-      if (s <= cum[i]) {
-        var t = (s - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1);
-        return {
-          x: pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t,
-          y: pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t,
-          dx: pts[i][0] - pts[i - 1][0]
-        };
+    var chain = (p && p.length >= 2) ? p
+      : [[0.02, realm.ground || 0.8], [0.98, realm.ground || 0.8]];
+    var nodes = [], map = [];
+    chain.forEach(function (q) {
+      var f = -1;
+      for (var i = 0; i < nodes.length; i++) {
+        if (Math.abs(nodes[i][0] - q[0]) < 0.004 &&
+            Math.abs(nodes[i][1] - q[1]) < 0.004) { f = i; break; }
       }
+      if (f === -1) { nodes.push([q[0], q[1]]); f = nodes.length - 1; }
+      map.push(f);
+    });
+    var edges = [], seen = {};
+    for (var k = 1; k < map.length; k++) {
+      var a = map[k - 1], b = map[k];
+      if (a === b) continue;
+      var key = Math.min(a, b) + '-' + Math.max(a, b);
+      if (seen[key] !== undefined) continue;
+      seen[key] = edges.length;
+      edges.push([a, b]);
     }
-    var last = pts[pts.length - 1];
-    return { x: last[0], y: last[1], dx: 1 };
+    // legacy stair PAIRS mark the edges whose midpoints hug the pair's span
+    var stairs = [];
+    var sp = realm.stairs || [];
+    for (var s = 0; s + 1 < sp.length; s += 2) {
+      var p1 = sp[s], p2 = sp[s + 1];
+      edges.forEach(function (e, ei) {
+        var mx = (nodes[e[0]][0] + nodes[e[1]][0]) / 2;
+        var my = (nodes[e[0]][1] + nodes[e[1]][1]) / 2;
+        var vx = p2[0] - p1[0], vy = p2[1] - p1[1];
+        var L2 = vx * vx + vy * vy || 1e-9;
+        var t = Math.min(Math.max(((mx - p1[0]) * vx + (my - p1[1]) * vy) / L2, 0), 1);
+        var d = Math.hypot(mx - (p1[0] + vx * t), my - (p1[1] + vy * t));
+        if (d < 0.03 && stairs.indexOf(ei) === -1) stairs.push(ei);
+      });
+    }
+    return { nodes: nodes, edges: edges, stairs: stairs };
   }
-  // nearest arc-length position on the polyline to a world-space point
-  function nearestS(x, y) {
-    var best = 0, bestD = Infinity;
-    for (var i = 1; i < pts.length; i++) {
-      var ax = pts[i - 1][0], ay = pts[i - 1][1];
-      var bx = pts[i][0], by = pts[i][1];
-      var vx = bx - ax, vy = by - ay;
+  var GN = migratePath();          // normalized graph (also seeds the editor)
+  var G = { pts: [], edges: [], adj: [] };
+  function buildGraph() {
+    G = { pts: [], edges: [], adj: [] };
+    G.pts = GN.nodes.map(function (n) { return [n[0] * worldW, n[1] * worldH]; });
+    G.adj = G.pts.map(function () { return []; });
+    GN.edges.forEach(function (e, i) {
+      var a = e[0], b = e[1];
+      if (a === b || !G.pts[a] || !G.pts[b]) return;
+      var L = Math.hypot(G.pts[b][0] - G.pts[a][0], G.pts[b][1] - G.pts[a][1]);
+      var idx = G.edges.push({ a: a, b: b, len: Math.max(1, L),
+        stairs: GN.stairs.indexOf(i) > -1 }) - 1;
+      G.adj[a].push(idx); G.adj[b].push(idx);
+    });
+    if (!G.edges.length) {           // never strand him: a floor to stand on
+      G.pts = [[worldW * 0.02, worldH * 0.8], [worldW * 0.98, worldH * 0.8]];
+      G.adj = [[0], [0]];
+      G.edges = [{ a: 0, b: 1, len: worldW * 0.96, stairs: false }];
+    }
+  }
+  var cur = { e: 0, t: 0 };
+  var nodeEls = [];                // the waypoint marker DOM elements
+  function posXY(c) {
+    c = c || cur;
+    var ed = G.edges[c.e];
+    var A2 = G.pts[ed.a], B2 = G.pts[ed.b];
+    return { x: A2[0] + (B2[0] - A2[0]) * c.t, y: A2[1] + (B2[1] - A2[1]) * c.t,
+      dx: B2[0] - A2[0], dy: B2[1] - A2[1] };
+  }
+  function nearestOnGraph(x, y) {
+    var best = null;
+    G.edges.forEach(function (ed, ei) {
+      var A2 = G.pts[ed.a], B2 = G.pts[ed.b];
+      var vx = B2[0] - A2[0], vy = B2[1] - A2[1];
       var L2 = vx * vx + vy * vy || 1;
-      var t = Math.min(Math.max(((x - ax) * vx + (y - ay) * vy) / L2, 0), 1);
-      var px = ax + vx * t, py = ay + vy * t;
+      var t = Math.min(Math.max(((x - A2[0]) * vx + (y - A2[1]) * vy) / L2, 0), 1);
+      var px = A2[0] + vx * t, py = A2[1] + vy * t;
       var d = (x - px) * (x - px) + (y - py) * (y - py);
-      if (d < bestD) { bestD = d; best = cum[i - 1] + Math.sqrt(L2) * t; }
-    }
-    return best;
+      if (!best || d < best.d) best = { e: ei, t: t, d: d, x: px, y: py };
+    });
+    return best || { e: 0, t: 0, d: 0, x: 0, y: 0 };
   }
 
-  /* ---------- stairs: markers pair up in click order, bottom and top of
-     each flight; a pair brackets an arc-length range where the up and
-     down keys climb and descend ---------- */
-  var stairRanges = [];
-  function layoutStairs() {
-    stairRanges = [];
-    var st = realm.stairs || [];
-    for (var i = 0; i + 1 < st.length; i += 2) {
-      var a = nearestS(st[i][0] * worldW, st[i][1] * worldH);
-      var b = nearestS(st[i + 1][0] * worldW, st[i + 1][1] * worldH);
-      stairRanges.push([Math.min(a, b) - 6, Math.max(a, b) + 6]);  // a step of grace at each end
-    }
+  /* markers (the waypoint quizzes) live at points projected onto edges */
+  var marks = [];                    // [{e, t, x, y}] parallel to realm.nodes
+  function layoutMarks() {
+    marks = (realm.nodes || []).map(function (n) {
+      return nearestOnGraph(n[0] * worldW, n[1] * worldH);
+    });
   }
-  function onStairs(s) {
-    for (var i = 0; i < stairRanges.length; i++) {
-      if (s >= stairRanges[i][0] && s <= stairRanges[i][1]) return true;
-    }
-    return false;
-  }
-  function stairUpDir(s) {          // +1 when walking onward climbs the screen
-    var e = 8;
-    var y1 = pointAt(Math.max(0, s - e)).y;
-    var y2 = pointAt(Math.min(totalLen, s + e)).y;
-    return y2 <= y1 ? 1 : -1;
+  function markerOnSpan(ei, t0, t1) {          // first LOCKED marker crossed
+    var lo = Math.min(t0, t1), hi = Math.max(t0, t1), hit = -1, hd = 2;
+    marks.forEach(function (m, i) {
+      if (passed[i] || m.e !== ei) return;
+      if (m.t > lo + 1e-4 && m.t < hi - 1e-4) {
+        var d = Math.abs(m.t - t0);
+        if (d < hd) { hd = d; hit = i; }
+      }
+    });
+    return hit;
   }
 
-  /* ---------- free walking: held keys nudge the walk target along the
-     rails; the path itself is the only place he can be ---------- */
+  /* junction steering: at a node, every branch answers to SOME key.
+     The 8 key directions claim branches one-to-one (best matches first),
+     so no branch at a fork is ever unreachable; leftover keys then take
+     their own best fit. */
+  var KEYDIRS = [[1, 0], [-1, 0], [0, -1], [0, 1],
+    [0.7071, -0.7071], [-0.7071, -0.7071], [0.7071, 0.7071], [-0.7071, 0.7071]];
+  function junctionMap(node) {
+    var opts = G.adj[node].map(function (ei) {
+      var ed = G.edges[ei];
+      var other = ed.a === node ? ed.b : ed.a;
+      var dx = G.pts[other][0] - G.pts[node][0];
+      var dy = G.pts[other][1] - G.pts[node][1];
+      var L = Math.hypot(dx, dy) || 1;
+      return { e: ei, dir: ed.a === node ? 1 : -1, ux: dx / L, uy: dy / L };
+    });
+    var pairs = [];
+    KEYDIRS.forEach(function (k, ki) {
+      opts.forEach(function (o, oi) {
+        pairs.push({ ki: ki, oi: oi, s: k[0] * o.ux + k[1] * o.uy });
+      });
+    });
+    pairs.sort(function (x, y) { return y.s - x.s; });
+    var keyOf = {}, claimed = {}, coverage = {};
+    pairs.forEach(function (p) {               // pass 1: cover every branch
+      if (keyOf[p.ki] === undefined && claimed[p.oi] === undefined) {
+        keyOf[p.ki] = p.oi; claimed[p.oi] = true; coverage[p.ki] = true;
+      }
+    });
+    pairs.forEach(function (p) {               // pass 2: leftover keys fit in
+      if (keyOf[p.ki] === undefined && p.s > -0.1) keyOf[p.ki] = p.oi;
+    });
+    return { opts: opts, keyOf: keyOf };
+  }
+  window.__SQ_JUNCTION = function (node) {     // for the suite: prove coverage
+    var jm = junctionMap(node);
+    var got = {};
+    Object.keys(jm.keyOf).forEach(function (k) { got[jm.opts[jm.keyOf[k]].e] = true; });
+    return { branches: jm.opts.map(function (o) { return o.e; }),
+      reachable: Object.keys(got).map(Number) };
+  };
+  function pickAtNode(node, vx, vy) {
+    var jm = junctionMap(node);
+    if (!jm.opts.length) return null;
+    var L = Math.hypot(vx, vy) || 1;
+    var nx = vx / L, ny = vy / L;
+    var best = -1, bestD = -2;
+    KEYDIRS.forEach(function (k, ki) {
+      var d = k[0] * nx + k[1] * ny;
+      if (d > bestD) { bestD = d; best = ki; }
+    });
+    var oi = jm.keyOf[best];
+    return oi === undefined ? null : jm.opts[oi];
+  }
+
+  /* routes: dijkstra over nodes for space auto-walk and marker taps */
+  function dijkstra(fromC, toC) {
+    var N = G.pts.length;
+    var dist = new Array(N).fill(Infinity), prev = new Array(N).fill(-1), prevE = new Array(N).fill(-1);
+    var fe = G.edges[fromC.e];
+    var seeds = [[fe.a, fromC.t * fe.len], [fe.b, (1 - fromC.t) * fe.len]];
+    seeds.forEach(function (s) { if (s[1] < dist[s[0]]) { dist[s[0]] = s[1]; } });
+    var done = new Array(N).fill(false);
+    for (var it = 0; it < N; it++) {
+      var u = -1, ud = Infinity;
+      for (var i = 0; i < N; i++) if (!done[i] && dist[i] < ud) { ud = dist[i]; u = i; }
+      if (u === -1) break;
+      done[u] = true;
+      G.adj[u].forEach(function (ei) {
+        var ed = G.edges[ei];
+        var v = ed.a === u ? ed.b : ed.a;
+        if (dist[u] + ed.len < dist[v]) {
+          dist[v] = dist[u] + ed.len; prev[v] = u; prevE[v] = ei;
+        }
+      });
+    }
+    var te = G.edges[toC.e];
+    var endA = dist[te.a] + toC.t * te.len;
+    var endB = dist[te.b] + (1 - toC.t) * te.len;
+    var enter = endA <= endB ? te.a : te.b;
+    if (!isFinite(dist[enter])) return null;   // an island: unreachable
+    var nodesR = [enter];
+    while (prev[nodesR[0]] !== -1) nodesR.unshift(prev[nodesR[0]]);
+    var steps = [];
+    for (var k2 = 1; k2 < nodesR.length; k2++) {
+      var a2 = nodesR[k2 - 1], b2 = nodesR[k2];
+      var ei2 = prevE[nodesR[k2]];
+      steps.push({ e: ei2, endT: G.edges[ei2].a === b2 ? 0 : 1 });
+    }
+    // leave the current edge toward the route's first node
+    if (fromC.e !== toC.e || nodesR.length > 1) {
+      steps.unshift({ e: fromC.e, endT: G.edges[fromC.e].a === nodesR[0] ? 0 : 1 });
+    }
+    steps.push({ e: toC.e, endT: toC.t });
+    return steps;
+  }
+  var route = null;                  // active auto-walk: [{e, endT}...]
+
+  /* held keys */
   var held = { fwd: false, back: false, up: false, down: false };
-  function freeDir() {
-    var d = 0;
-    if (held.fwd) d += 1;
-    if (held.back) d -= 1;
-    if ((held.up || held.down) && onStairs(sPos)) {
-      var up = stairUpDir(sPos);
-      if (held.up) d += up;
-      if (held.down) d -= up;
+  function heldVec() {
+    var vx = (held.fwd ? 1 : 0) - (held.back ? 1 : 0);
+    var vy = (held.down ? 1 : 0) - (held.up ? 1 : 0);
+    return (vx || vy) ? { x: vx, y: vy } : null;
+  }
+
+  /* the mover: advance dist along the graph, honoring locked markers.
+     Returns what stopped it: 'marker' (idx), 'node' (no branch), or null. */
+  function moveAlong(dist, steer) {
+    var guard = 12;
+    while (dist > 0.5 && guard-- > 0) {
+      var ed = G.edges[cur.e];
+      var dirT = steer.dirT;                    // +1 toward b, -1 toward a
+      var targetT = steer.endT !== undefined ? steer.endT : (dirT > 0 ? 1 : 0);
+      var blocked = markerOnSpan(cur.e, cur.t, targetT);
+      if (blocked > -1) targetT = marks[blocked].t;
+      var span = Math.abs(targetT - cur.t) * ed.len;
+      var step = Math.min(dist, span);
+      cur.t += (targetT > cur.t ? 1 : -1) * (step / ed.len);
+      dist -= step;
+      if (Math.abs(cur.t - targetT) * ed.len < 0.6) {
+        cur.t = targetT;
+        if (blocked > -1) return { stop: 'marker', idx: blocked };
+        if (steer.endT !== undefined && steer.atEnd) return { stop: 'target' };
+        var node = cur.t <= 0.001 ? ed.a : (cur.t >= 0.999 ? ed.b : null);
+        if (node === null) return { stop: 'target' };
+        var next = steer.next(node);
+        if (!next) return { stop: 'node' };
+        cur.e = next.e;
+        cur.t = next.dir > 0 ? 0 : 1;
+        steer.dirT = next.dir;
+        if (next.endT !== undefined) { steer.endT = next.endT; steer.atEnd = next.atEnd; }
+        else { steer.endT = undefined; steer.atEnd = false; }
+      } else if (step < 0.5) break;
     }
-    return Math.sign(d);
+    return null;
   }
 
   function placeCapy() {
-    var p = pointAt(sPos);
+    var p = posXY();
     capy.style.left = Math.round(p.x - capyW / 2) + 'px';
     capy.style.top = Math.round(p.y - capyH * FEET) + 'px';
     return p;
@@ -413,11 +584,7 @@
     });
   }
   function layoutNodes() {
-    nodeS = (realm.nodes || []).map(function (n) {
-      return nearestS(n[0] * worldW, n[1] * worldH);
-    });
-    sortedIdx = nodeS.map(function (_, i) { return i; })
-      .sort(function (a, b) { return nodeS[a] - nodeS[b]; });
+    layoutMarks();
     syncNodeStates();
     (realm.nodes || []).forEach(function (n, i) {
       var el = nodeEls[i];
@@ -427,29 +594,41 @@
     });
   }
   function syncNodeStates() {
-    sortedIdx.forEach(function (origIdx, rank) {
-      var el = nodeEls[origIdx];
+    (realm.nodes || []).forEach(function (_, i) {
+      var el = nodeEls[i];
       if (!el) return;
-      el.classList.toggle('is-passed', rank < prog);
-      el.classList.toggle('is-next', rank === prog);
-      el.classList.toggle('is-locked', rank > prog);
+      el.classList.toggle('is-passed', !!passed[i]);
+      el.classList.toggle('is-next', !passed[i]);
+      el.classList.remove('is-locked');   // order-free: every trial approachable
     });
-    window.__SQ_REALM_PROG = prog;
+    window.__SQ_REALM_PROG = passedCount();
   }
-  function onNodeClick(origIdx) {
+  function onNodeClick(i) {
     if (editing) return;
-    var rank = sortedIdx.indexOf(origIdx);
-    if (rank < prog) openQuiz(rank, true);        // passed: extra practice, no walking back
-    else if (rank === prog) advance();            // the next waypoint: go
-    // locked nodes beyond the next stay quiet
+    if (passed[i]) { openQuiz(i, true); return; }   // extra practice
+    routeTo(marks[i]);                              // walk to that trial
   }
-  function advance() {
+  function routeTo(target) {
     if (!ready || quizOpen || walking) return;
-    if (flop === 'flat') { flopUp(function () { advance(); }); return; }
-    if (flop) return;
-    var count = (realm.nodes || []).length;
-    sTarget = prog < count ? nodeS[sortedIdx[prog]] : totalLen;
+    if (flop === 'flat') { flopUp(function () { routeTo(target); }); return; }
+    if (flop || !target) return;
+    route = dijkstra({ e: cur.e, t: cur.t }, { e: target.e, t: target.t });
     hint.classList.add('is-gone');
+  }
+  function advance() {                 // space: head for the nearest open trial
+    var best = null, bd = Infinity;
+    var p = posXY();
+    marks.forEach(function (m, i) {
+      if (passed[i]) return;
+      var d = Math.hypot(m.x - p.x, m.y - p.y);   // crow-flies triage
+      if (d < bd) { bd = d; best = m; }
+    });
+    if (!best && realm.bossArea && realm.bossArea.length >= 3) {
+      best = nearestOnGraph(
+        realm.bossArea.reduce(function (s, q) { return s + q[0]; }, 0) / realm.bossArea.length * worldW,
+        realm.bossArea.reduce(function (s, q) { return s + q[1]; }, 0) / realm.bossArea.length * worldH);
+    }
+    routeTo(best);
   }
 
   /* ---------- the waypoint quiz ---------- */
@@ -493,9 +672,9 @@
     if (i === item.a) {
       feed.textContent = quizPractice ? 'Right again. Pomelo approves.' : 'Passed! The way forward is open.';
       feed.className = 'rw-quiz-feedback is-hit';
-      if (!quizPractice && quizRank === prog) {
-        prog += 1;
-        try { window.localStorage.setItem(PROG_KEY, String(prog)); } catch (e) {}
+      if (!quizPractice && !passed[quizRank]) {
+        passed[quizRank] = true;
+        savePassed();
         syncNodeStates();
       }
       document.getElementById('rw-quiz-continue').hidden = false;
@@ -523,9 +702,9 @@
     var feed = document.getElementById('rw-quiz-feedback');
     feed.textContent = 'Skipped.';
     feed.className = 'rw-quiz-feedback';
-    if (!quizPractice && quizRank === prog) {
-      prog += 1;
-      try { window.localStorage.setItem(PROG_KEY, String(prog)); } catch (err) {}
+    if (!quizPractice && !passed[quizRank]) {
+      passed[quizRank] = true;
+      savePassed();
       syncNodeStates();
     }
     document.getElementById('rw-quiz-continue').hidden = false;
@@ -571,7 +750,7 @@
   function flopDown() {
     clearFlopTimers();
     setFlop('down');
-    sTarget = sPos;                       // he is going nowhere
+    route = null;                         // he is going nowhere
     if (window.SQSfx && window.SQSfx.step) window.SQSfx.step();
     if (reduceMotion) { drawCapy(12); setFlop('flat'); return; }
     playSeq([9, 10, 11, 12], 140, function () { setFlop('flat'); });
@@ -587,7 +766,7 @@
     });
   }
   function capyHit(wx, wy) {
-    var p = pointAt(sPos);
+    var p = posXY();
     var left = p.x - capyW / 2 - 8;
     var top = p.y - capyH * FEET - 8;
     return wx >= left && wx <= left + capyW + 16 && wy >= top && wy <= top + capyH + 16;
@@ -603,10 +782,9 @@
     world.style.width = worldW + 'px';
     capyW = capy.clientWidth || 120;
     capyH = capy.clientHeight || Math.round(capyW * 45 / 57);
-    buildPolyline();
+    buildGraph();
     drawBossZone();
     layoutNodes();
-    layoutStairs();
     drawTrace();
   }
 
@@ -618,7 +796,7 @@
       edCam = Math.min(Math.max(edCam, 0), Math.max(0, worldW - stageW));
       camX = edCam;
     } else {
-      var p = pointAt(sPos);
+      var p = posXY();
       camX = Math.min(Math.max(p.x - stageW * 0.42, 0), Math.max(0, worldW - stageW));
     }
     camNow = camX;
@@ -629,10 +807,11 @@
   function begin() {
     renderNodes();
     layout();
-    sPos = (realm.start && realm.start.length === 2)
-      ? nearestS(realm.start[0] * worldW, realm.start[1] * worldH)
-      : nearestS(worldW * 0.05, pointAt(0).y);
-    sTarget = sPos;
+    var st = (realm.start && realm.start.length === 2)
+      ? nearestOnGraph(realm.start[0] * worldW, realm.start[1] * worldH)
+      : nearestOnGraph(worldW * 0.05, worldH * 0.5);
+    cur = { e: st.e, t: st.t };
+    route = null;
     placeCapy();
     drawCapy(0);
     camera();
@@ -799,7 +978,7 @@
       // Pomelo is "there" when any part of him overlaps the room, not just
       // his soles: his feet ride the path, which often skirts BELOW the
       // room a human outlines around a doorway
-      var p = pointAt(sPos);
+      var p = posXY();
       var hw = (capyW * 0.4) / worldW;
       var probes = [
         [p.x / worldW, p.y / worldH],                                  // feet
@@ -813,7 +992,7 @@
       }
       return false;
     }
-    return sPos > totalLen - stageW * 0.22;
+    return posXY().x > worldW - stageW * 0.22;
   }
   window.requestAnimationFrame(tick);
     if (!ready || editing) return;
@@ -823,23 +1002,72 @@
       camera();
       return;
     }
-    var ds = sTarget - sPos;
     var speed = stageH * 0.38 * (dt / 1000); // an unhurried capybara pace
-    /* free walking rides the same tween: held keys pull the target a few
-       steps ahead (or behind), clamped between the trailhead and the next
-       unpassed waypoint; the rails do the rest */
-    var free = quizOpen ? 0 : freeDir();
-    if (free) {
-      var count0 = (realm.nodes || []).length;
-      var fwdLimit = prog < count0 ? nodeS[sortedIdx[prog]] : totalLen;
-      sTarget = Math.min(Math.max(sPos + free * speed * 3, 0), fwdLimit);
-      ds = sTarget - sPos;
+    var hv = quizOpen ? null : heldVec();
+    if (hv) route = null;                        // hands on: the route yields
+    var moving = false, arrivedMarker = -1, dirSignT = 0;
+    if (hv) {
+      var ed0 = G.edges[cur.e];
+      var pp = posXY();
+      var eux = pp.dx / (ed0.len || 1), euy = pp.dy / (ed0.len || 1);
+      var dt0 = eux * hv.x + euy * hv.y;
+      var steer = null;
+      if (Math.abs(dt0) > 0.25) {
+        steer = { dirT: dt0 > 0 ? 1 : -1,
+          next: function (node) { return pickAtNode(node, hv.x, hv.y); } };
+      } else {
+        var nearNode = cur.t < 0.06 ? ed0.a : (cur.t > 0.94 ? ed0.b : null);
+        if (nearNode !== null) {
+          var turn = pickAtNode(nearNode, hv.x, hv.y);
+          if (turn && turn.e !== cur.e) {
+            cur.e = turn.e; cur.t = turn.dir > 0 ? 0 : 1;
+            steer = { dirT: turn.dir,
+              next: function (node) { return pickAtNode(node, hv.x, hv.y); } };
+          }
+        }
+      }
+      if (steer) {
+        dirSignT = steer.dirT;
+        var res = moveAlong(reduceMotion ? speed * 3 : speed, steer);
+        moving = true;
+        if (res && res.stop === 'marker') { arrivedMarker = res.idx; moving = false; }
+        if (res && res.stop === 'node') moving = false;
+      }
+    } else if (route && route.length) {
+      var step0 = route[0];
+      var edR = G.edges[step0.e];
+      if (step0.e !== cur.e) { route = null; }   // desynced: stand down
+      else {
+        var lastStep = route.length === 1;
+        var steerR = { dirT: step0.endT > cur.t ? 1 : -1, endT: step0.endT,
+          atEnd: lastStep,
+          next: function () {
+            route.shift();
+            if (!route.length) return null;
+            var s2 = route[0];
+            return { e: s2.e, dir: s2.endT >= 0.5 ? 1 : -1,
+              endT: s2.endT, atEnd: route.length === 1 };
+          } };
+        dirSignT = steerR.dirT;
+        var resR = moveAlong(reduceMotion ? speed * 3 : speed, steerR);
+        moving = true;
+        if (resR) {
+          moving = false;
+          if (resR.stop === 'marker') arrivedMarker = resR.idx;
+          if (resR.stop === 'target' || resR.stop === 'node') {
+            route = null;
+            marks.forEach(function (m, i) {
+              if (!passed[i] && m.e === cur.e &&
+                  Math.abs(m.t - cur.t) * G.edges[cur.e].len < 3) arrivedMarker = i;
+            });
+          }
+        }
+      }
     }
-    if (Math.abs(ds) > 2 && !reduceMotion) {
+    if (moving && !reduceMotion) {
       walking = true;
-      sPos += Math.sign(ds) * Math.min(Math.abs(ds), speed);
       var p = placeCapy();
-      facing = Math.sign(ds) >= 0 ? (p.dx >= 0 ? 1 : -1) : (p.dx >= 0 ? -1 : 1);
+      facing = dirSignT >= 0 ? (p.dx >= 0 ? 1 : -1) : (p.dx >= 0 ? -1 : 1);
       stepT += dt;
       if (stepT > 90) {    // busier still: a proper capybara scurry
         stepT = 0;
@@ -848,14 +1076,13 @@
         if (window.SQSfx && window.SQSfx.step) window.SQSfx.step();
       }
     } else {
-      if (reduceMotion && Math.abs(ds) > 2) { sPos = sTarget; placeCapy(); }
-      if (walking) {
+      if (reduceMotion && moving) placeCapy();
+      if (arrivedMarker > -1) {
+        placeCapy();
         walking = false; idleT = 0; idleStep = 0; drawCapy(0);
-        // arrived: if this stop is the next waypoint, its trial begins
-        var count = (realm.nodes || []).length;
-        if (!quizOpen && prog < count && Math.abs(sPos - nodeS[sortedIdx[prog]]) < 3) {
-          openQuiz(prog, false);
-        }
+        if (!quizOpen) openQuiz(arrivedMarker, false);
+      } else if (walking) {
+        walking = false; idleT = 0; idleStep = 0; drawCapy(0);
       }
       idleT += dt;
       var fr = IDLE[Math.min(idleStep, IDLE.length - 1)];
@@ -866,249 +1093,244 @@
       }
     }
     camera();
-    if (sPos > totalLen * 0.55) prefetchNext();
+    if (posXY().x > worldW * 0.55) prefetchNext();
     if (!bossShown && inBossZone()) {
       bossShown = true;
       popup.hidden = false;
     }
     if (bossZoneEl && zoneCX !== null) {   // the outline reveals itself as he nears
-      var zp = pointAt(sPos);
+      var zp = posXY();
       var near = Math.abs(zp.x - zoneCX) < stageW * 0.6 && Math.abs(zp.y - zoneCY) < stageH * 0.8;
       bossZoneEl.classList.toggle('is-near', near);
     }
     window.__SQ_TICKS = (window.__SQ_TICKS || 0) + 1;   // proof the whole tick ran
-    window.__SQ_REALM_S = Math.round(sPos);
+    var xy = posXY();
+    window.__SQ_REALM_XY = [Math.round(xy.x), Math.round(xy.y)];
+    window.__SQ_REALM_POS = { e: cur.e, t: Math.round(cur.t * 1000) / 1000 };
   }
   window.requestAnimationFrame(tick);
 
   /* ============================================================
-     PATH EDITOR — trace the truth, in layers
-     Layers: path (gold — Pomelo's walk line) and markers (mint,
-     snapped onto the path). N or the mode button switches layers;
-     Z undoes in the active layer; C clears the active layer.
-     Copy JSON yields a realm-tagged snippet to paste back for
-     committing.
+     PATH EDITOR — a graph of nodes and paths, select-first.
+     Click a node or a path: it selects (red). Selected node +
+     click another node = connect; selected node + click empty =
+     new connected node (tracing). Delete removes a node WITH its
+     paths, or just the selected path. Drag moves nodes only.
+     Tools: 1 walk graph · 2 trial markers · 3 start · 4 boss.
+     S toggles stairs on a selected path. Z = undo. No modes.
      ============================================================ */
-  var edPath = [], edNodes = [], edStairs = [], edBossA = [], edStart = null;
-  var edMode = 'path';
-  var ED_MODES = ['path', 'nodes', 'start', 'stairs', 'boss'];
+  var edG = null, edMk = [], edStart = null, edBossA = [];
+  var edMode = 'graph';
+  var ED_MODES = ['graph', 'marks', 'start', 'boss'];
   var ED_LABEL = {
-    path: 'Tracing: Pomelo\u2019s path (1)',
-    nodes: 'Placing: markers (2)',
-    start: 'Placing: START point (3)',
-    stairs: 'Placing: stair pairs (4)',
-    boss: 'Outlining: boss room (5)'
+    graph: 'Walk graph (1)',
+    marks: 'Trial markers (2)',
+    start: 'START point (3)',
+    boss: 'Boss room (4)'
   };
   var edBar = null;
-
-  function drawTrace() {
-    if (!trace) return;
-    trace.width = worldW; trace.height = worldH;
-    var tc = null;
-    try { tc = trace.getContext('2d'); } catch (e) {}
-    if (!tc) return;
-    tc.clearRect(0, 0, worldW, worldH);
-    if (!editing) return;
-    function line(pointsList, color) {
-      if (!pointsList.length) return;
-      tc.lineWidth = 3;
-      tc.strokeStyle = color;
-      tc.beginPath();
-      pointsList.forEach(function (p, i) {
-        var x = p[0] * worldW, y = p[1] * worldH;
-        if (i === 0) tc.moveTo(x, y); else tc.lineTo(x, y);
-      });
-      tc.stroke();
-      pointsList.forEach(function (p) {
-        tc.fillStyle = color;
-        tc.fillRect(p[0] * worldW - 4, p[1] * worldH - 4, 8, 8);
-      });
-    }
-    line(edPath.length ? edPath : norm, 'rgba(242,182,60,0.9)');
-    (edNodes.length ? edNodes : (realm.nodes || [])).forEach(function (p) {
-      tc.fillStyle = '#7FE3C0';
-      tc.beginPath();
-      tc.arc(p[0] * worldW, p[1] * worldH, 7, 0, Math.PI * 2);
-      tc.fill();
-    });
-    /* stair pairs paint the actual stretch of path they bracket, so a
-       flight reads as a flight and not two lonely squares */
-    var stActive = edStairs.length ? edStairs : (realm.stairs || []);
-    var pActive = edPath.length >= 2 ? edPath : norm;
-    var save = norm;
-    norm = pActive; buildPolyline();
-    for (var si = 0; si + 1 < stActive.length; si += 2) {
-      var sA = nearestS(stActive[si][0] * worldW, stActive[si][1] * worldH);
-      var sB = nearestS(stActive[si + 1][0] * worldW, stActive[si + 1][1] * worldH);
-      var lo = Math.min(sA, sB), hi = Math.max(sA, sB);
-      tc.lineWidth = 7;
-      tc.strokeStyle = 'rgba(180,140,232,0.85)';
-      tc.beginPath();
-      var p0 = pointAt(lo);
-      tc.moveTo(p0.x, p0.y);
-      for (var ci = 1; ci < pts.length - 1; ci++) {
-        if (cum[ci] > lo && cum[ci] < hi) tc.lineTo(pts[ci][0], pts[ci][1]);
-      }
-      var p1 = pointAt(hi);
-      tc.lineTo(p1.x, p1.y);
-      tc.stroke();
-    }
-    norm = save; buildPolyline();
-    stActive.forEach(function (p, i) {
-      tc.fillStyle = '#b48ce8';
-      if (i === stActive.length - 1 && stActive.length % 2) {   // waiting for its top
-        tc.strokeStyle = '#b48ce8'; tc.lineWidth = 2;
-        tc.strokeRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
-      } else {
-        tc.fillRect(p[0] * worldW - 6, p[1] * worldH - 6, 12, 12);
-      }
-    });
-    function activePt(i) {
-      return edMode === 'start' ? edStart
-        : { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[edMode][i];
-    }
-    if (edHoverIdx > -1 && edHoverIdx !== edSel) {   // aiming ring
-      var hp = activePt(edHoverIdx);
-      if (hp) {
-        tc.lineWidth = 1.5;
-        tc.strokeStyle = 'rgba(255,217,122,0.7)';
-        tc.beginPath(); tc.arc(hp[0] * worldW, hp[1] * worldH, 11, 0, Math.PI * 2); tc.stroke();
-      }
-    }
-    if (edSel > -1 || (edMode === 'start' && edSel === 0)) {   // the selection
-      var sp = activePt(edSel);
-      if (sp) {
-        tc.lineWidth = 3;
-        tc.strokeStyle = '#ffd97a';
-        tc.beginPath(); tc.arc(sp[0] * worldW, sp[1] * worldH, 12, 0, Math.PI * 2); tc.stroke();
-        tc.beginPath(); tc.arc(sp[0] * worldW, sp[1] * worldH, 4, 0, Math.PI * 2); tc.stroke();
-      }
-    }
-    var bz = edBossA.length ? edBossA : (realm.bossArea || []);
-    if (bz.length) {
-      tc.lineWidth = 3;
-      tc.strokeStyle = 'rgba(226,105,90,0.95)';
-      tc.fillStyle = 'rgba(226,105,90,0.14)';
-      tc.beginPath();
-      bz.forEach(function (p, i) {
-        var x = p[0] * worldW, y = p[1] * worldH;
-        if (i === 0) tc.moveTo(x, y); else tc.lineTo(x, y);
-      });
-      if (bz.length >= 3) { tc.closePath(); tc.fill(); }
-      tc.stroke();
-      bz.forEach(function (p) {
-        tc.fillStyle = 'rgba(226,105,90,0.95)';
-        tc.fillRect(p[0] * worldW - 4, p[1] * worldH - 4, 8, 8);
-      });
-    }
-    var stp = edStart || realm.start;
-    if (stp) {   // the start point: a blue diamond
-      var sx = stp[0] * worldW, sy = stp[1] * worldH;
-      tc.fillStyle = '#58a6ff';
-      tc.beginPath();
-      tc.moveTo(sx, sy - 10); tc.lineTo(sx + 10, sy); tc.lineTo(sx, sy + 10); tc.lineTo(sx - 10, sy);
-      tc.closePath(); tc.fill();
-    }
-  }
-
-  function edJSON() {
-    var r3 = function (v) { return Math.round(v * 1000) / 1000; };
-    var rr = function (list) { return list.map(function (p) { return [r3(p[0]), r3(p[1])]; }); };
-    var start = edStart || realm.start || null;
-    return JSON.stringify({
-      realm: realm.id,
-      path: rr(edPath.length ? edPath : norm),
-      nodes: rr(edNodes.length ? edNodes : (realm.nodes || [])),
-      start: start ? [r3(start[0]), r3(start[1])] : null,
-      stairs: rr(edStairs.length ? edStairs : (realm.stairs || [])),
-      bossArea: rr(edBossA.length ? edBossA : (realm.bossArea || []))
-    });
-  }
-
-  function edLayer() {
-    return { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[edMode];
-  }
-  /* loop snapping: a path click within range of an earlier vertex reuses
-     that vertex EXACTLY, so a loop closes instead of almost-closing and
-     getting cut off at the seam */
-  var SNAP = 14, edHover = null;
-  /* ---------- point editing: hover a point of the active tool to target
-     it (gold ring); drag moves it, Delete removes it, a click on the path
-     line inserts a vertex there; Z is a true undo stack ---------- */
-  var GRAB = 12, edHoverIdx = -1;
-  var edEdit = false;              // false: ADD (tracing) · true: EDIT (select/move/delete)
-  var edSel = -1;                  // the selected point of the active tool
+  var edSel = null;                 // {kind:'gnode'|'gedge'|'mark'|'start'|'boss', i}
+  var edHov = null;                 // same shape, aiming feedback
+  var GRAB = 12, EDGEGRAB = 8;
   var edUndo = [];
   var edDrag = false, edDragMoved = false, edPendingSnap = null;
-  var edDownX = 0, edDownY = 0;    // real mice jitter: a drag needs >4px of travel
-  function layerSnapshot() {
-    return { mode: edMode,
-      arr: edMode === 'start' ? (edStart ? [edStart.slice()] : [])
-                              : edLayer().map(function (p) { return p.slice(); }) };
+  var edDownX = 0, edDownY = 0;     // real mice jitter: a drag needs >4px
+
+  function edSnapshot() {
+    return JSON.stringify({ g: edG, mk: edMk, st: edStart, bo: edBossA });
   }
   function pushUndo(snap) {
-    edUndo.push(snap || layerSnapshot());
+    edUndo.push(snap || edSnapshot());
     if (edUndo.length > 60) edUndo.shift();
   }
   function popUndo() {
     var u = edUndo.pop();
     if (!u) return;
-    if (u.mode === 'start') { edStart = u.arr.length ? u.arr[0] : null; }
-    else {
-      var arr = { path: edPath, nodes: edNodes, stairs: edStairs, boss: edBossA }[u.mode];
-      arr.length = 0;
-      u.arr.forEach(function (p) { arr.push(p); });
-    }
-    edMode = u.mode; edSel = -1; edHoverIdx = -1;
+    var o = JSON.parse(u);
+    edG = o.g; edMk = o.mk; edStart = o.st; edBossA = o.bo;
+    edSel = null; edHov = null;
   }
-  function handleAt(w) {
-    var arr = edMode === 'start' ? (edStart ? [edStart] : []) : edLayer();
-    var best = -1, bestD = GRAB * GRAB;
+
+  function gW(i) { return [edG.nodes[i][0] * worldW, edG.nodes[i][1] * worldH]; }
+  function edNodeAt(w) {
+    var best = -1, bd = GRAB * GRAB;
+    edG.nodes.forEach(function (n, i) {
+      var d = Math.pow(n[0] * worldW - w.x, 2) + Math.pow(n[1] * worldH - w.y, 2);
+      if (d <= bd) { bd = d; best = i; }
+    });
+    return best;
+  }
+  function edEdgeAt(w) {
+    var best = -1, bd = EDGEGRAB * EDGEGRAB;
+    edG.edges.forEach(function (e, i) {
+      var a = gW(e[0]), b = gW(e[1]);
+      var vx = b[0] - a[0], vy = b[1] - a[1];
+      var L2 = vx * vx + vy * vy || 1;
+      var t = ((w.x - a[0]) * vx + (w.y - a[1]) * vy) / L2;
+      if (t <= 0.04 || t >= 0.96) return;      // node zones aren't the line
+      var d = Math.pow(w.x - (a[0] + vx * t), 2) + Math.pow(w.y - (a[1] + vy * t), 2);
+      if (d <= bd) { bd = d; best = i; }
+    });
+    return best;
+  }
+  function edPointAt(arr, w) {
+    var best = -1, bd = GRAB * GRAB;
     arr.forEach(function (p, i) {
-      var dx = p[0] * worldW - w.x, dy = p[1] * worldH - w.y;
-      var d = dx * dx + dy * dy;
-      if (d <= bestD) { bestD = d; best = i; }
+      var d = Math.pow(p[0] * worldW - w.x, 2) + Math.pow(p[1] * worldH - w.y, 2);
+      if (d <= bd) { bd = d; best = i; }
     });
     return best;
   }
-  function segmentAt(w) {          // nearest path segment, for mid-line inserts
-    var best = -1, bestD = 100;    // within 10px of the line
-    for (var i = 1; i < edPath.length; i++) {
-      var ax = edPath[i - 1][0] * worldW, ay = edPath[i - 1][1] * worldH;
-      var bx = edPath[i][0] * worldW, by = edPath[i][1] * worldH;
-      var vx = bx - ax, vy = by - ay, L2 = vx * vx + vy * vy || 1;
-      var t = ((w.x - ax) * vx + (w.y - ay) * vy) / L2;
-      if (t <= 0.02 || t >= 0.98) continue;      // vertex zones aren't the line
-      var px = ax + vx * t, py = ay + vy * t;
-      var d = (w.x - px) * (w.x - px) + (w.y - py) * (w.y - py);
-      if (d <= bestD) { bestD = d; best = i; }
+  function edSnapToGraph(w) {       // markers and start ride the walk lines
+    var best = null;
+    edG.edges.forEach(function (e) {
+      var a = gW(e[0]), b = gW(e[1]);
+      var vx = b[0] - a[0], vy = b[1] - a[1];
+      var L2 = vx * vx + vy * vy || 1;
+      var t = Math.min(Math.max(((w.x - a[0]) * vx + (w.y - a[1]) * vy) / L2, 0), 1);
+      var px = a[0] + vx * t, py = a[1] + vy * t;
+      var d = Math.pow(w.x - px, 2) + Math.pow(w.y - py, 2);
+      if (!best || d < best.d) best = { d: d, p: [px / worldW, py / worldH] };
+    });
+    return best ? best.p : [w.x / worldW, w.y / worldH];
+  }
+  function edConnect(a, b) {        // add path a-b unless it exists
+    if (a === b) return false;
+    var dup = edG.edges.some(function (e) {
+      return (e[0] === a && e[1] === b) || (e[0] === b && e[1] === a);
+    });
+    if (!dup) edG.edges.push([a, b]);
+    return !dup;
+  }
+  function edDeleteNode(i) {        // the node goes, and every attached path
+    var remap = [];
+    edG.edges.forEach(function (e, ei) { if (e[0] === i || e[1] === i) remap.push(ei); });
+    edG.stairs = edG.stairs
+      .filter(function (s) { return remap.indexOf(s) === -1; })
+      .map(function (s) { return s - remap.filter(function (r) { return r < s; }).length; });
+    edG.edges = edG.edges.filter(function (e) { return e[0] !== i && e[1] !== i; });
+    edG.edges.forEach(function (e) {
+      if (e[0] > i) e[0] -= 1;
+      if (e[1] > i) e[1] -= 1;
+    });
+    edG.nodes.splice(i, 1);
+  }
+  function edDeleteEdge(i) {        // the path only; its nodes remain
+    edG.stairs = edG.stairs
+      .filter(function (s) { return s !== i; })
+      .map(function (s) { return s > i ? s - 1 : s; });
+    edG.edges.splice(i, 1);
+  }
+  function afterEdit() {
+    if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
+    drawTrace(); syncEditorBar();
+  }
+
+  function drawTrace() {
+    if (!trace) return;
+    trace.width = worldW;
+    trace.height = worldH;
+    var tc = null;
+    try { tc = trace.getContext('2d'); } catch (e) {}
+    if (!tc || !editing || !edG) return;
+    var SELRED = '#ff5148';
+    edG.edges.forEach(function (e, i) {
+      var a = gW(e[0]), b = gW(e[1]);
+      var sel = edSel && edSel.kind === 'gedge' && edSel.i === i;
+      tc.lineWidth = sel ? 7 : (edG.stairs.indexOf(i) > -1 ? 6 : 4);
+      tc.strokeStyle = sel ? SELRED
+        : (edG.stairs.indexOf(i) > -1 ? 'rgba(180,140,232,0.9)' : 'rgba(242,182,60,0.9)');
+      tc.beginPath(); tc.moveTo(a[0], a[1]); tc.lineTo(b[0], b[1]); tc.stroke();
+    });
+    edG.nodes.forEach(function (n, i) {
+      var sel = edSel && edSel.kind === 'gnode' && edSel.i === i;
+      tc.fillStyle = sel ? SELRED : '#f2d493';
+      tc.strokeStyle = sel ? SELRED : '#4b1e09';
+      tc.lineWidth = 2;
+      tc.fillRect(n[0] * worldW - 6, n[1] * worldH - 6, 12, 12);
+      tc.strokeRect(n[0] * worldW - 6, n[1] * worldH - 6, 12, 12);
+    });
+    edMk.forEach(function (p, i) {
+      var sel = edSel && edSel.kind === 'mark' && edSel.i === i;
+      tc.fillStyle = sel ? SELRED : '#7FE3C0';
+      tc.beginPath();
+      tc.arc(p[0] * worldW, p[1] * worldH, 8, 0, Math.PI * 2);
+      tc.fill();
+    });
+    if (edBossA.length) {
+      tc.lineWidth = 3;
+      tc.strokeStyle = 'rgba(242,182,60,0.8)';
+      tc.beginPath();
+      edBossA.forEach(function (p, i) {
+        if (i === 0) tc.moveTo(p[0] * worldW, p[1] * worldH);
+        else tc.lineTo(p[0] * worldW, p[1] * worldH);
+      });
+      if (edBossA.length > 2) tc.closePath();
+      tc.stroke();
+      edBossA.forEach(function (p, i) {
+        var sel = edSel && edSel.kind === 'boss' && edSel.i === i;
+        tc.fillStyle = sel ? SELRED : '#f2b63c';
+        tc.fillRect(p[0] * worldW - 5, p[1] * worldH - 5, 10, 10);
+      });
     }
-    return best;
+    if (edStart) {
+      var sel2 = edSel && edSel.kind === 'start';
+      tc.fillStyle = sel2 ? SELRED : '#7fd0f2';
+      tc.beginPath();
+      tc.arc(edStart[0] * worldW, edStart[1] * worldH, 9, 0, Math.PI * 2);
+      tc.fill();
+    }
+    if (edHov && !(edSel && edSel.kind === edHov.kind && edSel.i === edHov.i)) {
+      var hp = edHov.kind === 'gnode' ? edG.nodes[edHov.i]
+        : edHov.kind === 'mark' ? edMk[edHov.i]
+        : edHov.kind === 'boss' ? edBossA[edHov.i]
+        : edHov.kind === 'start' ? edStart : null;
+      if (hp) {
+        tc.lineWidth = 1.5;
+        tc.strokeStyle = 'rgba(255,217,122,0.7)';
+        tc.beginPath();
+        tc.arc(hp[0] * worldW, hp[1] * worldH, 12, 0, Math.PI * 2);
+        tc.stroke();
+      }
+    }
   }
-  function snapVertex(w) {
-    var best = null, bestD = SNAP * SNAP;
-    edPath.forEach(function (p) {
-      var dx = p[0] * worldW - w.x, dy = p[1] * worldH - w.y;
-      var d = dx * dx + dy * dy;
-      if (d <= bestD) { bestD = d; best = p; }
-    });
-    return best;
+
+  function hitTest(w) {             // what the active tool sees under the mouse
+    if (edMode === 'graph') {
+      var n = edNodeAt(w);
+      if (n > -1) return { kind: 'gnode', i: n };
+      var e = edEdgeAt(w);
+      if (e > -1) return { kind: 'gedge', i: e };
+      return null;
+    }
+    if (edMode === 'marks') {
+      var m = edPointAt(edMk, w);
+      return m > -1 ? { kind: 'mark', i: m } : null;
+    }
+    if (edMode === 'start') {
+      return (edStart && edPointAt([edStart], w) === 0) ? { kind: 'start', i: 0 } : null;
+    }
+    var b = edPointAt(edBossA, w);
+    return b > -1 ? { kind: 'boss', i: b } : null;
   }
+  function sameSel(a, b) { return a && b && a.kind === b.kind && a.i === b.i; }
+
   var hoverRaf = 0;
   stage.addEventListener('mousemove', function (e) {
-    if (!editing) return;
+    if (!editing || !edG) return;
     var w = worldPoint(e);
-    if (edDrag) {                              // moving the grabbed point
-      if (!edDragMoved &&
-          Math.hypot(w.x - edDownX, w.y - edDownY) <= 4) return;   // just jitter
+    if (edDrag) {
+      if (!edDragMoved && Math.hypot(w.x - edDownX, w.y - edDownY) <= 4) return;
       if (edPendingSnap) { pushUndo(edPendingSnap); edPendingSnap = null; }
       edDragMoved = true;
-      var p = edMode === 'start' ? edStart : edLayer()[edSel];
-      if (p) {
-        var q = (edMode === 'nodes' || edMode === 'stairs' || edMode === 'start')
-          ? snapToPath(w)                      // path-bound markers stay on the line
-          : [w.x / worldW, w.y / worldH];
-        p[0] = q[0]; p[1] = q[1];
+      if (edSel.kind === 'gnode') {
+        edG.nodes[edSel.i] = [w.x / worldW, w.y / worldH];
+      } else if (edSel.kind === 'mark') {
+        edMk[edSel.i] = edSnapToGraph(w);
+      } else if (edSel.kind === 'start') {
+        edStart = edSnapToGraph(w);
+      } else if (edSel.kind === 'boss') {
+        edBossA[edSel.i] = [w.x / worldW, w.y / worldH];
       }
       drawTrace(); syncEditorBar();
       return;
@@ -1116,72 +1338,64 @@
     if (hoverRaf) return;
     hoverRaf = window.requestAnimationFrame(function () {
       hoverRaf = 0;
-      var prevI = edHoverIdx;
-      edHoverIdx = handleAt(w);
-      if (prevI !== edHoverIdx) drawTrace();
+      var prev = edHov;
+      edHov = hitTest(w);
+      if (edHov && edHov.kind === 'gedge') edHov = null;   // edges get no ring
+      if (JSON.stringify(prev) !== JSON.stringify(edHov)) drawTrace();
     });
   });
   stage.addEventListener('mousedown', function (e) {
-    if (!editing || !edEdit) return;
+    if (!editing || !edG) return;
     if (e.target.closest('.rw-editor') || e.target.closest('.rw-hud')) return;
-    var w0 = worldPoint(e);
-    var h = handleAt(w0);
-    if (h > -1) {
+    var w = worldPoint(e);
+    var h = hitTest(w);
+    if (h && h.kind !== 'gedge') {              // paths cannot be dragged
       edSel = h;
       edDrag = true; edDragMoved = false;
-      edDownX = w0.x; edDownY = w0.y;
-      edPendingSnap = layerSnapshot();         // undo lands only if it truly moves
+      edDownX = w.x; edDownY = w.y;
+      edPendingSnap = edSnapshot();             // undo lands only if it moves
       drawTrace();
     }
   });
   document.addEventListener('mouseup', function () {
     if (edDrag) { edDrag = false; edPendingSnap = null; }
   });
-  function snapToPath(w) {
-    var save = norm;
-    if (edPath.length >= 2) { norm = edPath; buildPolyline(); }
-    var s = nearestS(w.x, w.y);
-    var q = pointAt(s);
-    norm = save; buildPolyline();
-    return [q.x / worldW, q.y / worldH];
-  }
-  function editorClick(w, ev) {
-    if (edDragMoved) { edDragMoved = false; return; }           // that was a drag
-    var force = ev && ev.shiftKey;                              // shift always adds
-    var h = handleAt(w);
-    if (edEdit && !force) {                                     // EDIT: select / insert / deselect
-      if (h > -1) { edSel = h; drawTrace(); return; }
-      if (edMode === 'path') {
-        var seg = segmentAt(w);
-        if (seg > -1) {                                         // on the line: insert a vertex
-          pushUndo();
-          edPath.splice(seg, 0, [w.x / worldW, w.y / worldH]);
-          if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
-          drawTrace(); syncEditorBar();
+
+  function editorClick(w) {
+    if (edDragMoved) { edDragMoved = false; return; }   // that was a drag
+    var h = hitTest(w);
+    if (edMode === 'graph') {
+      if (h && h.kind === 'gnode') {
+        if (edSel && edSel.kind === 'gnode') {
+          if (edSel.i === h.i) { edSel = null; drawTrace(); return; }  // toggle off
+          pushUndo();                            // node -> node: connect them
+          edConnect(edSel.i, h.i);
+          edSel = h;                             // chaining continues here
+          afterEdit();
           return;
         }
+        edSel = h; drawTrace(); return;          // select the node
       }
-      edSel = -1; drawTrace();                                  // empty click deselects
+      if (h && h.kind === 'gedge') { edSel = h; drawTrace(); return; }
+      pushUndo();                                // empty ground: a new node...
+      edG.nodes.push([w.x / worldW, w.y / worldH]);
+      var ni = edG.nodes.length - 1;
+      if (edSel && edSel.kind === 'gnode') edConnect(edSel.i, ni);  // ...already connected
+      edSel = { kind: 'gnode', i: ni };
+      afterEdit();
       return;
     }
-    if (h > -1 && edMode !== 'path' && !force) return;          // no accidental marker dupes
-    edSel = -1;
+    if (h) { edSel = h; drawTrace(); return; }   // other tools: select
     pushUndo();
-    if (edMode === 'nodes') edNodes.push(snapToPath(w));          // snapped to the line
-    else if (edMode === 'stairs') edStairs.push(snapToPath(w));   // snapped to the line, in pairs
-    else if (edMode === 'start') edStart = snapToPath(w);         // one only; re-click moves it
-    else if (edMode === 'boss') edBossA.push([w.x / worldW, w.y / worldH]);
-    else {
-      var sv = snapVertex(w);
-      edPath.push(sv ? sv.slice() : [w.x / worldW, w.y / worldH]);  // near a vertex: loops close
-    }
-    if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
-    drawTrace();
-    syncEditorBar();
+    if (edMode === 'marks') { edMk.push(edSnapToGraph(w)); edSel = { kind: 'mark', i: edMk.length - 1 }; }
+    else if (edMode === 'start') { edStart = edSnapToGraph(w); edSel = { kind: 'start', i: 0 }; }
+    else { edBossA.push([w.x / worldW, w.y / worldH]); edSel = { kind: 'boss', i: edBossA.length - 1 }; }
+    afterEdit();
   }
   function cycleMode() {
     edMode = ED_MODES[(ED_MODES.indexOf(edMode) + 1) % ED_MODES.length];
-    syncEditorBar();
+    edSel = null; edHov = null;
+    drawTrace(); syncEditorBar();
   }
   function editorKey(e) {
     if (e.key === 'z' || e.key === 'Z') {
@@ -1191,27 +1405,37 @@
     }
     if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'x' || e.key === 'X') {
       e.preventDefault();
-      if (edMode === 'start') { if (edStart) { pushUndo(); edStart = null; edSel = -1; } }
-      else if (edSel > -1) { pushUndo(); edLayer().splice(edSel, 1); edSel = -1; }
-      else if (edLayer().length) { pushUndo(); edLayer().pop(); }   // nothing selected: trim the tail
+      if (!edSel) return;                        // delete needs a selection
+      pushUndo();
+      if (edSel.kind === 'gnode') edDeleteNode(edSel.i);
+      else if (edSel.kind === 'gedge') edDeleteEdge(edSel.i);
+      else if (edSel.kind === 'mark') edMk.splice(edSel.i, 1);
+      else if (edSel.kind === 'start') edStart = null;
+      else if (edSel.kind === 'boss') edBossA.splice(edSel.i, 1);
+      edSel = null;
       drawTrace(); syncEditorBar();
     }
-    if (e.key === 'Escape') { edSel = -1; edHoverIdx = -1; drawTrace(); }
+    if (e.key === 's' || e.key === 'S') {        // stairs live on selected paths
+      if (edSel && edSel.kind === 'gedge') {
+        pushUndo();
+        var at = edG.stairs.indexOf(edSel.i);
+        if (at > -1) edG.stairs.splice(at, 1); else edG.stairs.push(edSel.i);
+        drawTrace(); syncEditorBar();
+      }
+    }
+    if (e.key === 'Escape') { edSel = null; edHov = null; drawTrace(); }
     if (e.key === 'c' || e.key === 'C') {
       pushUndo();
-      if (edMode === 'start') edStart = null; else edLayer().length = 0;
-      edSel = -1; edHoverIdx = -1;
+      if (edMode === 'graph') edG = { nodes: [], edges: [], stairs: [] };
+      else if (edMode === 'marks') edMk = [];
+      else if (edMode === 'start') edStart = null;
+      else edBossA = [];
+      edSel = null;
       drawTrace(); syncEditorBar();
     }
-    if (e.key === 'v' || e.key === 'V') {
-      edEdit = !edEdit;
-      if (!edEdit) edSel = -1;
-      edHoverIdx = -1;
-      drawTrace(); syncEditorBar();
-    }
-    if (e.key === 'n' || e.key === 'N') { edSel = -1; edHoverIdx = -1; cycleMode(); }
-    var digits = { '1': 'path', '2': 'nodes', '3': 'start', '4': 'stairs', '5': 'boss' };
-    if (digits[e.key]) { edMode = digits[e.key]; edSel = -1; edHoverIdx = -1; syncEditorBar(); }
+    if (e.key === 'n' || e.key === 'N') cycleMode();
+    var digits = { '1': 'graph', '2': 'marks', '3': 'start', '4': 'boss' };
+    if (digits[e.key]) { edMode = digits[e.key]; edSel = null; edHov = null; drawTrace(); syncEditorBar(); }
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
       edCam += stageW * 0.35; camera(); e.preventDefault();
     }
@@ -1219,27 +1443,32 @@
       edCam -= stageW * 0.35; camera(); e.preventDefault();
     }
   }
+  function edJSON() {
+    var r3 = function (p) { return [Math.round(p[0] * 1000) / 1000, Math.round(p[1] * 1000) / 1000]; };
+    return JSON.stringify({
+      realm: realm.id,
+      path: { nodes: edG.nodes.map(r3), edges: edG.edges, stairs: edG.stairs },
+      nodes: edMk.map(r3),
+      start: edStart ? r3(edStart) : null,
+      bossArea: edBossA.map(r3)
+    });
+  }
   function syncEditorBar() {
     if (!edBar) return;
     edBar.querySelector('#rw-ed-mode').textContent =
-      ED_LABEL[edMode] + ' \u00B7 ' + (edEdit ? 'EDIT' : 'ADD');
-    edBar.querySelector('#rw-ed-editbtn').textContent = edEdit ? 'Add mode (V)' : 'Edit mode (V)';
-    var flights = Math.floor(edStairs.length / 2) + ' flights' + (edStairs.length % 2 ? ' +1 pending' : '');
+      ED_LABEL[edMode] + (edSel ? ' \u00B7 selected: ' +
+        (edSel.kind === 'gnode' ? 'node' : edSel.kind === 'gedge' ? 'path' : edSel.kind) : '');
     edBar.querySelector('#rw-ed-count').textContent =
-      edPath.length + ' path \u00B7 ' + edNodes.length + ' markers \u00B7 ' +
-      flights + ' \u00B7 ' + edBossA.length + ' boss pts \u00B7 start ' +
-      (edStart || realm.start ? '\u2713' : '\u2014');
+      edG.nodes.length + ' nodes \u00B7 ' + edG.edges.length + ' paths \u00B7 ' +
+      edG.stairs.length + ' stairs \u00B7 ' + edMk.length + ' trials \u00B7 ' +
+      edBossA.length + ' boss pts \u00B7 start ' + (edStart ? '\u2713' : '\u2014');
     edBar.querySelector('#rw-ed-json').value = edJSON();
-    edBar.querySelector('#rw-ed-toggle').textContent = 'Next tool (N)';
   }
   function enterEditor() {
     document.body.classList.add('is-editing');
-    // seed the editing layers from committed data, so committed points are
-    // real, editable, undoable items — not a phantom fallback that reappears
-    // the moment a layer empties (the "undo isn't working" illusion)
-    edPath = (realm.path || []).map(function (p) { return p.slice(); });
-    edNodes = (realm.nodes || []).map(function (p) { return p.slice(); });
-    edStairs = (realm.stairs || []).map(function (p) { return p.slice(); });
+    // seed from committed data (legacy chains arrive pre-migrated as GN)
+    edG = JSON.parse(JSON.stringify(GN));
+    edMk = (realm.nodes || []).map(function (p) { return p.slice(); });
     edBossA = (realm.bossArea || []).map(function (p) { return p.slice(); });
     edStart = realm.start ? realm.start.slice() : null;
     edBar = document.createElement('div');
@@ -1248,22 +1477,20 @@
       '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span>' +
       '<button class="rw-ed-min type-utility" id="rw-ed-min" type="button" title="Minimize">\u2013</button></p>' +
       '<div class="rw-ed-legend type-utility">' +
-        '<span><b>1\u20135</b> tools</span>' +
-        '<span><b>N</b> next</span>' +
-        '<span><b>V</b> add\u21C4edit</span>' +
-        '<span>add: <b>click</b> places \u00B7 near vertex snaps</span>' +
-        '<span>edit: <b>click</b> selects \u00B7 line inserts</span>' +
-        '<span><b>drag</b> move</span>' +
-        '<span><b>del</b> remove</span>' +
+        '<span><b>1\u20134</b> tools</span>' +
+        '<span><b>click</b> select (red) \u00B7 empty adds</span>' +
+        '<span><b>node\u2192node</b> connects</span>' +
+        '<span><b>sel+empty</b> extends</span>' +
+        '<span><b>drag</b> move node</span>' +
+        '<span><b>del</b> node+paths / path only</span>' +
+        '<span><b>S</b> stairs on path</span>' +
         '<span><b>Z</b> undo</span>' +
-        '<span><b>C</b> clear</span>' +
+        '<span><b>esc</b> deselect</span>' +
         '<span><b>\u2190\u2192</b> pan</span>' +
-        '<span class="rw-ed-note">stairs pair bottom\u2192top</span>' +
       '</div>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
-        '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Switch to markers (N)</button>' +
-        '<button class="btn btn-outline" id="rw-ed-editbtn" type="button">Edit mode (V)</button>' +
+        '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Next tool (N)</button>' +
         '<button class="btn btn-outline" id="rw-ed-copy" type="button">Copy JSON</button>' +
         '<button class="btn btn-gold" id="rw-ed-save" type="button">Save preview &amp; walk it</button>' +
       '</div>';
@@ -1278,12 +1505,6 @@
       e.stopPropagation();
       cycleMode();
     });
-    edBar.querySelector('#rw-ed-editbtn').addEventListener('click', function (e) {
-      e.stopPropagation();
-      edEdit = !edEdit;
-      if (!edEdit) edSel = -1;
-      drawTrace(); syncEditorBar();
-    });
     edBar.querySelector('#rw-ed-copy').addEventListener('click', function (e) {
       e.stopPropagation();
       var ta = edBar.querySelector('#rw-ed-json');
@@ -1293,7 +1514,7 @@
     });
     edBar.querySelector('#rw-ed-save').addEventListener('click', function (e) {
       e.stopPropagation();
-      if (edPath.length < 2 && !edNodes.length) {
+      if (edG.edges.length < 1) {
         this.textContent = 'Trace something first';
         return;
       }
