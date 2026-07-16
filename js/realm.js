@@ -1134,6 +1134,7 @@
   var GRAB = 12, EDGEGRAB = 8;
   var edUndo = [];
   var edDrag = false, edDragMoved = false, edPendingSnap = null;
+  var edDragCand = null;            // armed by mousedown; selection stays untouched
   var edDownX = 0, edDownY = 0;     // real mice jitter: a drag needs >4px
 
   function edSnapshot() {
@@ -1323,6 +1324,7 @@
       if (!edDragMoved && Math.hypot(w.x - edDownX, w.y - edDownY) <= 4) return;
       if (edPendingSnap) { pushUndo(edPendingSnap); edPendingSnap = null; }
       edDragMoved = true;
+      edSel = edDragCand;                       // a real drag selects what it grabs
       if (edSel.kind === 'gnode') {
         edG.nodes[edSel.i] = [w.x / worldW, w.y / worldH];
       } else if (edSel.kind === 'mark') {
@@ -1350,15 +1352,14 @@
     var w = worldPoint(e);
     var h = hitTest(w);
     if (h && h.kind !== 'gedge') {              // paths cannot be dragged
-      edSel = h;
-      edDrag = true; edDragMoved = false;
-      edDownX = w.x; edDownY = w.y;
+      edDragCand = h;                           // armed, but NOT selected yet:
+      edDrag = true; edDragMoved = false;       // the click decides selection,
+      edDownX = w.x; edDownY = w.y;             // so node -> node connect survives
       edPendingSnap = edSnapshot();             // undo lands only if it moves
-      drawTrace();
     }
   });
   document.addEventListener('mouseup', function () {
-    if (edDrag) { edDrag = false; edPendingSnap = null; }
+    if (edDrag) { edDrag = false; edDragCand = null; edPendingSnap = null; }
   });
 
   function editorClick(w) {

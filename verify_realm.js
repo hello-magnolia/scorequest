@@ -240,10 +240,17 @@ const load = async (path) => {
   const g2 = gj().path;
   check('Editor: Escape breaks the chain — the next click starts an island',
     g2.nodes.length === g1.nodes.length + 1 && g2.edges.length === g1.edges.length);
-  click(200, 200);                                     // island is selected: node -> node connects
+  const realClick = (x, y) => {     // what hardware actually sends
+    stg.dispatchEvent(new w.MouseEvent('mousedown', { bubbles: true, clientX: x, clientY: y }));
+    d.dispatchEvent(new w.MouseEvent('mouseup', { bubbles: true, clientX: x, clientY: y }));
+    click(x, y);
+  };
+  key2('Escape');                    // drop the auto-selection first
+  realClick(200, 320);               // real-sequence select...
+  realClick(200, 200);               // ...then node -> node connects
   await new Promise(r => setTimeout(r, 40));
   const g3 = gj().path;
-  check('Editor: node then node connects them with a path',
+  check('Editor: node then node connects them with a path (real click sequences)',
     g3.edges.length === g2.edges.length + 1);
   key2('Escape');
   click(200, 260);                                     // the new path's midpoint: selects it
