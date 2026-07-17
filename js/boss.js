@@ -377,6 +377,7 @@
   var params = new URLSearchParams(window.location.search);
   var realmId = params.get('realm') || 'lorewood';
   var B = BOSSES[realmId] || BOSSES.lorewood;
+  document.body.classList.add('bf-realm-' + (BOSSES[realmId] ? realmId : 'lorewood'));
 
   var state = {
     bossHp: B.hp,

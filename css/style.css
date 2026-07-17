@@ -1478,6 +1478,8 @@ a { color: inherit; }
   transform: scaleX(-1);  /* the whole rig faces Pomelo */
 }
 .bf-boss-rig.bf-no-flip { transform: none; }  /* for sprites that already face him */
+/* the Doubling Hare looms larger than the standard rig allows */
+.bf-realm-infinityisles .bf-boss-rig { width: clamp(210px, 34vh, 380px); }
 .bf-boss-img {
   position: relative; z-index: 2;
   width: 100%; height: auto; display: block;
