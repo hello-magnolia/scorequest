@@ -45,21 +45,41 @@ If anything fails here, this server is not serving the repo's current files.</p>
     var ctx = c.getContext('2d');
     ctx.drawImage(img, 0, 0);
     var d = ctx.getImageData(0, 0, c.width, c.height).data;
-    var semi = 0, whiteBg = 0;
-    for (var i = 0; i < d.length; i += 4) {
-      var a = d[i + 3];
-      if (a > 0 && a < 255) semi++;
-      else if (a === 255 && d[i] > 240 && d[i+1] > 240 && d[i+2] > 240) {
-        /* opaque near-white in the corner blocks = background canvas */
-        var px = (i / 4) % c.width, py = Math.floor((i / 4) / c.width);
-        if ((px < 20 || px > c.width - 20) && (py < 20 || py > c.height - 20)) whiteBg++;
-      }
+    var W2 = c.width, H2 = c.height, N = W2 * H2;
+    var semi = 0, clinging = 0;
+    var trans = new Uint8Array(N), body = new Uint8Array(N), cand = [];
+    for (var i = 0; i < N; i++) {
+      var o = i * 4, a = d[o + 3];
+      if (a === 0) { trans[i] = 1; continue; }
+      if (a < 255) { semi++; continue; }
+      var r = d[o], g = d[o+1], b = d[o+2];
+      var lum = (r + g + b) / 3;
+      var spread = Math.max(r, g, b) - Math.min(r, g, b);
+      if (lum > 235 && spread < 18) cand.push(i); else body[i] = 1;
     }
-    var ok = semi < 200 && whiteBg === 0;
+    /* a near-white pixel is background residue when it sits on the
+       silhouette: transparency within 2px AND body art directly adjacent */
+    for (var k = 0; k < cand.length; k++) {
+      var idx = cand[k], px = idx % W2, py = (idx / W2) | 0;
+      var nearTrans = false, touchBody = false;
+      for (var dy = -2; dy <= 2 && !nearTrans; dy++) for (var dx = -2; dx <= 2; dx++) {
+        var yy = py + dy, xx = px + dx;
+        if (yy < 0 || xx < 0 || yy >= H2 || xx >= W2) continue;
+        if (trans[yy * W2 + xx]) { nearTrans = true; break; }
+      }
+      if (!nearTrans) continue;
+      for (var dy2 = -1; dy2 <= 1 && !touchBody; dy2++) for (var dx2 = -1; dx2 <= 1; dx2++) {
+        var y2 = py + dy2, x2 = px + dx2;
+        if (y2 < 0 || x2 < 0 || y2 >= H2 || x2 >= W2) continue;
+        if (body[y2 * W2 + x2]) { touchBody = true; break; }
+      }
+      if (touchBody) clinging++;
+    }
+    var ok = semi < 200 && clinging <= 25;
     var label = document.createElement('div');
     label.className = 'label ' + (ok ? 'pass' : 'fail');
     label.textContent = (ok ? 'PASS ' : 'FAIL ') + path.split('/').pop() +
-      (ok ? '' : ' (semi:' + semi + ' whiteCorners:' + whiteBg + ')');
+      (ok ? '' : ' (semi:' + semi + ' clinging:' + clinging + ')');
     cell.appendChild(label);
     if (!ok) failed++;
     if (++done === files.length) {

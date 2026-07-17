@@ -456,7 +456,7 @@
     document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   }
   var SP = B.sprites;
-  var ASSET_V = '20260717a';       /* bump when boss art changes: stale caches keep old frames alive */
+  var ASSET_V = '20260717b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   Object.keys(SP).forEach(function (k) { var im = new Image(); im.src = SP[k]; });
   function spKey(k, side) { return TW ? (side ? TW.left : TW.right) + '_' + k : k; }
