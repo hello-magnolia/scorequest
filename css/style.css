@@ -1639,6 +1639,14 @@ a { color: inherit; }
 /* the serpents rise from below: their base drops through the arena's
    bottom padding and the gap, landing on the question box's frame line */
 .bf-arena.is-twin .bf-boss-rig { top: calc(clamp(22px, 5vh, 48px) + 14px - var(--pix, 4px)); }
+/* broken ground: a rubble mound sits over each serpent's base so they
+   read as erupting out of the chamber floor */
+.bf-rubble {
+  position: absolute; z-index: 3; bottom: -14px; left: 50%;
+  width: 112%; max-width: none; transform: translateX(-50%);
+  pointer-events: none;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+}
 .bf-side-boss { transition: transform 0.2s ease-out, opacity 0.9s ease; }
 .bf-side-boss.is-lunging { transform: translateX(-9%); }
 .bf-side-boss-left.is-lunging { transform: translateX(9%); }

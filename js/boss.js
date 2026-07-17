@@ -277,13 +277,22 @@
         minus_hurt1: 'assets/boss/mirrormines/minus_hurt1.png',
         minus_hurt2: 'assets/boss/mirrormines/minus_hurt2.png',
         minus_hurt3: 'assets/boss/mirrormines/minus_hurt3.png',
+        minus_faint1: 'assets/boss/mirrormines/minus_faint1.png',
+        minus_faint2: 'assets/boss/mirrormines/minus_faint2.png',
+        minus_faint3: 'assets/boss/mirrormines/minus_faint3.png',
+        minus_faint4: 'assets/boss/mirrormines/minus_faint4.png',
+        plus_faint1: 'assets/boss/mirrormines/plus_faint1.png',
+        plus_faint2: 'assets/boss/mirrormines/plus_faint2.png',
+        plus_faint3: 'assets/boss/mirrormines/plus_faint3.png',
+        plus_faint4: 'assets/boss/mirrormines/plus_faint4.png',
+        rubble: 'assets/boss/mirrormines/rubble.png',
         pomeloAtk1: 'assets/pomelo/attack1.png',
         pomeloAtk2: 'assets/pomelo/attack2.png',
         pomeloAtk3: 'assets/pomelo/attack3.png',
         pomeloAtk4: 'assets/pomelo/attack4.png',
         orange:  'assets/fx/orange.png'
       },
-      bg: 'assets/realms/mirrormines.png',   /* stand-in until a chamber bg lands */
+      bg: 'assets/boss/mirrormines/chamber.png',   /* the mirror chamber proper */
       hp: 10,
       /* two guardians flank Pomelo: minus from the left tunnel (as drawn,
          striking right), plus from the right (mirrored). Both drawn
@@ -295,6 +304,7 @@
       idleMs: 460,
       attackSeq: [['attack1', 340], ['attack2', 300], ['attack3', 460]],
       hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 300]],
+      faintSeq: [['faint1', 300], ['faint2', 320], ['faint3', 360], ['faint4', 520]],
       /* no projectile art: the strike IS the attack. Fangs land mid-lunge
          on the third frame */
       strike: { delay: 900 },
@@ -456,8 +466,18 @@
     document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   }
   var SP = B.sprites;
-  var ASSET_V = '20260717c';       /* bump when boss art changes: stale caches keep old frames alive */
+  var ASSET_V = '20260717d';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
+  if (TW && SP.rubble) {           /* broken ground: the twins erupt through it */
+    [document.getElementById('bf-boss-rig'), document.getElementById('bf-boss-rig-left')].forEach(function (rig) {
+      var rb = document.createElement('img');
+      rb.className = 'bf-rubble';
+      rb.alt = '';
+      rb.draggable = false;
+      rb.src = SP.rubble;
+      rig.appendChild(rb);
+    });
+  }
   Object.keys(SP).forEach(function (k) { var im = new Image(); im.src = SP[k]; });
   function spKey(k, side) { return TW ? (side ? TW.left : TW.right) + '_' + k : k; }
   function setBody(k, side) {
@@ -838,6 +858,16 @@
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
     if (B.faintSeq) {
       playBody(B.faintSeq, true);           // the guardian goes down, and stays down
+      if (TW) {                             // and its twin falls with it
+        if (reduceMotion) { setBody(B.faintSeq[B.faintSeq.length - 1][0], 1); }
+        else {
+          var ft = 0;
+          B.faintSeq.forEach(function (s) {
+            setTimeout(function () { setBody(s[0], 1); }, ft);
+            ft += s[1];
+          });
+        }
+      }
     } else {                                // no faint frames: back into the tunnels
       sideElR.classList.add('is-retreating');
       if (TW) sideElL.classList.add('is-retreating');
@@ -877,6 +907,7 @@
     state.fireball = null;
     busy = false;
     setBody(B.base);
+    if (TW) setBody(B.base, 1);
     buildTails(state.bossMax);
     renderHp();
     ask();
