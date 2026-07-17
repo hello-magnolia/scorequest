@@ -201,6 +201,34 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     d.getElementById('bf-boss-side-left').classList.contains('is-retreating') &&
     await until(() => d.getElementById('bf-victory').hidden === false, 3500));
 
+  /* the sixth guardian: the Doubling Hare of Infinity Isles */
+  w = await load('boss.html?realm=infinityisles');
+  d = w.document;
+  const S7 = w.__SQ_BOSS;
+  check('Infinity Isles: the Doubling Hare waits alone, twelve HP, already facing him',
+    /Doubling Hare/.test(d.getElementById('bf-boss-name').textContent) &&
+    /boss\/infinityisles\/idle/.test(d.getElementById('bf-boss-img').src) &&
+    d.getElementById('bf-boss-rig').classList.contains('bf-no-flip') &&
+    !d.querySelector('.bf-arena').classList.contains('is-twin') &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '456px');
+  d.querySelectorAll('.bf-choice')[(S7.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('A wrong answer brings the pounce, and it lands with no projectile',
+    d.getElementById('bf-fireball').hidden && d.getElementById('bf-beam').hidden &&
+    await until(() => d.getElementById('bf-boss-side').classList.contains('is-lunging'), 1500) &&
+    await until(() => S7.pomeloHp === 2, 2500));
+  await until(() => !d.querySelector('.bf-choice').disabled, 4000);
+  let drain6 = 0;
+  while (!S7.over && drain6++ < 20) {
+    const sk6 = d.querySelector('.sq-skip-test');
+    if (sk6 && !sk6.disabled) sk6.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 620));
+  }
+  check('The Hare goes down on its faint frames and the way opens to Data Docks',
+    S7.over &&
+    await until(() => /faint3/.test(d.getElementById('bf-boss-img').src), 2500) &&
+    /datadocks/.test(d.getElementById('bf-onward').href) &&
+    await until(() => d.getElementById('bf-victory').hidden === false, 3500));
+
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');
   process.exit(passed === results.length ? 0 : 1);

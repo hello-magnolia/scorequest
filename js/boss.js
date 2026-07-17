@@ -317,6 +317,60 @@
         { q: 'Simplify: 4(x + 2) \u2212 3x',
           choices: ['7x + 8', 'x + 2', 'x + 8', 'x + 6'], a: 2 }
       ]
+    },
+
+    infinityisles: {
+      name: 'The Doubling Hare',
+      taunt: 'Blink and there are two of me. Blink again, four. No one outlasts a power of two.',
+      sprites: {
+        idle1: 'assets/boss/infinityisles/idle1.png',
+        idle2: 'assets/boss/infinityisles/idle2.png',
+        idle3: 'assets/boss/infinityisles/idle3.png',
+        attack1: 'assets/boss/infinityisles/attack1.png',
+        attack2: 'assets/boss/infinityisles/attack2.png',
+        attack3: 'assets/boss/infinityisles/attack3.png',
+        hurt1: 'assets/boss/infinityisles/hurt1.png',
+        hurt2: 'assets/boss/infinityisles/hurt2.png',
+        hurt3: 'assets/boss/infinityisles/hurt3.png',
+        faint1: 'assets/boss/infinityisles/faint1.png',
+        faint2: 'assets/boss/infinityisles/faint2.png',
+        faint3: 'assets/boss/infinityisles/faint3.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
+        orange:  'assets/fx/orange.png'
+      },
+      bg: 'assets/realms/infinityisles.png',   /* stand-in until a shoreline chamber lands */
+      hp: 12,
+      flip: false,   /* drawn already facing him */
+      base: 'idle1',
+      idleSeq: ['idle1', 'idle2', 'idle3'],
+      idleMs: 440,
+      attackSeq: [['attack1', 320], ['attack2', 300], ['attack3', 460]],
+      hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 300]],
+      faintSeq: [['faint1', 300], ['faint2', 340], ['faint3', 420]],
+      /* no projectile art: the pounce IS the attack, landing mid-leap */
+      strike: { delay: 900 },
+      next: { id: 'datadocks', name: 'Data Docks' },
+      questions: [
+        { q: 'Solve: x\u00B2 \u2212 9 = 0',
+          choices: ['x = 3 only', 'x = \u00B13', 'x = 9', 'x = 81'], a: 1 },
+        { q: 'If f(x) = x\u00B2 + 1, what is f(3)?',
+          choices: ['7', '9', '10', '16'], a: 2 },
+        { q: 'The vertex of y = (x \u2212 2)\u00B2 + 5 is\u2026',
+          choices: ['(\u22122, 5)', '(2, \u22125)', '(5, 2)', '(2, 5)'], a: 3 },
+        { q: 'One hare doubles every blink: 2, 4, 8, \u2026 How many after the 5th blink?',
+          choices: ['16', '25', '32', '64'], a: 2 },
+        { q: 'If \u221Ax = 6, then x = ?',
+          choices: ['3', '12', '36', '6'], a: 2 },
+        { q: 'Factor: x\u00B2 + 5x + 6',
+          choices: ['(x + 1)(x + 6)', '(x + 2)(x + 3)', '(x \u2212 2)(x \u2212 3)', '(x + 5)(x + 6)'], a: 1 },
+        { q: 'If f(x) = 2x \u2212 1 and g(x) = x\u00B2, what is g(f(2))?',
+          choices: ['9', '7', '3', '25'], a: 0 },
+        { q: 'x\u00B2 = 2x + 3. The positive solution is\u2026',
+          choices: ['1', '3', '\u22121', '2'], a: 1 }
+      ]
     }
   };
 

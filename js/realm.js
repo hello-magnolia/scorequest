@@ -96,7 +96,7 @@
       nodes: [[0.122,0.234],[0.3,0.21],[0.471,0.276],[0.534,0.89],[0.862,0.784]],
       start: [0.092,0.557],
       bossArea: [[0.844,0.333],[0.842,0.178],[0.858,0.137],[0.879,0.158],[0.892,0.225],[0.89,0.387]] },
-    { id: 'infinityisles', name: 'Infinity Isles', domain: 'Advanced Math', ground: 0.78,
+    { id: 'infinityisles', name: 'Infinity Isles', domain: 'Advanced Math', fight: true, ground: 0.78,
       boss: 'The archway hums. Something on the far side keeps doubling.',
       img: ['assets/realms/infinityisles.png', CDN + '/hf_20260712_030318_cb25b618-de99-4606-abc4-0c021da75913.png'],
       /* traced by Magnolia in the graph editor: island hops with two crossings and long open water */
