@@ -106,7 +106,7 @@
       nodes: [[0.266,0.683],[0.432,0.878],[0.403,0.375],[0.454,0.258],[0.396,0.151],[0.711,0.651]],
       start: [0.066,0.497],
       bossArea: [[0.873,0.411],[0.872,0.283],[0.874,0.252],[0.889,0.229],[0.903,0.264],[0.906,0.299],[0.905,0.399],[0.903,0.436]] },
-    { id: 'datadocks', name: 'Data Docks', domain: 'Problem-Solving & Data', ground: 0.80,
+    { id: 'datadocks', name: 'Data Docks', domain: 'Problem-Solving & Data', fight: true, ground: 0.80,
       boss: 'The gangplank is up. The captain\u2019s charts never quite add up.',
       img: ['assets/realms/datadocks.png', CDN + '/hf_20260712_000405_578c3562-4fdd-4209-9609-3de599f599d3.png'],
       /* traced by Magnolia in the graph editor: the pier promenade with a
@@ -117,7 +117,7 @@
       nodes: [[0.435,0.737],[0.195,0.321],[0.412,0.622],[0.646,0.485],[0.808,0.46]],
       start: [0.078,0.603],
       bossArea: [[0.915,0.473],[0.915,0.32],[0.931,0.274],[0.947,0.33],[0.945,0.504]] },
-    { id: 'prismpeaks', name: 'Prism Peaks', domain: 'Geometry & Trigonometry', ground: 0.80, vertical: true,
+    { id: 'prismpeaks', name: 'Prism Peaks', domain: 'Geometry & Trigonometry', fight: true, ground: 0.80, vertical: true,
       boss: 'The nest at the summit. You know who it belongs to \u2014 and who is waiting in it.',
       img: ['assets/realms/prismpeaks.png', CDN + '/hf_20260712_030734_4484dc45-3614-4e52-9af2-b4813c9f6499.png'],
       /* traced by Magnolia in the graph editor: the valley road, an eastern

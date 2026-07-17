@@ -381,6 +381,87 @@
         { q: 'x\u00B2 = 2x + 3. The positive solution is\u2026',
           choices: ['1', '3', '\u22121', '2'], a: 1 }
       ]
+    },
+
+    datadocks: {
+      name: 'The Mean Kraken',                    /* PLACEHOLDER art: single frame */
+      taunt: 'I have seen the distribution, little one. You were always the outlier.',
+      sprites: {
+        idle1: 'assets/boss/datadocks/idle1.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
+        orange:  'assets/fx/orange.png'
+      },
+      bg: 'assets/realms/datadocks.png',          /* stand-in until a dockside chamber lands */
+      hp: 13,
+      flip: false,                                /* drawn facing forward */
+      base: 'idle1',
+      attackSeq: [['idle1', 400]],
+      hurtSeq: [['idle1', 300]],
+      /* no faint art yet: defeat is a slide back beneath the waves */
+      strike: { delay: 900 },
+      next: { id: 'prismpeaks', name: 'Prism Peaks' },
+      questions: [
+        { q: 'What is the mean of 4, 8, 9, and 3?',
+          choices: ['5', '6', '7', '8'], a: 1 },
+        { q: 'What is the median of 3, 7, 8, 12, 30?',
+          choices: ['8', '7', '12', '10'], a: 0 },
+        { q: 'A shirt costs $20 after a 20% discount. What was the original price?',
+          choices: ['$24', '$28', '$25', '$40'], a: 2 },
+        { q: 'Marbles split in a 3:5 ratio, 24 in total. How many in the smaller share?',
+          choices: ['8', '9', '15', '12'], a: 1 },
+        { q: 'A bag holds 3 red and 5 blue marbles. P(red)?',
+          choices: ['3/5', '1/3', '5/8', '3/8'], a: 3 },
+        { q: 'What is 15% of 80?',
+          choices: ['12', '15', '8', '20'], a: 0 },
+        { q: '150 miles in 2.5 hours is a speed of\u2026',
+          choices: ['50 mph', '65 mph', '60 mph', '75 mph'], a: 2 },
+        { q: 'The mean of five numbers is 10. Their sum is\u2026',
+          choices: ['10', '15', '2', '50'], a: 3 }
+      ]
+    },
+
+    prismpeaks: {
+      name: 'The Tangent Talon',                  /* PLACEHOLDER art: idle + faint only */
+      taunt: 'Every path up this peak is an angle I already know. Show me yours.',
+      sprites: {
+        idle1: 'assets/boss/prismpeaks/idle1.png',
+        faint1: 'assets/boss/prismpeaks/faint1.png',
+        pomeloAtk1: 'assets/pomelo/attack1.png',
+        pomeloAtk2: 'assets/pomelo/attack2.png',
+        pomeloAtk3: 'assets/pomelo/attack3.png',
+        pomeloAtk4: 'assets/pomelo/attack4.png',
+        orange:  'assets/fx/orange.png'
+      },
+      bg: 'assets/realms/prismpeaks.png',         /* stand-in until the summit nest lands */
+      hp: 15,
+      flip: false,                                /* drawn already facing him */
+      base: 'idle1',
+      attackSeq: [['idle1', 400]],
+      hurtSeq: [['faint1', 320]],                 /* it droops when struck true */
+      faintSeq: [['faint1', 600]],
+      strike: { delay: 900 },
+      /* the summit is the last stand: no next realm */
+      questions: [
+        { q: 'A right triangle has legs 3 and 4. The hypotenuse is\u2026',
+          choices: ['5', '6', '7', '25'], a: 0 },
+        { q: 'The angles of any triangle sum to\u2026',
+          choices: ['90\u00B0', '360\u00B0', '180\u00B0', '270\u00B0'], a: 2 },
+        { q: 'sin(30\u00B0) = ?',
+          choices: ['1/2', '\u221A3/2', '1', '\u221A2/2'], a: 0 },
+        { q: 'The area of a circle with radius 3 is\u2026',
+          choices: ['6\u03C0', '3\u03C0', '12\u03C0', '9\u03C0'], a: 3 },
+        { q: 'The complement of a 35\u00B0 angle is\u2026',
+          choices: ['55\u00B0', '65\u00B0', '145\u00B0', '45\u00B0'], a: 0 },
+        { q: 'tan(\u03B8) equals\u2026',
+          choices: ['adjacent / opposite', 'opposite / adjacent', 'opposite / hypotenuse', 'hypotenuse / adjacent'], a: 1 },
+        { q: 'A circle with diameter 10 has circumference\u2026',
+          choices: ['5\u03C0', '20\u03C0', '10\u03C0', '100\u03C0'], a: 2 },
+        { q: 'Each angle of an equilateral triangle measures\u2026',
+          choices: ['45\u00B0', '90\u00B0', '30\u00B0', '60\u00B0'], a: 3 }
+      ]
     }
   };
 
@@ -466,7 +547,7 @@
     document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   }
   var SP = B.sprites;
-  var ASSET_V = '20260717d';       /* bump when boss art changes: stale caches keep old frames alive */
+  var ASSET_V = '20260717e';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   if (TW && SP.rubble) {           /* broken ground: the twins erupt through it */
     [document.getElementById('bf-boss-rig'), document.getElementById('bf-boss-rig-left')].forEach(function (rig) {
