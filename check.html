@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ScoreQuest sprite transparency check</title>
+<style>
+  body { background: #16112B; color: #fdf6e3; font-family: monospace; padding: 20px; }
+  h1 { font-size: 18px; }
+  p  { max-width: 70ch; line-height: 1.5; }
+  .grid { display: flex; flex-wrap: wrap; gap: 14px; }
+  .cell { background: #ff00ff; padding: 6px; width: 150px; text-align: center; }
+  .cell img { width: 138px; height: auto; image-rendering: pixelated; display: block; }
+  .label { font-size: 11px; margin-top: 4px; word-break: break-all; }
+  .pass { color: #7CFC93; } .fail { color: #ff5a4e; font-weight: bold; }
+  #summary { font-size: 15px; margin: 14px 0; }
+</style>
+</head>
+<body>
+<h1>Sprite transparency check</h1>
+<p>Every boss frame below is drawn over magenta, exactly as the browser you are
+using right now loads it. A clean sprite shows magenta through its background
+and holes. FAIL means the file THIS page's server delivered has leftover
+background: either semi-transparent pixels or an opaque near-white canvas.
+If anything fails here, this server is not serving the repo's current files.</p>
+<div id="summary">checking&hellip;</div>
+<div class="grid" id="grid"></div>
+<script>
+(function () {
+  var V = Date.now();                       /* always bypass caches for the check */
+  var files = [];
+  ['idle1','idle2','idle3','attack1','attack2','attack3','hurt1','hurt2','hurt3'].forEach(function (f) {
+    files.push('assets/boss/mirrormines/minus_' + f + '.png');
+    files.push('assets/boss/mirrormines/plus_' + f + '.png');
+  });
+  ['idle1','idle2','idle3','attack1','attack2','attack3','hurt1','hurt2','hurt3','faint1','faint2','faint3'].forEach(function (f) {
+    files.push('assets/boss/infinityisles/' + f + '.png');
+  });
+
+  var grid = document.getElementById('grid');
+  var done = 0, failed = 0;
+
+  function judge(img, path, cell) {
+    var c = document.createElement('canvas');
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    var ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var d = ctx.getImageData(0, 0, c.width, c.height).data;
+    var semi = 0, whiteBg = 0;
+    for (var i = 0; i < d.length; i += 4) {
+      var a = d[i + 3];
+      if (a > 0 && a < 255) semi++;
+      else if (a === 255 && d[i] > 240 && d[i+1] > 240 && d[i+2] > 240) {
+        /* opaque near-white in the corner blocks = background canvas */
+        var px = (i / 4) % c.width, py = Math.floor((i / 4) / c.width);
+        if ((px < 20 || px > c.width - 20) && (py < 20 || py > c.height - 20)) whiteBg++;
+      }
+    }
+    var ok = semi < 200 && whiteBg === 0;
+    var label = document.createElement('div');
+    label.className = 'label ' + (ok ? 'pass' : 'fail');
+    label.textContent = (ok ? 'PASS ' : 'FAIL ') + path.split('/').pop() +
+      (ok ? '' : ' (semi:' + semi + ' whiteCorners:' + whiteBg + ')');
+    cell.appendChild(label);
+    if (!ok) failed++;
+    if (++done === files.length) {
+      var s = document.getElementById('summary');
+      s.textContent = failed === 0
+        ? 'ALL ' + files.length + ' FRAMES PASS: this server is delivering clean transparent sprites.'
+        : failed + ' of ' + files.length + ' frames FAILED: this server is delivering old or raw sprite files.';
+      s.className = failed === 0 ? 'pass' : 'fail';
+    }
+  }
+
+  files.forEach(function (path) {
+    var cell = document.createElement('div');
+    cell.className = 'cell';
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () { cell.insertBefore(img, cell.firstChild); judge(img, path, cell); };
+    img.onerror = function () {
+      var label = document.createElement('div');
+      label.className = 'label fail';
+      label.textContent = 'FAIL ' + path.split('/').pop() + ' (missing)';
+      cell.appendChild(label); failed++; done++;
+    };
+    img.src = path + '?check=' + V;
+    grid.appendChild(cell);
+  });
+})();
+</script>
+</body>
+</html>
