@@ -1634,9 +1634,9 @@ a { color: inherit; }
    is a retreat back into the tunnels */
 .bf-side-boss-left { display: none; }
 .bf-arena.is-twin .bf-side-boss-left { display: flex; }
-/* the serpents rise from the tunnel floor: their base sits below the
-   arena's usual footing, tucked into the bottom padding */
-.bf-arena.is-twin .bf-boss-rig { top: clamp(14px, 3.2vh, 32px); }
+/* the serpents rise from below: their base drops through the arena's
+   bottom padding and the gap, landing on the question box's frame line */
+.bf-arena.is-twin .bf-boss-rig { top: calc(clamp(22px, 5vh, 48px) + 14px - var(--pix, 4px)); }
 .bf-side-boss { transition: transform 0.2s ease-out, opacity 0.9s ease; }
 .bf-side-boss.is-lunging { transform: translateX(-9%); }
 .bf-side-boss-left.is-lunging { transform: translateX(9%); }
