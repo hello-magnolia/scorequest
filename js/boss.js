@@ -339,6 +339,7 @@
         attack1: 'assets/boss/infinityisles/attack1.png',
         attack2: 'assets/boss/infinityisles/attack2.png',
         attack3: 'assets/boss/infinityisles/attack3.png',
+        attack4: 'assets/boss/infinityisles/attack4.png',
         hurt1: 'assets/boss/infinityisles/hurt1.png',
         hurt2: 'assets/boss/infinityisles/hurt2.png',
         hurt3: 'assets/boss/infinityisles/hurt3.png',
@@ -357,7 +358,7 @@
       base: 'idle1',
       idleSeq: ['idle1', 'idle2', 'idle3'],
       idleMs: 440,
-      attackSeq: [['attack1', 320], ['attack2', 300], ['attack3', 460]],
+      attackSeq: [['attack1', 300], ['attack2', 280], ['attack3', 300], ['attack4', 460]],
       hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 300]],
       faintSeq: [['faint1', 300], ['faint2', 340], ['faint3', 420]],
       /* no projectile art: the pounce IS the attack, landing mid-leap */
@@ -547,7 +548,7 @@
     document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   }
   var SP = B.sprites;
-  var ASSET_V = '20260717e';       /* bump when boss art changes: stale caches keep old frames alive */
+  var ASSET_V = '20260718a';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   if (TW && SP.rubble) {           /* broken ground: the twins erupt through it */
     [document.getElementById('bf-boss-rig'), document.getElementById('bf-boss-rig-left')].forEach(function (rig) {
