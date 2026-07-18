@@ -1676,6 +1676,15 @@ a { color: inherit; }
     0 0 28px 9px rgba(150, 220, 255, 0.35);
 }
 @media (prefers-reduced-motion: reduce) { .bf-beam { transition: none !important; } }
+/* the Doubling Hare's beam is no thin ray: a floodlight from its heart,
+   in the realm's violet and gold */
+.bf-realm-infinityisles .bf-beam {
+  height: 52px; margin-top: -26px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #ffffff 26%,
+    #e9d5ff 42%, #ffe9a3 50%, #e9d5ff 58%, #ffffff 74%, rgba(255,255,255,0) 100%);
+  box-shadow: 0 0 26px 8px rgba(200, 160, 255, 0.85),
+    0 0 64px 22px rgba(255, 230, 150, 0.4);
+}
 
 /* TEMP-SKIP (testing): remove this block with the buttons when done */
 .sq-skip-test {

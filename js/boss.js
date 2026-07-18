@@ -361,8 +361,10 @@
       attackSeq: [['attack1', 300], ['attack2', 280], ['attack3', 300], ['attack4', 460]],
       hurtSeq: [['hurt1', 220], ['hurt2', 240], ['hurt3', 300]],
       faintSeq: [['faint1', 300], ['faint2', 340], ['faint3', 420]],
-      /* no projectile art: the pounce IS the attack, landing mid-leap */
-      strike: { delay: 900 },
+      /* the pounce became a floodlight: power gathers through the rear-up
+         (attack3) and erupts from the hare's heart as attack4 lands */
+      beam: { delay: 620, chargeMs: 260, fireMs: 200, holdMs: 380, fadeMs: 260,
+        ox: 0.5, oy: 0.55 },
       next: { id: 'datadocks', name: 'Data Docks' },
       questions: [
         { q: 'Solve: x\u00B2 \u2212 9 = 0',
@@ -548,7 +550,7 @@
     document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   }
   var SP = B.sprites;
-  var ASSET_V = '20260718a';       /* bump when boss art changes: stale caches keep old frames alive */
+  var ASSET_V = '20260718b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   if (TW && SP.rubble) {           /* broken ground: the twins erupt through it */
     [document.getElementById('bf-boss-rig'), document.getElementById('bf-boss-rig-left')].forEach(function (rig) {
