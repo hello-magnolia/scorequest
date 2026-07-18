@@ -1782,6 +1782,19 @@ a { color: inherit; }
   width: min(760px, 94vw); background: rgba(22, 17, 43, 0.97);
   padding: 18px 22px 14px;
 }
+/* the waypoint prompt: a small ask before the trial begins.
+   Space fires the highlighted button; arrows move the highlight */
+.rw-prompt {
+  position: fixed; z-index: 30; left: 50%; bottom: 22px;
+  transform: translateX(-50%);
+  width: min(420px, 92vw); background: rgba(22, 17, 43, 0.97);
+  padding: 16px 20px 10px; text-align: center;
+}
+.rw-prompt-title { margin: 0 0 12px; color: var(--gold); letter-spacing: 0.1em; }
+.rw-prompt-row { display: flex; gap: 12px; justify-content: center; }
+.rw-prompt-row .btn { min-width: 120px; }
+.rw-prompt-row .btn.is-armed { outline: var(--pix, 4px) solid var(--gold); outline-offset: 2px; }
+.rw-prompt-keys { margin: 10px 0 0; opacity: 0.6; font-size: 0.8rem; letter-spacing: 0.08em; }
 .rw-quiz-kicker { margin: 0 0 6px; color: var(--gold); letter-spacing: 0.1em; }
 .rw-quiz-q { font-family: var(--font-utility); font-size: 1.3rem; line-height: 1.5; margin: 0 0 12px; color: var(--parchment); }
 .rw-quiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

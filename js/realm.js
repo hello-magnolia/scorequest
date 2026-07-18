@@ -543,12 +543,16 @@
     window.__SQ_REALM_PROG = passedCount();
   }
   function onNodeClick(i) {
-    if (editing) return;
-    if (passed[i]) { openQuiz(i, true); return; }   // extra practice
-    routeTo(marks[i]);                              // walk to that trial
+    if (editing || promptOpen || quizOpen) return;
+    var m = marks[i];
+    if (m && m.e === cur.e && Math.abs(m.t - cur.t) * G.edges[cur.e].len < 3) {
+      openPrompt(i);                                // already standing on it
+      return;
+    }
+    routeTo(m);                                     // walk to that trial
   }
   function routeTo(target) {
-    if (!ready || quizOpen || walking) return;
+    if (!ready || quizOpen || promptOpen || walking) return;
     if (flop === 'flat') { flopUp(function () { routeTo(target); }); return; }
     if (flop || !target) return;
     route = dijkstra({ e: cur.e, t: cur.t }, { e: target.e, t: target.t });
@@ -569,6 +573,40 @@
     }
     routeTo(best);
   }
+
+  /* ---------- the waypoint prompt: Start / Retry / Skip ----------
+     Pops when Pomelo reaches a trial. Space fires the armed button,
+     arrows switch, Escape (or Skip) waves it off. */
+  var promptEl = document.getElementById('rw-prompt');
+  var promptGoBtn = document.getElementById('rw-prompt-go');
+  var promptSkipBtn = document.getElementById('rw-prompt-skip');
+  var promptOpen = false, promptIdx = -1, promptArmed = 0;
+  function paintPromptArm() {
+    promptGoBtn.classList.toggle('is-armed', promptArmed === 0);
+    promptSkipBtn.classList.toggle('is-armed', promptArmed === 1);
+  }
+  function openPrompt(i) {
+    promptIdx = i;
+    promptArmed = 0;
+    promptOpen = true;
+    document.getElementById('rw-prompt-title').textContent =
+      'Waypoint ' + (i + 1) + ' of ' + (realm.nodes || []).length +
+      (passed[i] ? ' \u00B7 cleared' : '');
+    promptGoBtn.textContent = passed[i] ? 'Retry' : 'Start';
+    paintPromptArm();
+    promptEl.hidden = false;
+  }
+  function closePrompt() {
+    promptOpen = false;
+    promptEl.hidden = true;
+  }
+  function promptGo() {
+    var i = promptIdx;
+    closePrompt();
+    openQuiz(i, !!passed[i]);          // a cleared trial reopens as practice
+  }
+  promptGoBtn.addEventListener('click', function (e) { e.stopPropagation(); promptGo(); });
+  promptSkipBtn.addEventListener('click', function (e) { e.stopPropagation(); closePrompt(); });
 
   /* ---------- the waypoint quiz ---------- */
   var quizEl = document.getElementById('rw-quiz');
@@ -750,6 +788,12 @@
       ? nearestOnGraph(realm.start[0] * worldW, realm.start[1] * worldH)
       : nearestOnGraph(worldW * 0.05, worldH * 0.5);
     cur = { e: st.e, t: st.t };
+    var far = -1;                       // he resumes at the last trial he cleared
+    Object.keys(passed).forEach(function (k) {
+      k = Number(k);
+      if (k > far && marks[k]) far = k;
+    });
+    if (far > -1) cur = { e: marks[far].e, t: marks[far].t };
     route = null;
     placeCapy();
     drawCapy(0);
@@ -807,6 +851,22 @@
   };
   document.addEventListener('keydown', function (e) {
     if (editing) { editorKey(e); return; }
+    if (promptOpen) {
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        if (promptArmed === 0) promptGo(); else closePrompt();
+        return;
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+          e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Tab') {
+        e.preventDefault();
+        promptArmed = promptArmed === 0 ? 1 : 0;
+        paintPromptArm();
+        return;
+      }
+      if (e.key === 'Escape') { closePrompt(); return; }
+      return;
+    }
     if (e.code === 'Space' || e.key === ' ') {
       e.preventDefault();
       if (quizOpen) {
@@ -942,7 +1002,7 @@
       return;
     }
     var speed = stageH * 0.38 * (dt / 1000); // an unhurried capybara pace
-    var hv = quizOpen ? null : heldVec();
+    var hv = (quizOpen || promptOpen) ? null : heldVec();
     if (hv) route = null;                        // hands on: the route yields
     var moving = false, arrivedMarker = -1, dirSignT = 0;
     if (hv) {
@@ -1019,7 +1079,7 @@
       if (arrivedMarker > -1) {
         placeCapy();
         walking = false; idleT = 0; idleStep = 0; drawCapy(0);
-        if (!quizOpen) openQuiz(arrivedMarker, false);
+        if (!quizOpen && !promptOpen) openPrompt(arrivedMarker);
       } else if (walking) {
         walking = false; idleT = 0; idleStep = 0; drawCapy(0);
       }
