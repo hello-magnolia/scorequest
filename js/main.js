@@ -72,25 +72,34 @@
     requestAnimationFrame(frame);
   }
 
-  // Hero source chain: local assets/hero.mp4 -> Higgsfield CDN render -> live canvas.
+  // Hero media: the video (already fetching via its HTML sources) fades in on its
+  // first ready frame. The live canvas is a fallback, not an opening act: it only
+  // appears if every source fails, or as an interim if the network stalls hard.
   function tryHeroVideo() {
-    var sources = [heroVideo.getAttribute('data-local'), heroVideo.getAttribute('data-cdn')]
-      .filter(function (s) { return s && s.indexOf('__') !== 0; });
-    var i = 0;
-    function next() {
-      if (i >= sources.length) { heroVideo.hidden = true; return; } // canvas stays
-      heroVideo.src = sources[i++];
-      heroVideo.hidden = false;
+    var canvasStarted = false;
+    function fallbackToCanvas() {
+      if (canvasStarted || !PW) return;
+      canvasStarted = true;
+      heroCanvas.hidden = false;
+      setupHeroCanvas();
     }
-    heroVideo.addEventListener('error', next);
+    var stallTimer = setTimeout(fallbackToCanvas, 4000);
     heroVideo.addEventListener('canplay', function () {
+      clearTimeout(stallTimer);
+      heroVideo.classList.remove('is-loading');
       heroRunning = false;
       heroCanvas.hidden = true;
     });
-    next();
+    var last = heroVideo.querySelector('source:last-of-type');
+    if (last) last.addEventListener('error', function () {   // every source failed
+      clearTimeout(stallTimer);
+      heroVideo.hidden = true;
+      heroRunning = true;
+      fallbackToCanvas();
+    });
   }
 
-  if (heroCanvas && PW) { setupHeroCanvas(); tryHeroVideo(); }
+  if (heroCanvas && heroVideo) { tryHeroVideo(); }
 
   /* ---------- 2. realm card art: generated image first, canvas fallback ---------- */
   function startCardCanvas(cv) {

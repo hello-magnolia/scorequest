@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=b20260716m" />
+<link rel="stylesheet" href="css/style.css?v=b20260717a" />
 
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
 </head>
@@ -42,11 +42,14 @@
 
 <!-- ===================== HERO ===================== -->
 <section class="hero" id="hero">
-  <canvas id="hero-canvas" class="hero-bg" aria-hidden="true"></canvas>
-  <!-- Seedance 2.0 render (Higgsfield). Source chain: local file -> CDN -> live canvas -->
-  <video id="hero-video" class="hero-bg" hidden muted loop playsinline autoplay aria-hidden="true"
-         data-local="assets/hero.mp4"
-         data-cdn="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_160337_73e7a3e7-612c-49f7-ab6a-4f7920599476.mp4"></video>
+  <canvas id="hero-canvas" class="hero-bg" hidden aria-hidden="true"></canvas>
+  <!-- Seedance 2.0 render (Higgsfield). Sources tried natively in order: local file -> CDN.
+       The video fades in on its first ready frame; the live canvas only takes the
+       stage if every source fails (or as an interim while a slow network stalls). -->
+  <video id="hero-video" class="hero-bg is-loading" muted loop playsinline autoplay preload="auto" aria-hidden="true">
+    <source src="assets/hero.mp4" type="video/mp4" />
+    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/hf_20260707_160337_73e7a3e7-612c-49f7-ab6a-4f7920599476.mp4" type="video/mp4" />
+  </video>
   <div class="hero-scrim" aria-hidden="true"></div>
 
   <div class="hero-content">
@@ -468,13 +471,13 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20260716m"></script>
-<script src="js/auth.js?v=b20260716m"></script>
-<script src="js/pixelworld.js?v=b20260716m"></script>
-<script src="js/game.js?v=b20260716m"></script>
-<script src="js/sfx.js?v=b20260716m"></script>
-<script src="js/map.js?v=b20260716m"></script>
-<script src="js/parents.js?v=b20260716m"></script>
-<script src="js/main.js?v=b20260716m"></script>
+<script src="js/config.js?v=b20260717a"></script>
+<script src="js/auth.js?v=b20260717a"></script>
+<script src="js/pixelworld.js?v=b20260717a"></script>
+<script src="js/game.js?v=b20260717a"></script>
+<script src="js/sfx.js?v=b20260717a"></script>
+<script src="js/map.js?v=b20260717a"></script>
+<script src="js/parents.js?v=b20260717a"></script>
+<script src="js/main.js?v=b20260717a"></script>
 </body>
 </html>
