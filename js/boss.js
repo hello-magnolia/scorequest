@@ -40,6 +40,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/boss/lorewood/bg.png',
+      intro: 'assets/boss/lorewood/intro.mp4',
       hp: 9,   /* nine tails, nine hit points: one tail per wound */
       flip: true,   /* source faces right; mirror her toward Pomelo */
       base: 'neutral',
@@ -100,6 +101,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/boss/storyforge/bg.png',
+      intro: 'assets/boss/storyforge/intro.mp4',
       hp: 7,
       flip: false,  /* the spider already faces Pomelo */
       base: 'idle1',
@@ -158,6 +160,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/inkreef.png',
+      intro: 'assets/boss/inkreef/intro.mp4',
       hp: 8,
       flip: false,  /* he throws leftward, toward Pomelo, as drawn */
       base: 'idle1',
@@ -222,6 +225,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/boss/syntaxcitadel/bg.png',
+      intro: 'assets/boss/syntaxcitadel/intro.mp4',
       hp: 9,   /* stone takes patience */
       flip: false,  /* carved facing Pomelo's side of the arena */
       base: 'idle1',
@@ -353,6 +357,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/infinityisles.png',   /* stand-in until a shoreline chamber lands */
+      intro: 'assets/boss/infinityisles/intro.mp4',
       hp: 12,
       flip: false,   /* drawn already facing him */
       base: 'idle1',
@@ -552,6 +557,37 @@
   var SP = B.sprites;
   var ASSET_V = '20260718b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
+  /* ---------- the intro reel: the guardian's entrance, once per visit.
+     Muted autoplay, and any click, Space, Enter, or Escape skips ---------- */
+  (function () {
+    var wrap = document.getElementById('bf-intro');
+    if (!wrap || !B.intro || reduceMotion) return;
+    var vid = document.getElementById('bf-intro-video');
+    var closed = false;
+    function finish() {
+      if (closed) return;
+      closed = true;
+      wrap.classList.add('is-done');
+      try { vid.pause(); } catch (e2) {}
+      setTimeout(function () { wrap.hidden = true; }, 480);
+      document.removeEventListener('keydown', onKey, true);
+    }
+    function onKey(e) {
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') {
+        e.preventDefault(); e.stopPropagation(); finish();
+      }
+    }
+    wrap.hidden = false;
+    vid.src = B.intro;
+    vid.addEventListener('ended', finish);
+    vid.addEventListener('error', finish);
+    document.getElementById('bf-intro-skip').addEventListener('click', finish);
+    wrap.addEventListener('click', finish);
+    document.addEventListener('keydown', onKey, true);
+    var p = vid.play();
+    if (p && p.catch) p.catch(function () { finish(); });   // autoplay refused: straight to battle
+  })();
+
   if (TW && SP.rubble) {           /* broken ground: the twins erupt through it */
     [document.getElementById('bf-boss-rig'), document.getElementById('bf-boss-rig-left')].forEach(function (rig) {
       var rb = document.createElement('img');
