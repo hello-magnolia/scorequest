@@ -165,7 +165,7 @@
       /* his cries land late: the attack call rides the scroll-throw's
          final frames, hurt and defeat land on each sequence's last frame */
       atkSfx: ['aristotleAttack', 1450],
-      hurtSfx: ['aristotleHurt', 460],
+      hurtSfx: 'aristotleHurt',      /* cries out the instant the orange connects */
       faintSfx: ['aristotleDefeat', 620],
       intro: 'assets/boss/inkreef/intro.mp4',
       hp: 8,

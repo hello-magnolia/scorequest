@@ -77,7 +77,6 @@
      mute preference. warm() preloads so a fight's first cry never lags. */
   var SAMPLES = {
     talonCry: 'assets/sfx/talon_cry.mp3',
-    aristotleHiyah: 'assets/sfx/aristotle_hiyah.mp3',
     aristotleHuu: 'assets/sfx/aristotle_huu.mp3',
     aristotleHurt: 'assets/sfx/aristotle_hurt.mp3',
     aristotleDefeat: 'assets/sfx/aristotle_defeat.mp3',
@@ -85,7 +84,7 @@
     hareDefeat: 'assets/sfx/hare_defeat.mp3'
   };
   /* voices that stand for a set of samples, all warmed together */
-  var SAMPLE_GROUPS = { aristotleAttack: ['aristotleHiyah', 'aristotleHuu'] };
+  var SAMPLE_GROUPS = { aristotleAttack: ['aristotleHuu'] };
   var sampleBufs = {};
   function warmSample(name) {
     if (SAMPLE_GROUPS[name]) { SAMPLE_GROUPS[name].forEach(warmSample); return; }
@@ -414,18 +413,12 @@
     },
     /* the Tangent Talon's cry: a real eagle, courtesy of the aerie */
     talonCry: function () { playSample('talonCry', 0.6); },
-    /* Aristotle strikes, alternating between his two war cries */
-    aristotleAttack: (function () {
-      var turn = 0;
-      return function () {
-        playSample(turn ? 'aristotleHuu' : 'aristotleHiyah', 0.6);
-        turn = 1 - turn;
-      };
-    })(),
-    aristotleHurt: function () { playSample('aristotleHurt', 0.6); },
-    aristotleDefeat: function () { playSample('aristotleDefeat', 0.6); },
-    hareHurt: function () { playSample('hareHurt', 0.6); },
-    hareDefeat: function () { playSample('hareDefeat', 0.6); },
+    /* Aristotle strikes with one war cry, arcade-cut */
+    aristotleAttack: function () { playSample('aristotleHuu', 0.45); },
+    aristotleHurt: function () { playSample('aristotleHurt', 0.45); },
+    aristotleDefeat: function () { playSample('aristotleDefeat', 0.45); },
+    hareHurt: function () { playSample('hareHurt', 0.45); },
+    hareDefeat: function () { playSample('hareDefeat', 0.45); },
     warm: warmSample,
     enabled: enabled,
     /* create/resume the AudioContext as early as the browser allows,
