@@ -113,11 +113,11 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => ['form', 'fly', 'hit'].includes(S3.fireball), 1800) &&
     await until(() => S3.pomeloHp === 2, 3200));
 
-  /* the third guardian: the Grotto Sophist of Ink Reef */
+  /* the third guardian: Aristotle the Axolotl of Ink Reef */
   w = await load('boss.html?realm=inkreef');
   d = w.document;
-  check('Ink Reef: the Grotto Sophist breathes over his scroll, eight HP, no tails',
-    /Grotto Sophist/.test(d.getElementById('bf-boss-name').textContent) &&
+  check('Ink Reef: Aristotle the Axolotl breathes over his scroll, eight HP, no tails',
+    /Aristotle the Axolotl/.test(d.getElementById('bf-boss-name').textContent) &&
     /boss\/inkreef\/idle/.test(d.getElementById('bf-boss-img').src) &&
     d.querySelectorAll('.bf-tail').length === 0 &&
     d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '304px' &&

@@ -136,7 +136,7 @@
       ]
     },
     inkreef: {
-      name: 'The Grotto Sophist',
+      name: 'Aristotle the Axolotl',
       taunt: 'Your thesis is soggy and your transitions leak. Revise.',
       sprites: {
         idle1:   'assets/boss/inkreef/idle1.png',
