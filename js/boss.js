@@ -162,9 +162,11 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/inkreef.png',
-      atkSfx: 'aristotleAttack',
-      hurtSfx: 'aristotleHurt',
-      faintSfx: 'aristotleDefeat',
+      /* his cries land late: the attack call rides the scroll-throw's
+         final frames, hurt and defeat land on each sequence's last frame */
+      atkSfx: ['aristotleAttack', 1450],
+      hurtSfx: ['aristotleHurt', 460],
+      faintSfx: ['aristotleDefeat', 620],
       intro: 'assets/boss/inkreef/intro.mp4',
       hp: 8,
       flip: false,  /* he throws leftward, toward Pomelo, as drawn */
@@ -568,7 +570,8 @@
   }
   var SP = B.sprites;
   [B.atkSfx, B.hurtSfx, B.faintSfx].forEach(function (sf) {
-    if (sf && window.SQSfx && window.SQSfx.warm) window.SQSfx.warm(sf);
+    if (!sf || !window.SQSfx || !window.SQSfx.warm) return;
+    window.SQSfx.warm(typeof sf === 'string' ? sf : sf[0]);
   });
   var ASSET_V = '20260718b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
@@ -683,6 +686,16 @@
   var arenaEl = document.querySelector('.bf-arena');
   var projTimers = [];
   function after(ms, fn) { projTimers.push(setTimeout(fn, ms)); }
+  /* fire a configured sound: 'name' plays now, ['name', ms] plays late.
+     Plain timeout on purpose: animation timer pools must not cancel it */
+  function sfxCue(spec) {
+    if (!spec || !window.SQSfx) return;
+    var name = spec, delay = 0;
+    if (typeof spec !== 'string') { name = spec[0]; delay = spec[1] || 0; }
+    if (!window.SQSfx[name]) return;
+    if (delay) setTimeout(function () { window.SQSfx[name](); }, delay);
+    else window.SQSfx[name]();
+  }
   function launchFireball(onImpact, delay) {
     delay = delay || 0;
     var P = B.projectile;
@@ -972,7 +985,7 @@
       launchOrange(function () {             // her damage lands with the orange
         state.bossHp = Math.max(0, state.bossHp - 1);
         playBody(B.hurtSeq, false, side);
-        if (B.hurtSfx && window.SQSfx && window.SQSfx[B.hurtSfx]) window.SQSfx[B.hurtSfx]();
+        sfxCue(B.hurtSfx);
         syncTails(state.bossHp);
         flash(side ? sideElL : sideElR);
         renderHp();
@@ -981,7 +994,7 @@
       }, side ? bodyElL : bodyEl);
     } else {
       playBody(B.attackSeq, false, side);
-      if (B.atkSfx && window.SQSfx && window.SQSfx[B.atkSfx]) window.SQSfx[B.atkSfx]();
+      sfxCue(B.atkSfx);
       playYell();
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
@@ -1009,7 +1022,7 @@
   function win() {
     state.over = true;
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
-    if (B.faintSfx && window.SQSfx && window.SQSfx[B.faintSfx]) window.SQSfx[B.faintSfx]();
+    sfxCue(B.faintSfx);
     if (B.faintSeq) {
       playBody(B.faintSeq, true);           // the guardian goes down, and stays down
       if (TW) {                             // and its twin falls with it
