@@ -581,11 +581,15 @@
     vid.src = B.intro;
     vid.addEventListener('ended', finish);
     vid.addEventListener('error', finish);
-    document.getElementById('bf-intro-skip').addEventListener('click', finish);
     wrap.addEventListener('click', finish);
     document.addEventListener('keydown', onKey, true);
+    vid.muted = false;                      // the entrance deserves its fanfare
     var p = vid.play();
-    if (p && p.catch) p.catch(function () { finish(); });   // autoplay refused: straight to battle
+    if (p && p.catch) p.catch(function () {
+      vid.muted = true;                     // sound refused: the reel still rolls
+      var p2 = vid.play();
+      if (p2 && p2.catch) p2.catch(function () { finish(); });
+    });
   })();
 
   if (TW && SP.rubble) {           /* broken ground: the twins erupt through it */
