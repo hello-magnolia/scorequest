@@ -203,44 +203,65 @@
       voice(520, { type: 'triangle', dur: 0.2, peak: 0.12, glideTo: 1040, delay: 0.46 });
       voice(1040, { type: 'sine', dur: 0.2, peak: 0.025, glideTo: 2080, delay: 0.46 });
     },
-    /* a guardian's roar: two detuned saws sliding low beneath a band of
-       growl-noise trembling at 26Hz. The Archivist wears it first */
+    /* the Archivist's roar, thunder-maw cut: sub-heavy dread. Three
+       detuned saws through a tanh throat, a deep 360Hz formant, a slow
+       14Hz tremble, and an octave-down sine rolling underneath */
     roar: function () {
       var a = ac();
       if (!a || !enabled()) return;
-      var t0 = a.currentTime, dur = 0.75;
-      [0, 7].forEach(function (dt) {
-        var osc = a.createOscillator(), g = a.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(112 + dt, t0);
-        osc.frequency.exponentialRampToValueAtTime(74 + dt, t0 + dur);
-        g.gain.setValueAtTime(0, t0);
-        g.gain.linearRampToValueAtTime(0.085, t0 + 0.05);
-        g.gain.setValueAtTime(0.085, t0 + dur * 0.55);
-        g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
-        osc.connect(g).connect(a.destination);
-        osc.start(t0); osc.stop(t0 + dur + 0.05);
+      var t0 = a.currentTime, dur = 0.95;
+      var P = [[0, 56], [0.22, 88], [0.6, 74], [1.0, 42]];
+      function ramp(param, scale) {
+        param.setValueAtTime(P[0][1] * scale, t0);
+        for (var i = 1; i < P.length; i++)
+          param.exponentialRampToValueAtTime(P[i][1] * scale, t0 + P[i][0] * dur);
+      }
+      var shaper = a.createWaveShaper();
+      var curve = new Float32Array(1024);
+      for (var i = 0; i < 1024; i++) curve[i] = Math.tanh(2.6 * ((i / 511.5) - 1));
+      shaper.curve = curve;
+      var pre = a.createGain(); pre.gain.value = 1 / 3;
+      [0, 7, -5].forEach(function (det) {
+        var o = a.createOscillator();
+        o.type = 'sawtooth';
+        ramp(o.frequency, 1);
+        o.detune.value = det * 8;
+        o.connect(pre);
+        o.start(t0); o.stop(t0 + dur + 0.05);
       });
+      pre.connect(shaper);
+      var sum = a.createGain();
+      var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+      var lpg = a.createGain(); lpg.gain.value = 0.5;
+      shaper.connect(lp); lp.connect(lpg); lpg.connect(sum);
+      var fm = a.createBiquadFilter(); fm.type = 'bandpass'; fm.frequency.value = 360; fm.Q.value = 3;
+      var fmg = a.createGain(); fmg.gain.value = 0.9;
+      shaper.connect(fm); fm.connect(fmg); fmg.connect(sum);
+      var sub = a.createOscillator(); sub.type = 'sine';
+      ramp(sub.frequency, 0.5);
+      var subg = a.createGain(); subg.gain.value = 0.5;
+      sub.connect(subg); subg.connect(sum);
+      sub.start(t0); sub.stop(t0 + dur + 0.05);
       var n = Math.floor(a.sampleRate * dur);
       var buf = a.createBuffer(1, n, a.sampleRate);
       var d = buf.getChannelData(0);
-      for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
-      var src = a.createBufferSource(); src.buffer = buf;
-      var bp = a.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.setValueAtTime(640, t0);
-      bp.frequency.exponentialRampToValueAtTime(320, t0 + dur);
-      bp.Q.value = 0.9;
-      var ng = a.createGain();
-      ng.gain.setValueAtTime(0, t0);
-      ng.gain.linearRampToValueAtTime(0.14, t0 + 0.06);
-      ng.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
-      var trem = a.createOscillator(), tg = a.createGain(), carrier = a.createGain();
-      trem.frequency.value = 26; tg.gain.value = 0.5; carrier.gain.value = 0.6;
-      trem.connect(tg).connect(carrier.gain);
-      src.connect(bp); bp.connect(ng); ng.connect(carrier); carrier.connect(a.destination);
-      trem.start(t0); trem.stop(t0 + dur + 0.05);
-      src.start(t0); src.stop(t0 + dur + 0.02);
+      for (var j = 0; j < n; j++) d[j] = Math.random() * 2 - 1;
+      var nz = a.createBufferSource(); nz.buffer = buf;
+      var nb = a.createBiquadFilter(); nb.type = 'bandpass'; nb.frequency.value = 850; nb.Q.value = 1.1;
+      var ng = a.createGain(); ng.gain.value = 0.2;
+      nz.connect(nb); nb.connect(ng); ng.connect(sum);
+      nz.start(t0); nz.stop(t0 + dur);
+      var env = a.createGain();
+      env.gain.setValueAtTime(0, t0);
+      env.gain.linearRampToValueAtTime(0.16, t0 + 0.06 * dur);
+      env.gain.linearRampToValueAtTime(0.14, t0 + 0.6 * dur);
+      env.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+      var roughG = a.createGain(); roughG.gain.value = 0.83;
+      var lfo = a.createOscillator(); lfo.frequency.value = 14;
+      var lfoG = a.createGain(); lfoG.gain.value = 0.17;
+      lfo.connect(lfoG); lfoG.connect(roughG.gain);
+      lfo.start(t0); lfo.stop(t0 + dur + 0.05);
+      sum.connect(env); env.connect(roughG); roughG.connect(a.destination);
     },
     enabled: enabled,
     /* create/resume the AudioContext as early as the browser allows,
