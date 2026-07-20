@@ -1687,6 +1687,7 @@ a { color: inherit; }
 .bf-intro.is-done { opacity: 0; pointer-events: none; }
 .bf-intro video { width: 100%; height: 100%; object-fit: contain; }
 .bf-intro-skip { position: absolute; right: 22px; bottom: 20px; opacity: 0.85; }
+.bf-intro-sound { position: absolute; left: 22px; bottom: 20px; opacity: 0.85; }
 @media (prefers-reduced-motion: reduce) { .bf-intro { transition: none; } }
 
 /* the Doubling Hare's beam is no thin ray: a floodlight from its heart,

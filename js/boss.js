@@ -587,9 +587,19 @@
     vid.muted = false;                      // the entrance deserves its fanfare
     var p = vid.play();
     if (p && p.catch) p.catch(function () {
-      vid.muted = true;                     // sound refused: the reel still rolls
+      vid.muted = true;                     // sound refused: the reel still rolls...
       var p2 = vid.play();
       if (p2 && p2.catch) p2.catch(function () { finish(); });
+      var snd = document.createElement('button');   // ...and one tap brings the voice
+      snd.type = 'button';
+      snd.className = 'btn btn-outline bf-intro-sound';
+      snd.textContent = '\uD83D\uDD0A Sound on';
+      snd.addEventListener('click', function (e) {
+        e.stopPropagation();
+        vid.muted = false;
+        snd.remove();
+      });
+      wrap.appendChild(snd);
     });
   })();
 
