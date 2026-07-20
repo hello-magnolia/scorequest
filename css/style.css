@@ -1686,15 +1686,27 @@ a { color: inherit; }
 .worldmap-svg polygon {
   fill: transparent; stroke: transparent; stroke-width: 3px;
   vector-effect: non-scaling-stroke; cursor: pointer;
-  transition: fill 160ms ease, stroke 160ms ease;
+  transition: stroke 80ms ease;
 }
 .worldmap-svg a:hover polygon, .worldmap-svg a:focus polygon {
-  fill: rgba(242, 182, 60, 0.34); stroke: rgba(242, 182, 60, 0.95);
+  stroke: rgba(242, 182, 60, 0.95);
   outline: none;
 }
-/* unvisited realms wait in gray; hovering peeks their true colors */
-.worldmap-svg .wm-gray { pointer-events: none; transition: opacity 240ms ease; }
+/* unvisited realms wait in gray; hovering blooms their true colors */
+.worldmap-svg .wm-gray { pointer-events: none; transition: opacity 110ms ease; }
 .worldmap-svg .wm-gray.is-peek { opacity: 0; }
+/* the vivid layer: each realm's colors, boosted, shown on hover */
+.worldmap-svg .wm-vivid { pointer-events: none; opacity: 0; transition: opacity 110ms ease; }
+.worldmap-svg .wm-vivid.is-on { opacity: 1; }
+/* realm names live on the map itself, in the world's own letters */
+.worldmap-label {
+  position: absolute; transform: translate(-50%, -50%);
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(10px, 1.45vw, 17px); letter-spacing: 0.04em;
+  color: #fdf6e3; pointer-events: none; white-space: nowrap; z-index: 3;
+  text-shadow: 2px 0 0 #16112B, -2px 0 0 #16112B, 0 2px 0 #16112B,
+    0 -2px 0 #16112B, 2px 2px 0 #16112B, -2px 2px 0 #16112B, -2px -2px 0 #16112B, 2px -2px 0 #16112B;
+}
 
 .worldmap-tip {
   position: absolute; z-index: 5; pointer-events: none;

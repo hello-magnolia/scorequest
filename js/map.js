@@ -344,7 +344,45 @@
   });
   filt.appendChild(ct);
   defs.appendChild(filt);
+  var vf = document.createElementNS(NS, 'filter');
+  vf.setAttribute('id', 'wm-vivid-f');
+  var vcm = document.createElementNS(NS, 'feColorMatrix');
+  vcm.setAttribute('type', 'saturate'); vcm.setAttribute('values', '1.45');
+  vf.appendChild(vcm);
+  var vct = document.createElementNS(NS, 'feComponentTransfer');
+  ['feFuncR', 'feFuncG', 'feFuncB'].forEach(function (fn) {
+    var f = document.createElementNS(NS, fn);
+    f.setAttribute('type', 'linear'); f.setAttribute('slope', '1.1'); f.setAttribute('intercept', '0');
+    vct.appendChild(f);
+  });
+  vf.appendChild(vct);
+  defs.appendChild(vf);
   svg.appendChild(defs);
+  /* every realm gets a vivid layer: its own colors, boosted, for hover */
+  REGIONS.forEach(function (R) {
+    var mk0 = document.createElementNS(NS, 'mask');
+    mk0.setAttribute('id', 'wm-vmk-' + R.id);
+    mk0.setAttribute('maskUnits', 'userSpaceOnUse');
+    mk0.setAttribute('x', '0'); mk0.setAttribute('y', '0');
+    mk0.setAttribute('width', '100'); mk0.setAttribute('height', '100');
+    var mi0 = document.createElementNS(NS, 'image');
+    mi0.setAttribute('href', 'assets/map-masks/' + R.id + '.png');
+    mi0.setAttribute('x', '0'); mi0.setAttribute('y', '0');
+    mi0.setAttribute('width', '100'); mi0.setAttribute('height', '100');
+    mi0.setAttribute('preserveAspectRatio', 'none');
+    mk0.appendChild(mi0);
+    defs.appendChild(mk0);
+    var vimg = document.createElementNS(NS, 'image');
+    vimg.setAttribute('href', 'assets/worldmap.webp');
+    vimg.setAttribute('x', '0'); vimg.setAttribute('y', '0');
+    vimg.setAttribute('width', '100'); vimg.setAttribute('height', '100');
+    vimg.setAttribute('preserveAspectRatio', 'none');
+    vimg.setAttribute('mask', 'url(#wm-vmk-' + R.id + ')');
+    vimg.setAttribute('filter', 'url(#wm-vivid-f)');
+    vimg.setAttribute('class', 'wm-vivid');
+    vimg.setAttribute('id', 'wm-vivid-' + R.id);
+    svg.appendChild(vimg);
+  });
   REGIONS.forEach(function (R) {
     if (isVisited(R.id)) return;
     /* pixel-accurate coverage: the mask is an image rendered from the
@@ -372,33 +410,23 @@
     gimg.setAttribute('id', 'wm-gray-' + R.id);
     svg.appendChild(gimg);
   });
+  /* vivid layers ride above the gray: re-append after the grays exist */
   REGIONS.forEach(function (R) {
-    if (isVisited(R.id)) return;
-    var cp = document.createElementNS(NS, 'clipPath');
-    cp.setAttribute('id', 'wm-cp-' + R.id);
-    cp.setAttribute('clipPathUnits', 'userSpaceOnUse');
-    R.polys.forEach(function (poly) {
-      var p = document.createElementNS(NS, 'polygon');
-      p.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));
-      cp.appendChild(p);
-    });
-    defs.appendChild(cp);
-    var gimg = document.createElementNS(NS, 'image');
-    gimg.setAttribute('href', 'assets/worldmap.webp');
-    gimg.setAttribute('x', '0'); gimg.setAttribute('y', '0');
-    gimg.setAttribute('width', '100'); gimg.setAttribute('height', '100');
-    gimg.setAttribute('preserveAspectRatio', 'none');
-    gimg.setAttribute('clip-path', 'url(#wm-cp-' + R.id + ')');
-    gimg.setAttribute('filter', 'url(#wm-desat)');
-    gimg.setAttribute('class', 'wm-gray');
-    gimg.setAttribute('id', 'wm-gray-' + R.id);
-    svg.appendChild(gimg);
-    R.polys.forEach(function (poly) {
-      var edge = document.createElementNS(NS, 'polygon');
-      edge.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));
-      edge.setAttribute('class', 'wm-gray-edge');
-      svg.appendChild(edge);
-    });
+    var v = document.getElementById('wm-vivid-' + R.id);
+    if (v) svg.appendChild(v);
+  });
+  var LABEL_AT = {
+    lorewood: [12.9, 33.0], storyforge: [15.3, 60.7], syntaxcitadel: [36.5, 23.5],
+    mirrormines: [44.9, 53.3], inkreef: [35.3, 84.0], datadocks: [65.2, 83.5],
+    infinityisles: [61.5, 24.5], prismpeaks: [83.7, 36.5]
+  };
+  REGIONS.forEach(function (R) {
+    var lb = document.createElement('span');
+    lb.className = 'worldmap-label';
+    lb.textContent = R.name;
+    lb.style.left = LABEL_AT[R.id][0] + '%';
+    lb.style.top = LABEL_AT[R.id][1] + '%';
+    wrap.appendChild(lb);
   });
   REGIONS.forEach(function (R) {
     var a = document.createElementNS(NS, 'a');
@@ -410,7 +438,9 @@
       a.appendChild(p);
     });
     var grayEl = document.getElementById('wm-gray-' + R.id);
+    var vividEl = document.getElementById('wm-vivid-' + R.id);
     function show() {
+      if (vividEl) vividEl.classList.add('is-on');
       tipName.textContent = R.name;
       tipDomain.textContent = R.domain;
       tip.hidden = false;
@@ -420,6 +450,7 @@
     function hide() {
       tip.hidden = true;
       if (grayEl) grayEl.classList.remove('is-peek');
+      if (vividEl) vividEl.classList.remove('is-on');
     }
     a.addEventListener('mouseenter', show);
     a.addEventListener('focus', function () {
