@@ -164,9 +164,9 @@
       bg: 'assets/realms/inkreef.png',
       /* his cries land late: the attack call rides the scroll-throw's
          final frames, hurt and defeat land on each sequence's last frame */
-      atkSfx: ['aristotleAttack', 1450],
+      atkSfx: ['aristotleAttack', 1300],
       hurtSfx: 'aristotleHurt',      /* cries out the instant the orange connects */
-      faintSfx: ['aristotleDefeat', 620],
+      faintSfx: 'aristotleDefeat',
       intro: 'assets/boss/inkreef/intro.mp4',
       hp: 8,
       flip: false,  /* he throws leftward, toward Pomelo, as drawn */
@@ -982,10 +982,11 @@
     if (i === item.a) {
       feedEl.textContent = 'Pomelo strikes! The Archivist loses a tail.';
       feedEl.className = 'bf-feedback is-hit';
+      if (state.bossHp === 1) sfxCue(B.faintSfx);   // the finishing answer: the fall begins at once
       launchOrange(function () {             // her damage lands with the orange
         state.bossHp = Math.max(0, state.bossHp - 1);
         playBody(B.hurtSeq, false, side);
-        sfxCue(B.hurtSfx);
+        if (state.bossHp > 0) sfxCue(B.hurtSfx);
         syncTails(state.bossHp);
         flash(side ? sideElL : sideElR);
         renderHp();
@@ -1022,7 +1023,6 @@
   function win() {
     state.over = true;
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
-    sfxCue(B.faintSfx);
     if (B.faintSeq) {
       playBody(B.faintSeq, true);           // the guardian goes down, and stays down
       if (TW) {                             // and its twin falls with it
