@@ -102,6 +102,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/boss/storyforge/bg.png',
+      atkSfx: 'weaverPistons',
       intro: 'assets/boss/storyforge/intro.mp4',
       hp: 7,
       flip: false,  /* the spider already faces Pomelo */
@@ -226,6 +227,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/boss/syntaxcitadel/bg.png',
+      atkSfx: 'pedantScreech',
       intro: 'assets/boss/syntaxcitadel/intro.mp4',
       hp: 9,   /* stone takes patience */
       flip: false,  /* carved facing Pomelo's side of the arena */
@@ -298,6 +300,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/boss/mirrormines/chamber.png',   /* the mirror chamber proper */
+      atkSfx: 'twinsHiss',
       hp: 10,
       /* two guardians flank Pomelo: minus from the left tunnel (as drawn,
          striking right), plus from the right (mirrored). Both drawn
@@ -358,6 +361,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/infinityisles.png',   /* stand-in until a shoreline chamber lands */
+      atkSfx: 'hareZap',
       intro: 'assets/boss/infinityisles/intro.mp4',
       hp: 12,
       flip: false,   /* drawn already facing him */
@@ -404,6 +408,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/datadocks.png',          /* stand-in until a dockside chamber lands */
+      atkSfx: 'krakenBellow',
       hp: 13,
       flip: false,                                /* drawn facing forward */
       base: 'idle1',

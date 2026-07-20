@@ -49,6 +49,28 @@
     osc.stop(t0 + (opts.dur || 0.22) + 0.05);
   }
 
+  /* one enveloped noise burst through a filter */
+  function noiseBurst(t0abs, dur, freq, type, peak, q, glideTo) {
+    var a = ac();
+    if (!a) return;
+    var n = Math.max(1, Math.floor(a.sampleRate * dur));
+    var buf = a.createBuffer(1, n, a.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var src = a.createBufferSource(); src.buffer = buf;
+    var f = a.createBiquadFilter();
+    f.type = type || 'bandpass';
+    f.frequency.setValueAtTime(freq, t0abs);
+    if (glideTo) f.frequency.exponentialRampToValueAtTime(glideTo, t0abs + dur);
+    f.Q.value = q || 0.9;
+    var g = a.createGain();
+    g.gain.setValueAtTime(0, t0abs);
+    g.gain.linearRampToValueAtTime(peak, t0abs + dur * 0.18);
+    g.gain.exponentialRampToValueAtTime(0.0008, t0abs + dur);
+    src.connect(f); f.connect(g); g.connect(a.destination);
+    src.start(t0abs); src.stop(t0abs + dur + 0.02);
+  }
+
   var PENTA = [523.25, 587.33, 659.25, 783.99, 880.0]; // C5 pentatonic
 
   /* ============================================================
@@ -262,6 +284,93 @@
       lfo.connect(lfoG); lfoG.connect(roughG.gain);
       lfo.start(t0); lfo.stop(t0 + dur + 0.05);
       sum.connect(env); env.connect(roughG); roughG.connect(a.destination);
+    },
+    /* the Weaver winds its legs: six piston chuffs, then a clank */
+    weaverPistons: function () {
+      var a = ac();
+      if (!a || !enabled()) return;
+      var t0 = a.currentTime;
+      for (var k = 0; k < 6; k++) {
+        var t = k * 0.085;
+        voice(120, { type: 'sine', dur: 0.06, peak: 0.13, glideTo: 58, delay: t });
+        noiseBurst(t0 + t + 0.02, 0.04, 3200, 'highpass', 0.03);
+      }
+      voice(740, { type: 'triangle', dur: 0.09, peak: 0.09, delay: 0.55 });
+      voice(1180, { type: 'triangle', dur: 0.06, peak: 0.055, delay: 0.56 });
+      voice(1372, { type: 'sine', dur: 0.05, peak: 0.035, delay: 0.56 });
+    },
+    /* the Pedant scrapes off its perch: granite on granite */
+    pedantScreech: function () {
+      var a = ac();
+      if (!a || !enabled()) return;
+      var t0 = a.currentTime;
+      noiseBurst(t0 + 0.04, 0.68, 950, 'bandpass', 0.22, 2.6, 730);
+      noiseBurst(t0, 0.85, 300, 'lowpass', 0.1, 0.7);
+    },
+    /* one hiss for two serpents */
+    twinsHiss: function () {
+      var a = ac();
+      if (!a || !enabled()) return;
+      noiseBurst(a.currentTime, 0.5, 3400, 'bandpass', 0.16, 0.6, 2500);
+    },
+    /* the hare's beam: a gathering shimmer timed to land its zap
+       exactly as the beam fires (attack start + 880ms) */
+    hareZap: function () {
+      var a = ac();
+      if (!a || !enabled()) return;
+      var t0 = a.currentTime + 0.38;
+      [0, 9].forEach(function (det) {
+        var o = a.createOscillator(), g = a.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(300, t0);
+        o.frequency.exponentialRampToValueAtTime(1400, t0 + 0.5);
+        o.detune.value = det;
+        g.gain.setValueAtTime(0.004, t0);
+        g.gain.exponentialRampToValueAtTime(0.07, t0 + 0.5);
+        g.gain.setValueAtTime(0.07, t0 + 0.5);
+        g.gain.exponentialRampToValueAtTime(0.0008, t0 + 0.56);
+        o.connect(g); g.connect(a.destination);
+        o.start(t0); o.stop(t0 + 0.6);
+      });
+      voice(1600, { type: 'square', dur: 0.45, peak: 0.075, glideTo: 1150, delay: 0.88 });
+      noiseBurst(t0 + 0.5, 0.45, 4200, 'bandpass', 0.09, 0.7, 2600);
+    },
+    /* the Kraken bellows from beneath: a drowned roar, bubbles rising */
+    krakenBellow: function () {
+      var a = ac();
+      if (!a || !enabled()) return;
+      var t0 = a.currentTime, dur = 1.0;
+      var P = [[0, 62], [0.25, 105], [0.65, 88], [1, 46]];
+      var shaper = a.createWaveShaper();
+      var curve = new Float32Array(1024);
+      for (var i = 0; i < 1024; i++) curve[i] = Math.tanh(2.4 * ((i / 511.5) - 1));
+      shaper.curve = curve;
+      var pre = a.createGain(); pre.gain.value = 0.34;
+      [0, 6, -5].forEach(function (det) {
+        var o = a.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(P[0][1], t0);
+        for (var i2 = 1; i2 < P.length; i2++)
+          o.frequency.exponentialRampToValueAtTime(P[i2][1], t0 + P[i2][0] * dur);
+        o.detune.value = det * 7;
+        o.connect(pre); o.start(t0); o.stop(t0 + dur + 0.05);
+      });
+      var lp2 = a.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 420;
+      var env = a.createGain();
+      env.gain.setValueAtTime(0, t0);
+      env.gain.linearRampToValueAtTime(0.24, t0 + 0.12 * dur);
+      env.gain.linearRampToValueAtTime(0.2, t0 + 0.7 * dur);
+      env.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+      var am = a.createGain(); am.gain.value = 0.65;
+      var lfo = a.createOscillator(); lfo.frequency.value = 9;
+      var lg = a.createGain(); lg.gain.value = 0.35;
+      lfo.connect(lg); lg.connect(am.gain);
+      lfo.start(t0); lfo.stop(t0 + dur + 0.05);
+      pre.connect(shaper); shaper.connect(lp2); lp2.connect(env); env.connect(am); am.connect(a.destination);
+      for (var b = 0; b < 5; b++) {
+        var fb = 200 + Math.random() * 300;
+        voice(fb, { type: 'sine', dur: 0.07, peak: 0.05, glideTo: fb * 1.8, delay: 0.15 + b * 0.16 });
+      }
     },
     enabled: enabled,
     /* create/resume the AudioContext as early as the browser allows,
