@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=b20260720f" />
+<link rel="stylesheet" href="css/style.css?v=b20260721a" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect x='2' y='2' width='12' height='12' fill='%23F2B63C'/><rect x='5' y='5' width='6' height='6' fill='%2316112B'/></svg>" />
 </head>
 <body class="page-map">
@@ -42,6 +42,17 @@
     <button class="btn btn-ghost btn-customize" id="music-toggle">Music: on</button>
   </div>
 
+  <div class="worldmap" id="worldmap">
+    <img class="worldmap-img" src="assets/worldmap.webp"
+         alt="The world of ScoreQuest: eight realms across the isles" />
+    <svg class="worldmap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="list"
+         aria-label="Choose a realm on the map"></svg>
+    <div class="worldmap-tip pixel-frame" id="worldmap-tip" hidden>
+      <span class="worldmap-tip-name" id="worldmap-tip-name"></span>
+      <span class="worldmap-tip-domain type-utility" id="worldmap-tip-domain"></span>
+    </div>
+  </div>
+
   <nav class="realm-hub" aria-label="The eight realms">
     <a class="hub-realm" href="realm.html?realm=lorewood"><span class="hub-num type-utility">1</span><span class="hub-name">Lorewood</span><span class="hub-domain">Information &amp; Ideas</span></a>
     <a class="hub-realm" href="realm.html?realm=storyforge"><span class="hub-num type-utility">2</span><span class="hub-name">Story Forge</span><span class="hub-domain">Craft &amp; Structure</span></a>
@@ -60,14 +71,14 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20260720f"></script>
-<script src="js/auth.js?v=b20260720f"></script>
-<script src="js/pixelworld.js?v=b20260720f"></script>
-<script src="js/game.js?v=b20260720f"></script>
-<script src="js/map.js?v=b20260720f"></script>
-<script src="js/sfx.js?v=b20260720f"></script>
-<script src="js/intro.js?v=b20260720f"></script>
-<script src="js/companion.js?v=b20260720f"></script>
-<script src="js/main.js?v=b20260720f"></script>
+<script src="js/config.js?v=b20260721a"></script>
+<script src="js/auth.js?v=b20260721a"></script>
+<script src="js/pixelworld.js?v=b20260721a"></script>
+<script src="js/game.js?v=b20260721a"></script>
+<script src="js/map.js?v=b20260721a"></script>
+<script src="js/sfx.js?v=b20260721a"></script>
+<script src="js/intro.js?v=b20260721a"></script>
+<script src="js/companion.js?v=b20260721a"></script>
+<script src="js/main.js?v=b20260721a"></script>
 </body>
 </html>
