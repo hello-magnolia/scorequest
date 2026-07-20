@@ -518,6 +518,10 @@ a { color: inherit; }
 .parents-statement { text-align: center; max-width: 780px; margin: 0 auto 60px; }
 .statement-title { font-size: clamp(1.8rem, 4.4vw, 2.9rem); line-height: 1.2; margin-top: 10px; }
 .statement-accent { color: var(--gold); }
+.statement-credit {
+  margin: 12px 0 0; color: var(--gold);
+  letter-spacing: 0.08em; font-size: 0.95rem;
+}
 .statement-sub { margin-top: 18px; color: var(--parchment-dim); font-size: 1.12rem; max-width: 660px; margin-inline: auto; }
 
 .parents-pillars {
