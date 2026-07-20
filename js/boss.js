@@ -164,8 +164,9 @@
       bg: 'assets/realms/inkreef.png',
       /* his cries land late: the attack call rides the scroll-throw's
          final frames, hurt and defeat land on each sequence's last frame */
-      atkSfx: ['aristotleAttack', 1100],
-      hurtSfx: 'aristotleHurt',      /* cries out the instant the orange connects */
+      atkSfx: ['aristotleAttack', 1000],
+      hurtSfx: 'aristotleHurt',
+      hurtSfxLead: 300,              /* this recording runs slow: it starts 300ms before contact */
       faintSfx: 'aristotleDefeat',
       intro: 'assets/boss/inkreef/intro.mp4',
       hp: 8,
@@ -982,11 +983,15 @@
     if (i === item.a) {
       feedEl.textContent = 'Pomelo strikes! The Archivist loses a tail.';
       feedEl.className = 'bf-feedback is-hit';
+      /* some voices need a head start: hurtSfxLead fires the cry that many
+         ms before the orange lands (1120ms of wind-up and flight) */
+      var earlyHurt = !reduceMotion && B.hurtSfxLead && state.bossHp > 1;
+      if (earlyHurt) setTimeout(function () { sfxCue(B.hurtSfx); }, 1120 - B.hurtSfxLead);
       launchOrange(function () {             // her damage lands with the orange
         state.bossHp = Math.max(0, state.bossHp - 1);
         if (state.bossHp > 0) {              // the killing blow goes straight to the fall
           playBody(B.hurtSeq, false, side);
-          sfxCue(B.hurtSfx);
+          if (!earlyHurt) sfxCue(B.hurtSfx);
         }
         syncTails(state.bossHp);
         flash(side ? sideElL : sideElR);
