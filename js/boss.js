@@ -162,6 +162,9 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/inkreef.png',
+      atkSfx: 'aristotleAttack',
+      hurtSfx: 'aristotleHurt',
+      faintSfx: 'aristotleDefeat',
       intro: 'assets/boss/inkreef/intro.mp4',
       hp: 8,
       flip: false,  /* he throws leftward, toward Pomelo, as drawn */
@@ -362,6 +365,8 @@
       },
       bg: 'assets/realms/infinityisles.png',   /* stand-in until a shoreline chamber lands */
       atkSfx: 'hareZap',
+      hurtSfx: 'hareHurt',
+      faintSfx: 'hareDefeat',
       intro: 'assets/boss/infinityisles/intro.mp4',
       hp: 12,
       flip: false,   /* drawn already facing him */
@@ -562,7 +567,9 @@
     document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   }
   var SP = B.sprites;
-  if (B.atkSfx && window.SQSfx && window.SQSfx.warm) window.SQSfx.warm(B.atkSfx);
+  [B.atkSfx, B.hurtSfx, B.faintSfx].forEach(function (sf) {
+    if (sf && window.SQSfx && window.SQSfx.warm) window.SQSfx.warm(sf);
+  });
   var ASSET_V = '20260718b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   /* ---------- the intro reel: the guardian's entrance, once per visit.
@@ -965,6 +972,7 @@
       launchOrange(function () {             // her damage lands with the orange
         state.bossHp = Math.max(0, state.bossHp - 1);
         playBody(B.hurtSeq, false, side);
+        if (B.hurtSfx && window.SQSfx && window.SQSfx[B.hurtSfx]) window.SQSfx[B.hurtSfx]();
         syncTails(state.bossHp);
         flash(side ? sideElL : sideElR);
         renderHp();
@@ -1001,6 +1009,7 @@
   function win() {
     state.over = true;
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
+    if (B.faintSfx && window.SQSfx && window.SQSfx[B.faintSfx]) window.SQSfx[B.faintSfx]();
     if (B.faintSeq) {
       playBody(B.faintSeq, true);           // the guardian goes down, and stays down
       if (TW) {                             // and its twin falls with it
