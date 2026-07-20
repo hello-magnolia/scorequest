@@ -71,6 +71,37 @@
     src.start(t0abs); src.stop(t0abs + dur + 0.02);
   }
 
+  /* ---------- recorded voices ----------
+     A small sample rack beside the synthesized voices: files are fetched
+     and decoded once, cached, and played through the same context and
+     mute preference. warm() preloads so a fight's first cry never lags. */
+  var SAMPLES = {
+    talonCry: 'assets/sfx/talon_cry.mp3'
+  };
+  var sampleBufs = {};
+  function warmSample(name) {
+    var a = ac();
+    if (!a || !SAMPLES[name] || sampleBufs[name]) return;
+    sampleBufs[name] = 'loading';
+    fetch(SAMPLES[name])
+      .then(function (r) { return r.arrayBuffer(); })
+      .then(function (ab) { return a.decodeAudioData(ab); })
+      .then(function (buf) { sampleBufs[name] = buf; })
+      .catch(function () { sampleBufs[name] = null; });
+  }
+  function playSample(name, peak) {
+    var a = ac();
+    if (!a || !enabled()) return;
+    var buf = sampleBufs[name];
+    if (!buf || buf === 'loading') { warmSample(name); return; }
+    var src = a.createBufferSource();
+    src.buffer = buf;
+    var g = a.createGain();
+    g.gain.value = peak || 0.55;
+    src.connect(g); g.connect(a.destination);
+    src.start();
+  }
+
   var PENTA = [523.25, 587.33, 659.25, 783.99, 880.0]; // C5 pentatonic
 
   /* ============================================================
@@ -372,6 +403,9 @@
         voice(fb, { type: 'sine', dur: 0.07, peak: 0.05, glideTo: fb * 1.8, delay: 0.15 + b * 0.16 });
       }
     },
+    /* the Tangent Talon's cry: a real eagle, courtesy of the aerie */
+    talonCry: function () { playSample('talonCry', 0.6); },
+    warm: warmSample,
     enabled: enabled,
     /* create/resume the AudioContext as early as the browser allows,
        so the very first typewriter line is audible */

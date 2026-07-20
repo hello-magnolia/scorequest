@@ -450,6 +450,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/realms/prismpeaks.png',         /* stand-in until the summit nest lands */
+      atkSfx: 'talonCry',
       hp: 15,
       flip: false,                                /* drawn already facing him */
       base: 'idle1',
@@ -561,6 +562,7 @@
     document.getElementById('bf-boss-rig').classList.add('bf-no-flip');
   }
   var SP = B.sprites;
+  if (B.atkSfx && window.SQSfx && window.SQSfx.warm) window.SQSfx.warm(B.atkSfx);
   var ASSET_V = '20260718b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   /* ---------- the intro reel: the guardian's entrance, once per visit.
