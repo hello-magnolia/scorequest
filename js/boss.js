@@ -582,6 +582,7 @@
     vid.addEventListener('ended', finish);
     vid.addEventListener('error', finish);
     wrap.addEventListener('click', finish);
+    document.getElementById('bf-intro-skip').addEventListener('click', finish);
     document.addEventListener('keydown', onKey, true);
     vid.muted = false;                      // the entrance deserves its fanfare
     var p = vid.play();
