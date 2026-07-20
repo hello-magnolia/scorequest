@@ -40,6 +40,7 @@
         orange:  'assets/fx/orange.png'
       },
       bg: 'assets/boss/lorewood/bg.png',
+      atkSfx: 'roar',                       /* the Archivist announces its strikes */
       intro: 'assets/boss/lorewood/intro.mp4',
       hp: 9,   /* nine tails, nine hit points: one tail per wound */
       flip: true,   /* source faces right; mirror her toward Pomelo */
@@ -801,6 +802,7 @@
   var orangeEl = document.getElementById('bf-orange');
   capyAtkEl.src = SP.pomeloAtk1;
   function launchOrange(onImpact, targetEl) {
+    if (window.SQSfx && window.SQSfx.capyTrill) window.SQSfx.capyTrill();
     if (reduceMotion) { after(200, onImpact); return; }
     var a = arenaEl.getBoundingClientRect();
     var br = (targetEl || bodyEl).getBoundingClientRect();
@@ -964,6 +966,7 @@
       }, side ? bodyElL : bodyEl);
     } else {
       playBody(B.attackSeq, false, side);
+      if (B.atkSfx && window.SQSfx && window.SQSfx[B.atkSfx]) window.SQSfx[B.atkSfx]();
       playYell();
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];

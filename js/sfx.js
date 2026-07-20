@@ -190,6 +190,58 @@
     click: function () {
       voice(1500, { type: 'sine', dur: 0.05, peak: 0.045, glideTo: 950 });
     },
+    /* Pomelo's battle voice: a capybara trill that winds up through ten
+       quick chirps, then breaks into one rising squeak as the orange flies */
+    capyTrill: function () {
+      if (!enabled()) return;
+      for (var k = 0; k < 10; k++) {
+        var t = k * 0.042 + Math.random() * 0.006;
+        var swell = Math.pow(Math.sin(Math.PI * Math.min(Math.max(t / 0.42, 0.02), 0.98)), 0.7);
+        voice(517, { type: 'triangle', dur: 0.03, peak: 0.085 * swell, glideTo: 450, delay: t });
+        voice(1034, { type: 'sine', dur: 0.03, peak: 0.014 * swell, glideTo: 900, delay: t });
+      }
+      voice(520, { type: 'triangle', dur: 0.2, peak: 0.12, glideTo: 1040, delay: 0.46 });
+      voice(1040, { type: 'sine', dur: 0.2, peak: 0.025, glideTo: 2080, delay: 0.46 });
+    },
+    /* a guardian's roar: two detuned saws sliding low beneath a band of
+       growl-noise trembling at 26Hz. The Archivist wears it first */
+    roar: function () {
+      var a = ac();
+      if (!a || !enabled()) return;
+      var t0 = a.currentTime, dur = 0.75;
+      [0, 7].forEach(function (dt) {
+        var osc = a.createOscillator(), g = a.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(112 + dt, t0);
+        osc.frequency.exponentialRampToValueAtTime(74 + dt, t0 + dur);
+        g.gain.setValueAtTime(0, t0);
+        g.gain.linearRampToValueAtTime(0.085, t0 + 0.05);
+        g.gain.setValueAtTime(0.085, t0 + dur * 0.55);
+        g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+        osc.connect(g).connect(a.destination);
+        osc.start(t0); osc.stop(t0 + dur + 0.05);
+      });
+      var n = Math.floor(a.sampleRate * dur);
+      var buf = a.createBuffer(1, n, a.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      var src = a.createBufferSource(); src.buffer = buf;
+      var bp = a.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(640, t0);
+      bp.frequency.exponentialRampToValueAtTime(320, t0 + dur);
+      bp.Q.value = 0.9;
+      var ng = a.createGain();
+      ng.gain.setValueAtTime(0, t0);
+      ng.gain.linearRampToValueAtTime(0.14, t0 + 0.06);
+      ng.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+      var trem = a.createOscillator(), tg = a.createGain(), carrier = a.createGain();
+      trem.frequency.value = 26; tg.gain.value = 0.5; carrier.gain.value = 0.6;
+      trem.connect(tg).connect(carrier.gain);
+      src.connect(bp); bp.connect(ng); ng.connect(carrier); carrier.connect(a.destination);
+      trem.start(t0); trem.stop(t0 + dur + 0.05);
+      src.start(t0); src.stop(t0 + dur + 0.02);
+    },
     enabled: enabled,
     /* create/resume the AudioContext as early as the browser allows,
        so the very first typewriter line is audible */
