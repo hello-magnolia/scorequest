@@ -85,13 +85,14 @@
   };
   /* voices that stand for a set of samples, all warmed together */
   var SAMPLE_GROUPS = { aristotleAttack: ['aristotleHuu'] };
+  var SAMPLE_V = '20260720d';        /* bump with sample changes: busts stale caches */
   var sampleBufs = {};
   function warmSample(name) {
     if (SAMPLE_GROUPS[name]) { SAMPLE_GROUPS[name].forEach(warmSample); return; }
     var a = ac();
     if (!a || !SAMPLES[name] || sampleBufs[name]) return;
     sampleBufs[name] = 'loading';
-    fetch(SAMPLES[name])
+    fetch(SAMPLES[name] + '?v=' + SAMPLE_V)
       .then(function (r) { return r.arrayBuffer(); })
       .then(function (ab) { return a.decodeAudioData(ab); })
       .then(function (buf) { sampleBufs[name] = buf; })
