@@ -200,6 +200,7 @@
 
   /* ---------- HUD ---------- */
   document.title = realm.name + ', ScoreQuest';
+  try { window.localStorage.setItem('sq_visited_' + realm.id, '1'); } catch (e) {}
   document.getElementById('rw-title').textContent = realm.name;
   if (realm.ui) document.body.classList.add('rw-ui-' + realm.ui);   // per-realm ui skin
   document.getElementById('rw-meta').textContent =

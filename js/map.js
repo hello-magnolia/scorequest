@@ -319,6 +319,59 @@
   var tipName = document.getElementById('worldmap-tip-name');
   var tipDomain = document.getElementById('worldmap-tip-domain');
   var NS = 'http://www.w3.org/2000/svg';
+  function isVisited(id) {
+    try {
+      return !!(window.localStorage.getItem('sq_visited_' + id) ||
+                window.localStorage.getItem('sq_realm_prog_' + id) ||
+                window.localStorage.getItem('sq_boss_' + id));
+    } catch (e) { return true; }
+  }
+  /* unvisited realms are drawn again in gray: the same painting, clipped
+     to the region's exact borders and desaturated, so the boundary between
+     gray and color is the region boundary itself */
+  var defs = document.createElementNS(NS, 'defs');
+  var filt = document.createElementNS(NS, 'filter');
+  filt.setAttribute('id', 'wm-desat');
+  var cm = document.createElementNS(NS, 'feColorMatrix');
+  cm.setAttribute('type', 'saturate'); cm.setAttribute('values', '0.08');
+  filt.appendChild(cm);
+  var ct = document.createElementNS(NS, 'feComponentTransfer');
+  ['feFuncR', 'feFuncG', 'feFuncB'].forEach(function (fn) {
+    var f = document.createElementNS(NS, fn);
+    f.setAttribute('type', 'linear'); f.setAttribute('slope', '0.72'); f.setAttribute('intercept', '0.04');
+    ct.appendChild(f);
+  });
+  filt.appendChild(ct);
+  defs.appendChild(filt);
+  svg.appendChild(defs);
+  REGIONS.forEach(function (R) {
+    if (isVisited(R.id)) return;
+    var cp = document.createElementNS(NS, 'clipPath');
+    cp.setAttribute('id', 'wm-cp-' + R.id);
+    cp.setAttribute('clipPathUnits', 'userSpaceOnUse');
+    R.polys.forEach(function (poly) {
+      var p = document.createElementNS(NS, 'polygon');
+      p.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));
+      cp.appendChild(p);
+    });
+    defs.appendChild(cp);
+    var gimg = document.createElementNS(NS, 'image');
+    gimg.setAttribute('href', 'assets/worldmap.webp');
+    gimg.setAttribute('x', '0'); gimg.setAttribute('y', '0');
+    gimg.setAttribute('width', '100'); gimg.setAttribute('height', '100');
+    gimg.setAttribute('preserveAspectRatio', 'none');
+    gimg.setAttribute('clip-path', 'url(#wm-cp-' + R.id + ')');
+    gimg.setAttribute('filter', 'url(#wm-desat)');
+    gimg.setAttribute('class', 'wm-gray');
+    gimg.setAttribute('id', 'wm-gray-' + R.id);
+    svg.appendChild(gimg);
+    R.polys.forEach(function (poly) {
+      var edge = document.createElementNS(NS, 'polygon');
+      edge.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));
+      edge.setAttribute('class', 'wm-gray-edge');
+      svg.appendChild(edge);
+    });
+  });
   REGIONS.forEach(function (R) {
     var a = document.createElementNS(NS, 'a');
     a.setAttribute('href', 'realm.html?realm=' + R.id);
@@ -328,13 +381,18 @@
       p.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));
       a.appendChild(p);
     });
+    var grayEl = document.getElementById('wm-gray-' + R.id);
     function show() {
       tipName.textContent = R.name;
       tipDomain.textContent = R.domain;
       tip.hidden = false;
+      if (grayEl) grayEl.classList.add('is-peek');
       if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
     }
-    function hide() { tip.hidden = true; }
+    function hide() {
+      tip.hidden = true;
+      if (grayEl) grayEl.classList.remove('is-peek');
+    }
     a.addEventListener('mouseenter', show);
     a.addEventListener('focus', function () {
       show();
