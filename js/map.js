@@ -344,31 +344,22 @@
   });
   filt.appendChild(ct);
   defs.appendChild(filt);
-  var soft = document.createElementNS(NS, 'filter');
-  soft.setAttribute('id', 'wm-soften');
-  soft.setAttribute('x', '-20%'); soft.setAttribute('y', '-20%');
-  soft.setAttribute('width', '140%'); soft.setAttribute('height', '140%');
-  var blur = document.createElementNS(NS, 'feGaussianBlur');
-  blur.setAttribute('stdDeviation', '0.5');
-  soft.appendChild(blur);
-  defs.appendChild(soft);
   svg.appendChild(defs);
   REGIONS.forEach(function (R) {
     if (isVisited(R.id)) return;
+    /* pixel-accurate coverage: the mask is an image rendered from the
+       region data itself, pre-feathered. No polygon approximations. */
     var mk = document.createElementNS(NS, 'mask');
     mk.setAttribute('id', 'wm-mk-' + R.id);
     mk.setAttribute('maskUnits', 'userSpaceOnUse');
     mk.setAttribute('x', '0'); mk.setAttribute('y', '0');
     mk.setAttribute('width', '100'); mk.setAttribute('height', '100');
-    var gg = document.createElementNS(NS, 'g');
-    gg.setAttribute('filter', 'url(#wm-soften)');
-    (R.gpolys || R.polys).forEach(function (poly) {
-      var p = document.createElementNS(NS, 'polygon');
-      p.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));
-      p.setAttribute('fill', '#fff');
-      gg.appendChild(p);
-    });
-    mk.appendChild(gg);
+    var mimg = document.createElementNS(NS, 'image');
+    mimg.setAttribute('href', 'assets/map-masks/' + R.id + '.png');
+    mimg.setAttribute('x', '0'); mimg.setAttribute('y', '0');
+    mimg.setAttribute('width', '100'); mimg.setAttribute('height', '100');
+    mimg.setAttribute('preserveAspectRatio', 'none');
+    mk.appendChild(mimg);
     defs.appendChild(mk);
     var gimg = document.createElementNS(NS, 'image');
     gimg.setAttribute('href', 'assets/worldmap.webp');
