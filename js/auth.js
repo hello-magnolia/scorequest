@@ -86,8 +86,62 @@
             updated_at: res.data.updated_at,
           };
         }
+        syncRealms();
       })
       .catch(function () { /* row may not exist yet; trigger creates it */ });
+  }
+
+  /* ---------- game <-> account sync ----------
+     The game pages read and write plain localStorage keys
+     (sq_visited_<id>, sq_realm_prog_<id>, sq_boss_<id>). This layer
+     mirrors those keys into profiles.realms and back, unioned, so
+     progress follows the account across devices. */
+  var REALM_IDS = ['lorewood', 'storyforge', 'syntaxcitadel', 'mirrormines',
+    'inkreef', 'datadocks', 'infinityisles', 'prismpeaks'];
+  function readLocalRealm(id) {
+    var out = {};
+    try {
+      if (window.localStorage.getItem('sq_visited_' + id)) out.visited = true;
+      var wp = window.localStorage.getItem('sq_realm_prog_' + id);
+      if (wp) out.waypoints = JSON.parse(wp);
+      if (window.localStorage.getItem('sq_boss_' + id) === 'cleared') out.boss = 'cleared';
+    } catch (e) {}
+    return out;
+  }
+  function mergeRealm(x, y) {
+    x = x || {}; y = y || {};
+    var out = {};
+    if (x.visited || y.visited) out.visited = true;
+    var wp = {};
+    (x.waypoints || []).concat(y.waypoints || []).forEach(function (n) { wp[n] = true; });
+    var list = Object.keys(wp).map(Number);
+    if (list.length) out.waypoints = list;
+    if (x.boss === 'cleared' || y.boss === 'cleared') out.boss = 'cleared';
+    return out;
+  }
+  function writeLocalRealm(id, r) {
+    if (!r) return;
+    try {
+      if (r.visited) window.localStorage.setItem('sq_visited_' + id, '1');
+      if (r.waypoints && r.waypoints.length)
+        window.localStorage.setItem('sq_realm_prog_' + id, JSON.stringify(r.waypoints));
+      if (r.boss === 'cleared') window.localStorage.setItem('sq_boss_' + id, 'cleared');
+    } catch (e) {}
+  }
+  function syncRealms() {
+    var realms = state.progress.realms || {};
+    var merged = {};
+    REALM_IDS.forEach(function (id) {
+      merged[id] = mergeRealm(realms[id], readLocalRealm(id));
+      writeLocalRealm(id, merged[id]);
+    });
+    saveProgress({ realms: merged });
+    try { document.dispatchEvent(new CustomEvent('sq:progress-synced')); } catch (e) {}
+  }
+  function reportRealm(id) {
+    var realms = Object.assign({}, state.progress.realms || {});
+    realms[id] = mergeRealm(realms[id], readLocalRealm(id));
+    saveProgress({ realms: realms });
   }
 
   /* ---------- public: save progress ---------- */
@@ -416,6 +470,7 @@
     getUser: function () { return state.user; },
     getProgress: function () { return state.progress; },
     saveProgress: saveProgress,
+    reportRealm: reportRealm,
     onChange: function (fn) { listeners.push(fn); fn(state); },
   };
 

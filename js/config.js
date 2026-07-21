@@ -15,7 +15,7 @@
    nothing is saved to a real account.
    ============================================================ */
 window.SCOREQUEST_CONFIG = {
-  SUPABASE_URL: "https://moasnmwcikwybriwaoip.supabase.co/rest/v1/",
+  SUPABASE_URL: "https://moasnmwcikwybriwaoip.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_1wAdb8Ok-hOb4gWqKCuqcw_cBfyyTdc",
 
   /* ----------------------------------------------------------

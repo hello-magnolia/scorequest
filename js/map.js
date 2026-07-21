@@ -412,6 +412,13 @@
     var v = document.getElementById('wm-vivid-' + R.id);
     if (v) svg.appendChild(v);
   });
+  document.addEventListener('sq:progress-synced', function () {
+    REGIONS.forEach(function (R) {
+      if (!isVisited(R.id)) return;
+      var g = document.getElementById('wm-gray-' + R.id);
+      if (g) g.remove();
+    });
+  });
   var LABEL_AT = {
     lorewood: [12.9, 33.0], storyforge: [15.3, 60.7], syntaxcitadel: [36.5, 23.5],
     mirrormines: [44.9, 53.3], inkreef: [35.3, 84.0], datadocks: [65.2, 83.5],

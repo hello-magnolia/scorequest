@@ -178,6 +178,7 @@
   function savePassed() {
     try { window.localStorage.setItem(PROG_KEY, JSON.stringify(
       Object.keys(passed).map(Number))); } catch (e) {}
+    if (window.SQAuth && window.SQAuth.reportRealm) window.SQAuth.reportRealm(realm.id);
   }
   var quizOpen = false;
   var PRACTICE = [       // placeholder items until the real banks arrive
@@ -201,6 +202,7 @@
   /* ---------- HUD ---------- */
   document.title = realm.name + ', ScoreQuest';
   try { window.localStorage.setItem('sq_visited_' + realm.id, '1'); } catch (e) {}
+  if (window.SQAuth && window.SQAuth.reportRealm) window.SQAuth.reportRealm(realm.id);
   document.getElementById('rw-title').textContent = realm.name;
   if (realm.ui) document.body.classList.add('rw-ui-' + realm.ui);   // per-realm ui skin
   document.getElementById('rw-meta').textContent =

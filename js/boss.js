@@ -1029,6 +1029,7 @@
   function win() {
     state.over = true;
     try { window.localStorage.setItem('sq_boss_' + realmId, 'cleared'); } catch (e) {}
+    if (window.SQAuth && window.SQAuth.reportRealm) window.SQAuth.reportRealm(realmId);
     sfxCue(B.faintSfx);                     // voice and fall share the same instant
     if (B.faintSeq) {
       playBody(B.faintSeq, true);           // the guardian goes down, and stays down
