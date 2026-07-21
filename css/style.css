@@ -1706,14 +1706,14 @@ a { color: inherit; }
 }
 .worldmap-label-name {
   font-family: var(--font-display); font-weight: 700;
-  font-size: clamp(10px, 1.45vw, 17px); letter-spacing: 0.04em;
+  font-size: clamp(14px, 2vw, 23px); letter-spacing: 0.04em;
   color: #fdf6e3;
   text-shadow: 2px 0 0 #16112B, -2px 0 0 #16112B, 0 2px 0 #16112B,
     0 -2px 0 #16112B, 2px 2px 0 #16112B, -2px 2px 0 #16112B, -2px -2px 0 #16112B, 2px -2px 0 #16112B;
 }
 .worldmap-label-domain {
   font-family: var(--font-utility); font-weight: 600;
-  font-size: clamp(7px, 0.95vw, 12px); letter-spacing: 0.07em;
+  font-size: clamp(10px, 1.3vw, 16px); letter-spacing: 0.07em;
   color: var(--gold);
   text-shadow: 1px 0 0 #16112B, -1px 0 0 #16112B, 0 1px 0 #16112B, 0 -1px 0 #16112B,
     1px 1px 0 #16112B, -1px 1px 0 #16112B, -1px -1px 0 #16112B, 1px -1px 0 #16112B;
