@@ -1701,20 +1701,24 @@ a { color: inherit; }
 /* realm names live on the map itself, in the world's own letters */
 .worldmap-label {
   position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  pointer-events: none; white-space: nowrap; z-index: 3; text-align: center;
+}
+.worldmap-label-name {
   font-family: var(--font-display); font-weight: 700;
   font-size: clamp(10px, 1.45vw, 17px); letter-spacing: 0.04em;
-  color: #fdf6e3; pointer-events: none; white-space: nowrap; z-index: 3;
+  color: #fdf6e3;
   text-shadow: 2px 0 0 #16112B, -2px 0 0 #16112B, 0 2px 0 #16112B,
     0 -2px 0 #16112B, 2px 2px 0 #16112B, -2px 2px 0 #16112B, -2px -2px 0 #16112B, 2px -2px 0 #16112B;
 }
-
-.worldmap-tip {
-  position: absolute; z-index: 5; pointer-events: none;
-  background: rgba(22, 17, 43, 0.97); padding: 8px 12px;
-  display: flex; flex-direction: column; gap: 1px; min-width: 150px;
+.worldmap-label-domain {
+  font-family: var(--font-utility); font-weight: 600;
+  font-size: clamp(7px, 0.95vw, 12px); letter-spacing: 0.07em;
+  color: var(--gold);
+  text-shadow: 1px 0 0 #16112B, -1px 0 0 #16112B, 0 1px 0 #16112B, 0 -1px 0 #16112B,
+    1px 1px 0 #16112B, -1px 1px 0 #16112B, -1px -1px 0 #16112B, 1px -1px 0 #16112B;
 }
-.worldmap-tip-name { font-family: var(--font-display); font-weight: 700; color: var(--parchment); }
-.worldmap-tip-domain { font-size: 0.78rem; color: var(--gold); letter-spacing: 0.08em; }
+
 
 /* the intro reel: the guardian's entrance fills the screen, letterboxed
    on ink, and bows out with a fade when it ends or is skipped */
