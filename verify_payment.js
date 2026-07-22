@@ -26,13 +26,13 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
   let d = w.document;
   check('Checkout page loads with three selectable plans',
     !!d.getElementById('checkout') && d.querySelectorAll('.co-plan').length === 3);
-  check('Guildmaster is preselected as the featured default',
-    d.querySelector('.co-plan[data-plan="guildmaster"]').classList.contains('is-selected') &&
-    d.getElementById('co-name').textContent === 'Guildmaster' &&
-    /\$120\/mo/.test(d.getElementById('co-price').textContent));
+  check('All Access is preselected as the featured default',
+    d.querySelector('.co-plan[data-plan="allaccess"]').classList.contains('is-selected') &&
+    d.getElementById('co-name').textContent === 'All Access' &&
+    /\$129\/mo/.test(d.getElementById('co-price').textContent));
   check('Trial-first framing: due today is $0.00, real price stated beside it',
     d.getElementById('co-due').textContent === '$0.00' &&
-    /then \$120\/month after your 7-day free trial/.test(d.getElementById('co-after').textContent));
+    /then \$129\/month after your 7-day free trial/.test(d.getElementById('co-after').textContent));
   check('Demo mode is honest until Stripe links are pasted in',
     d.getElementById('co-cta').classList.contains('is-demo') &&
     d.getElementById('co-cta').getAttribute('aria-disabled') === 'true' &&
@@ -48,24 +48,24 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
   /* 2 — checkout: interactions */
   click(w, d.querySelector('.co-bill[data-billing="annual"]'));
   await new Promise(r => setTimeout(r, 40));
-  check('Annual billing recomputes: $96/mo billed $1,152 yearly',
-    /\$96\/mo/.test(d.getElementById('co-price').textContent) &&
-    /billed \$1,152 yearly/.test(d.getElementById('co-price-note').textContent) &&
-    /\$1,152\/year/.test(d.getElementById('co-after').textContent));
-  click(w, d.querySelector('.co-plan[data-plan="adventurer"]'));
+  check('Annual billing recomputes: $103/mo billed $1,236 yearly',
+    /\$103\/mo/.test(d.getElementById('co-price').textContent) &&
+    /billed \$1,236 yearly/.test(d.getElementById('co-price-note').textContent) &&
+    /\$1,236\/year/.test(d.getElementById('co-after').textContent));
+  click(w, d.querySelector('.co-plan[data-plan="basic"]'));
   await new Promise(r => setTimeout(r, 40));
-  check('Switching plans keeps the billing period ($39/mo annual Adventurer)',
-    d.getElementById('co-name').textContent === 'Adventurer' &&
-    /\$39\/mo/.test(d.getElementById('co-price').textContent));
+  check('Switching plans keeps the billing period ($79/mo annual Basic)',
+    d.getElementById('co-name').textContent === 'Basic' &&
+    /\$79\/mo/.test(d.getElementById('co-price').textContent));
   check('Selection state lives in the URL for direct linking',
-    /plan=adventurer/.test(w.location.search) && /billing=annual/.test(w.location.search));
+    /plan=basic/.test(w.location.search) && /billing=annual/.test(w.location.search));
 
   /* 3 — checkout: deep link */
-  w = await load('checkout.html?plan=champion');
+  w = await load('checkout.html?plan=complete');
   d = w.document;
-  check('Pricing CTAs deep-link a plan (?plan=champion preselects it)',
-    d.querySelector('.co-plan[data-plan="champion"]').classList.contains('is-selected') &&
-    /\$360\/mo/.test(d.getElementById('co-price').textContent));
+  check('Pricing CTAs deep-link a plan (?plan=complete preselects it)',
+    d.querySelector('.co-plan[data-plan="complete"]').classList.contains('is-selected') &&
+    /\$249\/mo/.test(d.getElementById('co-price').textContent));
 
   /* 4 — success page */
   w = await load('success.html');
@@ -108,9 +108,9 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
     !!d.querySelector('.nav-links a[href="parents.html"]') &&
     !!d.querySelector('.footer-links a[href="parents.html"]'));
   check('All three pricing CTAs deep-link into checkout',
-    !!d.querySelector('a[href="checkout.html?plan=adventurer"]') &&
-    !!d.querySelector('a[href="checkout.html?plan=guildmaster"]') &&
-    !!d.querySelector('a[href="checkout.html?plan=champion"]'));
+    !!d.querySelector('a[href="checkout.html?plan=basic"]') &&
+    !!d.querySelector('a[href="checkout.html?plan=allaccess"]') &&
+    !!d.querySelector('a[href="checkout.html?plan=complete"]'));
   check('Parent pitch links through to the full parents page',
     !!d.querySelector('.pitch-more a[href="parents.html"]'));
 

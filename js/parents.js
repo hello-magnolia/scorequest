@@ -34,6 +34,9 @@
       today: 'today',
       accuracy: 'Accuracy by content domain',
       note: 'Included with the family plan: this report, emailed weekly, in your language.',
+      plansTitle: 'The plans, plainly',
+      planBasic: 'Basic, $99/mo: two SAT categories open at a time, the core question bank, one standard path for everyone, extra practice not included.',
+      planAll: 'All Access, $129/mo (most families choose this): all 8 SAT categories open at once, the full question bank with the hardest tiers, a study plan personalized to your child\'s diagnostic, unlimited extra practice.',
       word: 'English',
       domains: {
         info: 'Information & Ideas', craft: 'Craft & Structure',
@@ -61,6 +64,9 @@
       today: '今天',
       accuracy: '各内容领域正确率',
       note: '家庭版包含：每周发送至您邮箱的进度报告，支持您的语言。',
+      plansTitle: '两档方案，一目了然',
+      planBasic: '基础版 $99/月：每次开放两个考察领域，核心题库，统一标准路径，不含额外强化练习。',
+      planAll: '全通版 $129/月（多数家庭之选）：SAT 八大考察领域同步开放，完整题库含最高难度题（冲刺 1500 以上必备），按孩子诊断结果定制学习计划，无限量强化练习。',
       word: '中文',
       domains: {
         info: '信息与观点', craft: '技巧与结构',
@@ -88,6 +94,9 @@
       today: 'hoy',
       accuracy: 'Precisión por área de contenido',
       note: 'Incluido en el plan familiar: este informe, por correo cada semana, en su idioma.',
+      plansTitle: 'Los planes, en claro',
+      planBasic: 'Básico, $99/mes: dos categorías del SAT abiertas a la vez, banco de preguntas esencial, una ruta estándar igual para todos, sin práctica adicional.',
+      planAll: 'Acceso Total, $129/mes (la elección de la mayoría de las familias): las 8 categorías del SAT abiertas a la vez, banco de preguntas completo con los niveles más difíciles, un plan de estudio personalizado según el diagnóstico de su hijo, práctica adicional ilimitada.',
       word: 'Español',
       domains: {
         info: 'Información e ideas', craft: 'Técnica y estructura',
@@ -115,6 +124,9 @@
       today: "aujourd'hui",
       accuracy: 'Précision par domaine',
       note: "Inclus dans l'offre famille : ce rapport, envoyé chaque semaine, dans votre langue.",
+      plansTitle: 'Les formules, en clair',
+      planBasic: "Essentiel, 99 $/mois : deux catégories du SAT ouvertes à la fois, banque de questions de base, un parcours standard identique pour tous, sans entraînement supplémentaire.",
+      planAll: "Accès Complet, 129 $/mois (le choix de la plupart des familles) : les 8 catégories du SAT ouvertes en même temps, banque de questions complète avec les niveaux les plus difficiles, un plan d'étude personnalisé selon le diagnostic de votre enfant, entraînement supplémentaire illimité.",
       word: 'Français',
       domains: {
         info: 'Informations et idées', craft: 'Style et structure',

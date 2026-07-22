@@ -155,6 +155,10 @@ const OPTS = {
   check('中文 pill translates report labels', document.querySelector('[data-i18n="time"]').textContent === '练习时长',
     document.querySelector('[data-i18n="time"]').textContent);
   check('中文 pill translates domain names', /代数/.test(document.getElementById('domain-bars').textContent));
+  check('中文 plans ledger sells with 定制 and 统一标准路径 (custom vs uniform)',
+    /统一标准路径/.test(document.querySelector('[data-i18n="planBasic"]').textContent) &&
+    /定制学习计划/.test(document.querySelector('[data-i18n="planAll"]').textContent) &&
+    /多数家庭之选/.test(document.querySelector('[data-i18n="planAll"]').textContent));
   check('中文 narrative keeps the name and names the weak domain',
     /Kevin/.test(document.querySelector('.glance-text').textContent) &&
     /几何与三角/.test(document.querySelector('.glance-text').textContent));

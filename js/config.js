@@ -29,11 +29,11 @@ window.SCOREQUEST_CONFIG = {
      explains that live payments are not connected yet.
      ---------------------------------------------------------- */
   STRIPE_LINKS: {
-    adventurer_monthly:  "__STRIPE_LINK_ADVENTURER_MONTHLY__",
-    adventurer_annual:   "__STRIPE_LINK_ADVENTURER_ANNUAL__",
-    guildmaster_monthly: "__STRIPE_LINK_GUILDMASTER_MONTHLY__",
-    guildmaster_annual:  "__STRIPE_LINK_GUILDMASTER_ANNUAL__",
-    champion_monthly:    "__STRIPE_LINK_CHAMPION_MONTHLY__",
-    champion_annual:     "__STRIPE_LINK_CHAMPION_ANNUAL__",
+    basic_monthly:     "__STRIPE_LINK_BASIC_MONTHLY__",
+    basic_annual:      "__STRIPE_LINK_BASIC_ANNUAL__",
+    allaccess_monthly: "__STRIPE_LINK_ALLACCESS_MONTHLY__",
+    allaccess_annual:  "__STRIPE_LINK_ALLACCESS_ANNUAL__",
+    complete_monthly:  "__STRIPE_LINK_COMPLETE_MONTHLY__",
+    complete_annual:   "__STRIPE_LINK_COMPLETE_ANNUAL__",
   },
 };

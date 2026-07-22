@@ -17,42 +17,39 @@
   if (!document.getElementById('checkout')) return;
 
   var PLANS = {
-    adventurer: {
-      name: 'Adventurer', monthly: 49, annual: 470, annualMo: 39,
-      tagline: 'The full game, self-guided.',
+    basic: {
+      name: 'Basic', monthly: 99, annual: 948, annualMo: 79,
+      tagline: 'The standard path, two realms at a time.',
       features: [
-        'All eight realms, fully unlocked',
-        'Unlimited daily practice sets',
-        'All 24 full-length practice exams',
-        'Streak shields'
+        'Two realms open at a time',
+        'Core question bank',
+        'Standard practice path for everyone',
+        'Extra practice rounds not included'
       ]
     },
-    guildmaster: {
-      name: 'Guildmaster', monthly: 120, annual: 1152, annualMo: 96, featured: true,
-      tagline: 'Daily coaching, at the price of one tutoring hour a month.',
+    allaccess: {
+      name: 'All Access', monthly: 129, annual: 1236, annualMo: 103, featured: true,
+      tagline: 'Every realm open at once, personalized to your child.',
       features: [
-        'Everything in Adventurer',
-        'Weekly 1-on-1 strategy session with an expert coach',
-        'Personalized study plan, reviewed monthly',
-        'Weekly parent report in your language (EN, \u4E2D\u6587, ES, FR)',
-        'Priority support'
+        'All 8 realms open at once, every SAT category at the same time',
+        'Full question bank, including the hardest tiers',
+        'Follows your child\u2019s personalized plan from their diagnostic',
+        'Unlimited extra practice: replay any node, rematch any boss, drill any weak spot'
       ]
     },
-    champion: {
-      name: 'Champion', monthly: 360, annual: 3456, annualMo: 288,
-      tagline: 'Maximum support, maximum pace.',
+    complete: {
+      name: 'Complete', monthly: 249, annual: 2388, annualMo: 199,
+      tagline: 'Everything in All Access, for both the SAT and ACT.',
       features: [
-        'Everything in Guildmaster',
-        'Three private coaching sessions every week',
-        'On-demand tutor chat',
-        'Dedicated success manager'
+        'Everything in All Access',
+        'Both the SAT and the ACT, one subscription'
       ]
     }
   };
 
   var params = new URLSearchParams(window.location.search);
   var state = {
-    plan: PLANS[params.get('plan')] ? params.get('plan') : 'guildmaster',
+    plan: PLANS[params.get('plan')] ? params.get('plan') : 'allaccess',
     billing: params.get('billing') === 'annual' ? 'annual' : 'monthly'
   };
 

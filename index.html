@@ -11,7 +11,7 @@
    before first paint so navigation never flashes the marketing tabs */
 try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
 </script>
-<link rel="stylesheet" href="css/style.css?v=b20260722p" />
+<link rel="stylesheet" href="css/style.css?v=b20260722q" />
 
 <link rel="icon" type="image/png" href="assets/logo.png" />
 </head>
@@ -94,6 +94,11 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
       <p class="pitch-sub">Track your child’s progress at your fingertips: measured weekly, in the language you think in.</p>
       <p class="pitch-note type-utility">Weekly email &middot; EN &middot; 中文 &middot; ES &middot; FR</p>
       <p class="pitch-more"><a href="parents.html">Everything parents get &rarr;</a></p>
+      <div class="pitch-plans">
+        <p class="pitch-plans-title type-utility" data-i18n="plansTitle">The plans, plainly</p>
+        <p class="pitch-plan" data-i18n="planBasic">Basic, $99/mo: two SAT categories open at a time, the core question bank, one standard path for everyone, extra practice not included.</p>
+        <p class="pitch-plan is-star" data-i18n="planAll">All Access, $129/mo (most families choose this): all 8 SAT categories open at once, the full question bank with the hardest tiers, a study plan personalized to your child's diagnostic, unlimited extra practice.</p>
+      </div>
     </div>
     <div class="preport reveal" id="preport" aria-label="Parent progress report demo, two pages, hover the back page to flip">
 
@@ -393,47 +398,56 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
 <!-- ===================== PRICING ===================== -->
 <section class="section section-alt" id="pricing">
   <div class="section-head reveal">
-    <p class="eyebrow type-utility">Choose your class</p>
+    <p class="eyebrow type-utility">Choose your plan</p>
     <h2 class="section-title">Invest in the habit, not the hourly rate</h2>
-    <p class="section-sub">A private tutor bills by the hour and leaves. ScoreQuest works with your student every single day.</p>
+    <p class="section-sub">Private tutoring runs $400+ a month. ScoreQuest is daily practice, personalized to your child, for a fraction of that.</p>
   </div>
   <div class="plans">
     <div class="plan reveal">
-      <p class="plan-name type-utility">Adventurer</p>
-      <p class="plan-price"><span class="plan-amount type-utility">$49</span><span class="plan-per">/month</span></p>
+      <p class="plan-name type-utility">Basic</p>
+      <p class="plan-price"><span class="plan-amount type-utility">$99</span><span class="plan-per">/month</span></p>
       <ul class="plan-list">
-        <li>All eight realms, fully unlocked</li>
-        <li>Unlimited daily practice sets</li>
-        <li>All 24 full-length practice exams</li>
-        <li>Streak shields</li>
+        <li>Two realms open at a time</li>
+        <li>Core question bank</li>
+        <li>Standard practice path for everyone</li>
+        <li>Extra practice rounds not included</li>
       </ul>
-      <a class="btn btn-outline btn-block" href="checkout.html?plan=adventurer">Start with the basics</a>
+      <a class="btn btn-outline btn-block" href="checkout.html?plan=basic">Start with Basic</a>
     </div>
     <div class="plan plan-featured reveal">
-      <p class="plan-badge type-utility">Best value</p>
-      <p class="plan-name type-utility">Guildmaster</p>
-      <p class="plan-price"><span class="plan-amount type-utility">$120</span><span class="plan-per">/month</span></p>
-      <p class="plan-value">About the price of one tutoring hour, for a full month of daily coaching.</p>
+      <p class="plan-badge type-utility">⭐ Most families choose this</p>
+      <p class="plan-name type-utility">All Access</p>
+      <p class="plan-price"><span class="plan-amount type-utility">$129</span><span class="plan-per">/month</span></p>
       <ul class="plan-list">
-        <li>Everything in Adventurer</li>
-        <li>Weekly 1-on-1 strategy session with an expert coach</li>
-        <li>Personalized study plan, reviewed monthly</li>
-        <li>Weekly parent report in your language (EN, 中文, ES, FR)</li>
-        <li>Priority support</li>
+        <li>All 8 realms open at once, every SAT category at the same time</li>
+        <li>Full question bank, including the hardest tiers, the questions that separate 1400 from 1550</li>
+        <li>Follows your child's personalized plan from their diagnostic</li>
+        <li>Unlimited extra practice: replay any node, rematch any boss, drill any weak spot</li>
       </ul>
-      <a class="btn btn-gold btn-block" href="checkout.html?plan=guildmaster">Get the full program</a>
+      <a class="btn btn-gold btn-block" href="checkout.html?plan=allaccess">Get All Access</a>
     </div>
     <div class="plan reveal">
-      <p class="plan-name type-utility">Champion</p>
-      <p class="plan-price"><span class="plan-amount type-utility">$360</span><span class="plan-per">/month</span></p>
+      <p class="plan-name type-utility">Complete</p>
+      <p class="plan-price"><span class="plan-amount type-utility">$249</span><span class="plan-per">/month</span></p>
       <ul class="plan-list">
-        <li>Everything in Guildmaster</li>
-        <li>Three private coaching sessions every week</li>
-        <li>On-demand tutor chat</li>
-        <li>Dedicated success manager</li>
+        <li>Everything in All Access, for both the SAT and ACT</li>
       </ul>
-      <a class="btn btn-outline btn-block" href="checkout.html?plan=champion">Go all out</a>
+      <a class="btn btn-outline btn-block" href="checkout.html?plan=complete">Cover both tests</a>
     </div>
+  </div>
+  <div class="plan-compare reveal" aria-label="Basic and All Access, side by side">
+    <table>
+      <thead>
+        <tr><th scope="col"></th><th scope="col">Basic</th><th scope="col" class="pc-star">All Access ⭐</th></tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">SAT categories</th><td>2 at a time</td><td class="pc-star">All 8, open simultaneously</td></tr>
+        <tr><th scope="row">Question bank</th><td>Core questions</td><td class="pc-star">Full bank + hardest question tiers</td></tr>
+        <tr><th scope="row">Study path</th><td>Standard, same for everyone</td><td class="pc-star">Personalized to your child's diagnostic</td></tr>
+        <tr><th scope="row">Extra practice</th><td>Not included</td><td class="pc-star">Unlimited replays, rematches, and drills</td></tr>
+        <tr><th scope="row">Price</th><td>$99/mo</td><td class="pc-star">$129/mo</td></tr>
+      </tbody>
+    </table>
   </div>
   <p class="fine-print reveal">Every plan starts with a 7-day free trial. Cancel anytime. Save 20% with annual billing.</p>
 </section>
@@ -460,14 +474,14 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
 </footer>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/config.js?v=b20260722p"></script>
-<script defer src="js/auth.js?v=b20260722p"></script>
-<script defer src="js/usernav.js?v=b20260722p"></script>
-<script defer src="js/pixelworld.js?v=b20260722p"></script>
-<script defer src="js/game.js?v=b20260722p"></script>
-<script defer src="js/sfx.js?v=b20260722p"></script>
-<script defer src="js/map.js?v=b20260722p"></script>
-<script defer src="js/parents.js?v=b20260722p"></script>
-<script defer src="js/main.js?v=b20260722p"></script>
+<script defer src="js/config.js?v=b20260722q"></script>
+<script defer src="js/auth.js?v=b20260722q"></script>
+<script defer src="js/usernav.js?v=b20260722q"></script>
+<script defer src="js/pixelworld.js?v=b20260722q"></script>
+<script defer src="js/game.js?v=b20260722q"></script>
+<script defer src="js/sfx.js?v=b20260722q"></script>
+<script defer src="js/map.js?v=b20260722q"></script>
+<script defer src="js/parents.js?v=b20260722q"></script>
+<script defer src="js/main.js?v=b20260722q"></script>
 </body>
 </html>

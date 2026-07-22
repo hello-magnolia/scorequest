@@ -159,13 +159,25 @@ vc.on('jsdomError', () => {}); // ignore resource-loading noise, we assert behav
   /* 12b — copy rules: no em dashes anywhere in rendered text */
   check('No em dashes in rendered page text', !document.body.textContent.includes('\u2014'));
 
-  /* 12c — premium pricing: $120 featured in the MIDDLE, $360 anchor beside it */
+  /* 12c — decoy pricing: Basic the beige decoy, All Access the featured
+     middle hero, Complete the anchor, tutoring priced above them all */
   const featured = document.querySelector('.plan-featured');
   const plans = [...document.querySelectorAll('.plan')];
-  check('Guildmaster $120 is the featured middle plan', !!featured && plans[1] === featured &&
-    /\$120/.test(featured.textContent) && /Best value/.test(featured.textContent));
-  check('$360 anchor plan frames $120 as the deal', /\$360/.test(plans[2].textContent) &&
-    /one tutoring hour/.test(featured.textContent));
+  check('All Access $129 is the featured middle plan, chosen by most families',
+    !!featured && plans[1] === featured &&
+    /\$129/.test(featured.textContent) && /Most families choose this/.test(featured.textContent));
+  check('Basic $99 decoy and Complete $249 anchor flank it; the old class names are gone',
+    /Basic/.test(plans[0].textContent) && /\$99/.test(plans[0].textContent) &&
+    /Complete/.test(plans[2].textContent) && /\$249/.test(plans[2].textContent) &&
+    !/Explorer|Adventurer|Guildmaster|Champion/.test(document.getElementById('pricing').textContent));
+  check('The anchor line prices tutoring above all cards',
+    /Private tutoring runs \$400\+ a month/.test(document.querySelector('#pricing .section-sub').textContent));
+  check('The two-plan ledger forces the line-by-line contrast', (() => {
+    const t = document.querySelector('.plan-compare');
+    return !!t && /same for everyone/i.test(t.textContent) &&
+      /Personalized to your child/i.test(t.textContent) &&
+      t.querySelectorAll('tbody tr').length === 5;
+  })());
 
   /* 12d — hero stats render inline (number and plus on one line) */
   const sv = document.querySelectorAll('.stat-value');

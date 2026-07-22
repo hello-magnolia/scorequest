@@ -324,10 +324,18 @@ a { color: inherit; }
   background: var(--ink); --frame: var(--line);
   padding: 30px 28px; display: flex; flex-direction: column; gap: 6px; position: relative;
 }
-.plan-featured { background: var(--ink-3); --frame: var(--gold); }
+/* the featured plan is the largest thing on the shelf: taller, wider,
+   golden-framed, unmistakably the one */
+.plan-featured {
+  background: var(--ink-3); --frame: var(--gold);
+  transform: scale(1.06); z-index: 1;
+  padding: 38px 30px;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.45);
+}
 .plan-badge {
   position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-  background: var(--gold); color: var(--ink); font-size: 1.05rem; padding: 2px 14px;
+  background: var(--gold); color: var(--ink); font-size: 0.92rem; padding: 3px 14px;
+  white-space: nowrap;
 }
 .plan-name { color: var(--dusk); font-size: 1.3rem; text-transform: uppercase; }
 .plan-price { margin: 6px 0 14px; }
@@ -341,6 +349,22 @@ a { color: inherit; }
   clip-path: polygon(0 40%, 40% 40%, 40% 0, 60% 0, 60% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%, 40% 100%, 40% 60%, 0 60%);
 }
 .fine-print { text-align: center; margin-top: 30px; color: var(--parchment-dim); font-size: 0.85rem; }
+/* ---------- the two-plan ledger: line-by-line, the $30 does the math ---------- */
+.plan-compare { max-width: 720px; margin: 46px auto 0; }
+.plan-compare table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.plan-compare th, .plan-compare td {
+  padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line);
+  color: var(--parchment-dim);
+}
+.plan-compare thead th { font-family: var(--font-utility); font-size: 0.85rem; letter-spacing: 0.05em; color: var(--parchment); border-bottom: 2px solid var(--line); }
+.plan-compare tbody th { font-weight: 600; color: var(--parchment); }
+.plan-compare .pc-star { background: rgba(242, 182, 60, 0.07); color: var(--parchment); }
+.plan-compare thead .pc-star { color: var(--gold); }
+/* ---------- the plans, plainly: the parent rail's two-line ledger ---------- */
+.pitch-plans { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 16px; }
+.pitch-plans-title { color: var(--dusk); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 8px; }
+.pitch-plan { font-size: 0.85rem; color: var(--parchment-dim); margin: 0 0 8px; line-height: 1.5; }
+.pitch-plan.is-star { color: var(--parchment); border-left: 3px solid var(--gold); padding-left: 10px; }
 
 /* ---------- outro / footer ---------- */
 .outro { text-align: center; padding-bottom: 140px; }
