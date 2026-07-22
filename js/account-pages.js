@@ -7,15 +7,16 @@
 (function () {
   'use strict';
 
+  /* fourth field: how many waypoint trials the realm holds (from realm.js) */
   var REALMS = [
-    ['lorewood', 'Lorewood', 'Information & Ideas'],
-    ['storyforge', 'Story Forge', 'Craft & Structure'],
-    ['syntaxcitadel', 'Syntax Citadel', 'Conventions'],
-    ['mirrormines', 'Mirror Mines', 'Algebra'],
-    ['inkreef', 'Ink Reef', 'Expression of Ideas'],
-    ['datadocks', 'Data Docks', 'Problem-Solving & Data'],
-    ['infinityisles', 'Infinity Isles', 'Advanced Math'],
-    ['prismpeaks', 'Prism Peaks', 'Geometry & Trigonometry']
+    ['lorewood', 'Lorewood', 'Information & Ideas', 4],
+    ['storyforge', 'Story Forge', 'Craft & Structure', 7],
+    ['syntaxcitadel', 'Syntax Citadel', 'Conventions', 6],
+    ['mirrormines', 'Mirror Mines', 'Algebra', 5],
+    ['inkreef', 'Ink Reef', 'Expression of Ideas', 6],
+    ['datadocks', 'Data Docks', 'Problem-Solving & Data', 5],
+    ['infinityisles', 'Infinity Isles', 'Advanced Math', 6],
+    ['prismpeaks', 'Prism Peaks', 'Geometry & Trigonometry', 6]
   ];
 
   function realmState(id) {
@@ -77,26 +78,33 @@
     put('pf-counts', t.visited + ' realms explored \u00b7 ' + t.waypoints +
       ' waypoints \u00b7 ' + t.bosses + ' guardians felled');
 
-    var fill = document.getElementById('pf-bar-fill');
-    if (fill) fill.style.width = pct + '%';
-    put('pf-bar-label', 'World completion: ' + pct + '% \u00b7 ' + t.bosses + ' of 8 guardians');
-
     var list = document.getElementById('pf-realms');
     if (list) {
       list.innerHTML = '';
       REALMS.forEach(function (r) {
         var s = realmState(r[0]);
-        var row = el('a', 'pf-realm' + (s.boss ? ' is-cleared' : (s.visited || s.waypoints ? ' is-active' : '')));
-        row.href = 'realm.html?realm=' + r[0];
-        var left = el('div', 'pf-realm-id');
-        left.appendChild(el('span', 'pf-realm-name', r[1]));
-        left.appendChild(el('span', 'pf-realm-domain type-utility', r[2]));
-        row.appendChild(left);
-        var status = s.boss ? 'Guardian felled'
-          : (s.waypoints ? 'Exploring \u00b7 ' + s.waypoints + ' waypoints'
-            : (s.visited ? 'Exploring' : 'Unexplored'));
-        row.appendChild(el('span', 'pf-realm-status', status));
-        list.appendChild(row);
+        var frac = s.boss ? 1 : Math.min(s.waypoints / r[3], 0.95);
+        var card = el('a', 'pf-jcard' + (s.boss ? ' is-cleared' : ''));
+        card.href = 'realm.html?realm=' + r[0];
+        var art = el('div', 'pf-jcard-art');
+        art.style.backgroundImage = "url('assets/realms/thumbs/" + r[0] + ".webp')";
+        card.appendChild(art);
+        var body = el('div', 'pf-jcard-body');
+        var idc = el('div', 'pf-jcard-id');
+        idc.appendChild(el('span', 'pf-jcard-name', r[1]));
+        idc.appendChild(el('span', 'pf-jcard-domain type-utility', r[2]));
+        body.appendChild(idc);
+        var bar = el('div', 'pf-jbar');
+        var bfill = el('div', 'pf-jbar-fill');
+        bfill.style.width = Math.round(frac * 100) + '%';
+        bar.appendChild(bfill);
+        body.appendChild(bar);
+        card.appendChild(body);
+        var badge = el('div', 'pf-jbadge' + (s.boss ? ' is-earned' : ''));
+        badge.textContent = s.boss ? '\u2605' : '';
+        badge.setAttribute('aria-label', s.boss ? r[1] + ' badge earned' : r[1] + ' badge not yet earned');
+        card.appendChild(badge);
+        list.appendChild(card);
       });
     }
 
@@ -104,8 +112,6 @@
     put('hc-level', 'Level ' + level);
     put('hc-xp', String(p.xp || 0));
     put('hc-streak', String(p.streak || 0));
-    put('hc-waypoints', String(t.waypoints));
-    put('hc-bosses', String(t.bosses));
 
     var ach = document.getElementById('pf-ach');
     if (ach) {

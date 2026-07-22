@@ -43,9 +43,7 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
   <div class="pf-grid">
     <section class="pf-main">
       <h2 class="pf-h2">Journey</h2>
-      <p class="pf-bar-label" id="pf-bar-label"></p>
-      <div class="un-bar pf-bar"><div class="un-bar-fill" id="pf-bar-fill"></div></div>
-      <div class="pf-realms" id="pf-realms"></div>
+      <div class="pf-journey" id="pf-realms"></div>
     </section>
 
     <aside class="pf-rail">
@@ -58,10 +56,14 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
           </div>
         </div>
         <div class="pf-stats">
-          <div class="pf-stat"><span class="pf-stat-n" id="hc-xp">0</span><span class="pf-stat-l">Total XP</span></div>
-          <div class="pf-stat"><span class="pf-stat-n" id="hc-streak">0</span><span class="pf-stat-l">Day streak</span></div>
-          <div class="pf-stat"><span class="pf-stat-n" id="hc-waypoints">0</span><span class="pf-stat-l">Waypoints</span></div>
-          <div class="pf-stat"><span class="pf-stat-n" id="hc-bosses">0</span><span class="pf-stat-l">Guardians</span></div>
+          <div class="pf-stat">
+            <svg class="pf-stat-ico" viewBox="0 0 12 12" aria-hidden="true"><rect x="5" y="0" width="2" height="3" fill="#f2b63c"/><rect x="5" y="9" width="2" height="3" fill="#f2b63c"/><rect x="0" y="5" width="3" height="2" fill="#f2b63c"/><rect x="9" y="5" width="3" height="2" fill="#f2b63c"/><rect x="4" y="4" width="4" height="4" fill="#ffe9a8"/><rect x="5" y="5" width="2" height="2" fill="#fff"/></svg>
+            <span class="pf-stat-n" id="hc-xp">0</span><span class="pf-stat-l">Total XP</span>
+          </div>
+          <div class="pf-stat">
+            <svg class="pf-stat-ico" viewBox="0 0 12 12" aria-hidden="true"><rect x="5" y="0" width="2" height="2" fill="#ff9a3c"/><rect x="4" y="2" width="4" height="2" fill="#ff9a3c"/><rect x="3" y="4" width="6" height="3" fill="#ff7a2e"/><rect x="2" y="7" width="8" height="3" fill="#ff9a3c"/><rect x="4" y="8" width="4" height="3" fill="#ffd23c"/><rect x="5" y="9" width="2" height="2" fill="#ffe9a8"/></svg>
+            <span class="pf-stat-n" id="hc-streak">0</span><span class="pf-stat-l">Day streak</span>
+          </div>
         </div>
       </div>
       <div class="pf-card pixel-frame">
