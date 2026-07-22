@@ -55,20 +55,26 @@ vc.on('jsdomError', () => {}); // ignore resource-loading noise, we assert behav
   check('PixelWorld engine attached', !!window.PixelWorld && Object.keys(window.PixelWorld.scenes).length === 10,
     Object.keys(window.PixelWorld?.scenes || {}).join(','));
 
-  /* 2 — hero canvas actually painted pixels */
+  /* 2 — hero media is video-first: native source chain, canvas in the wings */
+  const heroVid = document.getElementById('hero-video');
+  const heroSources = [...heroVid.querySelectorAll('source')];
+  check('Hero video offers a local-first source chain', heroSources.length >= 2 &&
+    /^assets\//.test(heroSources[0].getAttribute('src') || '') &&
+    /^https:/.test(heroSources[heroSources.length - 1].getAttribute('src') || ''),
+    heroSources.map(s => (s.getAttribute('src') || '').split('/').pop()).join(' -> '));
   const heroCv = document.getElementById('hero-canvas');
+  check('The live canvas waits hidden while the video leads', heroCv.hidden === true);
+
+  /* 3 — when every source fails, the canvas takes the stage and paints */
+  heroSources[heroSources.length - 1].dispatchEvent(new window.Event('error'));
+  await new Promise(r => setTimeout(r, 350)); // let the fallback rAF loop tick
   let heroPainted = false;
   try {
-    const ctx = heroCv.getContext('2d');
-    const data = ctx.getImageData(0, 0, 10, 10).data;
+    const data = heroCv.getContext('2d').getImageData(0, 0, 10, 10).data;
     heroPainted = [...data].some(v => v > 0);
   } catch (e) { heroPainted = false; }
-  check('Hero canvas animation painted pixels', heroPainted, heroCv.width + 'x' + heroCv.height);
-
-  /* 3 — hero video source chain engaged (local -> Higgsfield CDN -> canvas) */
-  const heroVid = document.getElementById('hero-video');
-  check('Hero video source chain attempts a source', !!heroVid.src,
-    (heroVid.src || '').split('/').pop());
+  check('Hero canvas fallback paints when the chain exhausts',
+    heroCv.hidden === false && heroPainted, heroCv.width + 'x' + heroCv.height);
 
   /* 4 — all eight realm cards resolve to art (generated img OR painted canvas fallback) */
   await new Promise(r => setTimeout(r, 1200)); // let the img error->CDN->error chain settle

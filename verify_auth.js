@@ -52,9 +52,9 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   await new Promise(r => setTimeout(r, 120));
   check('Demo signup logs hero in', window.SQAuth.getUser() !== null,
     window.SQAuth.getUser() ? window.SQAuth.getUser().email : 'null');
-  const badge = document.querySelector('.nav-cta .hero-badge');
-  check('Nav greets signed-in hero by name', !!badge && /Nightscholar/.test(badge.textContent),
-    badge ? badge.textContent.trim() : 'no badge');
+  const coin = document.querySelector('.nav-cta .un-avatar');
+  check('Nav dons the initialed coin for the signed-in hero', !!coin && coin.textContent === 'N',
+    coin ? 'coin ' + coin.textContent : 'no coin');
 
   // progress persistence API
   window.SQAuth.saveProgress({ xp: 240, streak: 3, realms: { algebra: { cleared: true } } });
@@ -88,8 +88,9 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
   check('Tester logs in and routes to the map',
     !!window.SQAuth.getUser() && window.__SQ_LAST_REDIRECT === 'map.html',
     (window.SQAuth.getUser() || {}).email || 'no user');
-  const badge2 = document.querySelector('.nav-cta .hero-badge');
-  check('Nav greets the tester', !!badge2 && /Tester/.test(badge2.textContent));
+  const coin2 = document.querySelector('.nav-cta .un-avatar');
+  check('Nav dons the tester’s initialed coin', !!coin2 && coin2.textContent === 'T',
+    coin2 ? 'coin ' + coin2.textContent : 'no coin');
   window.SQAuth.signOut();
   await new Promise(r => setTimeout(r, 40));
 

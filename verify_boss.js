@@ -195,10 +195,10 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     if (sk && !sk.disabled) sk.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
     await new Promise(r => setTimeout(r, 620));
   }
-  check('With no faint frames, victory sends both serpents back into their tunnels',
+  check('Victory drops both serpents on their faint frames, plus and minus alike',
     S6.over &&
-    d.getElementById('bf-boss-side').classList.contains('is-retreating') &&
-    d.getElementById('bf-boss-side-left').classList.contains('is-retreating') &&
+    await until(() => /plus_faint/.test(d.getElementById('bf-boss-img').src) &&
+                      /minus_faint/.test(d.getElementById('bf-boss-img-left').src), 3000) &&
     await until(() => d.getElementById('bf-victory').hidden === false, 3500));
 
   /* the sixth guardian: the Doubling Hare of Infinity Isles */
@@ -212,10 +212,12 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     !d.querySelector('.bf-arena').classList.contains('is-twin') &&
     d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '456px');
   d.querySelectorAll('.bf-choice')[(S7.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  check('A wrong answer brings the pounce, and it lands with no projectile',
-    d.getElementById('bf-fireball').hidden && d.getElementById('bf-beam').hidden &&
-    await until(() => d.getElementById('bf-boss-side').classList.contains('is-lunging'), 1500) &&
-    await until(() => S7.pomeloHp === 2, 2500));
+  const beam7 = d.getElementById('bf-beam');
+  check('A wrong answer gathers the floodlight: the beam erupts with no projectile',
+    d.getElementById('bf-fireball').hidden &&
+    await until(() => !beam7.hidden && ['form', 'fly', 'hit'].includes(S7.fireball), 2500) &&
+    await until(() => S7.pomeloHp === 2, 3500) &&
+    await until(() => S7.fireball === null && beam7.hidden, 2500));
   await until(() => !d.querySelector('.bf-choice').disabled, 4000);
   let drain6 = 0;
   while (!S7.over && drain6++ < 20) {

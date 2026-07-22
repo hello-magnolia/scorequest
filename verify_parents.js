@@ -31,8 +31,9 @@ const OPTS = {
     ids.slice(0,4).join(' -> '));
 
   /* 2 — hook statement */
-  check('Hook headline present ("students never do the work")',
-    /never do the work/i.test(document.querySelector('.statement-title').textContent));
+  check('Hook headline names the boredom problem',
+    /#1 reason SAT prep fails/i.test(document.querySelector('.statement-title').textContent) &&
+    /boring/i.test(document.querySelector('.statement-title').textContent));
 
   const sectionText = document.getElementById('parents').textContent;
 
@@ -172,19 +173,22 @@ const OPTS = {
   check('Manual language choice stops the auto-cycle',
     document.querySelector('[data-i18n="sets"]').textContent === 'Series de preguntas completadas');
 
-  /* 12 — untouched page auto-cycles the pillar word */
+  /* 12 — untouched page auto-cycles the parent scroll (the pillar word retired
+     with the three-line statement; the demo labels carry the cycle now) */
   const dom2 = await JSDOM.fromURL('http://localhost:8000/', OPTS);
   await new Promise(r => dom2.window.addEventListener('load', r));
   await new Promise(r => setTimeout(r, 600));
-  const before = dom2.window.document.getElementById('lang-cycle-word').textContent;
+  const setsEl = () => dom2.window.document.querySelector('[data-i18n="sets"]');
+  const before = setsEl().textContent;
   await new Promise(r => setTimeout(r, 3800));
-  const after = dom2.window.document.getElementById('lang-cycle-word').textContent;
-  check('Language auto-cycle animates the pillar word', before === 'English' && after !== before, before + ' -> ' + after);
+  const after = setsEl().textContent;
+  check('Language auto-cycle animates the parent scroll',
+    before === 'Question sets completed' && after === '完成练习组数', before + ' -> ' + after);
 
   /* 12b — 中文 dwells much longer than other languages */
   await new Promise(r => setTimeout(r, 3200)); // well past a normal 2.6s dwell
-  const still = dom2.window.document.getElementById('lang-cycle-word').textContent;
-  check('中文 dwell is much longer (still 中文 after a normal cycle length)', after === '中文' && still === '中文',
+  const still = setsEl().textContent;
+  check('中文 dwell is much longer (still 中文 after a normal cycle length)', after === '完成练习组数' && still === '完成练习组数',
     after + ' held -> ' + still);
 
   /* rendering guarantee (regression from the overlay bug) */

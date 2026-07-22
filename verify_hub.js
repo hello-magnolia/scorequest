@@ -140,29 +140,42 @@ const OPTS = {
   let musicSafe = true;
   try { window.SQMusic.ensure(); window.SQMusic.toggle(); window.SQMusic.toggle(); window.SQSfx.click(); } catch (e) { musicSafe = false; }
   check('Original background music engine loaded and safe', !!window.SQMusic && musicSafe);
-  check('Sound + music toggles present on the map',
-    !!document.getElementById('sound-toggle') && !!document.getElementById('music-toggle'));
+  check('The map page carries the world itself',
+    !!document.getElementById('worldmap') && !!document.querySelector('.worldmap-img'));
 
   /* 1b — the hero is named inside the story; the builder is gone */
   check('No character builder remains in the page', document.querySelector('.builder-overlay') === null);
   check('The name given to Pomelo is the hero name',
     /Nova/.test(window.localStorage.getItem('sq_character') || ''),
     window.localStorage.getItem('sq_character'));
-  const playerLine = document.getElementById('mappage-player');
-  check('The map header greets the named player',
-    !!playerLine && playerLine.hidden === false &&
-    document.getElementById('mappage-player-name').textContent === 'Nova');
+  check('The map caption names the page beneath the world',
+    /The Realms/.test(document.querySelector('.mappage-title').textContent) &&
+    !!document.querySelector('.mappage-sub') &&
+    document.querySelector('.mappage-sub').textContent.length > 20);
 
-  /* 2 — the hub: eight realm doors, no roadmap */
-  check('The roadmap is gone: the hub offers the eight realms instead',
+  /* 2 — the hub: eight realm territories on the world map, no roadmap */
+  check('The roadmap is gone: the world map offers the eight realms instead',
     document.getElementById('roadmap') === null &&
-    document.querySelectorAll('.hub-realm').length === 8 &&
-    /The Realms/.test(document.querySelector('.mappage-title').textContent));
-  check('Every hub card deep-links its realm with name and domain',
-    !!document.querySelector('.hub-realm[href="realm.html?realm=prismpeaks"]') &&
-    /Geometry & Trigonometry/.test(document.querySelector('.hub-realm[href="realm.html?realm=prismpeaks"]').textContent));
-  check('Sound and music toggles survive on the hub',
-    !!document.getElementById('sound-toggle') && !!document.getElementById('music-toggle'));
+    document.querySelectorAll('.worldmap-svg a[href^="realm.html?realm="]').length === 8);
+  check('Every realm territory deep-links its realm with name and domain',
+    !!document.querySelector('.worldmap-svg a[href="realm.html?realm=prismpeaks"]') &&
+    /Geometry & Trigonometry/.test(document.querySelector('.worldmap-svg a[href="realm.html?realm=prismpeaks"]').getAttribute('aria-label') || ''));
+  check('Every realm wears its name and discipline on the land',
+    document.querySelectorAll('.worldmap-label').length === 8 &&
+    (() => { const lb = [...document.querySelectorAll('.worldmap-label')].find(l => /Prism Peaks/.test(l.textContent));
+      return !!lb && /Geometry & Trigonometry/.test(lb.textContent); })());
+
+  /* 2b — the labels lost their dark plates; hover washes a realm white */
+  const cssTxt = await new Promise((res, rej) => {
+    require('http').get('http://localhost:8000/css/style.css', r => {
+      let b = ''; r.on('data', c => b += c); r.on('end', () => res(b));
+    }).on('error', rej);
+  });
+  check('Realm labels stand plateless on the land',
+    !/\.worldmap-label\s*\{[^}]*background/.test(cssTxt) &&
+    /\.worldmap-label-domain\s*\{[^}]*text-shadow/.test(cssTxt));
+  check('A hovered realm gains a slight white wash',
+    /worldmap-svg a:hover polygon[^}]*fill:\s*rgba\(255,\s*255,\s*255/.test(cssTxt));
 
   const fails = results.filter(x=>!x).length;
   console.log('\n' + (results.length-fails) + '/' + results.length + ' checks passed');

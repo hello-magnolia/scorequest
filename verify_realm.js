@@ -47,11 +47,17 @@ const load = async (path) => {
   check('A second tap brings him back up',
     await until(() => w.__SQ_REALM_FLOP === null, 2500), String(w.__SQ_REALM_FLOP));
 
-  /* forward-only progression: space walks him to waypoint one, where a
-     quiz gates the way; passed nodes reopen as practice; no walking back */
+  /* forward-only progression: space walks him to waypoint one, where the
+     waypoint prompt gates the way; Start opens the quiz; passed nodes
+     reopen as practice; no walking back */
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
-  check('Space walks Pomelo to the first waypoint, where the quiz opens',
-    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === false, 9000) &&
+  check('Space walks Pomelo to the first waypoint, where the prompt offers Start',
+    await until(() => d.getElementById('rw-prompt').hidden === false, 9000) &&
+    /Waypoint 1 of/.test(d.getElementById('rw-prompt-title').textContent) &&
+    d.getElementById('rw-prompt-go').textContent === 'Start');
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+  check('Space fires Start: the quiz opens fresh, not as practice',
+    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === false, 2500) &&
     d.getElementById('rw-quiz').hidden === false &&
     d.querySelectorAll('#rw-quiz-choices button').length === 4);
   const wrongIdx = (w.__SQ_QUIZ.correctIndex + 1) % 4;
@@ -74,10 +80,15 @@ const load = async (path) => {
   await new Promise(r => setTimeout(r, 350));
   check('The tick loop runs to completion every frame (no silent mid-tick throws)',
     (w.__SQ_TICKS || 0) > ticksAt + 3, (w.__SQ_TICKS || 0) + ' vs ' + ticksAt);
-  check('A passed node reopens as extra practice, and Pomelo stays put',
-    w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true &&
-    /EXTRA PRACTICE/.test(d.getElementById('rw-quiz-kicker').textContent) &&
+  check('A passed node reopens through the prompt as Retry, and Pomelo stays put',
+    await until(() => d.getElementById('rw-prompt').hidden === false, 2500) &&
+    /cleared/.test(d.getElementById('rw-prompt-title').textContent) &&
+    d.getElementById('rw-prompt-go').textContent === 'Retry' &&
     d.getElementById('rw-capy').style.left === leftBefore);
+  d.getElementById('rw-prompt-go').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('Retry reopens the quiz as extra practice',
+    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true, 2500) &&
+    /EXTRA PRACTICE/.test(d.getElementById('rw-quiz-kicker').textContent));
 
   /* the editor */
   w = await load('realm.html?realm=lorewood&edit=1');
@@ -160,7 +171,7 @@ const load = async (path) => {
   w = await load('map.html');
   d = w.document;
   check('The hub links all eight realms',
-    d.querySelectorAll('.hub-realm[href^="realm.html?realm="]').length === 8 &&
+    d.querySelectorAll('.worldmap-svg a[href^="realm.html?realm="]').length === 8 &&
     /The Realms/.test(d.querySelector('.mappage-title').textContent));
 
   /* free walking on the graph: an injected preview trace gives a
@@ -200,14 +211,14 @@ const load = async (path) => {
     await until(() => xy()[0] < p0[0] - 20, 2500), p0[0] + ' -> ' + xy()[0]);
   key('keyup', 'ArrowLeft');
   key('keydown', 'ArrowRight');    // right runs into the locked trial marker
-  check('A locked trial blocks the way and opens itself on arrival',
-    await until(() => !d.getElementById('rw-quiz').hidden, 7000));
+  check('A locked trial blocks the way and prompts on arrival',
+    await until(() => !d.getElementById('rw-prompt').hidden, 7000));
   key('keyup', 'ArrowRight');
   const pQuiz = xy();
   key('keydown', 'ArrowLeft');
   await new Promise(r => setTimeout(r, 500));
   key('keyup', 'ArrowLeft');
-  check('Keys go quiet while the quiz is up', xy()[0] === pQuiz[0] && xy()[1] === pQuiz[1]);
+  check('Keys go quiet while the prompt is up', xy()[0] === pQuiz[0] && xy()[1] === pQuiz[1]);
   const cov = w.__SQ_JUNCTION(1);  // the fork node: every branch has a key
   check('No dead paths: every branch at the fork answers to some key',
     cov.branches.length === 3 &&
