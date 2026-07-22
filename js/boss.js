@@ -609,7 +609,7 @@
     if (!sf || !window.SQSfx || !window.SQSfx.warm) return;
     window.SQSfx.warm(typeof sf === 'string' ? sf : sf[0]);
   });
-  var ASSET_V = '20260722a';       /* bump when boss art changes: stale caches keep old frames alive */
+  var ASSET_V = '20260722b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   /* ---------- the intro reel: the guardian's entrance, once per visit.
      Muted autoplay, and any click, Space, Enter, or Escape skips ---------- */
@@ -1135,6 +1135,11 @@
     state.atkSide = 0;
     sideElR.classList.remove('is-retreating', 'is-lunging');
     sideElL.classList.remove('is-retreating', 'is-lunging');
+    /* a retry mid-flight must not leave the guardian hanging in the air:
+       the cancelled glide-down timers never ran, so ground the rig by hand */
+    [document.getElementById('bf-boss-rig'), document.getElementById('bf-boss-rig-left')].forEach(function (rig) {
+      if (rig) { rig.style.transition = ''; rig.style.transform = ''; }
+    });
     yellEl.hidden = true;
     yellEl.classList.remove('is-yelling');
     capyAtkEl.hidden = true;

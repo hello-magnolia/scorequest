@@ -257,6 +257,21 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => /takeoff/.test(bossImg8()), 3200) &&
     await until(() => /translateY\(0px\)/.test(rig8.style.transform), 2600) &&
     await until(() => /idle/.test(bossImg8()), 2200));
+  /* retry mid-flight must ground the bird: fall during the beats, retry
+     while it still hangs in the air, and no altitude may survive the reset */
+  for (let k8 = 0; k8 < 2; k8++) {
+    await until(() => !d.querySelector('.bf-choice').disabled, 6000);
+    d.querySelectorAll('.bf-choice')[(w.__SQ_BOSS.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await until(() => S8.pomeloHp === 1 - k8, 4500);
+  }
+  check('A third gust fells Pomelo mid-flight: the defeat panel rises',
+    await until(() => d.getElementById('bf-defeat').hidden === false, 4500) &&
+    S8.pomeloHp === 0);
+  d.getElementById('bf-retry').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 120));
+  check('Retry grounds the bird: no flight altitude survives the reset',
+    rig8.style.transform === '' && S8.pomeloHp === 3 && S8.bossHp === 15 &&
+    await until(() => /idle/.test(bossImg8()), 3200));
   /* the fall: fifteen skips drain the summit guardian, and the fall must
      open on the hurt recoil and fold straight to the last star, never idling */
   let drain8 = 0, firstFall8 = null, brokeFall8 = false;

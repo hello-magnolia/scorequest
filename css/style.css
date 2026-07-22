@@ -1529,6 +1529,9 @@ a { color: inherit; }
 .bf-boss-rig.bf-no-flip { transform: none; }  /* for sprites that already face him */
 /* the Doubling Hare looms larger than the standard rig allows */
 .bf-realm-infinityisles .bf-boss-rig { width: clamp(210px, 34vh, 380px); }
+/* the Talon perches low: its tail flows past the frame's floor, so the rig
+   drops until the bird itself stands near the ground it launches from */
+.bf-realm-prismpeaks .bf-boss-rig { top: clamp(46px, 10vh, 92px); }
 .bf-boss-img {
   position: relative; z-index: 2;
   width: 100%; height: auto; display: block;
