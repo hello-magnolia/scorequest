@@ -32,11 +32,9 @@
   var SCENES = [
     { id: 'bedroom', kind: 'media', loop: true,
       video: ['assets/intro/bedroom.mp4', CDN + '/hf_20260710_030436_8fa96d4e-b1e5-42d4-8f27-0ee298d74ee1.mp4'],
-      image: ['assets/intro/bedroom.png', CDN + '/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
       text: 'Somewhere past midnight, the practice test sits open and untouched. You have reorganized your desk twice and studied the ceiling extensively. Anything but question seven.' },
     { id: 'orange', kind: 'media', sound: true,
       video: ['assets/intro/orange.mp4', CDN + '/hf_20260710_200915_4ce8fe29-f05f-4441-bbfb-5e0dd0a9027a.mp4'],
-      image: ['assets/intro/bedroom.png', CDN + '/hf_20260710_022711_060638fc-4e28-4089-86a6-574270306697.png'],
       text: 'Then something streaks past the window and lands on your desk with a soft thunk. An orange. Glowing. Still warm.' },
     { id: 'touch', kind: 'black', flashAfter: true,
       text: 'You touch it.' },
