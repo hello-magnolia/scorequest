@@ -1,3 +1,41 @@
+/* ---------- self-hosted fonts: no third party between us and our letters ---------- */
+@font-face {
+  font-family: 'Pixelify Sans'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../assets/fonts/pixelify-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pixelify Sans'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../assets/fonts/pixelify-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pixelify Sans'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('../assets/fonts/pixelify-sans-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'VT323'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../assets/fonts/vt323-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('../assets/fonts/nunito-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('../assets/fonts/nunito-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('../assets/fonts/nunito-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito'; font-style: normal; font-weight: 800; font-display: swap;
+  src: url('../assets/fonts/nunito-latin-800-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nunito'; font-style: italic; font-weight: 400; font-display: swap;
+  src: url('../assets/fonts/nunito-latin-400-italic.woff2') format('woff2');
+}
+
 /* ============================================================
    ScoreQuest — dusk-fantasy pixel RPG design system
    Palette: ink night / parchment / lantern gold / meadow / dusk
