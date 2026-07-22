@@ -59,6 +59,64 @@
     return u && u.email ? u.email.split('@')[0] : 'Adventurer';
   }
 
+  /* ---------- banner picker ---------- */
+  var CDNB = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/';
+  var BANNERS = [
+    ['worldmap', 'The World', 'assets/worldmap.webp'],
+    ['dusk', 'Dusk Sky', CDNB + 'hf_20260722_204121_0f39d345-6001-4220-b1c7-e3da085150e7.png'],
+    ['night', 'Starry Night', CDNB + 'hf_20260722_204127_d9e239f0-4004-4abe-8d0e-7a81ed7423bb.png'],
+    ['ocean', 'Twilight Ocean', CDNB + 'hf_20260722_204133_76a5ffcb-fb6f-40c5-a29a-93018d62e154.png'],
+    ['meadow', 'Firefly Meadow', CDNB + 'hf_20260722_204139_5cb8fbc1-b765-4a35-9dcd-092fa891ace2.png'],
+    ['mountains', 'Misty Mountains', CDNB + 'hf_20260722_204146_c66d4507-5f5d-4e50-a9bd-f86d2cd95062.png']
+  ];
+  function bannerUrl(id) {
+    for (var i = 0; i < BANNERS.length; i++) if (BANNERS[i][0] === id) return BANNERS[i][2];
+    return BANNERS[0][2];
+  }
+  function setupBanner() {
+    var wrap = document.querySelector('.pf-banner');
+    if (!wrap) return;
+    var img = wrap.querySelector('img');
+    var saved = null;
+    try { saved = window.localStorage.getItem('sq_banner'); } catch (e) {}
+    if (saved) img.src = bannerUrl(saved);
+
+    var btn = el('button', 'pf-banner-edit', 'Edit banner');
+    btn.type = 'button';
+    wrap.appendChild(btn);
+    btn.addEventListener('click', function () {
+      var ov = el('div', 'un-overlay');
+      var box = el('div', 'un-panel pixel-frame pf-bpick');
+      box.appendChild(el('h3', 'pf-h3', 'Choose your banner'));
+      var grid = el('div', 'pf-bgrid');
+      var current = saved || 'worldmap';
+      BANNERS.forEach(function (b) {
+        var opt = el('button', 'pf-bopt' + (b[0] === current ? ' is-current' : ''));
+        opt.type = 'button';
+        var th = el('img', 'pf-bthumb');
+        th.src = b[2]; th.alt = b[1]; th.loading = 'lazy';
+        opt.appendChild(th);
+        opt.appendChild(el('span', 'pf-blabel type-utility', b[1]));
+        opt.addEventListener('click', function () {
+          try { window.localStorage.setItem('sq_banner', b[0]); } catch (e) {}
+          saved = b[0];
+          img.src = b[2];
+          ov.remove();
+        });
+        grid.appendChild(opt);
+      });
+      box.appendChild(grid);
+      var x = el('button', 'un-close', '\u00d7');
+      x.type = 'button';
+      x.setAttribute('aria-label', 'Close');
+      x.addEventListener('click', function () { ov.remove(); });
+      box.appendChild(x);
+      ov.appendChild(box);
+      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+      document.body.appendChild(ov);
+    });
+  }
+
   /* ---------- profile ---------- */
   function renderProfile(user) {
     var name = heroName();
@@ -192,7 +250,7 @@
       if (!state || !state.user || rendered) return;
       rendered = true;
       var page = document.body.getAttribute('data-account-page');
-      if (page === 'profile') renderProfile(state.user);
+      if (page === 'profile') { renderProfile(state.user); setupBanner(); }
       if (page === 'settings') renderSettings(state.user);
     });
     setTimeout(function () {
