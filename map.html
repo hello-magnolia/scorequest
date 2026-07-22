@@ -10,7 +10,7 @@
    before first paint so navigation never flashes the marketing tabs */
 try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
 </script>
-<link rel="stylesheet" href="css/style.css?v=b20260722h" />
+<link rel="stylesheet" href="css/style.css?v=b20260722i" />
 <link rel="icon" type="image/png" href="assets/logo.png" />
 </head>
 <body class="page-map">
@@ -33,51 +33,25 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
   </div>
 </header>
 
-<main class="mappage">
-  <div class="mappage-head">
-    <p class="eyebrow type-utility">Choose your realm</p>
-    <h1 class="mappage-title">The Realms</h1>
-    <p class="mappage-sub">Eight biomes on the way to the summit. Walk each one, clear its trials, and reach the nest at Prism Peaks.</p>
-    <p class="mappage-rank type-utility">World rank <span id="world-rank">Lv 8</span></p>
-    <p class="mappage-player type-utility" id="mappage-player" hidden>Playing as <span id="mappage-player-name"></span></p>
-    <button class="btn btn-ghost btn-customize" id="sound-toggle">Sound: on</button>
-    <button class="btn btn-ghost btn-customize" id="music-toggle">Music: on</button>
-  </div>
-
+<main class="mappage mappage-only">
   <div class="worldmap" id="worldmap">
     <img class="worldmap-img" src="assets/worldmap.webp"
          alt="The world of ScoreQuest: eight realms across the isles" />
     <svg class="worldmap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="list"
          aria-label="Choose a realm on the map"></svg>
   </div>
-
-  <nav class="realm-hub" aria-label="The eight realms">
-    <a class="hub-realm" href="realm.html?realm=lorewood"><span class="hub-num type-utility">1</span><span class="hub-name">Lorewood</span><span class="hub-domain">Information &amp; Ideas</span></a>
-    <a class="hub-realm" href="realm.html?realm=storyforge"><span class="hub-num type-utility">2</span><span class="hub-name">Story Forge</span><span class="hub-domain">Craft &amp; Structure</span></a>
-    <a class="hub-realm" href="realm.html?realm=inkreef"><span class="hub-num type-utility">3</span><span class="hub-name">Ink Reef</span><span class="hub-domain">Expression of Ideas</span></a>
-    <a class="hub-realm" href="realm.html?realm=syntaxcitadel"><span class="hub-num type-utility">4</span><span class="hub-name">Syntax Citadel</span><span class="hub-domain">Conventions</span></a>
-    <a class="hub-realm" href="realm.html?realm=mirrormines"><span class="hub-num type-utility">5</span><span class="hub-name">Mirror Mines</span><span class="hub-domain">Algebra</span></a>
-    <a class="hub-realm" href="realm.html?realm=infinityisles"><span class="hub-num type-utility">6</span><span class="hub-name">Infinity Isles</span><span class="hub-domain">Advanced Math</span></a>
-    <a class="hub-realm" href="realm.html?realm=datadocks"><span class="hub-num type-utility">7</span><span class="hub-name">Data Docks</span><span class="hub-domain">Problem-Solving &amp; Data</span></a>
-    <a class="hub-realm" href="realm.html?realm=prismpeaks"><span class="hub-num type-utility">8</span><span class="hub-name">Prism Peaks</span><span class="hub-domain">Geometry &amp; Trigonometry</span></a>
-  </nav>
-
-  <div class="mappage-outro">
-    <p class="mappage-outro-note">Progress saves to your hero. New realms unlock as you level.</p>
-    <a class="btn btn-outline" href="index.html">Back to base camp</a>
-  </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20260722h"></script>
-<script src="js/auth.js?v=b20260722h"></script>
-<script src="js/usernav.js?v=b20260722h"></script>
-<script src="js/pixelworld.js?v=b20260722h"></script>
-<script src="js/game.js?v=b20260722h"></script>
-<script src="js/map.js?v=b20260722h"></script>
-<script src="js/sfx.js?v=b20260722h"></script>
-<script src="js/intro.js?v=b20260722h"></script>
-<script src="js/companion.js?v=b20260722h"></script>
-<script src="js/main.js?v=b20260722h"></script>
+<script src="js/config.js?v=b20260722i"></script>
+<script src="js/auth.js?v=b20260722i"></script>
+<script src="js/usernav.js?v=b20260722i"></script>
+<script src="js/pixelworld.js?v=b20260722i"></script>
+<script src="js/game.js?v=b20260722i"></script>
+<script src="js/map.js?v=b20260722i"></script>
+<script src="js/sfx.js?v=b20260722i"></script>
+<script src="js/intro.js?v=b20260722i"></script>
+<script src="js/companion.js?v=b20260722i"></script>
+<script src="js/main.js?v=b20260722i"></script>
 </body>
 </html>
