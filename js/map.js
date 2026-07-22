@@ -323,24 +323,9 @@
                 window.localStorage.getItem('sq_boss_' + id));
     } catch (e) { return true; }
   }
-  /* unvisited realms are drawn again in gray: the same painting, masked
-     to an expanded copy of the region that overlaps its neighbors on land
-     only, with a soft blur on the mask so every border feathers instead of
-     cutting. Overlapping grays show identical pixels, so seams vanish. */
+  /* the world stays in full color for everyone: progress is planted on the
+     land as flags, not painted over it as fog */
   var defs = document.createElementNS(NS, 'defs');
-  var filt = document.createElementNS(NS, 'filter');
-  filt.setAttribute('id', 'wm-desat');
-  var cm = document.createElementNS(NS, 'feColorMatrix');
-  cm.setAttribute('type', 'saturate'); cm.setAttribute('values', '0.08');
-  filt.appendChild(cm);
-  var ct = document.createElementNS(NS, 'feComponentTransfer');
-  ['feFuncR', 'feFuncG', 'feFuncB'].forEach(function (fn) {
-    var f = document.createElementNS(NS, fn);
-    f.setAttribute('type', 'linear'); f.setAttribute('slope', '0.72'); f.setAttribute('intercept', '0.04');
-    ct.appendChild(f);
-  });
-  filt.appendChild(ct);
-  defs.appendChild(filt);
   var vf = document.createElementNS(NS, 'filter');
   vf.setAttribute('id', 'wm-vivid-f');
   var vcm = document.createElementNS(NS, 'feColorMatrix');
@@ -380,45 +365,6 @@
     vimg.setAttribute('id', 'wm-vivid-' + R.id);
     svg.appendChild(vimg);
   });
-  REGIONS.forEach(function (R) {
-    if (isVisited(R.id)) return;
-    /* pixel-accurate coverage: the mask is an image rendered from the
-       region data itself, pre-feathered. No polygon approximations. */
-    var mk = document.createElementNS(NS, 'mask');
-    mk.setAttribute('id', 'wm-mk-' + R.id);
-    mk.setAttribute('maskUnits', 'userSpaceOnUse');
-    mk.setAttribute('x', '0'); mk.setAttribute('y', '0');
-    mk.setAttribute('width', '100'); mk.setAttribute('height', '100');
-    var mimg = document.createElementNS(NS, 'image');
-    mimg.setAttribute('href', 'assets/map-masks/' + R.id + '.png');
-    mimg.setAttribute('x', '0'); mimg.setAttribute('y', '0');
-    mimg.setAttribute('width', '100'); mimg.setAttribute('height', '100');
-    mimg.setAttribute('preserveAspectRatio', 'none');
-    mk.appendChild(mimg);
-    defs.appendChild(mk);
-    var gimg = document.createElementNS(NS, 'image');
-    gimg.setAttribute('href', 'assets/worldmap.webp');
-    gimg.setAttribute('x', '0'); gimg.setAttribute('y', '0');
-    gimg.setAttribute('width', '100'); gimg.setAttribute('height', '100');
-    gimg.setAttribute('preserveAspectRatio', 'none');
-    gimg.setAttribute('mask', 'url(#wm-mk-' + R.id + ')');
-    gimg.setAttribute('filter', 'url(#wm-desat)');
-    gimg.setAttribute('class', 'wm-gray');
-    gimg.setAttribute('id', 'wm-gray-' + R.id);
-    svg.appendChild(gimg);
-  });
-  /* vivid layers ride above the gray: re-append after the grays exist */
-  REGIONS.forEach(function (R) {
-    var v = document.getElementById('wm-vivid-' + R.id);
-    if (v) svg.appendChild(v);
-  });
-  document.addEventListener('sq:progress-synced', function () {
-    REGIONS.forEach(function (R) {
-      if (!isVisited(R.id)) return;
-      var g = document.getElementById('wm-gray-' + R.id);
-      if (g) g.remove();
-    });
-  });
   var LABEL_AT = {
     lorewood: [12.9, 33.0], storyforge: [15.3, 60.7], syntaxcitadel: [36.5, 23.5],
     mirrormines: [44.9, 53.3], inkreef: [35.3, 84.0], datadocks: [65.2, 83.5],
@@ -430,15 +376,83 @@
     var nm = document.createElement('span');
     nm.className = 'worldmap-label-name';
     nm.textContent = R.name;
-    var dm = document.createElement('span');
-    dm.className = 'worldmap-label-domain';
-    dm.textContent = R.domain;
     lb.appendChild(nm);
-    lb.appendChild(dm);
     lb.style.left = LABEL_AT[R.id][0] + '%';
     lb.style.top = LABEL_AT[R.id][1] + '%';
     wrap.appendChild(lb);
   });
+
+  /* ---------- deeds planted on the land: a gold flag where a guardian
+     fell, a white pennant where Pomelo has wandered ---------- */
+  function realmMark(id) {
+    try {
+      if (window.localStorage.getItem('sq_boss_' + id) === 'cleared') return 'cleared';
+      if (isVisited(id)) return 'visited';
+    } catch (e) {}
+    return null;
+  }
+  function flagSvg(gold) {
+    var ink = '#16112B', pole = '#5a4226',
+        cloth = gold ? '#f2b63c' : '#f0ead6', trim = gold ? '#c77b2a' : '#9aa7c4';
+    return '<svg width="26" height="34" viewBox="0 0 13 17" aria-hidden="true">' +
+      '<rect x="1" y="0" width="3" height="17" fill="' + ink + '"/>' +
+      '<rect x="2" y="1" width="1" height="15" fill="' + pole + '"/>' +
+      '<rect x="4" y="0" width="9" height="8" fill="' + ink + '"/>' +
+      '<rect x="4" y="1" width="7" height="2" fill="' + cloth + '"/>' +
+      '<rect x="11" y="1" width="1" height="1" fill="' + cloth + '"/>' +
+      '<rect x="4" y="3" width="8" height="2" fill="' + cloth + '"/>' +
+      '<rect x="4" y="5" width="5" height="1" fill="' + cloth + '"/>' +
+      '<rect x="4" y="6" width="3" height="1" fill="' + trim + '"/>' +
+      '</svg>';
+  }
+  function plantFlags() {
+    wrap.querySelectorAll('.wm-flag').forEach(function (f) { f.remove(); });
+    REGIONS.forEach(function (R) {
+      var mark = realmMark(R.id);
+      if (!mark) return;
+      var f = document.createElement('span');
+      f.className = 'wm-flag ' + (mark === 'cleared' ? 'is-cleared' : 'is-visited');
+      f.innerHTML = flagSvg(mark === 'cleared');
+      f.style.left = LABEL_AT[R.id][0] + '%';
+      f.style.top = (LABEL_AT[R.id][1] - 3.2) + '%';
+      f.title = mark === 'cleared' ? R.name + ': guardian felled' : R.name + ': visited';
+      wrap.appendChild(f);
+    });
+  }
+  plantFlags();
+  document.addEventListener('sq:progress-synced', plantFlags);
+  /* ---------- the realm dock: the strip below the map answers the cursor
+     with the realm's discipline and standing; the painting stays quiet ---------- */
+  var QUEST_ID = {
+    lorewood: 'info', storyforge: 'craft', syntaxcitadel: 'conventions',
+    inkreef: 'expression', mirrormines: 'algebra', infinityisles: 'advmath',
+    datadocks: 'data', prismpeaks: 'geometry'
+  };
+  var dock = document.getElementById('worldmap-dock');
+  var dockHint = dock && dock.querySelector('.wm-dock-hint');
+  var dockInfo = dock && dock.querySelector('.wm-dock-info');
+  function dockShow(R) {
+    if (!dock) return;
+    dockInfo.querySelector('.wm-dock-name').textContent = R.name;
+    dockInfo.querySelector('.wm-dock-domain').textContent = R.domain;
+    var lvEl = dockInfo.querySelector('.wm-dock-level');
+    var barEl = dockInfo.querySelector('.wm-dock-bar');
+    var st = window.SQGame && window.SQGame.realmState && window.SQGame.realmState(QUEST_ID[R.id]);
+    if (st) {
+      lvEl.hidden = false; barEl.hidden = false;
+      lvEl.textContent = 'Lv ' + st.level;
+      dockInfo.querySelector('.wm-dock-fill').style.width = (st.cleared ? 100 : st.pct) + '%';
+    } else { lvEl.hidden = true; barEl.hidden = true; }
+    dockInfo.querySelector('.wm-dock-enter').textContent =
+      realmMark(R.id) === 'cleared' ? '\u2605 Guardian felled \u00B7 walk in anytime' : 'Click to walk in \u2192';
+    dockHint.hidden = true;
+    dockInfo.hidden = false;
+  }
+  function dockHide() {
+    if (!dock) return;
+    dockInfo.hidden = true;
+    dockHint.hidden = false;
+  }
   REGIONS.forEach(function (R) {
     var a = document.createElementNS(NS, 'a');
     a.setAttribute('href', 'realm.html?realm=' + R.id);
@@ -448,16 +462,15 @@
       p.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));
       a.appendChild(p);
     });
-    var grayEl = document.getElementById('wm-gray-' + R.id);
     var vividEl = document.getElementById('wm-vivid-' + R.id);
     function show() {
       if (vividEl) vividEl.classList.add('is-on');
-      if (grayEl) grayEl.classList.add('is-peek');
+      dockShow(R);
       if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
     }
     function hide() {
-      if (grayEl) grayEl.classList.remove('is-peek');
       if (vividEl) vividEl.classList.remove('is-on');
+      dockHide();
     }
     a.addEventListener('mouseenter', show);
     a.addEventListener('focus', show);
@@ -465,4 +478,103 @@
     a.addEventListener('blur', hide);
     svg.appendChild(a);
   });
+
+  /* ---------- the living layer: pixel clouds adrift, sparks on the sea,
+     and Pomelo standing wherever he last wandered ---------- */
+  var reduceMap = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sky = document.createElement('canvas');
+  sky.className = 'worldmap-sky';
+  sky.id = 'worldmap-sky';
+  sky.setAttribute('aria-hidden', 'true');
+  wrap.appendChild(sky);
+  var skyCtx = sky.getContext('2d');
+  /* clouds hold the upper air; sparks keep to the open water */
+  var CLOUDS = [
+    { x: 8, y: 7, s: 1.15, v: 0.55, a: 0.34 }, { x: 34, y: 3, s: 0.8, v: 0.8, a: 0.26 },
+    { x: 58, y: 10, s: 1.3, v: 0.42, a: 0.3 }, { x: 79, y: 5, s: 0.9, v: 0.68, a: 0.24 },
+    { x: 20, y: 15, s: 0.7, v: 0.95, a: 0.2 }, { x: 90, y: 14, s: 1.0, v: 0.5, a: 0.28 }
+  ];
+  var SPARKS = [
+    [3, 55], [6, 76], [12, 93], [30, 95], [48, 90], [70, 96],
+    [94, 78], [96, 47], [88, 27], [50, 30], [2, 24], [72, 42]
+  ];
+  window.__SQ_MAP_TICKS = 0;
+  function drawSky(t) {
+    var w = sky.width, h = sky.height;
+    if (!w || !h) return;
+    skyCtx.clearRect(0, 0, w, h);
+    var u = Math.max(2, Math.round(w / 220));       // one cloud pixel, scaled to the sea
+    CLOUDS.forEach(function (c, i) {
+      var cx = ((c.x + t * c.v) % 116 - 8) / 100 * w;
+      var cy = c.y / 100 * h + Math.sin(t * 0.35 + i) * u * 0.6;
+      var s = c.s * u;
+      skyCtx.globalAlpha = c.a;
+      skyCtx.fillStyle = '#eef3ff';
+      [[0, 0, 9, 2], [2, -2, 6, 2], [1, 2, 7, 1], [-2, 1, 4, 1], [8, 1, 3, 1]].forEach(function (b) {
+        skyCtx.fillRect(Math.round(cx + b[0] * s), Math.round(cy + b[1] * s),
+          Math.round(b[2] * s), Math.round(b[3] * s));
+      });
+    });
+    skyCtx.globalAlpha = 1;
+    SPARKS.forEach(function (p, i) {
+      var tw = (Math.sin(t * 1.7 + i * 2.1) + 1) / 2;   // each spark breathes on its own beat
+      if (tw < 0.55) return;
+      skyCtx.globalAlpha = (tw - 0.55) * 1.6;
+      skyCtx.fillStyle = '#dff1ff';
+      var px = Math.round(p[0] / 100 * sky.width), py = Math.round(p[1] / 100 * sky.height);
+      skyCtx.fillRect(px - u, py, u * 3, u);
+      skyCtx.fillRect(px, py - u, u, u * 3);
+    });
+    skyCtx.globalAlpha = 1;
+  }
+  function sizeSky() {
+    var r = wrap.getBoundingClientRect();
+    if (!r.width) return;
+    sky.width = Math.round(r.width);
+    sky.height = Math.round(r.height);
+  }
+  sizeSky();
+  window.addEventListener('resize', function () { sizeSky(); if (reduceMap) drawSky(2); });
+  if (reduceMap) { drawSky(2); }
+  else {
+    var skyStart = null;
+    (function skyTick(now) {
+      if (skyStart === null) skyStart = now;
+      if (!sky.width) sizeSky();
+      drawSky((now - skyStart) / 1000);
+      window.__SQ_MAP_TICKS += 1;
+      requestAnimationFrame(skyTick);
+    })(0);
+  }
+
+  /* Pomelo waits where he last wandered (the first realm, before any journey).
+     companion.js loads after this file, so the companion is placed on load. */
+  function placePomelo() {
+    if (!window.SQCompanion || document.getElementById('worldmap-pomelo')) return;
+    var at = null;
+    try { at = window.localStorage.getItem('sq_last_realm'); } catch (e) {}
+    if (!LABEL_AT[at]) at = 'lorewood';
+    var pom = document.createElement('canvas');
+    pom.className = 'worldmap-pomelo';
+    pom.id = 'worldmap-pomelo';
+    pom.width = window.SQCompanion.w;
+    pom.height = window.SQCompanion.h;
+    pom.style.width = '40px';
+    pom.style.height = Math.round(40 * window.SQCompanion.h / window.SQCompanion.w) + 'px';
+    pom.style.left = LABEL_AT[at][0] + '%';
+    pom.style.top = (LABEL_AT[at][1] + 3.4) + '%';
+    pom.setAttribute('aria-label', 'Pomelo, waiting at ' + at);
+    wrap.appendChild(pom);
+    var pctx = pom.getContext('2d');
+    window.SQCompanion.draw(pctx, 0);
+    if (!reduceMap) {
+      setInterval(function () {            // a slow blink, nothing more
+        window.SQCompanion.draw(pctx, 3);
+        setTimeout(function () { window.SQCompanion.draw(pctx, 0); }, 260);
+      }, 4600);
+    }
+  }
+  if (window.SQCompanion) placePomelo();
+  else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', placePomelo);
+  else window.addEventListener('load', placePomelo);
 })();
