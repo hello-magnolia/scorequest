@@ -231,6 +231,55 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     /datadocks/.test(d.getElementById('bf-onward').href) &&
     await until(() => d.getElementById('bf-victory').hidden === false, 3500));
 
+  /* the eighth guardian: the Tangent Talon itself, the bird at the nest */
+  w = await load('boss.html?realm=prismpeaks');
+  d = w.document;
+  const S8 = w.__SQ_BOSS;
+  const bossImg8 = () => d.getElementById('bf-boss-img').src;
+  check('Prism Peaks: the Tangent Talon guards the summit, fifteen HP, real art at last',
+    /Tangent Talon/.test(d.getElementById('bf-boss-name').textContent) &&
+    /boss\/prismpeaks\/idle/.test(bossImg8()) &&
+    d.getElementById('bf-boss-rig').classList.contains('bf-no-flip') &&
+    d.querySelector('#bf-boss-hp .bf-hp-track').style.width === '570px');
+  const rig8 = d.getElementById('bf-boss-rig');
+  d.querySelectorAll('.bf-choice')[(S8.correctIndex + 1) % 4].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('A wrong answer opens the flight: takeoff frames and a rising rig, no projectile art',
+    d.getElementById('bf-fireball').hidden && d.getElementById('bf-beam').hidden &&
+    await until(() => /takeoff/.test(bossImg8()), 1200) &&
+    await until(() => /translateY\(-110px\)/.test(rig8.style.transform), 1200));
+  check('At altitude the wings beat on the flap frames while the rig holds its height',
+    await until(() => /flap/.test(bossImg8()), 1600) &&
+    /translateY\(-110px\)/.test(rig8.style.transform));
+  check('The gust lands mid-beat and Pomelo pays one heart',
+    await until(() => S8.fireball === 'hit', 2200) &&
+    await until(() => S8.pomeloHp === 2, 1500));
+  check('The landing reverses the takeoff and sets the rig back down onto idle',
+    await until(() => /takeoff/.test(bossImg8()), 3200) &&
+    await until(() => /translateY\(0px\)/.test(rig8.style.transform), 2600) &&
+    await until(() => /idle/.test(bossImg8()), 2200));
+  /* the fall: fifteen skips drain the summit guardian, and the fall must
+     open on the hurt recoil and fold straight to the last star, never idling */
+  let drain8 = 0, firstFall8 = null, brokeFall8 = false;
+  const fallWatch8 = setInterval(() => {
+    if (!S8.over) return;
+    const s8 = bossImg8();
+    if (!firstFall8 && /hurt|faint/.test(s8)) firstFall8 = s8;   // the fall's opening frame
+    if (firstFall8 && /idle|takeoff|flap/.test(s8)) brokeFall8 = true;  // any return to life mid-fall
+  }, 60);
+  while (!S8.over && drain8++ < 70) {
+    const sk8 = d.querySelector('.sq-skip-test');
+    if (sk8 && !sk8.disabled) sk8.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 300));
+  }
+  const star8 = await until(() => /faint5/.test(bossImg8()), 4500);
+  clearInterval(fallWatch8);
+  check('The fall opens on the hurt recoil and folds straight to the last star',
+    S8.over && /hurt/.test(firstFall8 || '') && star8 && !brokeFall8,
+    'first=' + (firstFall8 || 'none').split('/').pop() + ' star=' + star8 + ' broke=' + brokeFall8);
+  check('The summit is the last stand: victory names no next realm',
+    await until(() => d.getElementById('bf-victory').hidden === false, 3500) &&
+    d.getElementById('bf-onward').hidden === true);
+
   const passed = results.filter(Boolean).length;
   console.log('\n' + passed + '/' + results.length + ' checks passed');
   process.exit(passed === results.length ? 0 : 1);

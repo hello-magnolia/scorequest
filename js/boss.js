@@ -446,11 +446,25 @@
     },
 
     prismpeaks: {
-      name: 'The Tangent Talon',                  /* PLACEHOLDER art: idle + faint only */
+      name: 'The Tangent Talon',                  /* the big bird itself, at the nest */
       taunt: 'Every path up this peak is an angle I already know. Show me yours.',
       sprites: {
         idle1: 'assets/boss/prismpeaks/idle1.png',
+        idle2: 'assets/boss/prismpeaks/idle2.png',
+        takeoff1: 'assets/boss/prismpeaks/takeoff1.png',
+        takeoff2: 'assets/boss/prismpeaks/takeoff2.png',
+        takeoff3: 'assets/boss/prismpeaks/takeoff3.png',
+        flap1: 'assets/boss/prismpeaks/flap1.png',
+        flap2: 'assets/boss/prismpeaks/flap2.png',
+        flap3: 'assets/boss/prismpeaks/flap3.png',
+        hurt1: 'assets/boss/prismpeaks/hurt1.png',
+        hurt2: 'assets/boss/prismpeaks/hurt2.png',
+        hurt3: 'assets/boss/prismpeaks/hurt3.png',
         faint1: 'assets/boss/prismpeaks/faint1.png',
+        faint2: 'assets/boss/prismpeaks/faint2.png',
+        faint3: 'assets/boss/prismpeaks/faint3.png',
+        faint4: 'assets/boss/prismpeaks/faint4.png',
+        faint5: 'assets/boss/prismpeaks/faint5.png',
         pomeloAtk1: 'assets/pomelo/attack1.png',
         pomeloAtk2: 'assets/pomelo/attack2.png',
         pomeloAtk3: 'assets/pomelo/attack3.png',
@@ -462,10 +476,19 @@
       hp: 15,
       flip: false,                                /* drawn already facing him */
       base: 'idle1',
-      attackSeq: [['idle1', 400]],
-      hurtSeq: [['faint1', 320]],                 /* it droops when struck true */
-      faintSeq: [['faint1', 600]],
-      strike: { delay: 900 },
+      idleSeq: ['idle1', 'idle2'],
+      idleMs: 520,
+      /* the attack is the flight itself: takeoffSeq climbs, flapSeq beats
+         forward then backward (x2) at altitude, and the takeoff frames
+         reversed bring the landing. boss.js composes attackSeq from these. */
+      takeoffSeq: [['takeoff1', 200], ['takeoff2', 200], ['takeoff3', 240]],
+      flapSeq: [['flap1', 150], ['flap2', 150], ['flap3', 170]],
+      flight: { rise: 110, loops: 2, delay: 1150 },
+      hurtSeq: [['hurt1', 200], ['hurt2', 220], ['hurt3', 260]],
+      /* the fall opens on the hurt frames, no return to idle between: the
+         recoil folds straight into the curl, the shrink, and the last star */
+      faintSeq: [['hurt1', 200], ['hurt2', 220], ['hurt3', 280],
+        ['faint1', 300], ['faint2', 320], ['faint3', 340], ['faint4', 380], ['faint5', 600]],
       /* the summit is the last stand: no next realm */
       questions: [
         { q: 'A right triangle has legs 3 and 4. The hypotenuse is\u2026',
@@ -492,6 +515,18 @@
   var realmId = params.get('realm') || 'lorewood';
   var B = BOSSES[realmId] || BOSSES.lorewood;
   document.body.classList.add('bf-realm-' + (BOSSES[realmId] ? realmId : 'lorewood'));
+
+  /* a flight boss writes its own attackSeq: up the takeoff frames, wingbeats
+     forward then backward (loops times), and back down the takeoff reversed */
+  if (B.flight) {
+    var revSeq = function (seq) { return seq.slice().reverse(); };
+    var beats = [];
+    for (var li = 0; li < (B.flight.loops || 2); li++) beats = beats.concat(B.flapSeq, revSeq(B.flapSeq));
+    B.attackSeq = B.takeoffSeq.concat(beats, revSeq(B.takeoffSeq));
+    B.flight.upMs = B.takeoffSeq.reduce(function (s, f) { return s + f[1]; }, 0);
+    B.flight.beatMs = beats.reduce(function (s, f) { return s + f[1]; }, 0);
+    B.flight.totalMs = B.flight.upMs * 2 + B.flight.beatMs;
+  }
 
   var state = {
     bossHp: B.hp,
@@ -574,7 +609,7 @@
     if (!sf || !window.SQSfx || !window.SQSfx.warm) return;
     window.SQSfx.warm(typeof sf === 'string' ? sf : sf[0]);
   });
-  var ASSET_V = '20260718b';       /* bump when boss art changes: stale caches keep old frames alive */
+  var ASSET_V = '20260722a';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   /* ---------- the intro reel: the guardian's entrance, once per visit.
      Muted autoplay, and any click, Space, Enter, or Escape skips ---------- */
@@ -679,6 +714,26 @@
       state.fireball = null;
       sideEl.classList.remove('is-lunging');
     });
+  }
+
+  /* ---------- the flight: no projectile art either. The guardian climbs
+     as its takeoff frames play, holds altitude through the wingbeats, and
+     glides down on the same frames reversed. The gust lands mid-beat ---------- */
+  function launchFlight(onImpact, delay, side) {
+    var F = B.flight;
+    var rig = document.getElementById(side ? 'bf-boss-rig-left' : 'bf-boss-rig');
+    if (!reduceMotion) {
+      var flipped = !rig.classList.contains('bf-no-flip');
+      var glide = function (px, ms, ease) {
+        rig.style.transition = 'transform ' + ms + 'ms ' + ease;
+        rig.style.transform = (flipped ? 'scaleX(-1) ' : '') + 'translateY(' + px + 'px)';
+      };
+      glide(-(F.rise || 110), F.upMs, 'ease-out');                       // rises with the takeoff
+      after(F.upMs + F.beatMs, function () { glide(0, F.upMs, 'ease-in'); });  // lands on the reversal
+      after(F.totalMs + 80, function () { rig.style.transition = ''; rig.style.transform = ''; });
+    }
+    after(delay, function () { state.fireball = 'hit'; onImpact(); });
+    after(delay + 320, function () { state.fireball = null; });
   }
 
   /* ---------- the fireball: forms at the open mouth, flies, and only
@@ -1006,7 +1061,8 @@
       feedEl.textContent = 'The guardian strikes back. The answer was ' +
         String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
       feedEl.className = 'bf-feedback is-miss';
-      var strike = B.strike ? function (fn, delay) { launchStrike(fn, delay, side); }
+      var strike = B.flight ? function (fn, delay) { launchFlight(fn, delay, side); }
+        : B.strike ? function (fn, delay) { launchStrike(fn, delay, side); }
         : (B.beam ? launchBeam : launchFireball);
       strike(function () {                   // the damage lands on contact
         state.pomeloHp = Math.max(0, state.pomeloHp - 1);
@@ -1014,10 +1070,12 @@
         flash(document.getElementById('bf-pomelo-side'));
         if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
         if (state.pomeloHp === 0) lose();
-      }, B.strike ? B.strike.delay : (B.beam ? B.beam.delay : B.projectile.delay));   // timed to the fangs, maw, mouth, or spinneret
+      }, B.flight ? B.flight.delay : B.strike ? B.strike.delay
+        : (B.beam ? B.beam.delay : B.projectile.delay));   // timed to the fangs, wings, maw, mouth, or spinneret
     }
     renderHp();
-    setTimeout(ask, i === item.a ? 2000 : 2400);
+    setTimeout(ask, i === item.a ? 2000
+      : (B.flight ? Math.max(2400, B.flight.totalMs + 250) : 2400));   // a full flight outlasts the usual beat
   }
 
   function flash(el) {
@@ -1052,6 +1110,8 @@
       var onward = document.getElementById('bf-onward');
       onward.href = 'realm.html?realm=' + B.next.id;
       onward.textContent = 'Onward to ' + B.next.name + ' \u2192';
+    } else {
+      document.getElementById('bf-onward').hidden = true;   // the summit is the last stand
     }
     setTimeout(function () { p.hidden = false; }, 1200);
     if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
