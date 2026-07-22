@@ -84,12 +84,16 @@
       setupHeroCanvas();
     }
     var stallTimer = setTimeout(fallbackToCanvas, 4000);
-    heroVideo.addEventListener('canplay', function () {
+    function videoReady() {
       clearTimeout(stallTimer);
       heroVideo.classList.remove('is-loading');
       heroRunning = false;
       heroCanvas.hidden = true;
-    });
+    }
+    /* the local hero is small enough to be ready before this script runs;
+       a fired event never refires, so ask readyState instead of waiting */
+    if (heroVideo.readyState >= 3) videoReady();
+    else heroVideo.addEventListener('canplay', videoReady);
     var last = heroVideo.querySelector('source:last-of-type');
     if (last) last.addEventListener('error', function () {   // every source failed
       clearTimeout(stallTimer);
@@ -97,6 +101,11 @@
       heroRunning = true;
       fallbackToCanvas();
     });
+    if (heroVideo.networkState === 3) {                      // already exhausted
+      clearTimeout(stallTimer);
+      heroVideo.hidden = true;
+      fallbackToCanvas();
+    }
   }
 
   if (heroCanvas && heroVideo) { tryHeroVideo(); }
