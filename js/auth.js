@@ -468,6 +468,18 @@
     signUpWithEmail: signUpWithEmail,
     signOut: signOut,
     getUser: function () { return state.user; },
+    getProfile: function () { return state.profile; },
+    setHeroName: function (name) {
+      name = String(name || '').trim().slice(0, 24);
+      if (!name || !state.user || !supabase) return Promise.resolve(false);
+      return supabase.from('profiles').update({ hero_name: name }).eq('id', state.user.id)
+        .then(function () {
+          state.profile = Object.assign({}, state.profile, { hero_name: name });
+          emit();
+          return true;
+        })
+        .catch(function () { return false; });
+    },
     getProgress: function () { return state.progress; },
     saveProgress: saveProgress,
     reportRealm: reportRealm,

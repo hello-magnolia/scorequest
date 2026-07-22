@@ -422,6 +422,7 @@
     hareDefeat: function () { playSample('hareDefeat', 0.34); },
     warm: warmSample,
     enabled: enabled,
+    setEnabled: setEnabled,
     /* create/resume the AudioContext as early as the browser allows,
        so the very first typewriter line is audible */
     wake: function () { ac(); },
