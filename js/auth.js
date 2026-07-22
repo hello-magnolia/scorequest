@@ -78,7 +78,8 @@
       .single()
       .then(function (res) {
         if (res.data) {
-          state.profile = { hero_name: res.data.hero_name };
+          state.profile = { hero_name: res.data.hero_name,
+            xp: res.data.xp || 0, streak: res.data.streak || 0 };
           state.progress = {
             xp: res.data.xp || 0,
             streak: res.data.streak || 0,

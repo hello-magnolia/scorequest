@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bookmarks, ScoreQuest</title>
+<meta name="description" content="Your bookmarked lessons." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<script>
+try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
+</script>
+<link rel="stylesheet" href="css/style.css?v=b20260722e" />
+<link rel="icon" type="image/png" href="assets/logo.png" />
+</head>
+<body class="page-map" data-account-page="bookmarks">
+
+<header class="nav is-scrolled" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="ScoreQuest home">
+      <img class="brand-coin" src="assets/logo.png" alt="" aria-hidden="true" />
+      <span class="brand-name">ScoreQuest</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="map.html">Map</a>
+      <a href="parents.html">Parents</a>
+    </nav>
+    <div class="nav-cta"></div>
+  </div>
+</header>
+
+<main class="pf pf-narrow">
+  <h1 class="pf-page-title">Bookmarked lessons</h1>
+  <section class="pf-card pixel-frame pf-empty">
+    <img class="pf-empty-sprite" src="assets/pomelo/attack1.png" alt="" aria-hidden="true" />
+    <h3 class="pf-h3">Nothing bookmarked yet</h3>
+    <p class="pf-value pf-dim">When the lesson library opens, any lesson you star will collect here for quick review before test day. For now, the realms await.</p>
+    <a class="btn btn-gold" href="map.html">Open the world map</a>
+  </section>
+</main>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/config.js?v=b20260722e"></script>
+<script defer src="js/auth.js?v=b20260722e"></script>
+<script defer src="js/usernav.js?v=b20260722e"></script>
+<script defer src="js/sfx.js?v=b20260722e"></script>
+<script defer src="js/account-pages.js?v=b20260722e"></script>
+</body>
+</html>

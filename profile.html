@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Profile, ScoreQuest</title>
+<meta name="description" content="Your ScoreQuest journey: realms explored, waypoints cleared, guardians felled." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<script>
+try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
+</script>
+<link rel="stylesheet" href="css/style.css?v=b20260722e" />
+<link rel="icon" type="image/png" href="assets/logo.png" />
+</head>
+<body class="page-map" data-account-page="profile">
+
+<header class="nav is-scrolled" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="ScoreQuest home">
+      <img class="brand-coin" src="assets/logo.png" alt="" aria-hidden="true" />
+      <span class="brand-name">ScoreQuest</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="map.html">Map</a>
+      <a href="parents.html">Parents</a>
+    </nav>
+    <div class="nav-cta"></div>
+  </div>
+</header>
+
+<main class="pf">
+  <div class="pf-banner"><img src="assets/worldmap.webp" alt="" aria-hidden="true" /></div>
+  <div class="pf-head">
+    <div class="pf-avatar" id="pf-avatar">&nbsp;</div>
+    <div class="pf-id">
+      <h1 class="pf-name" id="pf-name">&nbsp;</h1>
+      <p class="pf-handle type-utility" id="pf-email"></p>
+      <p class="pf-joined" id="pf-joined"></p>
+      <p class="pf-counts type-utility" id="pf-counts"></p>
+    </div>
+    <a class="btn btn-outline pf-edit" href="settings.html">Edit profile</a>
+  </div>
+
+  <div class="pf-grid">
+    <section class="pf-main">
+      <h2 class="pf-h2">Journey</h2>
+      <p class="pf-bar-label" id="pf-bar-label"></p>
+      <div class="un-bar pf-bar"><div class="un-bar-fill" id="pf-bar-fill"></div></div>
+      <div class="pf-realms" id="pf-realms"></div>
+    </section>
+
+    <aside class="pf-rail">
+      <div class="pf-card pixel-frame">
+        <div class="pf-hero">
+          <img class="pf-hero-sprite" src="assets/pomelo/attack1.png" alt="" aria-hidden="true" />
+          <div>
+            <div class="pf-hero-name" id="hc-name">&nbsp;</div>
+            <div class="pf-hero-level type-utility" id="hc-level"></div>
+          </div>
+        </div>
+        <div class="pf-stats">
+          <div class="pf-stat"><span class="pf-stat-n" id="hc-xp">0</span><span class="pf-stat-l">Total XP</span></div>
+          <div class="pf-stat"><span class="pf-stat-n" id="hc-streak">0</span><span class="pf-stat-l">Day streak</span></div>
+          <div class="pf-stat"><span class="pf-stat-n" id="hc-waypoints">0</span><span class="pf-stat-l">Waypoints</span></div>
+          <div class="pf-stat"><span class="pf-stat-n" id="hc-bosses">0</span><span class="pf-stat-l">Guardians</span></div>
+        </div>
+      </div>
+      <div class="pf-card pixel-frame">
+        <h3 class="pf-h3">Achievements</h3>
+        <div id="pf-ach"></div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/config.js?v=b20260722e"></script>
+<script defer src="js/auth.js?v=b20260722e"></script>
+<script defer src="js/usernav.js?v=b20260722e"></script>
+<script defer src="js/sfx.js?v=b20260722e"></script>
+<script defer src="js/account-pages.js?v=b20260722e"></script>
+</body>
+</html>

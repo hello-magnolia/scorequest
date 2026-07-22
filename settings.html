@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Settings, ScoreQuest</title>
+<meta name="description" content="Your ScoreQuest account and preferences." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=VT323&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+<script>
+try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
+</script>
+<link rel="stylesheet" href="css/style.css?v=b20260722e" />
+<link rel="icon" type="image/png" href="assets/logo.png" />
+</head>
+<body class="page-map" data-account-page="settings">
+
+<header class="nav is-scrolled" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="ScoreQuest home">
+      <img class="brand-coin" src="assets/logo.png" alt="" aria-hidden="true" />
+      <span class="brand-name">ScoreQuest</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="map.html">Map</a>
+      <a href="parents.html">Parents</a>
+    </nav>
+    <div class="nav-cta"></div>
+  </div>
+</header>
+
+<main class="pf pf-narrow">
+  <h1 class="pf-page-title">Settings</h1>
+
+  <section class="pf-card pixel-frame">
+    <h3 class="pf-h3">Account</h3>
+    <p class="pf-label type-utility">Hero name</p>
+    <div class="un-row">
+      <input class="un-input" id="st-name" type="text" maxlength="24" />
+      <button class="btn btn-gold" id="st-save" type="button">Save name</button>
+    </div>
+    <p class="pf-label type-utility">Email</p>
+    <p class="pf-value" id="st-email"></p>
+  </section>
+
+  <section class="pf-card pixel-frame">
+    <h3 class="pf-h3">Preferences</h3>
+    <p class="pf-label type-utility">Game audio</p>
+    <button class="btn btn-outline" id="st-sound" type="button">Sound</button>
+  </section>
+
+  <section class="pf-card pixel-frame">
+    <h3 class="pf-h3">This device</h3>
+    <p class="pf-value pf-dim">Your account keeps everything synced. This only clears what this browser remembers locally.</p>
+    <button class="btn btn-outline" id="st-reset" type="button">Reset local progress</button>
+  </section>
+
+  <section class="pf-card pixel-frame">
+    <h3 class="pf-h3">Session</h3>
+    <button class="btn btn-outline" id="st-signout" type="button">Sign out</button>
+  </section>
+</main>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/config.js?v=b20260722e"></script>
+<script defer src="js/auth.js?v=b20260722e"></script>
+<script defer src="js/usernav.js?v=b20260722e"></script>
+<script defer src="js/sfx.js?v=b20260722e"></script>
+<script defer src="js/account-pages.js?v=b20260722e"></script>
+</body>
+</html>

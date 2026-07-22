@@ -71,11 +71,10 @@
 
     var menu = el('div', 'un-menu pixel-frame');
     menu.hidden = true;
-    [['Profile', 'profile'], ['Settings', 'settings'], ['Bookmarks', 'bookmarks']].forEach(function (it) {
-      var b = el('button', 'un-menu-item', it[0]);
-      b.type = 'button';
-      b.addEventListener('click', function () { closeMenu(); openPanel(it[1]); });
-      menu.appendChild(b);
+    [['Profile', 'profile.html'], ['Settings', 'settings.html'], ['Bookmarks', 'bookmarks.html']].forEach(function (it) {
+      var a2 = el('a', 'un-menu-item', it[0]);
+      a2.href = it[1];
+      menu.appendChild(a2);
     });
     var out = el('button', 'un-menu-item un-menu-signout', 'Sign out');
     out.type = 'button';
@@ -99,105 +98,8 @@
       if (!wrapEl.contains(e.target)) closeMenu();
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { closeMenu(); closePanel(); }
+      if (e.key === 'Escape') closeMenu();
     });
-  }
-
-  /* ---------- the panel: profile, settings, bookmarks ---------- */
-  var panelEl = null;
-
-  function closePanel() {
-    if (panelEl) { panelEl.remove(); panelEl = null; }
-  }
-
-  function openPanel(tab) {
-    closePanel();
-    var user = window.SQAuth.getUser();
-    if (!user) return;
-    panelEl = el('div', 'un-overlay');
-    var box = el('div', 'un-panel pixel-frame');
-    var tabs = el('div', 'un-tabs');
-    var body = el('div', 'un-body');
-    var names = [['profile', 'Profile'], ['settings', 'Settings'], ['bookmarks', 'Bookmarks']];
-    names.forEach(function (t) {
-      var b = el('button', 'un-tab' + (t[0] === tab ? ' is-active' : ''), t[1]);
-      b.type = 'button';
-      b.addEventListener('click', function () { openPanel(t[0]); });
-      tabs.appendChild(b);
-    });
-    var x = el('button', 'un-close', '\u00d7');
-    x.type = 'button';
-    x.setAttribute('aria-label', 'Close');
-    x.addEventListener('click', closePanel);
-
-    if (tab === 'profile') {
-      var s = stats();
-      body.appendChild(el('h3', 'un-name', heroName()));
-      body.appendChild(el('p', 'un-line type-utility', user.email || ''));
-      body.appendChild(el('p', 'un-line', 'Adventuring since ' + joinDate(user)));
-      var barWrap = el('div', 'un-bar');
-      var fill = el('div', 'un-bar-fill');
-      fill.style.width = s.pct + '%';
-      barWrap.appendChild(fill);
-      body.appendChild(el('p', 'un-line', 'World completion: ' + s.pct + '% (' + s.bosses.length + ' of 8 guardians felled)'));
-      body.appendChild(barWrap);
-      body.appendChild(el('p', 'un-line', 'Waypoints cleared: ' + s.waypoints + ' \u00b7 Realms explored: ' + s.visited + ' of 8'));
-      var chips = el('div', 'un-chips');
-      if (s.bosses.length) {
-        s.bosses.forEach(function (id) { chips.appendChild(el('span', 'un-chip', REALM_NAMES[id])); });
-      } else {
-        chips.appendChild(el('span', 'un-line un-dim', 'No lands completed yet. The guardians are waiting.'));
-      }
-      body.appendChild(el('p', 'un-line un-strong', 'Completed lands'));
-      body.appendChild(chips);
-    }
-
-    if (tab === 'settings') {
-      body.appendChild(el('p', 'un-line un-strong', 'Hero name'));
-      var input = el('input', 'un-input');
-      input.type = 'text';
-      input.maxLength = 24;
-      input.value = heroName();
-      var save = el('button', 'btn btn-gold un-save', 'Save');
-      save.type = 'button';
-      save.addEventListener('click', function () {
-        save.textContent = 'Saving\u2026';
-        window.SQAuth.setHeroName(input.value).then(function (ok) {
-          save.textContent = ok ? 'Saved' : 'Try again';
-          setTimeout(function () { save.textContent = 'Save'; }, 1400);
-        });
-      });
-      var row = el('div', 'un-row');
-      row.appendChild(input);
-      row.appendChild(save);
-      body.appendChild(row);
-      body.appendChild(el('p', 'un-line un-strong', 'Sound'));
-      var snd = el('button', 'btn btn-outline', '');
-      snd.type = 'button';
-      function paintSnd() {
-        var on = !window.SQSfx || window.SQSfx.enabled();
-        snd.textContent = on ? 'Sound: on' : 'Sound: off';
-      }
-      snd.addEventListener('click', function () {
-        if (!window.SQSfx) return;
-        window.SQSfx.setEnabled(!window.SQSfx.enabled());
-        paintSnd();
-      });
-      paintSnd();
-      body.appendChild(snd);
-    }
-
-    if (tab === 'bookmarks') {
-      body.appendChild(el('p', 'un-line', 'No bookmarked lessons yet.'));
-      body.appendChild(el('p', 'un-line un-dim', 'Bookmarking arrives with the lesson library: any lesson you star will collect here for quick review.'));
-    }
-
-    box.appendChild(x);
-    box.appendChild(tabs);
-    box.appendChild(body);
-    panelEl.appendChild(box);
-    panelEl.addEventListener('click', function (e) { if (e.target === panelEl) closePanel(); });
-    document.body.appendChild(panelEl);
   }
 
   function reveal() {
