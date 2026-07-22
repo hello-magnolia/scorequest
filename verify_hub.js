@@ -12,10 +12,6 @@ const OPTS = {
   beforeParse(w){
     w.matchMedia = w.matchMedia || (q=>({matches:false,addListener(){},removeListener(){}}));
     w.IntersectionObserver = class { constructor(cb){ this.cb=cb; } observe(t){ this.cb([{target:t,isIntersecting:true}], this); } unobserve(){} disconnect(){} };
-    /* seeded deeds: one guardian felled, one realm visited — the map should
-       plant exactly one gold flag and one white pennant for these */
-    w.localStorage.setItem('sq_boss_lorewood', 'cleared');
-    w.localStorage.setItem('sq_visited_storyforge', '1');
   }
 };
 
@@ -152,7 +148,7 @@ const OPTS = {
   check('The name given to Pomelo is the hero name',
     /Nova/.test(window.localStorage.getItem('sq_character') || ''),
     window.localStorage.getItem('sq_character'));
-  check('The map caption names the page above the world',
+  check('The map caption names the page beneath the world',
     /The Realms/.test(document.querySelector('.mappage-title').textContent) &&
     !!document.querySelector('.mappage-sub') &&
     document.querySelector('.mappage-sub').textContent.length > 20);
@@ -164,63 +160,22 @@ const OPTS = {
   check('Every realm territory deep-links its realm with name and domain',
     !!document.querySelector('.worldmap-svg a[href="realm.html?realm=prismpeaks"]') &&
     /Geometry & Trigonometry/.test(document.querySelector('.worldmap-svg a[href="realm.html?realm=prismpeaks"]').getAttribute('aria-label') || ''));
-  check('Every realm wears its name alone on the land: one quiet line each',
+  check('Every realm wears its name and discipline on the land',
     document.querySelectorAll('.worldmap-label').length === 8 &&
     (() => { const lb = [...document.querySelectorAll('.worldmap-label')].find(l => /Prism Peaks/.test(l.textContent));
-      return !!lb && !/Geometry/.test(lb.textContent); })());
+      return !!lb && /Geometry & Trigonometry/.test(lb.textContent); })());
 
-  /* 2b — the world stays in full color: no fog, the page itself is the sea */
-  check('The gray fog is gone for good; the page wears the ocean',
-    document.querySelectorAll('.wm-gray').length === 0);
+  /* 2b — the labels lost their dark plates; hover washes a realm white */
   const cssTxt = await new Promise((res, rej) => {
     require('http').get('http://localhost:8000/css/style.css', r => {
       let b = ''; r.on('data', c => b += c); r.on('end', () => res(b));
     }).on('error', rej);
   });
-  check('The page background is the painting’s own sea',
-    /body\.page-map\s*\{[^}]*linear-gradient[^}]*#01309f/.test(cssTxt));
   check('Realm labels stand plateless on the land',
     !/\.worldmap-label\s*\{[^}]*background/.test(cssTxt) &&
-    /\.worldmap-label-name\s*\{[^}]*text-shadow/.test(cssTxt));
+    /\.worldmap-label-domain\s*\{[^}]*text-shadow/.test(cssTxt));
   check('A hovered realm gains a slight white wash',
     /worldmap-svg a:hover polygon[^}]*fill:\s*rgba\(255,\s*255,\s*255/.test(cssTxt));
-
-  /* 2c — deeds planted on the land: the seeded flags stand where earned */
-  check('A gold flag stands where a guardian fell; a pennant where Pomelo wandered',
-    document.querySelectorAll('.wm-flag.is-cleared').length === 1 &&
-    document.querySelectorAll('.wm-flag.is-visited').length === 1 &&
-    !!document.querySelector('.wm-flag.is-cleared svg'));
-
-  /* 2d — the realm dock answers the cursor and falls quiet after */
-  const ppLink = document.querySelector('.worldmap-svg a[href="realm.html?realm=prismpeaks"]');
-  ppLink.dispatchEvent(new window.MouseEvent('mouseenter'));
-  await new Promise(r => setTimeout(r, 60));
-  const dockInfo = document.querySelector('.wm-dock-info');
-  check('Hovering a realm fills the dock: name, discipline, and the way in',
-    dockInfo && dockInfo.hidden === false &&
-    document.querySelector('.wm-dock-name').textContent === 'Prism Peaks' &&
-    /Geometry & Trigonometry/.test(document.querySelector('.wm-dock-domain').textContent) &&
-    /walk in/.test(document.querySelector('.wm-dock-enter').textContent) &&
-    document.querySelector('.wm-dock-hint').hidden === true);
-  ppLink.dispatchEvent(new window.MouseEvent('mouseleave'));
-  await new Promise(r => setTimeout(r, 60));
-  check('Leaving the realm returns the dock to its quiet hint',
-    dockInfo.hidden === true && document.querySelector('.wm-dock-hint').hidden === false);
-
-  /* 2e — the living layer: the sky canvas ticks, Pomelo waits at the start */
-  const t0map = window.__SQ_MAP_TICKS || 0;
-  check('The sky canvas is alive and its tick loop advances',
-    !!document.getElementById('worldmap-sky') &&
-    await until(() => (window.__SQ_MAP_TICKS || 0) > t0map + 3, 2500),
-    (window.__SQ_MAP_TICKS || 0) + ' ticks');
-  const pomCv = document.getElementById('worldmap-pomelo');
-  let pomPainted = false;
-  try {
-    const pd = pomCv.getContext('2d').getImageData(10, 20, 12, 12).data;
-    pomPainted = [...pd].some(v => v > 0);
-  } catch (e) {}
-  check('Pomelo waits on the map where he last wandered (the first realm, untraveled)',
-    !!pomCv && pomCv.style.left === '12.9%' && pomPainted);
 
   const fails = results.filter(x=>!x).length;
   console.log('\n' + (results.length-fails) + '/' + results.length + ' checks passed');

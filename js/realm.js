@@ -135,8 +135,6 @@
   var realm = REALMS[idx];
   var editing = params.get('edit') === '1';
   var PREVIEW_KEY = 'sq_realm_trace_' + realm.id;
-  /* the world map marks where Pomelo last wandered */
-  try { window.localStorage.setItem('sq_last_realm', realm.id); } catch (e) {}
 
   // a human-saved trace beats the manifest — but say so, and offer a way back
   var traceOverride = false;

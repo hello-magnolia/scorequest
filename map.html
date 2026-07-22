@@ -10,7 +10,7 @@
    before first paint so navigation never flashes the marketing tabs */
 try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
 </script>
-<link rel="stylesheet" href="css/style.css?v=b20260722n" />
+<link rel="stylesheet" href="css/style.css?v=b20260722o" />
 <link rel="icon" type="image/png" href="assets/logo.png" />
 </head>
 <body class="page-map">
@@ -34,38 +34,28 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
 </header>
 
 <main class="mappage mappage-only">
-  <div class="mappage-caption">
-    <h1 class="mappage-title">The Realms</h1>
-    <p class="mappage-sub">Eight lands, every SAT skill among them. Choose a realm to wander in.</p>
-  </div>
   <div class="worldmap" id="worldmap">
     <img class="worldmap-img" src="assets/worldmap.webp"
          alt="The world of ScoreQuest: eight realms across the isles" />
     <svg class="worldmap-svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="list"
          aria-label="Choose a realm on the map"></svg>
   </div>
-  <div class="worldmap-dock" id="worldmap-dock" aria-live="polite">
-    <p class="wm-dock-hint">Hover a realm. Click to walk in.</p>
-    <div class="wm-dock-info" hidden>
-      <span class="wm-dock-name"></span>
-      <span class="wm-dock-domain"></span>
-      <span class="wm-dock-level type-utility"></span>
-      <span class="wm-dock-bar" aria-hidden="true"><span class="wm-dock-fill"></span></span>
-      <span class="wm-dock-enter type-utility"></span>
-    </div>
+  <div class="mappage-caption">
+    <h1 class="mappage-title">The Realms</h1>
+    <p class="mappage-sub">Eight lands, every SAT skill among them. Choose a realm to wander in.</p>
   </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20260722n"></script>
-<script src="js/auth.js?v=b20260722n"></script>
-<script src="js/usernav.js?v=b20260722n"></script>
-<script src="js/pixelworld.js?v=b20260722n"></script>
-<script src="js/game.js?v=b20260722n"></script>
-<script src="js/map.js?v=b20260722n"></script>
-<script src="js/sfx.js?v=b20260722n"></script>
-<script src="js/intro.js?v=b20260722n"></script>
-<script src="js/companion.js?v=b20260722n"></script>
-<script src="js/main.js?v=b20260722n"></script>
+<script src="js/config.js?v=b20260722o"></script>
+<script src="js/auth.js?v=b20260722o"></script>
+<script src="js/usernav.js?v=b20260722o"></script>
+<script src="js/pixelworld.js?v=b20260722o"></script>
+<script src="js/game.js?v=b20260722o"></script>
+<script src="js/map.js?v=b20260722o"></script>
+<script src="js/sfx.js?v=b20260722o"></script>
+<script src="js/intro.js?v=b20260722o"></script>
+<script src="js/companion.js?v=b20260722o"></script>
+<script src="js/main.js?v=b20260722o"></script>
 </body>
 </html>
