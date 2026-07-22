@@ -250,6 +250,8 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   check('At altitude the wings beat on the flap frames while the rig holds its height',
     await until(() => /flap/.test(bossImg8()), 1600) &&
     /translateY\(-110px\)/.test(rig8.style.transform));
+  check('Past the first crouch the bird looms 40% larger',
+    d.getElementById('bf-boss-img').style.transform === 'scale(1.4)');
   check('The gust lands mid-beat and Pomelo pays one heart',
     await until(() => S8.fireball === 'hit', 2200) &&
     await until(() => S8.pomeloHp === 2, 1500));
@@ -257,6 +259,8 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => /takeoff/.test(bossImg8()), 3200) &&
     await until(() => /translateY\(0px\)/.test(rig8.style.transform), 2600) &&
     await until(() => /idle/.test(bossImg8()), 2200));
+  check('Back on the perch the bird returns to true size',
+    d.getElementById('bf-boss-img').style.transform === '');
   /* retry mid-flight must ground the bird: fall during the beats, retry
      while it still hangs in the air, and no altitude may survive the reset */
   for (let k8 = 0; k8 < 2; k8++) {

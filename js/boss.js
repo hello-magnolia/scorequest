@@ -484,6 +484,11 @@
       takeoffSeq: [['takeoff1', 200], ['takeoff2', 200], ['takeoff3', 240]],
       flapSeq: [['flap1', 150], ['flap2', 150], ['flap3', 170]],
       flight: { rise: 110, loops: 2, delay: 1150 },
+      /* the bird looms once it commits: every frame past the first crouch
+         renders 40% larger; only the perch (idles, takeoff1) stays true size */
+      frameScale: { takeoff2: 1.4, takeoff3: 1.4, flap1: 1.4, flap2: 1.4, flap3: 1.4,
+        hurt1: 1.4, hurt2: 1.4, hurt3: 1.4,
+        faint1: 1.4, faint2: 1.4, faint3: 1.4, faint4: 1.4, faint5: 1.4 },
       hurtSeq: [['hurt1', 200], ['hurt2', 220], ['hurt3', 260]],
       /* the fall opens on the hurt frames, no return to idle between: the
          recoil folds straight into the curl, the shrink, and the last star */
@@ -670,7 +675,12 @@
   Object.keys(SP).forEach(function (k) { var im = new Image(); im.src = SP[k]; });
   function spKey(k, side) { return TW ? (side ? TW.left : TW.right) + '_' + k : k; }
   function setBody(k, side) {
-    (side ? bodyElL : bodyEl).src = SP[spKey(k, side || 0)];
+    var el = side ? bodyElL : bodyEl;
+    el.src = SP[spKey(k, side || 0)];
+    if (B.frameScale) {          /* some frames render larger than the perch */
+      var fs = B.frameScale[k] || 1;
+      el.style.transform = fs === 1 ? '' : 'scale(' + fs + ')';
+    }
   }
   setBody(B.base);
   if (TW) setBody(B.base, 1);
