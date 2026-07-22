@@ -75,8 +75,6 @@
       put('pf-joined', 'Joined ' + new Date(user.created_at)
         .toLocaleDateString(undefined, { month: 'long', year: 'numeric' }));
     } catch (e) {}
-    put('pf-counts', t.visited + ' realms explored \u00b7 ' + t.waypoints +
-      ' waypoints \u00b7 ' + t.bosses + ' guardians felled');
 
     var list = document.getElementById('pf-realms');
     if (list) {
@@ -84,7 +82,8 @@
       REALMS.forEach(function (r) {
         var s = realmState(r[0]);
         var frac = s.boss ? 1 : Math.min(s.waypoints / r[3], 0.95);
-        var card = el('a', 'pf-jcard' + (s.boss ? ' is-cleared' : ''));
+        var untouched = !s.visited && !s.waypoints && !s.boss;
+        var card = el('a', 'pf-jcard' + (s.boss ? ' is-cleared' : (untouched ? ' is-unexplored' : '')));
         card.href = 'realm.html?realm=' + r[0];
         var art = el('div', 'pf-jcard-art');
         art.style.backgroundImage = "url('assets/realms/thumbs/" + r[0] + ".webp')";
