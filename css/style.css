@@ -1951,3 +1951,9 @@ a { color: inherit; }
   flex: 1; background: rgba(12, 9, 24, 0.8); border: 2px solid rgba(242, 182, 60, 0.4);
   color: var(--parchment); font-family: var(--font-utility); padding: 8px 10px; font-size: 0.95rem;
 }
+
+
+/* while authed and the user nav hasn't built yet, the signed-out nav stays
+   invisible: a logo-only breath instead of a flash of the wrong tabs */
+html.is-authed .nav-links:not(.un-ready),
+html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }

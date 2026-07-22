@@ -59,8 +59,9 @@
       links.innerHTML = '';
       links.appendChild(Object.assign(el('a', null, 'Map'), { href: 'map.html' }));
       links.appendChild(Object.assign(el('a', null, 'Parents'), { href: 'parents.html' }));
+      links.classList.add('un-ready');
     }
-    if (cta) cta.innerHTML = '';
+    if (cta) { cta.innerHTML = ''; cta.classList.add('un-ready'); }
 
     var name = heroName();
     var av = el('button', 'un-avatar', name.charAt(0).toUpperCase());
@@ -199,8 +200,16 @@
     document.body.appendChild(panelEl);
   }
 
+  function reveal() {
+    /* safety valve: a stale token must never leave the nav hidden */
+    ['.nav-links', '.nav-cta'].forEach(function (sel) {
+      var n = document.querySelector(sel);
+      if (n) n.classList.add('un-ready');
+    });
+  }
   function boot() {
-    if (!window.SQAuth || !window.SQAuth.onChange) return;
+    if (!window.SQAuth || !window.SQAuth.onChange) return setTimeout(reveal, 0);
+    setTimeout(reveal, 2200);
     window.SQAuth.onChange(function (state) {
       if (state && state.user) build(state.user);
     });
