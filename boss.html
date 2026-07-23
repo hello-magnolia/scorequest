@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Boss fight, ScoreQuest</title>
 <meta name="description" content="The guardian at the end of the realm. Answer true, strike true." />
-<link rel="stylesheet" href="css/style.css?v=b20260723a" />
+<link rel="stylesheet" href="css/style.css?v=b20260723b" />
 <link rel="icon" type="image/png" href="assets/logo.png" />
 </head>
 <body class="page-boss">
@@ -79,14 +79,38 @@
      question box can stack above it -->
 <div class="bf-intro" id="bf-intro" hidden>
   <video id="bf-intro-video" playsinline preload="auto" aria-label="Guardian intro"></video>
+  <button class="bf-intro-vol" id="bf-intro-vol" type="button" aria-label="Sound on. Turn sound off" aria-pressed="true">
+    <svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true">
+      <g fill="#f4e9d0">
+        <rect x="1" y="4" width="2" height="4"/>
+        <rect x="3" y="3" width="1" height="6"/>
+        <rect x="4" y="2" width="1" height="8"/>
+      </g>
+      <g class="vol-wave" fill="#f4e9d0">
+        <rect x="7" y="4" width="1" height="4"/>
+        <rect x="9" y="2" width="1" height="8"/>
+      </g>
+      <g class="vol-slash" fill="#e2695a">
+        <rect x="2" y="9" width="2" height="2"/><rect x="3" y="8" width="2" height="2"/>
+        <rect x="4" y="7" width="2" height="2"/><rect x="5" y="6" width="2" height="2"/>
+        <rect x="6" y="5" width="2" height="2"/><rect x="7" y="4" width="2" height="2"/>
+        <rect x="8" y="3" width="2" height="2"/><rect x="9" y="2" width="2" height="2"/>
+      </g>
+    </svg>
+  </button>
   <button class="btn btn-outline bf-intro-skip" id="bf-intro-skip" type="button">Skip intro (space)</button>
+</div>
+<!-- the dark that splits down the middle and opens onto the fight -->
+<div class="bf-curtain" id="bf-curtain" hidden aria-hidden="true">
+  <div class="bf-curtain-half bf-curtain-l"></div>
+  <div class="bf-curtain-half bf-curtain-r"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20260723a"></script>
-<script src="js/auth.js?v=b20260723a"></script>
-<script src="js/sfx.js?v=b20260723a"></script>
-<script src="js/companion.js?v=b20260723a"></script>
-<script src="js/boss.js?v=b20260723a"></script>
+<script src="js/config.js?v=b20260723b"></script>
+<script src="js/auth.js?v=b20260723b"></script>
+<script src="js/sfx.js?v=b20260723b"></script>
+<script src="js/companion.js?v=b20260723b"></script>
+<script src="js/boss.js?v=b20260723b"></script>
 </body>
 </html>

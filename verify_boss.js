@@ -24,6 +24,27 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   let w = await load('boss.html?realm=lorewood');
   let d = w.document;
   const S = w.__SQ_BOSS;
+
+  /* the intro reel: pixel volume toggle, then the dark splits open */
+  const intro0 = d.getElementById('bf-intro');
+  const vol0 = d.getElementById('bf-intro-vol');
+  check('Intro reel opens with a pixel speaker, unslashed while sound is on',
+    intro0.hidden === false && !!vol0.querySelector('.vol-slash') &&
+    !vol0.classList.contains('is-muted') && vol0.getAttribute('aria-pressed') === 'true');
+  vol0.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('One press mutes: the slash crosses the speaker and the reel keeps rolling',
+    vol0.classList.contains('is-muted') &&
+    d.getElementById('bf-intro-video').muted === true &&
+    intro0.hidden === false);
+  vol0.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('A second press unmutes and lifts the slash', !vol0.classList.contains('is-muted'));
+  d.getElementById('bf-intro-skip').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('The reel fades to black, holds, and the dark splits open on the arena',
+    intro0.classList.contains('is-fading') &&
+    await until(() => intro0.hidden === true && d.getElementById('bf-curtain').hidden === false, 2400) &&
+    await until(() => d.getElementById('bf-curtain').classList.contains('is-open'), 900) &&
+    await until(() => d.getElementById('bf-curtain').hidden === true, 1600));
+
   check('Nine tails, nine hit points: the fan is full and the bars scale to max HP',
     /Nine-Tailed Archivist/.test(d.getElementById('bf-boss-name').textContent) &&
     d.querySelectorAll('.bf-tail').length === 9 &&

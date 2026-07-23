@@ -617,19 +617,41 @@
   var ASSET_V = '20260722b';       /* bump when boss art changes: stale caches keep old frames alive */
   Object.keys(SP).forEach(function (k) { SP[k] += '?v=' + ASSET_V; });
   /* ---------- the intro reel: the guardian's entrance, once per visit.
-     Muted autoplay, and any click, Space, Enter, or Escape skips ---------- */
+     A pixel volume toggle rides the corner (slash = muted). Any click,
+     Space, Enter, or Escape skips. The reel ends in three beats: fade
+     to black, a 1.5s hold in the dark, then the black splits down the
+     middle and opens toward the sides, revealing the fight ---------- */
   (function () {
     var wrap = document.getElementById('bf-intro');
     if (!wrap || !B.intro || reduceMotion) return;
     var vid = document.getElementById('bf-intro-video');
+    var volBtn = document.getElementById('bf-intro-vol');
+    var curtain = document.getElementById('bf-curtain');
     var closed = false;
+    function paintVol() {
+      volBtn.classList.toggle('is-muted', vid.muted);
+      volBtn.setAttribute('aria-pressed', vid.muted ? 'false' : 'true');
+      volBtn.setAttribute('aria-label', vid.muted ? 'Sound off. Turn sound on' : 'Sound on. Turn sound off');
+    }
+    volBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      vid.muted = !vid.muted;
+      paintVol();
+    });
     function finish() {
       if (closed) return;
       closed = true;
-      wrap.classList.add('is-done');
-      try { vid.pause(); } catch (e2) {}
-      setTimeout(function () { wrap.hidden = true; }, 480);
       document.removeEventListener('keydown', onKey, true);
+      try { vid.pause(); } catch (e2) {}
+      wrap.classList.add('is-fading');       // beat one: fade to black
+      setTimeout(function () {               // beat two ends: 1.5s of dark
+        if (curtain) { curtain.hidden = false; void curtain.offsetWidth; }
+        wrap.hidden = true;
+        if (curtain) {                       // beat three: the dark splits open
+          setTimeout(function () { curtain.classList.add('is-open'); }, 30);
+          setTimeout(function () { curtain.hidden = true; }, 1000);
+        }
+      }, 1500);
     }
     function onKey(e) {
       if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter' || e.key === 'Escape') {
@@ -644,21 +666,13 @@
     document.getElementById('bf-intro-skip').addEventListener('click', finish);
     document.addEventListener('keydown', onKey, true);
     vid.muted = false;                      // the entrance deserves its fanfare
+    paintVol();
     var p = vid.play();
     if (p && p.catch) p.catch(function () {
-      vid.muted = true;                     // sound refused: the reel still rolls...
+      vid.muted = true;                     // sound refused: the reel still rolls,
+      paintVol();                           // slashed until the player taps the speaker
       var p2 = vid.play();
       if (p2 && p2.catch) p2.catch(function () { finish(); });
-      var snd = document.createElement('button');   // ...and one tap brings the voice
-      snd.type = 'button';
-      snd.className = 'btn btn-outline bf-intro-sound';
-      snd.textContent = '\uD83D\uDD0A Sound on';
-      snd.addEventListener('click', function (e) {
-        e.stopPropagation();
-        vid.muted = false;
-        snd.remove();
-      });
-      wrap.appendChild(snd);
     });
   })();
 
