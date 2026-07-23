@@ -250,8 +250,8 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   check('At altitude the wings beat on the flap frames while the rig holds its height',
     await until(() => /flap/.test(bossImg8()), 1600) &&
     /translateY\(-110px\)/.test(rig8.style.transform));
-  check('Past the first crouch the bird looms 40% larger',
-    d.getElementById('bf-boss-img').style.transform === 'scale(1.4)');
+  check('Past the first crouch the bird looms 20% larger',
+    d.getElementById('bf-boss-img').style.transform === 'scale(1.2)');
   check('The gust lands mid-beat and Pomelo pays one heart',
     await until(() => S8.fireball === 'hit', 2200) &&
     await until(() => S8.pomeloHp === 2, 1500));

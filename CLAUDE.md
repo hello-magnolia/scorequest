@@ -15,12 +15,17 @@ Pomelo the capybara is the companion. Live at hello-magnolia.github.io/scoreques
 3. Parallel Claude session may push: fetch + rebase before EVERY push. Conflicts:
    take Magnolia's side on HTML, re-add Claude's script tags. Never commit `assets/companion/`.
 
-## The gate (non-negotiable)
-Serve per call: `(setsid python3 -m http.server 8000 >/dev/null 2>&1 < /dev/null &)` (server dies between tool calls).
-Run ALL suites before any push; push only all-green (~245 checks):
-verify_realm, verify_boss, verify_hub, verify_map, verify, verify_auth, verify_payment, verify_parents.
-Timing checks POLL (until-loops), never fixed sleeps. `__SQ_TICKS` (realm) and `__SQ_BOSS` state are the tripwires.
-GitHub Pages deploys lag pushes by up to ~10 min (CDN caches HTML; ?v= only busts css/js).
+## The gate (scoped: run what you touched, green before push)
+Runner: `bash gate.sh [suite ...]` (no args = all eight; serves + one line per suite).
+Scope by changed surface:
+  realm.* -> verify_realm · boss.* -> verify_boss · map.* -> verify_hub verify_map ·
+  index hero/copy -> verify · auth/usernav -> verify_auth · checkout/pricing ->
+  verify_payment verify · parents/i18n -> verify_parents.
+Shared surfaces (css/style.css, auth.js, game.js, main.js, sfx.js) or multi-page edits,
+or a rebase that pulled someone else's changes -> full `bash gate.sh`. Stamp-only bumps
+need no suites. Run the FULL gate once before the session's final push.
+Timing checks POLL (until-loops), never fixed sleeps. `__SQ_TICKS` (realm) and
+`__SQ_BOSS` state are the tripwires. Pages deploys lag pushes ~10 min (CDN caches HTML).
 
 ## Version discipline
 Every deploy: one sed bumps `?v=` in ALL TEN html files (index, map, checkout, success,

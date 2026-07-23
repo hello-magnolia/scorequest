@@ -485,10 +485,10 @@
       flapSeq: [['flap1', 150], ['flap2', 150], ['flap3', 170]],
       flight: { rise: 110, loops: 2, delay: 1150 },
       /* the bird looms once it commits: every frame past the first crouch
-         renders 40% larger; only the perch (idles, takeoff1) stays true size */
-      frameScale: { takeoff2: 1.4, takeoff3: 1.4, flap1: 1.4, flap2: 1.4, flap3: 1.4,
-        hurt1: 1.4, hurt2: 1.4, hurt3: 1.4,
-        faint1: 1.4, faint2: 1.4, faint3: 1.4, faint4: 1.4, faint5: 1.4 },
+         renders 20% larger; only the perch (idles, takeoff1) stays true size */
+      frameScale: { takeoff2: 1.2, takeoff3: 1.2, flap1: 1.2, flap2: 1.2, flap3: 1.2,
+        hurt1: 1.2, hurt2: 1.2, hurt3: 1.2,
+        faint1: 1.2, faint2: 1.2, faint3: 1.2, faint4: 1.2, faint5: 1.2 },
       hurtSeq: [['hurt1', 200], ['hurt2', 220], ['hurt3', 260]],
       /* the fall opens on the hurt frames, no return to idle between: the
          recoil folds straight into the curl, the shrink, and the last star */
