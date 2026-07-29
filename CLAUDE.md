@@ -18,7 +18,7 @@ Pomelo the capybara is the companion. Live at hello-magnolia.github.io/scoreques
 ## The gate (scoped: run what you touched, green before push)
 Runner: `bash gate.sh [suite ...]` (no args = all eight; serves + one line per suite).
 Scope by changed surface:
-  realm.* -> verify_realm · boss.* -> verify_boss · map.* -> verify_hub verify_map ·
+  realm.* -> verify_realm · boss.* -> verify_boss · map.*/profile.* -> verify_hub verify_map ·
   index hero/copy -> verify · auth/usernav -> verify_auth · checkout/pricing ->
   verify_payment verify · parents/i18n -> verify_parents.
 Shared surfaces (css/style.css, auth.js, game.js, main.js, sfx.js) or multi-page edits,

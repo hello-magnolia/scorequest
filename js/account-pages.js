@@ -64,6 +64,11 @@
 
   /* ---------- banner picker ---------- */
   var CDNB = 'https://d8j0ntlcm91z4.cloudfront.net/user_3FHvw6GkkSiPTH7HzvjBrNN6m01/';
+  /* [id, label, cdn-fallback]. Local files are preferred at every size:
+     assets/banners/<id>.webp for the banner itself and
+     assets/banners/thumbs/<id>.webp for the picker squares, falling back to
+     the CDN original until download_assets.sh has been run. The thumbs are
+     what keep the picker light: the CDN originals are full-resolution. */
   var BANNERS = [
     ['worldmap', 'The World', 'assets/worldmap.webp'],
     ['dusk', 'Dusk Sky', CDNB + 'hf_20260722_204121_0f39d345-6001-4220-b1c7-e3da085150e7.png'],
@@ -72,9 +77,21 @@
     ['meadow', 'Firefly Meadow', CDNB + 'hf_20260722_204139_5cb8fbc1-b765-4a35-9dcd-092fa891ace2.png'],
     ['mountains', 'Misty Mountains', CDNB + 'hf_20260722_204146_c66d4507-5f5d-4e50-a9bd-f86d2cd95062.png']
   ];
-  function bannerUrl(id) {
-    for (var i = 0; i < BANNERS.length; i++) if (BANNERS[i][0] === id) return BANNERS[i][2];
-    return BANNERS[0][2];
+  function bannerSources(id, thumb) {
+    var b = BANNERS[0];
+    for (var i = 0; i < BANNERS.length; i++) if (BANNERS[i][0] === id) { b = BANNERS[i]; break; }
+    if (b[0] === 'worldmap') return [b[2]];   // already local and small
+    var list = [];
+    if (thumb) list.push('assets/banners/thumbs/' + b[0] + '.webp');
+    list.push('assets/banners/' + b[0] + '.webp');
+    list.push(b[2]);   // CDN original, last resort
+    return list;
+  }
+  /* Walk an img through candidate sources; each 404 advances to the next. */
+  function imgFallback(img, sources) {
+    var i = 0;
+    img.onerror = function () { i += 1; if (i < sources.length) img.src = sources[i]; };
+    img.src = sources[0];
   }
   function setupBanner() {
     var wrap = document.querySelector('.pf-banner');
@@ -82,13 +99,15 @@
     var img = wrap.querySelector('img');
     var saved = null;
     try { saved = window.localStorage.getItem('sq_banner'); } catch (e) {}
-    if (saved) img.src = bannerUrl(saved);
+    if (saved) imgFallback(img, bannerSources(saved, false));
 
     var btn = el('button', 'pf-banner-edit', 'Edit banner');
     btn.type = 'button';
     wrap.appendChild(btn);
     btn.addEventListener('click', function () {
+      wrap.classList.add('is-editing');   // the banner dims while the picker is up
       var ov = el('div', 'un-overlay');
+      var close = function () { ov.remove(); wrap.classList.remove('is-editing'); };
       var box = el('div', 'un-panel pixel-frame pf-bpick');
       box.appendChild(el('h3', 'pf-h3', 'Choose your banner'));
       var grid = el('div', 'pf-bgrid');
@@ -97,14 +116,15 @@
         var opt = el('button', 'pf-bopt' + (b[0] === current ? ' is-current' : ''));
         opt.type = 'button';
         var th = el('img', 'pf-bthumb');
-        th.src = b[2]; th.alt = b[1]; th.loading = 'lazy';
+        th.alt = b[1]; th.loading = 'lazy';
+        imgFallback(th, bannerSources(b[0], true));
         opt.appendChild(th);
         opt.appendChild(el('span', 'pf-blabel type-utility', b[1]));
         opt.addEventListener('click', function () {
           try { window.localStorage.setItem('sq_banner', b[0]); } catch (e) {}
           saved = b[0];
-          img.src = b[2];
-          ov.remove();
+          imgFallback(img, bannerSources(b[0], false));
+          close();
         });
         grid.appendChild(opt);
       });
@@ -112,10 +132,10 @@
       var x = el('button', 'un-close', '\u00d7');
       x.type = 'button';
       x.setAttribute('aria-label', 'Close');
-      x.addEventListener('click', function () { ov.remove(); });
+      x.addEventListener('click', close);
       box.appendChild(x);
       ov.appendChild(box);
-      ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+      ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
       document.body.appendChild(ov);
     });
   }

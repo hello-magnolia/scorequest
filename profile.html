@@ -8,7 +8,7 @@
 <script>
 try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
 </script>
-<link rel="stylesheet" href="css/style.css?v=b20260728b" />
+<link rel="stylesheet" href="css/style.css?v=b20260728c" />
 <link rel="icon" type="image/png" href="assets/logo.png" />
 </head>
 <body class="page-map" data-account-page="profile">
@@ -36,7 +36,17 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
       <p class="pf-handle type-utility" id="pf-email"></p>
       <p class="pf-joined" id="pf-joined"></p>
     </div>
-    <a class="btn btn-outline pf-edit" href="settings.html">Edit profile</a>
+    <a class="pf-edit" href="settings.html" aria-label="Edit profile" title="Edit profile">
+      <svg viewBox="0 0 14 14" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges">
+        <rect x="10" y="1" width="3" height="3"/>
+        <rect x="8" y="3" width="3" height="3"/>
+        <rect x="6" y="5" width="3" height="3"/>
+        <rect x="4" y="7" width="3" height="3"/>
+        <rect x="2" y="9" width="3" height="3"/>
+        <rect x="1" y="11" width="1" height="2"/>
+        <rect x="1" y="12" width="2" height="1"/>
+      </svg>
+    </a>
   </div>
 
   <div class="pf-grid">
@@ -74,10 +84,10 @@ try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) doc
 </main>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="js/config.js?v=b20260728b"></script>
-<script defer src="js/auth.js?v=b20260728b"></script>
-<script defer src="js/usernav.js?v=b20260728b"></script>
-<script defer src="js/sfx.js?v=b20260728b"></script>
-<script defer src="js/account-pages.js?v=b20260728b"></script>
+<script defer src="js/config.js?v=b20260728c"></script>
+<script defer src="js/auth.js?v=b20260728c"></script>
+<script defer src="js/usernav.js?v=b20260728c"></script>
+<script defer src="js/sfx.js?v=b20260728c"></script>
+<script defer src="js/account-pages.js?v=b20260728c"></script>
 </body>
 </html>

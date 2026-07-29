@@ -39,4 +39,31 @@ curl -fsSL "$BASE/hf_20260710_031832_0d6df14e-d0d8-480b-9abf-5ca6cc8a6243.mp4" -
 # Scene 2 (the glowing orange, with its own sound), scenes 4-5 (onsen, snatch),
 # and the onsen poster ship committed in assets/intro/ — nothing to download.
 
+echo "Profile banners (Higgsfield, five skies)..."
+mkdir -p assets/banners/thumbs
+curl -fsSL "$BASE/hf_20260722_204121_0f39d345-6001-4220-b1c7-e3da085150e7.png" -o assets/banners/dusk.png
+curl -fsSL "$BASE/hf_20260722_204127_d9e239f0-4004-4abe-8d0e-7a81ed7423bb.png" -o assets/banners/night.png
+curl -fsSL "$BASE/hf_20260722_204133_76a5ffcb-fb6f-40c5-a29a-93018d62e154.png" -o assets/banners/ocean.png
+curl -fsSL "$BASE/hf_20260722_204139_5cb8fbc1-b765-4a35-9dcd-092fa891ace2.png" -o assets/banners/meadow.png
+curl -fsSL "$BASE/hf_20260722_204146_c66d4507-5f5d-4e50-a9bd-f86d2cd95062.png" -o assets/banners/mountains.png
+
+# Shrink them for the web: the banner shows at most ~1080px wide, the picker
+# squares at ~270px. The profile page prefers these .webp files automatically;
+# the .png originals stay only as your local masters and are not committed.
+python3 - <<'PYEOF'
+from PIL import Image
+import glob, os
+for f in glob.glob('assets/banners/*.png'):
+    stem = os.path.splitext(os.path.basename(f))[0]
+    im = Image.open(f).convert('RGB')
+    w, h = im.size
+    big = im.resize((1080, round(h * 1080 / w)), Image.LANCZOS) if w > 1080 else im
+    big.save(f'assets/banners/{stem}.webp', 'WEBP', quality=84, method=6)
+    th = im.resize((280, round(h * 280 / w)), Image.LANCZOS)
+    th.save(f'assets/banners/thumbs/{stem}.webp', 'WEBP', quality=80, method=6)
+    print(' ', stem, os.path.getsize(f'assets/banners/{stem}.webp')//1024, 'KB +',
+          os.path.getsize(f'assets/banners/thumbs/{stem}.webp')//1024, 'KB thumb')
+PYEOF
+rm -f assets/banners/*.png
+
 echo "Done. The page automatically prefers these local files over the CDN."

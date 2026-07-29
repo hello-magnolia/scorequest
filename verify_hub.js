@@ -177,6 +177,78 @@ const OPTS = {
   check('A hovered realm gains a slight white wash',
     /worldmap-svg a:hover polygon[^}]*fill:\s*rgba\(255,\s*255,\s*255/.test(cssTxt));
 
+  /* 3 — the profile page: layering, the shared row height, the pencil, the
+     dimming banner editor, and thumbnails that are actually thumbnail-sized */
+  const POPTS = Object.assign({}, OPTS, {
+    beforeParse(w) {
+      OPTS.beforeParse(w);
+      // boot() bounces to index.html without a Supabase session token; the
+      // demo harness has none, so seed a stand-in before any script runs
+      w.localStorage.setItem('sb-moasnmwcikwybriwaoip-auth-token', '{"harness":true}');
+      w.__SQ_NO_REDIRECT = true;
+    }
+  });
+  const pdom = await JSDOM.fromURL('http://localhost:8000/profile.html', POPTS);
+  const pw = pdom.window, pd = pw.document;
+  await new Promise(r => pw.addEventListener('load', r));
+  await new Promise(r => setTimeout(r, 500));
+  // the profile renders only for a signed-in player; demo login stands in
+  pw.SQAuth.signInWithEmail('rowan@demo.test', 'pw');
+  await until(() => pd.querySelector('.pf-banner-edit'), 2500);
+
+  check('Avatar coin is positioned above the banner',
+    /\.pf-avatar\s*\{[^}]*position:\s*relative[^}]*z-index:\s*3/s.test(cssTxt));
+  check('Journey cards and the hero card share one row height (--pf-row)',
+    /\.pf-grid\s*\{\s*--pf-row/.test(cssTxt) &&
+    /\.pf-jcard\s*\{[^}]*min-height:\s*var\(--pf-row/s.test(cssTxt) &&
+    /\.pf-rail \.pf-card:first-child\s*\{[^}]*min-height:\s*var\(--pf-row/s.test(cssTxt));
+  const pedit = pd.querySelector('.pf-edit');
+  check('Edit profile is an icon link with an accessible name',
+    !!pedit && !!pedit.querySelector('svg') && pedit.getAttribute('aria-label') === 'Edit profile' &&
+    !/Edit profile/.test(pedit.textContent));
+  check('Banner edit button is centered on the banner',
+    /\.pf-banner-edit\s*\{[^}]*left:\s*50%[^}]*top:\s*50%[^}]*translate\(-50%,\s*-50%\)/s.test(cssTxt));
+  check('Banner dims on hover and deepens while editing',
+    /\.pf-banner:hover::after\s*\{[^}]*rgba\(12,\s*9,\s*24,\s*0\.4\)/s.test(cssTxt) &&
+    /\.pf-banner\.is-editing::after\s*\{[^}]*rgba\(12,\s*9,\s*24,\s*0\.62\)/s.test(cssTxt));
+
+  const bbtn = pd.querySelector('.pf-banner-edit');
+  check('Banner edit button present on the profile banner', !!bbtn);
+  if (bbtn) {
+    bbtn.dispatchEvent(new pw.MouseEvent('click', { bubbles: true }));
+    await until(() => pd.querySelector('.pf-bpick'), 1500);
+    check('Pressing edit opens the picker and dims the banner (is-editing)',
+      !!pd.querySelector('.pf-bpick') && pd.querySelector('.pf-banner').classList.contains('is-editing'));
+    check('Picker thumbs try the local low-res file first',
+      !!pd.querySelector('.pf-bthumb[src*="assets/banners/thumbs/"], .pf-bthumb[src*="assets/worldmap"]'));
+    const closer = pd.querySelector('.pf-bpick .un-close');
+    if (closer) closer.dispatchEvent(new pw.MouseEvent('click', { bubbles: true }));
+    await until(() => !pd.querySelector('.pf-bpick'), 1500);
+    check('Closing the picker lifts the dim',
+      !pd.querySelector('.pf-banner').classList.contains('is-editing'));
+  }
+
+  /* realm thumbs must stay thumbnail-sized: <= 520px wide and <= 45KB each */
+  const thumbInfo = await new Promise((res, rej) => {
+    require('http').get('http://localhost:8000/assets/realms/thumbs/lorewood.webp', r => {
+      const chunks = []; r.on('data', c => chunks.push(c));
+      r.on('end', () => {
+        const buf = Buffer.concat(chunks);
+        // VP8X extended header carries canvas size at bytes 24-29 (24-bit LE, minus one)
+        let w = 0;
+        if (buf.slice(12, 16).toString() === 'VP8X') {
+          w = 1 + (buf[24] | (buf[25] << 8) | (buf[26] << 16));
+        } else if (buf.slice(12, 16).toString() === 'VP8 ') {
+          w = buf.readUInt16LE(26) & 0x3fff;
+        }
+        res({ bytes: buf.length, width: w });
+      });
+    }).on('error', rej);
+  });
+  check('Realm thumbnails are genuinely low-res (<=520px wide, <=45KB)',
+    thumbInfo.width > 0 && thumbInfo.width <= 520 && thumbInfo.bytes <= 45 * 1024,
+    thumbInfo.width + 'px, ' + Math.round(thumbInfo.bytes / 1024) + 'KB');
+
   const fails = results.filter(x=>!x).length;
   console.log('\n' + (results.length-fails) + '/' + results.length + ' checks passed');
   process.exit(fails?1:0);
