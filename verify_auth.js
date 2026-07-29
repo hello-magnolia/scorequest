@@ -107,6 +107,43 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
     /\[hidden\]\s*\{\s*display:\s*none\s*!important/.test(cssText));
   check('Auth overlay hidden attribute restored after use', document.querySelector('.auth-overlay').hasAttribute('hidden'));
 
+  /* ---------- the two-name rule ----------
+     A player's legal name must never surface as a hero name. Assert the
+     contract in both directions: the schema keeps the columns apart, and no
+     client fallback reaches for a real-name-shaped value. */
+  const get = (path) => new Promise((res, rej) => {
+    require('http').get('http://localhost:8000/' + path, r => {
+      let b = ''; r.on('data', c => b += c); r.on('end', () => res(b));
+    }).on('error', rej);
+  });
+
+  const sql = await get('supabase_setup.sql');
+  check('Schema has full_name + hero_name_set columns',
+    /add column if not exists\s+full_name/.test(sql) && /add column if not exists\s+hero_name_set/.test(sql));
+  const newUserFn = sql.slice(sql.indexOf('function public.handle_new_user'), sql.indexOf('on_auth_user_created'));
+  check('handle_new_user never falls hero_name back to a provider name',
+    /chosen\s+text/.test(newUserFn) && !/coalesce\(\s*meta ->> 'hero_name',\s*meta ->> 'full_name'/.test(newUserFn));
+  const syncFn = sql.slice(sql.indexOf('function public.sync_auth_identity'), sql.indexOf('touch_updated_at'));
+  check('Provider re-login refresh leaves hero_name alone',
+    syncFn.length > 0 && !/hero_name/.test(syncFn));
+  check('Backfill repairs existing borrowed hero names',
+    /set hero_name = null/.test(sql) && /hero_name_set = false/.test(sql));
+
+  check('SQAuth exposes needsHeroName + getFullName',
+    typeof window.SQAuth.needsHeroName === 'function' && typeof window.SQAuth.getFullName === 'function');
+  const authSrc = await get('js/auth.js');
+  check('Profile query selects the split name columns',
+    /select\('hero_name, hero_name_set, full_name/.test(authSrc));
+
+  for (const f of ['js/usernav.js', 'js/account-pages.js']) {
+    const src = await get(f);
+    const at = src.indexOf('function heroName');
+    // strip // comments: this asserts against CODE, not the prose explaining it
+    const fn = src.slice(at, at + 700).replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    check(f + ' heroName() never falls back to the email handle or full_name',
+      !/email\.split/.test(fn) && !/full_name/.test(fn) && /'Adventurer'/.test(fn));
+  }
+
   const fails = results.filter(x=>!x).length;
   console.log('\n' + (results.length-fails) + '/' + results.length + ' checks passed');
   process.exit(fails?1:0);

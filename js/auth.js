@@ -46,7 +46,9 @@
     var md = (user && user.user_metadata) || {};
     return {
       hero_name: md.hero_name || null,
+      hero_name_set: !!md.hero_name,
       full_name: md.full_name || md.name || null,
+      avatar_url: md.avatar_url || md.picture || null,
     };
   }
 
@@ -84,13 +86,15 @@
     if (!supabase || !state.user) return Promise.resolve();
     return supabase
       .from('profiles')
-      .select('hero_name, full_name, xp, streak, realms, updated_at')
+      .select('hero_name, hero_name_set, full_name, avatar_url, xp, streak, realms, updated_at')
       .eq('id', state.user.id)
       .single()
       .then(function (res) {
         if (res.data) {
           state.profile = { hero_name: res.data.hero_name,
+            hero_name_set: !!res.data.hero_name_set,
             full_name: res.data.full_name,
+            avatar_url: res.data.avatar_url || null,
             xp: res.data.xp || 0, streak: res.data.streak || 0 };
           state.progress = {
             xp: res.data.xp || 0,
@@ -482,12 +486,26 @@
     signOut: signOut,
     getUser: function () { return state.user; },
     getProfile: function () { return state.profile; },
+    /* Has this player chosen a hero name? Google sign-ups answer false, which
+       is the cue to run the naming scene. A locally-typed name counts: the
+       Supabase write may still be in flight. */
+    needsHeroName: function () {
+      if (!state.user || state.demo) return false;
+      var p = state.profile || {};
+      if (p.hero_name_set || p.hero_name) return false;
+      var chr = window.SQCharacter && window.SQCharacter.get && window.SQCharacter.get();
+      return !(chr && chr.name);
+    },
+    /* The real account name. Parent surfaces ONLY: it is a legal name. */
+    getFullName: function () { return (state.profile && state.profile.full_name) || null; },
     setHeroName: function (name) {
       name = String(name || '').trim().slice(0, 24);
       if (!name || !state.user || !supabase) return Promise.resolve(false);
       return supabase.from('profiles').update({ hero_name: name }).eq('id', state.user.id)
         .then(function () {
-          state.profile = Object.assign({}, state.profile, { hero_name: name });
+          // the profiles_hero_named trigger flips hero_name_set server-side;
+          // mirror it locally so the intro cannot ask twice in one session.
+          state.profile = Object.assign({}, state.profile, { hero_name: name, hero_name_set: true });
           emit();
           return true;
         })

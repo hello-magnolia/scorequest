@@ -367,6 +367,7 @@
 
   /* ---------- the name, given to a capybara ---------- */
   var pageIdx = 0;
+  var startPage = 0;   // which dialogue page render() should open on
   function pageAt(step, i) {
     var p = step.pages[i];
     var text = typeof p === 'string' ? p : p.text;
@@ -380,7 +381,8 @@
     box.hidden = false;
     setCursor(false);
     var input = box.querySelector('input');
-    input.value = heroName || '';
+    var acct = window.SQAuth && window.SQAuth.getProfile && window.SQAuth.getProfile();
+    input.value = heroName || (acct && acct.hero_name) || '';
     input.focus();
   }
   function submitName() {
@@ -459,7 +461,8 @@
     if (step.kind === 'black') {
       typewrite(centerEl, step.text);
     } else if (step.kind === 'dialogue') {
-      pageIdx = 0;
+      pageIdx = startPage;   // normally 0; the naming-only entry opens on the ask
+      startPage = 0;
       tw = null;
       enterPomelo(step);
     } else {
@@ -533,9 +536,35 @@
     document.body.style.overflow = 'hidden';
   }
 
-  window.SQIntro = { open: open, seen: seen };
+  window.SQIntro = { open: open, openNaming: openNaming, seen: seen };
 
-  function init() { if (!seen()) open(); }
+  /* Two ways in. A first-time visitor gets the whole cinematic. A player who
+     has seen it but still has no hero name (signed in with Google on a device
+     that already ran the intro) gets scene 6 alone, so they are named by
+     Pomelo rather than by Google. */
+  function openNaming() {
+    if (window.__SQ_INTRO_OPEN) return;
+    if (!overlay) build();
+    window.__SQ_INTRO_OPEN = true;
+    window.__SQ_INTRO_NAMING = true;
+    idx = SCENES.length - 1;   // the pomelo dialogue scene
+    startPage = 2;             // '* i am pomelo. who are u?'
+    started = true;
+    overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    render();
+  }
+
+  function init() {
+    if (!seen()) { open(); return; }
+    if (!window.SQAuth || !window.SQAuth.onChange) return;
+    var asked = false;
+    window.SQAuth.onChange(function () {
+      if (asked || !window.SQAuth.needsHeroName || !window.SQAuth.needsHeroName()) return;
+      asked = true;
+      openNaming();
+    });
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();

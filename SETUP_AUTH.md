@@ -16,6 +16,9 @@ commit — the real protection is Row Level Security, set up in step 2.
 - You should see "Success". This creates the `profiles` table, the Row Level
   Security policies (each user can touch only their own row), and a trigger that
   auto-creates a profile when someone signs up.
+- **Already ran an older version? Run it again.** The file is safe to re-run: it
+  adds the Google columns without dropping anything, and repairs any account
+  that got stamped with a real name (see "Two names" below).
 
 ## 3. Paste your two public keys into the site
 - In Supabase: **Project Settings → API**.
@@ -47,6 +50,31 @@ commit — the real protection is Row Level Security, set up in step 2.
 That's it. Reload the site: **Log in** / **Start free** open the "Choose your
 hero" modal, Google works, and each hero's XP, streak, and cleared realms save
 to their profile row.
+
+---
+
+### Two names, on purpose
+
+Google hands us the player's real name. A teen should not walk into Lorewood
+called "Jonathan Whitmore-Chen", so the profile keeps the two apart:
+
+| column | who fills it | where it shows |
+| --- | --- | --- |
+| `hero_name` | the player, in the intro | everywhere in the game |
+| `full_name` | Google, automatically | parent surfaces only |
+
+A Google signup starts with `hero_name` **null** and `hero_name_set` **false**.
+That is the cue for Pomelo to ask "who are u?", exactly as an email signup gets
+asked. Until they answer, the game calls them "Adventurer", never the email
+handle, which is usually a real name too. Once a name is chosen the database
+flips `hero_name_set` itself, and later Google sign-ins refresh `full_name` and
+the avatar without ever touching the hero name.
+
+The re-run in step 2 also repairs existing accounts: it moves the real name into
+`full_name`, then clears `hero_name` for anyone whose hero name is exactly their
+Google name, which is the fingerprint of the old behaviour. A hero name someone
+actually typed is left alone. Those players get asked to name themselves next
+time they open the map.
 
 ---
 

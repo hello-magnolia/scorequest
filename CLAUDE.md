@@ -48,6 +48,16 @@ plain-place-word. Low-anxiety: losing is retreat, damage is "dispelling", no pla
 drain visuals, no performance pressure on teen surfaces. Parent surfaces use SAT-domain
 language, never game words (verify_parents enforces).
 
+## Identity (two names, never merge them)
+profiles.hero_name = player-chosen, NULL until the intro asks. profiles.full_name =
+the provider's real name, PARENT SURFACES ONLY. Never fall hero_name back to full_name
+or to the email handle (both are usually the legal name); nameless players read
+"Adventurer", with SQCharacter as the local stopgap while the write is in flight.
+hero_name_set flips server-side (profiles_hero_named trigger). SQAuth.needsHeroName()
+is the cue intro.js uses to open scene 6 alone (startPage=2) on a device that already
+watched the cinematic. supabase_setup.sql is idempotent and backfills old Google rows;
+re-run it on any existing project. verify_auth guards all of this.
+
 ## Architecture
 - Pages: index (hero, parents demo w/ 4-lang i18n, pricing), map.html (world map + labels,
   caption below, gray fog until visited), realm.html (walkabout; editor at &edit=1),
