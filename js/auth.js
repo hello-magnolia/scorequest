@@ -39,6 +39,17 @@
     return { xp: 0, streak: 0, realms: {}, updated_at: null };
   }
 
+  /* Provisional profile from the auth session, used before the profiles row
+     loads. hero_name comes only from an explicit signup field; a provider's
+     real name lands in full_name and is never promoted to hero_name. */
+  function metaProfile(user) {
+    var md = (user && user.user_metadata) || {};
+    return {
+      hero_name: md.hero_name || null,
+      full_name: md.full_name || md.name || null,
+    };
+  }
+
   /* ---------- client bootstrap ---------- */
   function makeClient() {
     if (!configured) return null;
@@ -73,12 +84,13 @@
     if (!supabase || !state.user) return Promise.resolve();
     return supabase
       .from('profiles')
-      .select('hero_name, xp, streak, realms, updated_at')
+      .select('hero_name, full_name, xp, streak, realms, updated_at')
       .eq('id', state.user.id)
       .single()
       .then(function (res) {
         if (res.data) {
           state.profile = { hero_name: res.data.hero_name,
+            full_name: res.data.full_name,
             xp: res.data.xp || 0, streak: res.data.streak || 0 };
           state.progress = {
             xp: res.data.xp || 0,
@@ -269,7 +281,7 @@
       var session = res.data && res.data.session;
       if (session && session.user) {
         state.user = session.user;
-        state.profile = { hero_name: (session.user.user_metadata || {}).hero_name };
+        state.profile = metaProfile(session.user);
         return fetchProfile().then(emit);
       }
       emit();
@@ -449,7 +461,7 @@
       supabase.auth.onAuthStateChange(function (_evt, session) {
         state.user = session ? session.user : null;
         if (state.user) {
-          state.profile = { hero_name: (state.user.user_metadata || {}).hero_name };
+          state.profile = metaProfile(state.user);
           fetchProfile().then(emit);
         } else {
           state.progress = defaultProgress();

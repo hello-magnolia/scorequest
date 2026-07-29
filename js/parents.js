@@ -216,9 +216,11 @@
           // proxy accuracy from domain progress until per-question analytics land
           acc[r.id] = Math.min(95, 55 + Math.round((st.cleared ? 100 : st.pct) * 0.4) + st.level * 4);
         });
-        var prof = A.getUser().user_metadata || {};
+        /* Parent-facing, so the real name is correct here and the hero name
+           is not. full_name is null for email sign-ups that never gave one. */
+        var prof = (A.getProfile && A.getProfile()) || {};
         return {
-          name: prof.full_name || prof.hero_name || 'Your student',
+          name: prof.full_name || 'Your student',
           minutes: DEMO.minutes, // session-time instrumentation ships with the question bank
           sets: sets, days: s.streak,
           exams: DEMO.exams, accuracy: acc, live: true,

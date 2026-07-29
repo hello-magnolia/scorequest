@@ -55,8 +55,11 @@
   function heroName() {
     var p = window.SQAuth.getProfile && window.SQAuth.getProfile();
     if (p && p.hero_name) return p.hero_name;
-    var u = window.SQAuth.getUser();
-    return u && u.email ? u.email.split('@')[0] : 'Adventurer';
+    /* No email handle and no full_name fallback on teen surfaces: both are the
+       player's real identity, which is exactly what a hero name is not. */
+    var chr = window.SQCharacter && window.SQCharacter.get && window.SQCharacter.get();
+    if (chr && chr.name) return chr.name;
+    return 'Adventurer';
   }
 
   /* ---------- banner picker ---------- */

@@ -7,13 +7,18 @@
 -- 1. profiles table: one row per user, holds hero name + game progress.
 create table if not exists public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
-  hero_name   text,
+  hero_name   text,                                       -- the name the player CHOSE in the intro
+  full_name   text,                                       -- the real name Google handed us (parent surfaces only)
   xp          integer     not null default 0,
   streak      integer     not null default 0,
   realms      jsonb       not null default '{}'::jsonb,  -- { "algebra": {"level":2,"cleared":true}, ... }
   updated_at  timestamptz not null default now(),
   created_at  timestamptz not null default now()
 );
+
+-- 1b. Upgrade path: `create table if not exists` above is a no-op on an existing
+--     project, so add the column explicitly for installs that predate it.
+alter table public.profiles add column if not exists full_name text;
 
 -- 2. Row Level Security: this is the real protection. The public anon key
 --    shipped in the browser can do NOTHING except what these policies allow —
@@ -38,21 +43,27 @@ create policy "update own profile"
   with check (auth.uid() = id);
 
 -- 3. Auto-create a profile row whenever a new user signs up (email or Google).
---    Pulls hero_name from signup metadata, falls back to the email handle.
+--    hero_name is the name the player picks for themselves in the intro, so it is
+--    set ONLY from an explicit hero_name in the signup metadata (the email form
+--    collects one). Google sign-ups leave it null on purpose: the intro's "WHO ARE U"
+--    step fills it in, and until then the UI says "Adventurer". A real legal name is
+--    not a hero name.
+--    full_name holds whatever the provider told us, for parent-facing surfaces only.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, hero_name)
+  insert into public.profiles (id, hero_name, full_name)
   values (
     new.id,
-    coalesce(
-      new.raw_user_meta_data ->> 'hero_name',
+    nullif(trim(coalesce(new.raw_user_meta_data ->> 'hero_name', '')), ''),
+    nullif(trim(coalesce(
       new.raw_user_meta_data ->> 'full_name',   -- Google provides full_name
-      split_part(new.email, '@', 1)
-    )
+      new.raw_user_meta_data ->> 'name',        -- some providers use name
+      ''
+    )), '')
   )
   on conflict (id) do nothing;
   return new;

@@ -79,6 +79,13 @@
     var cfg = loadCharacter() || {};
     cfg.name = name;
     try { window.localStorage.setItem(CHAR_KEY, JSON.stringify(cfg)); } catch (e) {}
+    /* The name typed here IS the hero name, so push it to the signed-in
+       account too. Google sign-ups arrive with hero_name null by design;
+       this is the step that fills it. Fire and forget: the local record
+       already stands on its own if the write fails. */
+    try {
+      if (window.SQAuth && window.SQAuth.setHeroName) window.SQAuth.setHeroName(name);
+    } catch (e) {}
     window.dispatchEvent(new CustomEvent('sq-character'));
   }
   window.SQCharacter = { get: loadCharacter };
