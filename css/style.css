@@ -64,7 +64,14 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* The canvas is already ink before one rule of ours is parsed, so the gap
+     between one page unloading and the next painting stays dark instead of
+     flashing white. color-scheme also darkens scrollbars and form controls. */
+  color-scheme: dark;
+  background: var(--ink);
+}
 body {
   margin: 0;
   background: var(--ink);
