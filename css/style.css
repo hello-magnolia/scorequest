@@ -1363,22 +1363,58 @@ a { color: inherit; }
 
 .is-editing .rw-stage { cursor: crosshair; }
 .rw-editor {
-  position: absolute; z-index: 7; left: 50%; bottom: 14px;
-  transform: translateX(-50%); width: min(640px, 92vw);
-  background: rgba(22, 17, 43, 0.96); padding: 14px 16px; cursor: default;
+  position: absolute; z-index: 7; right: 14px; top: 78px;
+  width: 248px; max-height: calc(100vh - 96px); overflow-y: auto;
+  background: rgba(22, 17, 43, 0.96); padding: 12px 14px; cursor: default;
 }
-.rw-ed-head { margin: 0 0 4px; color: var(--gold); letter-spacing: 0.06em; }
-.rw-ed-legend { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 0 0 10px;
+.rw-ed-head { display: flex; align-items: center; justify-content: space-between;
+  margin: 0 0 6px; color: var(--gold); letter-spacing: 0.08em; }
+.rw-ed-status { margin: 0 0 10px; color: var(--parchment); font-size: 13px;
+  letter-spacing: 0.04em; min-height: 16px; }
+.rw-ed-tools { display: flex; flex-direction: column; gap: 4px; margin: 0 0 10px; }
+.rw-ed-tool {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  background: rgba(0, 0, 0, 0.3); color: var(--parchment-dim);
+  border: 1px solid var(--line); padding: 6px 9px; font-size: 13px;
+  letter-spacing: 0.04em; cursor: pointer;
+}
+.rw-ed-tool b { color: var(--gold); width: 12px; }
+.rw-ed-tool:hover { border-color: var(--gold); color: var(--parchment); }
+.rw-ed-tool.is-active { background: rgba(242, 182, 60, 0.16); border-color: var(--gold);
+  color: var(--parchment); }
+.rw-ed-fx { display: none; margin: 0 0 10px; padding: 8px 9px;
+  background: rgba(0, 0, 0, 0.25); border: 1px solid var(--line); }
+.rw-editor.is-fx .rw-ed-fx { display: block; }
+.rw-ed-types { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 8px; }
+.rw-ed-type {
+  background: rgba(0, 0, 0, 0.3); color: var(--parchment-dim);
+  border: 1px solid var(--line); padding: 4px 9px; font-size: 12px;
+  letter-spacing: 0.05em; cursor: pointer;
+}
+.rw-ed-type:hover { border-color: var(--gold); color: var(--parchment); }
+.rw-ed-type.is-active { background: var(--gold); border-color: var(--gold); color: #2a1d07; }
+.rw-ed-sizer { display: flex; align-items: center; gap: 8px; margin: 0 0 6px;
+  color: var(--parchment-dim); font-size: 12px; letter-spacing: 0.05em; }
+.rw-ed-sizer #rw-ed-size { color: var(--parchment); min-width: 38px; text-align: center; }
+.rw-ed-step {
+  background: rgba(0, 0, 0, 0.3); color: var(--gold); border: 1px solid var(--line);
+  width: 26px; height: 22px; font-size: 14px; line-height: 1; cursor: pointer;
+}
+.rw-ed-step:hover { border-color: var(--gold); }
+.rw-ed-hint { margin: 0; color: var(--parchment-dim); font-size: 11px; letter-spacing: 0.04em; }
+.rw-ed-countline { margin: 0 0 8px; color: var(--parchment-dim); font-size: 11px;
+  letter-spacing: 0.04em; line-height: 1.5; }
+.rw-ed-legend { display: flex; flex-direction: column; gap: 2px; margin: 0 0 10px;
   color: var(--parchment-dim); font-size: 11px; letter-spacing: 0.04em; }
 .rw-ed-legend b { color: var(--gold, #f2b63c); font-weight: 700; }
-.rw-ed-legend .rw-ed-note { flex-basis: 100%; opacity: 0.7; }
+.rw-ed-legend .rw-ed-note { opacity: 0.7; }
 .rw-editor textarea {
   width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4);
   color: var(--parchment); border: 1px solid var(--line);
-  font-size: 0.85rem; padding: 6px 8px; resize: none; margin-bottom: 10px;
+  font-size: 0.8rem; padding: 6px 8px; resize: none; margin-bottom: 8px;
 }
-.rw-ed-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.rw-ed-row .btn { padding: 8px 14px; font-size: 0.9rem; }
+.rw-ed-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.rw-ed-row .btn { padding: 7px 10px; font-size: 0.82rem; flex: 1 1 auto; }
 .rw-trace-clear { color: var(--gold); pointer-events: auto; }
 
 /* the realm hub (map.html reborn) */
@@ -1932,9 +1968,13 @@ a { color: inherit; }
 }
 .rw-ed-min:hover { border-color: var(--gold); color: var(--gold); }
 .rw-editor.is-min .rw-ed-legend,
+.rw-editor.is-min .rw-ed-status,
+.rw-editor.is-min .rw-ed-tools,
+.rw-editor.is-min .rw-ed-fx,
+.rw-editor.is-min .rw-ed-countline,
 .rw-editor.is-min textarea,
 .rw-editor.is-min .rw-ed-row { display: none; }
-.rw-editor.is-min { padding-bottom: 10px; }
+.rw-editor.is-min { padding-bottom: 10px; width: 128px; }
 
 /* waypoint quiz: the little trial at each node */
 .rw-quiz {

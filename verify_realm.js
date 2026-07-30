@@ -134,30 +134,49 @@ const load = async (path) => {
     /Trial markers/.test(d.getElementById('rw-ed-mode').textContent) &&
     parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) trials/) || [0, 0])[1]) === markersBefore + 1,
     d.getElementById('rw-ed-count').textContent);
-  // the fx tools: 5 places live flames, 6 places live smoke, brackets resize
+  // the effects tool, on Story Forge: opens blank, side panel, registry
+  // types, live preview of the real animated elements
+  w = await load('realm.html?realm=storyforge&edit=1');
+  d = w.document;
+  await until(() => !!d.querySelector('.rw-editor'), 4000);
+  check('The effects editor opens on a blank canvas with all five tools and the effects section tucked away',
+    d.querySelectorAll('.rw-editor .rw-ed-tool').length === 5 &&
+    d.querySelectorAll('.rw-editor .rw-ed-type').length >= 3 &&
+    !d.querySelector('.rw-editor').classList.contains('is-fx') &&
+    d.querySelectorAll('#rw-fx .rw-flame, #rw-fx .rw-smoke, #rw-fx .rw-glow').length === 0 &&
+    !/"fx"/.test(d.getElementById('rw-ed-json').value));
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '5', bubbles: true }));
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 260, clientY: 280 }));
   await new Promise(r => setTimeout(r, 60));
-  check('Tool 5 drops a live animated flame under the click and exports it',
-    /Flames/.test(d.getElementById('rw-ed-mode').textContent) &&
+  check('Tool 5 opens the effects section and drops a live animated flame under the click',
+    /Effects/.test(d.getElementById('rw-ed-mode').textContent) &&
+    d.querySelector('.rw-editor').classList.contains('is-fx') &&
     d.querySelectorAll('#rw-fx .rw-flame').length === 1 &&
     d.querySelectorAll('#rw-fx .rw-glow-fire').length === 1 &&
     /"flames":\[\[/.test(d.getElementById('rw-ed-json').value),
-    d.getElementById('rw-ed-json').value.slice(0, 80));
+    d.getElementById('rw-ed-mode').textContent);
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ']', bubbles: true }));
   await new Promise(r => setTimeout(r, 40));
   check('] grows the selected flame by a quarter step and the size rides in the export',
     /\u00D72/.test(d.getElementById('rw-ed-mode').textContent) &&
     /"flames":\[\[[\d.]+,[\d.]+,2\]\]/.test(d.getElementById('rw-ed-json').value),
     d.getElementById('rw-ed-mode').textContent);
-  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '6', bubbles: true }));
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '5', bubbles: true }));
   d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 500, clientY: 250 }));
   await new Promise(r => setTimeout(r, 60));
-  check('Tool 6 drops a smoking chimney: three staggered live puffs, exported with its size',
-    /Smoke/.test(d.getElementById('rw-ed-mode').textContent) &&
+  check('5 again cycles to smoke: three staggered live puffs, exported with their size',
+    /smoke/.test(d.getElementById('rw-ed-mode').textContent) &&
     d.querySelectorAll('#rw-fx .rw-smoke').length === 3 &&
     /"smoke":\[\[[\d.]+,[\d.]+,1\.25\]\]/.test(d.getElementById('rw-ed-json').value),
-    d.getElementById('rw-ed-json').value.slice(-120));
+    d.getElementById('rw-ed-json').value.slice(-140));
+  d.querySelector('.rw-ed-type[data-type="lamp"]').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 640, clientY: 300 }));
+  await new Promise(r => setTimeout(r, 60));
+  check('The panel chip switches to lamps: a live glow lands and joins the export',
+    /lamp/.test(d.getElementById('rw-ed-mode').textContent) &&
+    d.querySelectorAll('#rw-fx .rw-glow:not(.rw-glow-fire)').length === 1 &&
+    /"lamps":\[\[/.test(d.getElementById('rw-ed-json').value),
+    d.getElementById('rw-ed-json').value.slice(-140));
   /* back to the walkabout for the remaining checks */
   w = await load('realm.html');
   d = w.document;
@@ -179,15 +198,15 @@ const load = async (path) => {
     /realm=storyforge/.test(d.getElementById('rw-next').href) &&
     /Onward to Story Forge/.test(d.getElementById('rw-popup-next').textContent));
 
-  /* the dressed realms: fire and smoke over the smithy, bubbles in the reef */
+  /* the dressed realms: Story Forge ships blank (Magnolia places its
+     effects in the editor), Ink Reef keeps its configured bubbles */
   w = await load('realm.html?realm=storyforge');
   d = w.document;
-  await until(() => d.querySelectorAll('#rw-fx .rw-flame').length > 0, 3000);
-  check('Story Forge is dressed: three hearth flames with fire glows, four smoking chimneys, eight window lamps',
-    d.querySelectorAll('#rw-fx .rw-flame').length === 3 &&
-    d.querySelectorAll('#rw-fx .rw-glow-fire').length === 3 &&
-    d.querySelectorAll('#rw-fx .rw-smoke').length === 12 &&
-    d.querySelectorAll('#rw-fx .rw-glow:not(.rw-glow-fire)').length === 8);
+  await until(() => d.getElementById('rw-veil').classList.contains('is-gone'), 3000);
+  check('Story Forge starts undressed: the effects canvas belongs to Magnolia',
+    d.querySelectorAll('#rw-fx .rw-flame').length === 0 &&
+    d.querySelectorAll('#rw-fx .rw-smoke').length === 0 &&
+    d.querySelectorAll('#rw-fx .rw-glow').length === 0);
   w = await load('realm.html?realm=inkreef');
   d = w.document;
   await until(() => d.querySelectorAll('#rw-fx .rw-bubble').length > 0, 3000);

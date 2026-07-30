@@ -61,18 +61,8 @@
         stairs: [3,4,10,11,13,14,17,18,21] },
       nodes: [[0.236,0.248],[0.158,0.571],[0.281,0.819],[0.433,0.874],[0.439,0.469],[0.627,0.491],[0.884,0.831]],
       start: [0.091,0.258],
-      /* dressing, anchored on the painting itself: flames sit on the three
-         open fire mouths (the smithy arch, the forge-hall doors, the lower
-         forge), smoke rises from the four chimney stacks, lamps flicker in
-         the lit windows. [x, y, scale] as fractions of the art. */
-      fx: {
-        flames: [[0.306, 0.257, 1.75], [0.904, 0.625, 2.25], [0.369, 0.978, 1.5]],
-        smoke: [[0.137, 0.211, 1.25], [0.34, 0.122, 1.1], [0.668, 0.109, 1.1], [0.847, 0.183, 1.6]],
-        lamps: [
-          [0.149, 0.352, 3], [0.181, 0.611, 3], [0.448, 0.389, 2.5], [0.542, 0.611, 3],
-          [0.668, 0.167, 2.5], [0.432, 0.611, 3], [0.637, 0.907, 3.5], [0.951, 0.759, 3.5]
-        ]
-      },
+      /* no fx shipped: Story Forge's flames, smoke, and lamps are placed by
+         Magnolia in the effects editor (?edit=1, tool 5) and pasted back */
       bossArea: [[0.862,0.451],[0.859,0.323],[0.88,0.279],[0.902,0.278],[0.929,0.32],[0.928,0.449]] },
     { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', fight: true, ground: 0.82,
       boss: 'The grotto is dark with drifting ink. The water will not clear on its own.',
@@ -944,46 +934,65 @@
     [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
     [4, 999999]
   ];
-  function buildFx(cfg, fx) {
-      (cfg.lamps || []).forEach(function (l) {
-        var g = document.createElement('span');
-        g.className = 'rw-glow';
-        g.style.left = (l[0] * 100) + '%';
-        g.style.top = (l[1] * 100) + '%';
-        g.style.width = (l[2] * 2) + '%';    // aspect-ratio keeps it round
-        fx.appendChild(g);
-      });
-      /* open fires: a warm breathing glow under a licking pixel flame */
-      (cfg.flames || []).forEach(function (f) {
+  /* ---------- the effects registry ----------
+     One entry per placeable effect. The dresser, the editor, its markers,
+     and the JSON export all read this table, so adding a new effect to any
+     realm is: a builder + CSS for its look, one row here, then place it in
+     the editor and paste the JSON. [x, y, scale] as fractions of the art. */
+  function fxPos(el, e) {
+    el.style.left = (e[0] * 100) + '%';
+    el.style.top = (e[1] * 100) + '%';
+  }
+  var FX_TYPES = [
+    { key: 'flame', cfg: 'flames', label: 'Flame', def: 1.75, mark: '#ffd974', shape: 'diamond',
+      /* an open fire: a warm breathing glow under a licking pixel flame */
+      build: function (fx, e) {
         var g = document.createElement('span');
         g.className = 'rw-glow rw-glow-fire';
-        g.style.left = (f[0] * 100) + '%';
-        g.style.top = (f[1] * 100) + '%';
-        g.style.width = (f[2] * 6) + '%';
+        fxPos(g, e);
+        g.style.width = (e[2] * 6) + '%';
         fx.appendChild(g);
         var fl = document.createElement('span');
         fl.className = 'rw-flame';
-        fl.style.left = (f[0] * 100) + '%';
-        fl.style.top = (f[1] * 100) + '%';
-        fl.style.setProperty('--fs', f[2]);
+        fxPos(fl, e);
+        fl.style.setProperty('--fs', e[2]);
         fl.style.setProperty('--fd', (-Math.random() * 0.9).toFixed(2) + 's');
         fx.appendChild(fl);
-      });
-      /* chimneys: three staggered puffs per stack, always one in the air */
-      (cfg.smoke || []).forEach(function (s) {
+      } },
+    { key: 'smoke', cfg: 'smoke', label: 'Smoke', def: 1.25, mark: '#ced2e4', shape: 'square',
+      /* a chimney: three staggered puffs, always one in the air */
+      build: function (fx, e) {
         for (var p = 0; p < 3; p++) {
           var puff = document.createElement('span');
           puff.className = 'rw-smoke';
-          puff.style.left = (s[0] * 100) + '%';
-          puff.style.top = (s[1] * 100) + '%';
-          puff.style.setProperty('--ss', s[2]);
+          fxPos(puff, e);
+          puff.style.setProperty('--ss', e[2]);
           puff.style.setProperty('--dx', ((Math.random() * 2.4 - 0.7) * 2).toFixed(1) + 'vh');
           puff.style.animationDuration = (8.5 + Math.random() * 2).toFixed(1) + 's';
           puff.style.animationDelay = (-(p * 3.4) - Math.random() * 1.5).toFixed(1) + 's';
           fx.appendChild(puff);
         }
+      } },
+    { key: 'lamp', cfg: 'lamps', label: 'Lamp', def: 3, mark: '#f2b63c', shape: 'circle',
+      /* a lit window or lantern: the lorewood flicker */
+      build: function (fx, e) {
+        var g = document.createElement('span');
+        g.className = 'rw-glow';
+        fxPos(g, e);
+        g.style.width = (e[2] * 2) + '%';    // aspect-ratio keeps it round
+        fx.appendChild(g);
+      } }
+  ];
+  function fxType(key) {
+    for (var i = 0; i < FX_TYPES.length; i++) if (FX_TYPES[i].key === key) return FX_TYPES[i];
+    return FX_TYPES[0];
+  }
+  function buildFx(cfg, fx) {
+      FX_TYPES.forEach(function (t) {
+        (cfg[t.cfg] || []).forEach(function (e) { t.build(fx, e); });
       });
-      /* underwater realms: bubbles rise the full height of the water */
+      /* underwater realms: bubbles rise the full height of the water
+         (count-based ambience, not an anchor: configured, not placed) */
       for (var bi = 0; bi < (cfg.bubbles || 0); bi++) {
         var bub = document.createElement('span');
         bub.className = 'rw-bubble ' +
@@ -1231,18 +1240,22 @@
      S toggles stairs on a selected path. Z = undo. No modes.
      ============================================================ */
   var edG = null, edMk = [], edStart = null, edBossA = [];
-  var edFx = null;                  // { flames: [[x,y,scale]], smoke: [[x,y,scale]], lamps?, bubbles? }
-  var FX_DEF = { flame: 1.75, smoke: 1.25 };   // scale a fresh anchor is born at
+  var edFx = null;                  // effect arrays keyed like realm.fx: flames/smoke/lamps
+  var edFxType = 'flame';           // which registry effect tool 5 places next
   var edMode = 'graph';
-  var ED_MODES = ['graph', 'marks', 'start', 'boss', 'flame', 'smoke'];
+  var ED_MODES = ['graph', 'marks', 'start', 'boss', 'fx'];
   var ED_LABEL = {
     graph: 'Walk graph (1)',
     marks: 'Trial markers (2)',
     start: 'START point (3)',
     boss: 'Boss room (4)',
-    flame: 'Flames (5)',
-    smoke: 'Smoke (6)'
+    fx: 'Effects (5)'
   };
+  function fxArr(key) {
+    var t = fxType(key || edFxType);
+    if (!edFx[t.cfg]) edFx[t.cfg] = [];
+    return edFx[t.cfg];
+  }
   var edBar = null;
   var edSel = null;                 // {kind:'gnode'|'gedge'|'mark'|'start'|'boss', i}
   var edHov = null;                 // same shape, aiming feedback
@@ -1343,6 +1356,18 @@
     if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
     drawTrace(); syncEditorBar();
   }
+  /* resize the selected effect: shared by the [ ] keys and panel steppers */
+  function edResize(step) {
+    if (!edSel || edSel.kind !== 'fx') return;
+    var arr = fxArr(edSel.type);
+    if (!arr[edSel.i]) return;
+    var ns = Math.min(6, Math.max(0.5, (arr[edSel.i][2] || 1) + step));
+    if (ns === arr[edSel.i][2]) return;
+    pushUndo();
+    arr[edSel.i][2] = ns;
+    edDressFx();
+    drawTrace(); syncEditorBar();
+  }
 
   function drawTrace() {
     if (!trace) return;
@@ -1398,33 +1423,33 @@
       tc.arc(edStart[0] * worldW, edStart[1] * worldH, 9, 0, Math.PI * 2);
       tc.fill();
     }
-    /* fx anchors show only in the fx tools: gold diamonds for flames,
-       slate squares for smoke, so the live elements stay unobstructed */
-    if (edFx && (edMode === 'flame' || edMode === 'smoke')) {
-      edFx.flames.forEach(function (p, i) {
-        var sel = edSel && edSel.kind === 'flame' && edSel.i === i;
-        var X = p[0] * worldW, Y = p[1] * worldH;
-        tc.fillStyle = sel ? SELRED : '#ffd974';
-        tc.strokeStyle = '#4b1e09'; tc.lineWidth = 2;
-        tc.beginPath();
-        tc.moveTo(X, Y - 8); tc.lineTo(X + 8, Y); tc.lineTo(X, Y + 8); tc.lineTo(X - 8, Y);
-        tc.closePath(); tc.fill(); tc.stroke();
-      });
-      edFx.smoke.forEach(function (p, i) {
-        var sel = edSel && edSel.kind === 'smoke' && edSel.i === i;
-        var X = p[0] * worldW, Y = p[1] * worldH;
-        tc.fillStyle = sel ? SELRED : '#ced2e4';
-        tc.strokeStyle = '#3a3268'; tc.lineWidth = 2;
-        tc.fillRect(X - 6, Y - 6, 12, 12);
-        tc.strokeRect(X - 6, Y - 6, 12, 12);
+    /* fx anchors show only in the effects tool: shape and color come from
+       the registry, so a new effect brings its own marker for free */
+    if (edFx && edMode === 'fx') {
+      FX_TYPES.forEach(function (t) {
+        (edFx[t.cfg] || []).forEach(function (p, i) {
+          var sel = edSel && edSel.kind === 'fx' && edSel.type === t.key && edSel.i === i;
+          var X = p[0] * worldW, Y = p[1] * worldH;
+          tc.fillStyle = sel ? SELRED : t.mark;
+          tc.strokeStyle = '#26203a'; tc.lineWidth = 2;
+          if (t.shape === 'diamond') {
+            tc.beginPath();
+            tc.moveTo(X, Y - 8); tc.lineTo(X + 8, Y); tc.lineTo(X, Y + 8); tc.lineTo(X - 8, Y);
+            tc.closePath(); tc.fill(); tc.stroke();
+          } else if (t.shape === 'circle') {
+            tc.beginPath(); tc.arc(X, Y, 7, 0, Math.PI * 2); tc.fill(); tc.stroke();
+          } else {
+            tc.fillRect(X - 6, Y - 6, 12, 12);
+            tc.strokeRect(X - 6, Y - 6, 12, 12);
+          }
+        });
       });
     }
-    if (edHov && !(edSel && edSel.kind === edHov.kind && edSel.i === edHov.i)) {
+    if (edHov && !sameSel(edSel, edHov)) {
       var hp = edHov.kind === 'gnode' ? edG.nodes[edHov.i]
         : edHov.kind === 'mark' ? edMk[edHov.i]
         : edHov.kind === 'boss' ? edBossA[edHov.i]
-        : edHov.kind === 'flame' ? edFx.flames[edHov.i]
-        : edHov.kind === 'smoke' ? edFx.smoke[edHov.i]
+        : edHov.kind === 'fx' ? fxArr(edHov.type)[edHov.i]
         : edHov.kind === 'start' ? edStart : null;
       if (hp) {
         tc.lineWidth = 1.5;
@@ -1451,18 +1476,20 @@
     if (edMode === 'start') {
       return (edStart && edPointAt([edStart], w) === 0) ? { kind: 'start', i: 0 } : null;
     }
-    if (edMode === 'flame') {
-      var f = edPointAt(edFx.flames, w);
-      return f > -1 ? { kind: 'flame', i: f } : null;
-    }
-    if (edMode === 'smoke') {
-      var s = edPointAt(edFx.smoke, w);
-      return s > -1 ? { kind: 'smoke', i: s } : null;
+    if (edMode === 'fx') {
+      var bestT = null, bestI = -1, bd = GRAB * GRAB;
+      FX_TYPES.forEach(function (t) {
+        (edFx[t.cfg] || []).forEach(function (p, i) {
+          var d = Math.pow(p[0] * worldW - w.x, 2) + Math.pow(p[1] * worldH - w.y, 2);
+          if (d <= bd) { bd = d; bestT = t.key; bestI = i; }
+        });
+      });
+      return bestI > -1 ? { kind: 'fx', type: bestT, i: bestI } : null;
     }
     var b = edPointAt(edBossA, w);
     return b > -1 ? { kind: 'boss', i: b } : null;
   }
-  function sameSel(a, b) { return a && b && a.kind === b.kind && a.i === b.i; }
+  function sameSel(a, b) { return a && b && a.kind === b.kind && a.i === b.i && a.type === b.type; }
 
   var hoverRaf = 0;
   stage.addEventListener('mousemove', function (e) {
@@ -1479,11 +1506,9 @@
         edMk[edSel.i] = edSnapToGraph(w);
       } else if (edSel.kind === 'start') {
         edStart = edSnapToGraph(w);
-      } else if (edSel.kind === 'flame') {
-        edFx.flames[edSel.i] = [w.x / worldW, w.y / worldH, edFx.flames[edSel.i][2]];
-        edDressFx();
-      } else if (edSel.kind === 'smoke') {
-        edFx.smoke[edSel.i] = [w.x / worldW, w.y / worldH, edFx.smoke[edSel.i][2]];
+      } else if (edSel.kind === 'fx') {
+        var fa = fxArr(edSel.type);
+        fa[edSel.i] = [w.x / worldW, w.y / worldH, fa[edSel.i][2]];
         edDressFx();
       } else if (edSel.kind === 'boss') {
         edBossA[edSel.i] = [w.x / worldW, w.y / worldH];
@@ -1544,14 +1569,10 @@
     pushUndo();
     if (edMode === 'marks') { edMk.push(edSnapToGraph(w)); edSel = { kind: 'mark', i: edMk.length - 1 }; }
     else if (edMode === 'start') { edStart = edSnapToGraph(w); edSel = { kind: 'start', i: 0 }; }
-    else if (edMode === 'flame') {
-      edFx.flames.push([w.x / worldW, w.y / worldH, FX_DEF.flame]);
-      edSel = { kind: 'flame', i: edFx.flames.length - 1 };
-      edDressFx();
-    }
-    else if (edMode === 'smoke') {
-      edFx.smoke.push([w.x / worldW, w.y / worldH, FX_DEF.smoke]);
-      edSel = { kind: 'smoke', i: edFx.smoke.length - 1 };
+    else if (edMode === 'fx') {
+      var ft = fxType(edFxType);
+      fxArr(ft.key).push([w.x / worldW, w.y / worldH, ft.def]);
+      edSel = { kind: 'fx', type: ft.key, i: fxArr(ft.key).length - 1 };
       edDressFx();
     }
     else { edBossA.push([w.x / worldW, w.y / worldH]); edSel = { kind: 'boss', i: edBossA.length - 1 }; }
@@ -1576,25 +1597,16 @@
       else if (edSel.kind === 'gedge') edDeleteEdge(edSel.i);
       else if (edSel.kind === 'mark') edMk.splice(edSel.i, 1);
       else if (edSel.kind === 'start') edStart = null;
-      else if (edSel.kind === 'flame') { edFx.flames.splice(edSel.i, 1); edDressFx(); }
-      else if (edSel.kind === 'smoke') { edFx.smoke.splice(edSel.i, 1); edDressFx(); }
+      else if (edSel.kind === 'fx') { fxArr(edSel.type).splice(edSel.i, 1); edDressFx(); }
       else if (edSel.kind === 'boss') edBossA.splice(edSel.i, 1);
       edSel = null;
       drawTrace(); syncEditorBar();
     }
-    /* [ and ] resize the selected flame or smoke stack in chunky steps */
+    /* [ and ] resize the selected effect in chunky quarter steps */
     if (e.key === '[' || e.key === ']' || e.key === '-' || e.key === '=' || e.key === '+') {
-      if (edSel && (edSel.kind === 'flame' || edSel.kind === 'smoke')) {
+      if (edSel && edSel.kind === 'fx') {
         e.preventDefault();
-        var arr = edSel.kind === 'flame' ? edFx.flames : edFx.smoke;
-        var step = (e.key === '[' || e.key === '-') ? -0.25 : 0.25;
-        var ns = Math.min(4, Math.max(0.5, (arr[edSel.i][2] || 1) + step));
-        if (ns !== arr[edSel.i][2]) {
-          pushUndo();
-          arr[edSel.i][2] = ns;
-          edDressFx();
-          drawTrace(); syncEditorBar();
-        }
+        edResize((e.key === '[' || e.key === '-') ? -0.25 : 0.25);
       }
     }
     if (e.key === 's' || e.key === 'S') {        // stairs live on selected paths
@@ -1611,15 +1623,20 @@
       if (edMode === 'graph') edG = { nodes: [], edges: [], stairs: [] };
       else if (edMode === 'marks') edMk = [];
       else if (edMode === 'start') edStart = null;
-      else if (edMode === 'flame') { edFx.flames = []; edDressFx(); }
-      else if (edMode === 'smoke') { edFx.smoke = []; edDressFx(); }
+      else if (edMode === 'fx') { edFx[fxType(edFxType).cfg] = []; edDressFx(); }
       else edBossA = [];
       edSel = null;
       drawTrace(); syncEditorBar();
     }
     if (e.key === 'n' || e.key === 'N') cycleMode();
-    var digits = { '1': 'graph', '2': 'marks', '3': 'start', '4': 'boss', '5': 'flame', '6': 'smoke' };
-    if (digits[e.key]) { edMode = digits[e.key]; edSel = null; edHov = null; drawTrace(); syncEditorBar(); }
+    var digits = { '1': 'graph', '2': 'marks', '3': 'start', '4': 'boss', '5': 'fx' };
+    if (digits[e.key]) {
+      if (e.key === '5' && edMode === 'fx') {          // 5 again: next effect type
+        var ki = FX_TYPES.indexOf(fxType(edFxType));
+        edFxType = FX_TYPES[(ki + 1) % FX_TYPES.length].key;
+      }
+      edMode = digits[e.key]; edSel = null; edHov = null; drawTrace(); syncEditorBar();
+    }
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
       edCam += stageW * 0.35; camera(); e.preventDefault();
     }
@@ -1639,9 +1656,9 @@
     };
     if (edFx) {
       var fxOut = {};
-      if (edFx.lamps && edFx.lamps.length) fxOut.lamps = edFx.lamps;
-      if (edFx.flames.length) fxOut.flames = edFx.flames.map(r3s);
-      if (edFx.smoke.length) fxOut.smoke = edFx.smoke.map(r3s);
+      FX_TYPES.forEach(function (t) {
+        if (edFx[t.cfg] && edFx[t.cfg].length) fxOut[t.cfg] = edFx[t.cfg].map(r3s);
+      });
       if (edFx.bubbles) fxOut.bubbles = edFx.bubbles;
       if (Object.keys(fxOut).length) out.fx = fxOut;
     }
@@ -1649,22 +1666,41 @@
   }
   function syncEditorBar() {
     if (!edBar) return;
-    var selTxt = '';
+    var modeTxt = ED_LABEL[edMode];
+    if (edMode === 'fx') modeTxt += ' \u00B7 ' + fxType(edFxType).label.toLowerCase();
     if (edSel) {
-      selTxt = ' \u00B7 selected: ' +
-        (edSel.kind === 'gnode' ? 'node' : edSel.kind === 'gedge' ? 'path' : edSel.kind);
-      if (edSel.kind === 'flame' || edSel.kind === 'smoke') {
-        var sArr = edSel.kind === 'flame' ? edFx.flames : edFx.smoke;
-        if (sArr[edSel.i]) selTxt += ' \u00D7' + (Math.round((sArr[edSel.i][2] || 1) * 100) / 100);
+      modeTxt += ' \u00B7 selected: ' +
+        (edSel.kind === 'gnode' ? 'node' : edSel.kind === 'gedge' ? 'path'
+          : edSel.kind === 'fx' ? edSel.type : edSel.kind);
+      if (edSel.kind === 'fx') {
+        var sArr = fxArr(edSel.type);
+        if (sArr[edSel.i]) modeTxt += ' \u00D7' + (Math.round((sArr[edSel.i][2] || 1) * 100) / 100);
       }
     }
-    edBar.querySelector('#rw-ed-mode').textContent = ED_LABEL[edMode] + selTxt;
+    edBar.querySelector('#rw-ed-mode').textContent = modeTxt;
+    var fxCounts = '';
+    if (edFx) {
+      fxCounts = FX_TYPES.map(function (t) {
+        return (edFx[t.cfg] || []).length + ' ' + t.label.toLowerCase() + 's';
+      }).join(' \u00B7 ') + ' \u00B7 ';
+    }
     edBar.querySelector('#rw-ed-count').textContent =
       edG.nodes.length + ' nodes \u00B7 ' + edG.edges.length + ' paths \u00B7 ' +
       edG.stairs.length + ' stairs \u00B7 ' + edMk.length + ' trials \u00B7 ' +
-      edBossA.length + ' boss pts \u00B7 ' +
-      (edFx ? edFx.flames.length + ' flames \u00B7 ' + edFx.smoke.length + ' smoke \u00B7 ' : '') +
+      edBossA.length + ' boss pts \u00B7 ' + fxCounts +
       'start ' + (edStart ? '\u2713' : '\u2014');
+    edBar.querySelectorAll('.rw-ed-tool').forEach(function (b) {
+      b.classList.toggle('is-active', b.dataset.mode === edMode);
+    });
+    edBar.classList.toggle('is-fx', edMode === 'fx');
+    edBar.querySelectorAll('.rw-ed-type').forEach(function (b) {
+      b.classList.toggle('is-active', edMode === 'fx' && b.dataset.type === edFxType);
+    });
+    var sz = edBar.querySelector('#rw-ed-size');
+    if (sz) {
+      var have = edSel && edSel.kind === 'fx' && fxArr(edSel.type)[edSel.i];
+      sz.textContent = have ? '\u00D7' + (Math.round((fxArr(edSel.type)[edSel.i][2] || 1) * 100) / 100) : '\u2014';
+    }
     edBar.querySelector('#rw-ed-json').value = edJSON();
   }
   function enterEditor() {
@@ -1674,30 +1710,49 @@
     edMk = (realm.nodes || []).map(function (p) { return p.slice(); });
     edBossA = (realm.bossArea || []).map(function (p) { return p.slice(); });
     edStart = realm.start ? realm.start.slice() : null;
+    /* effects seed from the committed manifest too: a realm that ships
+       none (Story Forge today) opens as a blank canvas */
     edFx = JSON.parse(JSON.stringify(realm.fx || {}));
-    edFx.flames = edFx.flames || [];
-    edFx.smoke = edFx.smoke || [];
     edBar = document.createElement('div');
     edBar.className = 'rw-editor pixel-frame';
     edBar.innerHTML =
-      '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span>' +
+      '<p class="rw-ed-head type-utility">EDITOR' +
       '<button class="rw-ed-min type-utility" id="rw-ed-min" type="button" title="Minimize">\u2013</button></p>' +
+      '<p class="rw-ed-status type-utility" id="rw-ed-mode"></p>' +
+      '<div class="rw-ed-tools">' +
+        ED_MODES.map(function (m, i) {
+          return '<button class="rw-ed-tool type-utility" type="button" data-mode="' + m + '">' +
+            '<b>' + (i + 1) + '</b> ' + ED_LABEL[m].replace(/ \(\d\)$/, '') + '</button>';
+        }).join('') +
+      '</div>' +
+      '<div class="rw-ed-fx" id="rw-ed-fx">' +
+        '<div class="rw-ed-types">' +
+          FX_TYPES.map(function (t) {
+            return '<button class="rw-ed-type type-utility" type="button" data-type="' + t.key + '">' + t.label + '</button>';
+          }).join('') +
+        '</div>' +
+        '<div class="rw-ed-sizer type-utility">size' +
+          '<button class="rw-ed-step" id="rw-ed-size-dn" type="button" title="Smaller [">\u2212</button>' +
+          '<span id="rw-ed-size">\u2014</span>' +
+          '<button class="rw-ed-step" id="rw-ed-size-up" type="button" title="Bigger ]">+</button>' +
+        '</div>' +
+        '<p class="rw-ed-hint type-utility">click the map to place \u00B7 drag to move \u00B7 del removes</p>' +
+      '</div>' +
+      '<p class="rw-ed-countline type-utility" id="rw-ed-count"></p>' +
       '<div class="rw-ed-legend type-utility">' +
-        '<span><b>1\u20136</b> tools (5 flames \u00B7 6 smoke)</span>' +
-        '<span><b>click</b> select (red) \u00B7 empty adds</span>' +
-        '<span><b>node\u2192node</b> connects</span>' +
-        '<span><b>sel+empty</b> extends</span>' +
-        '<span><b>drag</b> move node</span>' +
-        '<span><b>del</b> node+paths / path only</span>' +
+        '<span><b>1\u20135</b> tools</span>' +
+        '<span><b>5</b> again: next effect</span>' +
+        '<span><b>click</b> select \u00B7 empty adds</span>' +
+        '<span><b>drag</b> move</span>' +
+        '<span><b>node\u2192node</b> connect</span>' +
         '<span><b>S</b> stairs on path</span>' +
-        '<span><b>[ ]</b> size flame/smoke</span>' +
-        '<span><b>Z</b> undo</span>' +
-        '<span><b>esc</b> deselect</span>' +
+        '<span><b>[ ]</b> effect size</span>' +
+        '<span><b>del</b> remove</span>' +
+        '<span><b>Z</b> undo \u00B7 <b>esc</b> deselect</span>' +
         '<span><b>\u2190\u2192</b> pan</span>' +
       '</div>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +
       '<div class="rw-ed-row">' +
-        '<button class="btn btn-outline" id="rw-ed-toggle" type="button">Next tool (N)</button>' +
         '<button class="btn btn-outline" id="rw-ed-copy" type="button">Copy JSON</button>' +
         '<button class="btn btn-gold" id="rw-ed-save" type="button">Save preview &amp; walk it</button>' +
       '</div>';
@@ -1708,10 +1763,22 @@
       this.textContent = min ? '+' : '\u2013';
       this.title = min ? 'Expand' : 'Minimize';
     });
-    edBar.querySelector('#rw-ed-toggle').addEventListener('click', function (e) {
-      e.stopPropagation();
-      cycleMode();
+    edBar.querySelectorAll('.rw-ed-tool').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        edMode = this.dataset.mode; edSel = null; edHov = null;
+        drawTrace(); syncEditorBar();
+      });
     });
+    edBar.querySelectorAll('.rw-ed-type').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        edMode = 'fx'; edFxType = this.dataset.type; edSel = null;
+        drawTrace(); syncEditorBar();
+      });
+    });
+    edBar.querySelector('#rw-ed-size-dn').addEventListener('click', function (e) { e.stopPropagation(); edResize(-0.25); });
+    edBar.querySelector('#rw-ed-size-up').addEventListener('click', function (e) { e.stopPropagation(); edResize(0.25); });
     edBar.querySelector('#rw-ed-copy').addEventListener('click', function (e) {
       e.stopPropagation();
       var ta = edBar.querySelector('#rw-ed-json');
