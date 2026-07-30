@@ -377,7 +377,10 @@
      not make the banner strobe. Both scale with the stage so the reach looks
      the same on a laptop and a phone. */
   function nearIn() { return Math.max(110, stageH * 0.26); }
-  function nearOut() { return nearIn() * 1.5; }
+  /* fold-away reach: just enough past NEAR_IN that loitering on the edge
+     cannot strobe the banner, and no farther — a prompt that lingers half
+     a screen behind him reads as stuck, not as an offer */
+  function nearOut() { return nearIn() * 1.2; }
   function nearestMark(p, radius, unpassedOnly) {
     var best = -1, bd = radius;
     marks.forEach(function (m, i) {
@@ -1183,7 +1186,17 @@
     var here = posXY();
     if (promptWaived > -1 && markDist(promptWaived, here) > nearOut()) promptWaived = -1;
     if (!quizOpen) {
-      if (promptOpen && markDist(promptIdx, here) > nearOut()) closePrompt();
+      if (promptOpen) {
+        var dHere = markDist(promptIdx, here);
+        if (dHere > nearOut()) closePrompt();
+        else {
+          /* a strictly nearer open trial takes the banner mid-stride: the
+             hail follows Pomelo's attention, it does not queue behind it */
+          var swap = nearestMark(here, nearIn(), true);
+          if (swap > -1 && swap !== promptIdx && swap !== promptWaived &&
+              markDist(swap, here) < dHere) openPrompt(swap);
+        }
+      }
       if (!promptOpen && arrivedMarker < 0) {
         var near = nearestMark(here, nearIn(), true);
         if (near > -1 && near !== promptWaived) openPrompt(near);

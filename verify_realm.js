@@ -91,6 +91,22 @@ const load = async (path) => {
   check('Retry reopens the quiz as extra practice',
     await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true, 2500) &&
     /EXTRA PRACTICE/.test(d.getElementById('rw-quiz-kicker').textContent));
+  // settle the practice item, then test the handoff: with the cleared trial's
+  // Retry banner up, walking toward trial 2 must hand the hail over mid-stride
+  d.querySelectorAll('#rw-quiz-choices button')[w.__SQ_QUIZ.correctIndex].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await until(() => d.getElementById('rw-quiz-continue').hidden === false, 2500);
+  d.getElementById('rw-quiz-continue').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await until(() => d.getElementById('rw-quiz').hidden === true, 1500);
+  d.querySelector('.rw-node.is-passed').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await until(() => d.getElementById('rw-prompt').hidden === false &&
+    /cleared/.test(d.getElementById('rw-prompt-title').textContent), 2500);
+  d.querySelectorAll('.rw-node:not(.is-passed)')[0].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('The hail hands over: the next trial takes the banner from the cleared one, from a distance',
+    await until(() => d.getElementById('rw-prompt').hidden === false &&
+      /Waypoint 2 of/.test(d.getElementById('rw-prompt-title').textContent), 9000) &&
+    d.getElementById('rw-prompt-go').textContent === 'Start' &&
+    (w.__SQ_PROMPT_D || 0) > 60,
+    d.getElementById('rw-prompt-title').textContent + ' at ' + (w.__SQ_PROMPT_D || 0) + 'px');
 
   /* the editor */
   w = await load('realm.html?realm=lorewood&edit=1');
