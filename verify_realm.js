@@ -139,6 +139,22 @@ const load = async (path) => {
     /realm=storyforge/.test(d.getElementById('rw-next').href) &&
     /Onward to Story Forge/.test(d.getElementById('rw-popup-next').textContent));
 
+  /* the dressed realms: fire and smoke over the smithy, bubbles in the reef */
+  w = await load('realm.html?realm=storyforge');
+  d = w.document;
+  await until(() => d.querySelectorAll('#rw-fx .rw-flame').length > 0, 3000);
+  check('Story Forge is dressed: three hearth flames with fire glows, four smoking chimneys, eight window lamps',
+    d.querySelectorAll('#rw-fx .rw-flame').length === 3 &&
+    d.querySelectorAll('#rw-fx .rw-glow-fire').length === 3 &&
+    d.querySelectorAll('#rw-fx .rw-smoke').length === 12 &&
+    d.querySelectorAll('#rw-fx .rw-glow:not(.rw-glow-fire)').length === 8);
+  w = await load('realm.html?realm=inkreef');
+  d = w.document;
+  await until(() => d.querySelectorAll('#rw-fx .rw-bubble').length > 0, 3000);
+  check('Ink Reef is dressed: pixel bubbles rising through the water, behind the path and Pomelo',
+    d.querySelectorAll('#rw-fx .rw-bubble').length === 22 &&
+    d.querySelectorAll('#rw-weather .rw-bubble').length === 0);
+
   /* deep link mid-chain */
   w = await load('realm.html?realm=datadocks');
   d = w.document;

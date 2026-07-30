@@ -61,6 +61,18 @@
         stairs: [3,4,10,11,13,14,17,18,21] },
       nodes: [[0.236,0.248],[0.158,0.571],[0.281,0.819],[0.433,0.874],[0.439,0.469],[0.627,0.491],[0.884,0.831]],
       start: [0.091,0.258],
+      /* dressing, anchored on the painting itself: flames sit on the three
+         open fire mouths (the smithy arch, the forge-hall doors, the lower
+         forge), smoke rises from the four chimney stacks, lamps flicker in
+         the lit windows. [x, y, scale] as fractions of the art. */
+      fx: {
+        flames: [[0.306, 0.257, 1.4], [0.904, 0.625, 1.7], [0.369, 0.978, 1.1]],
+        smoke: [[0.137, 0.211, 1], [0.34, 0.122, 0.9], [0.668, 0.109, 0.85], [0.847, 0.183, 1.3]],
+        lamps: [
+          [0.149, 0.352, 3], [0.181, 0.611, 3], [0.448, 0.389, 2.5], [0.542, 0.611, 3],
+          [0.668, 0.167, 2.5], [0.432, 0.611, 3], [0.637, 0.907, 3.5], [0.951, 0.759, 3.5]
+        ]
+      },
       bossArea: [[0.862,0.451],[0.859,0.323],[0.88,0.279],[0.902,0.278],[0.929,0.32],[0.928,0.449]] },
     { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', fight: true, ground: 0.82,
       boss: 'The grotto is dark with drifting ink. The water will not clear on its own.',
@@ -72,6 +84,9 @@
         stairs: [0,1,8,10,11,12,13,14,16] },
       nodes: [[0.164,0.485],[0.469,0.465],[0.688,0.543],[0.509,0.808],[0.269,0.852],[0.731,0.708]],
       start: [0.086,0.652],
+      /* the reef breathes: pixel bubbles drift up through the water,
+         behind Pomelo and the path */
+      fx: { bubbles: 22 },
       bossArea: [[0.878,0.557],[0.876,0.451],[0.909,0.382],[0.922,0.438],[0.934,0.438],[0.94,0.425],[0.952,0.548],[0.942,0.592]] },
     { id: 'syntaxcitadel', name: 'Syntax Citadel', domain: 'Conventions', fight: true, ground: 0.80,
       boss: 'The keep gate opens only for a complete sentence. The one on the throne is in pieces.',
@@ -939,6 +954,47 @@
         g.style.width = (l[2] * 2) + '%';    // aspect-ratio keeps it round
         fx.appendChild(g);
       });
+      /* open fires: a warm breathing glow under a licking pixel flame */
+      (cfg.flames || []).forEach(function (f) {
+        var g = document.createElement('span');
+        g.className = 'rw-glow rw-glow-fire';
+        g.style.left = (f[0] * 100) + '%';
+        g.style.top = (f[1] * 100) + '%';
+        g.style.width = (f[2] * 6) + '%';
+        fx.appendChild(g);
+        var fl = document.createElement('span');
+        fl.className = 'rw-flame';
+        fl.style.left = (f[0] * 100) + '%';
+        fl.style.top = (f[1] * 100) + '%';
+        fl.style.setProperty('--fs', f[2]);
+        fl.style.animationDelay = (-Math.random() * 0.9).toFixed(2) + 's';
+        fx.appendChild(fl);
+      });
+      /* chimneys: three staggered puffs per stack, always one in the air */
+      (cfg.smoke || []).forEach(function (s) {
+        for (var p = 0; p < 3; p++) {
+          var puff = document.createElement('span');
+          puff.className = 'rw-smoke';
+          puff.style.left = (s[0] * 100) + '%';
+          puff.style.top = (s[1] * 100) + '%';
+          puff.style.setProperty('--ss', s[2]);
+          puff.style.setProperty('--dx', ((Math.random() * 2.4 - 0.7) * 2).toFixed(1) + 'vh');
+          puff.style.animationDuration = (8.5 + Math.random() * 2).toFixed(1) + 's';
+          puff.style.animationDelay = (-(p * 3.4) - Math.random() * 1.5).toFixed(1) + 's';
+          fx.appendChild(puff);
+        }
+      });
+      /* underwater realms: bubbles rise the full height of the water */
+      for (var bi = 0; bi < (cfg.bubbles || 0); bi++) {
+        var bub = document.createElement('span');
+        bub.className = 'rw-bubble';
+        bub.style.left = (2 + Math.random() * 96).toFixed(1) + '%';
+        bub.style.setProperty('--bs', (5 + Math.round(Math.random() * 5)) + 'px');
+        bub.style.setProperty('--sw', ((Math.random() * 2 - 1) * 3).toFixed(1) + 'vh');
+        bub.style.animationDuration = (9 + Math.random() * 9).toFixed(1) + 's';
+        bub.style.animationDelay = (-Math.random() * 18).toFixed(1) + 's';
+        fx.appendChild(bub);
+      }
     }
     var weather = document.getElementById('rw-weather');
     if (weather && !weather.childElementCount) {
