@@ -118,6 +118,30 @@ const load = async (path) => {
     /Trial markers/.test(d.getElementById('rw-ed-mode').textContent) &&
     parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) trials/) || [0, 0])[1]) === markersBefore + 1,
     d.getElementById('rw-ed-count').textContent);
+  // the fx tools: 5 places live flames, 6 places live smoke, brackets resize
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '5', bubbles: true }));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 260, clientY: 280 }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Tool 5 drops a live animated flame under the click and exports it',
+    /Flames/.test(d.getElementById('rw-ed-mode').textContent) &&
+    d.querySelectorAll('#rw-fx .rw-flame').length === 1 &&
+    d.querySelectorAll('#rw-fx .rw-glow-fire').length === 1 &&
+    /"flames":\[\[/.test(d.getElementById('rw-ed-json').value),
+    d.getElementById('rw-ed-json').value.slice(0, 80));
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ']', bubbles: true }));
+  await new Promise(r => setTimeout(r, 40));
+  check('] grows the selected flame by a quarter step and the size rides in the export',
+    /\u00D72/.test(d.getElementById('rw-ed-mode').textContent) &&
+    /"flames":\[\[[\d.]+,[\d.]+,2\]\]/.test(d.getElementById('rw-ed-json').value),
+    d.getElementById('rw-ed-mode').textContent);
+  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '6', bubbles: true }));
+  d.getElementById('rw-stage').dispatchEvent(new w.MouseEvent('click', { bubbles: true, clientX: 500, clientY: 250 }));
+  await new Promise(r => setTimeout(r, 60));
+  check('Tool 6 drops a smoking chimney: three staggered live puffs, exported with its size',
+    /Smoke/.test(d.getElementById('rw-ed-mode').textContent) &&
+    d.querySelectorAll('#rw-fx .rw-smoke').length === 3 &&
+    /"smoke":\[\[[\d.]+,[\d.]+,1\.25\]\]/.test(d.getElementById('rw-ed-json').value),
+    d.getElementById('rw-ed-json').value.slice(-120));
   /* back to the walkabout for the remaining checks */
   w = await load('realm.html');
   d = w.document;
@@ -151,8 +175,11 @@ const load = async (path) => {
   w = await load('realm.html?realm=inkreef');
   d = w.document;
   await until(() => d.querySelectorAll('#rw-fx .rw-bubble').length > 0, 3000);
-  check('Ink Reef is dressed: pixel bubbles rising through the water, behind the path and Pomelo',
+  check('Ink Reef is dressed: pixel-ring bubbles in three sizes rising behind the path and Pomelo',
     d.querySelectorAll('#rw-fx .rw-bubble').length === 22 &&
+    d.querySelectorAll('#rw-fx .rw-bubble-s').length > 0 &&
+    d.querySelectorAll('#rw-fx .rw-bubble-m').length > 0 &&
+    d.querySelectorAll('#rw-fx .rw-bubble-l').length > 0 &&
     d.querySelectorAll('#rw-weather .rw-bubble').length === 0);
 
   /* deep link mid-chain */

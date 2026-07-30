@@ -66,8 +66,8 @@
          forge), smoke rises from the four chimney stacks, lamps flicker in
          the lit windows. [x, y, scale] as fractions of the art. */
       fx: {
-        flames: [[0.306, 0.257, 1.4], [0.904, 0.625, 1.7], [0.369, 0.978, 1.1]],
-        smoke: [[0.137, 0.211, 1], [0.34, 0.122, 0.9], [0.668, 0.109, 0.85], [0.847, 0.183, 1.3]],
+        flames: [[0.306, 0.257, 1.75], [0.904, 0.625, 2.25], [0.369, 0.978, 1.5]],
+        smoke: [[0.137, 0.211, 1.25], [0.34, 0.122, 1.1], [0.668, 0.109, 1.1], [0.847, 0.183, 1.6]],
         lamps: [
           [0.149, 0.352, 3], [0.181, 0.611, 3], [0.448, 0.389, 2.5], [0.542, 0.611, 3],
           [0.668, 0.167, 2.5], [0.432, 0.611, 3], [0.637, 0.907, 3.5], [0.951, 0.759, 3.5]
@@ -162,6 +162,7 @@
       if (saved.start && saved.start.length === 2) realm.start = saved.start;
       if (saved.stairs) realm.stairs = saved.stairs;
       if (saved.bossArea && saved.bossArea.length >= 3) realm.bossArea = saved.bossArea;
+      if (saved.fx) realm.fx = saved.fx;
       traceOverride = true;
     }
   } catch (e) {}
@@ -940,12 +941,7 @@
     [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560], [7, 560], [8, 560],
     [4, 999999]
   ];
-  function dressRealm() {
-    var cfg = realm.fx;
-    var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!cfg || editing || rm) return;
-    var fx = document.getElementById('rw-fx');
-    if (fx && !fx.childElementCount) {
+  function buildFx(cfg, fx) {
       (cfg.lamps || []).forEach(function (l) {
         var g = document.createElement('span');
         g.className = 'rw-glow';
@@ -967,7 +963,7 @@
         fl.style.left = (f[0] * 100) + '%';
         fl.style.top = (f[1] * 100) + '%';
         fl.style.setProperty('--fs', f[2]);
-        fl.style.animationDelay = (-Math.random() * 0.9).toFixed(2) + 's';
+        fl.style.setProperty('--fd', (-Math.random() * 0.9).toFixed(2) + 's');
         fx.appendChild(fl);
       });
       /* chimneys: three staggered puffs per stack, always one in the air */
@@ -987,14 +983,30 @@
       /* underwater realms: bubbles rise the full height of the water */
       for (var bi = 0; bi < (cfg.bubbles || 0); bi++) {
         var bub = document.createElement('span');
-        bub.className = 'rw-bubble';
+        bub.className = 'rw-bubble ' +
+          (bi % 5 < 2 ? 'rw-bubble-s' : bi % 5 < 4 ? 'rw-bubble-m' : 'rw-bubble-l');
         bub.style.left = (2 + Math.random() * 96).toFixed(1) + '%';
-        bub.style.setProperty('--bs', (5 + Math.round(Math.random() * 5)) + 'px');
         bub.style.setProperty('--sw', ((Math.random() * 2 - 1) * 3).toFixed(1) + 'vh');
         bub.style.animationDuration = (9 + Math.random() * 9).toFixed(1) + 's';
         bub.style.animationDelay = (-Math.random() * 18).toFixed(1) + 's';
         fx.appendChild(bub);
       }
+  }
+  /* while editing, the fx layer mirrors the edit state live: what she
+     places is the real animated element, not a stand-in */
+  function edDressFx() {
+    var fx = document.getElementById('rw-fx');
+    if (!fx || !edFx) return;
+    fx.innerHTML = '';
+    buildFx(edFx, fx);
+  }
+  function dressRealm() {
+    var cfg = realm.fx;
+    var rm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!cfg || editing || rm) return;
+    var fx = document.getElementById('rw-fx');
+    if (fx && !fx.childElementCount) {
+      buildFx(cfg, fx);
     }
     var weather = document.getElementById('rw-weather');
     if (weather && !weather.childElementCount) {
@@ -1206,13 +1218,17 @@
      S toggles stairs on a selected path. Z = undo. No modes.
      ============================================================ */
   var edG = null, edMk = [], edStart = null, edBossA = [];
+  var edFx = null;                  // { flames: [[x,y,scale]], smoke: [[x,y,scale]], lamps?, bubbles? }
+  var FX_DEF = { flame: 1.75, smoke: 1.25 };   // scale a fresh anchor is born at
   var edMode = 'graph';
-  var ED_MODES = ['graph', 'marks', 'start', 'boss'];
+  var ED_MODES = ['graph', 'marks', 'start', 'boss', 'flame', 'smoke'];
   var ED_LABEL = {
     graph: 'Walk graph (1)',
     marks: 'Trial markers (2)',
     start: 'START point (3)',
-    boss: 'Boss room (4)'
+    boss: 'Boss room (4)',
+    flame: 'Flames (5)',
+    smoke: 'Smoke (6)'
   };
   var edBar = null;
   var edSel = null;                 // {kind:'gnode'|'gedge'|'mark'|'start'|'boss', i}
@@ -1224,7 +1240,7 @@
   var edDownX = 0, edDownY = 0;     // real mice jitter: a drag needs >4px
 
   function edSnapshot() {
-    return JSON.stringify({ g: edG, mk: edMk, st: edStart, bo: edBossA });
+    return JSON.stringify({ g: edG, mk: edMk, st: edStart, bo: edBossA, fx: edFx });
   }
   function pushUndo(snap) {
     edUndo.push(snap || edSnapshot());
@@ -1235,7 +1251,9 @@
     if (!u) return;
     var o = JSON.parse(u);
     edG = o.g; edMk = o.mk; edStart = o.st; edBossA = o.bo;
+    if (o.fx) edFx = o.fx;
     edSel = null; edHov = null;
+    edDressFx();
   }
 
   function gW(i) { return [edG.nodes[i][0] * worldW, edG.nodes[i][1] * worldH]; }
@@ -1367,10 +1385,33 @@
       tc.arc(edStart[0] * worldW, edStart[1] * worldH, 9, 0, Math.PI * 2);
       tc.fill();
     }
+    /* fx anchors show only in the fx tools: gold diamonds for flames,
+       slate squares for smoke, so the live elements stay unobstructed */
+    if (edFx && (edMode === 'flame' || edMode === 'smoke')) {
+      edFx.flames.forEach(function (p, i) {
+        var sel = edSel && edSel.kind === 'flame' && edSel.i === i;
+        var X = p[0] * worldW, Y = p[1] * worldH;
+        tc.fillStyle = sel ? SELRED : '#ffd974';
+        tc.strokeStyle = '#4b1e09'; tc.lineWidth = 2;
+        tc.beginPath();
+        tc.moveTo(X, Y - 8); tc.lineTo(X + 8, Y); tc.lineTo(X, Y + 8); tc.lineTo(X - 8, Y);
+        tc.closePath(); tc.fill(); tc.stroke();
+      });
+      edFx.smoke.forEach(function (p, i) {
+        var sel = edSel && edSel.kind === 'smoke' && edSel.i === i;
+        var X = p[0] * worldW, Y = p[1] * worldH;
+        tc.fillStyle = sel ? SELRED : '#ced2e4';
+        tc.strokeStyle = '#3a3268'; tc.lineWidth = 2;
+        tc.fillRect(X - 6, Y - 6, 12, 12);
+        tc.strokeRect(X - 6, Y - 6, 12, 12);
+      });
+    }
     if (edHov && !(edSel && edSel.kind === edHov.kind && edSel.i === edHov.i)) {
       var hp = edHov.kind === 'gnode' ? edG.nodes[edHov.i]
         : edHov.kind === 'mark' ? edMk[edHov.i]
         : edHov.kind === 'boss' ? edBossA[edHov.i]
+        : edHov.kind === 'flame' ? edFx.flames[edHov.i]
+        : edHov.kind === 'smoke' ? edFx.smoke[edHov.i]
         : edHov.kind === 'start' ? edStart : null;
       if (hp) {
         tc.lineWidth = 1.5;
@@ -1397,6 +1438,14 @@
     if (edMode === 'start') {
       return (edStart && edPointAt([edStart], w) === 0) ? { kind: 'start', i: 0 } : null;
     }
+    if (edMode === 'flame') {
+      var f = edPointAt(edFx.flames, w);
+      return f > -1 ? { kind: 'flame', i: f } : null;
+    }
+    if (edMode === 'smoke') {
+      var s = edPointAt(edFx.smoke, w);
+      return s > -1 ? { kind: 'smoke', i: s } : null;
+    }
     var b = edPointAt(edBossA, w);
     return b > -1 ? { kind: 'boss', i: b } : null;
   }
@@ -1417,6 +1466,12 @@
         edMk[edSel.i] = edSnapToGraph(w);
       } else if (edSel.kind === 'start') {
         edStart = edSnapToGraph(w);
+      } else if (edSel.kind === 'flame') {
+        edFx.flames[edSel.i] = [w.x / worldW, w.y / worldH, edFx.flames[edSel.i][2]];
+        edDressFx();
+      } else if (edSel.kind === 'smoke') {
+        edFx.smoke[edSel.i] = [w.x / worldW, w.y / worldH, edFx.smoke[edSel.i][2]];
+        edDressFx();
       } else if (edSel.kind === 'boss') {
         edBossA[edSel.i] = [w.x / worldW, w.y / worldH];
       }
@@ -1476,6 +1531,16 @@
     pushUndo();
     if (edMode === 'marks') { edMk.push(edSnapToGraph(w)); edSel = { kind: 'mark', i: edMk.length - 1 }; }
     else if (edMode === 'start') { edStart = edSnapToGraph(w); edSel = { kind: 'start', i: 0 }; }
+    else if (edMode === 'flame') {
+      edFx.flames.push([w.x / worldW, w.y / worldH, FX_DEF.flame]);
+      edSel = { kind: 'flame', i: edFx.flames.length - 1 };
+      edDressFx();
+    }
+    else if (edMode === 'smoke') {
+      edFx.smoke.push([w.x / worldW, w.y / worldH, FX_DEF.smoke]);
+      edSel = { kind: 'smoke', i: edFx.smoke.length - 1 };
+      edDressFx();
+    }
     else { edBossA.push([w.x / worldW, w.y / worldH]); edSel = { kind: 'boss', i: edBossA.length - 1 }; }
     afterEdit();
   }
@@ -1498,9 +1563,26 @@
       else if (edSel.kind === 'gedge') edDeleteEdge(edSel.i);
       else if (edSel.kind === 'mark') edMk.splice(edSel.i, 1);
       else if (edSel.kind === 'start') edStart = null;
+      else if (edSel.kind === 'flame') { edFx.flames.splice(edSel.i, 1); edDressFx(); }
+      else if (edSel.kind === 'smoke') { edFx.smoke.splice(edSel.i, 1); edDressFx(); }
       else if (edSel.kind === 'boss') edBossA.splice(edSel.i, 1);
       edSel = null;
       drawTrace(); syncEditorBar();
+    }
+    /* [ and ] resize the selected flame or smoke stack in chunky steps */
+    if (e.key === '[' || e.key === ']' || e.key === '-' || e.key === '=' || e.key === '+') {
+      if (edSel && (edSel.kind === 'flame' || edSel.kind === 'smoke')) {
+        e.preventDefault();
+        var arr = edSel.kind === 'flame' ? edFx.flames : edFx.smoke;
+        var step = (e.key === '[' || e.key === '-') ? -0.25 : 0.25;
+        var ns = Math.min(4, Math.max(0.5, (arr[edSel.i][2] || 1) + step));
+        if (ns !== arr[edSel.i][2]) {
+          pushUndo();
+          arr[edSel.i][2] = ns;
+          edDressFx();
+          drawTrace(); syncEditorBar();
+        }
+      }
     }
     if (e.key === 's' || e.key === 'S') {        // stairs live on selected paths
       if (edSel && edSel.kind === 'gedge') {
@@ -1516,12 +1598,14 @@
       if (edMode === 'graph') edG = { nodes: [], edges: [], stairs: [] };
       else if (edMode === 'marks') edMk = [];
       else if (edMode === 'start') edStart = null;
+      else if (edMode === 'flame') { edFx.flames = []; edDressFx(); }
+      else if (edMode === 'smoke') { edFx.smoke = []; edDressFx(); }
       else edBossA = [];
       edSel = null;
       drawTrace(); syncEditorBar();
     }
     if (e.key === 'n' || e.key === 'N') cycleMode();
-    var digits = { '1': 'graph', '2': 'marks', '3': 'start', '4': 'boss' };
+    var digits = { '1': 'graph', '2': 'marks', '3': 'start', '4': 'boss', '5': 'flame', '6': 'smoke' };
     if (digits[e.key]) { edMode = digits[e.key]; edSel = null; edHov = null; drawTrace(); syncEditorBar(); }
     if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
       edCam += stageW * 0.35; camera(); e.preventDefault();
@@ -1532,23 +1616,42 @@
   }
   function edJSON() {
     var r3 = function (p) { return [Math.round(p[0] * 1000) / 1000, Math.round(p[1] * 1000) / 1000]; };
-    return JSON.stringify({
+    var r3s = function (p) { return [Math.round(p[0] * 1000) / 1000, Math.round(p[1] * 1000) / 1000, Math.round((p[2] || 1) * 100) / 100]; };
+    var out = {
       realm: realm.id,
       path: { nodes: edG.nodes.map(r3), edges: edG.edges, stairs: edG.stairs },
       nodes: edMk.map(r3),
       start: edStart ? r3(edStart) : null,
       bossArea: edBossA.map(r3)
-    });
+    };
+    if (edFx) {
+      var fxOut = {};
+      if (edFx.lamps && edFx.lamps.length) fxOut.lamps = edFx.lamps;
+      if (edFx.flames.length) fxOut.flames = edFx.flames.map(r3s);
+      if (edFx.smoke.length) fxOut.smoke = edFx.smoke.map(r3s);
+      if (edFx.bubbles) fxOut.bubbles = edFx.bubbles;
+      if (Object.keys(fxOut).length) out.fx = fxOut;
+    }
+    return JSON.stringify(out);
   }
   function syncEditorBar() {
     if (!edBar) return;
-    edBar.querySelector('#rw-ed-mode').textContent =
-      ED_LABEL[edMode] + (edSel ? ' \u00B7 selected: ' +
-        (edSel.kind === 'gnode' ? 'node' : edSel.kind === 'gedge' ? 'path' : edSel.kind) : '');
+    var selTxt = '';
+    if (edSel) {
+      selTxt = ' \u00B7 selected: ' +
+        (edSel.kind === 'gnode' ? 'node' : edSel.kind === 'gedge' ? 'path' : edSel.kind);
+      if (edSel.kind === 'flame' || edSel.kind === 'smoke') {
+        var sArr = edSel.kind === 'flame' ? edFx.flames : edFx.smoke;
+        if (sArr[edSel.i]) selTxt += ' \u00D7' + (Math.round((sArr[edSel.i][2] || 1) * 100) / 100);
+      }
+    }
+    edBar.querySelector('#rw-ed-mode').textContent = ED_LABEL[edMode] + selTxt;
     edBar.querySelector('#rw-ed-count').textContent =
       edG.nodes.length + ' nodes \u00B7 ' + edG.edges.length + ' paths \u00B7 ' +
       edG.stairs.length + ' stairs \u00B7 ' + edMk.length + ' trials \u00B7 ' +
-      edBossA.length + ' boss pts \u00B7 start ' + (edStart ? '\u2713' : '\u2014');
+      edBossA.length + ' boss pts \u00B7 ' +
+      (edFx ? edFx.flames.length + ' flames \u00B7 ' + edFx.smoke.length + ' smoke \u00B7 ' : '') +
+      'start ' + (edStart ? '\u2713' : '\u2014');
     edBar.querySelector('#rw-ed-json').value = edJSON();
   }
   function enterEditor() {
@@ -1558,19 +1661,23 @@
     edMk = (realm.nodes || []).map(function (p) { return p.slice(); });
     edBossA = (realm.bossArea || []).map(function (p) { return p.slice(); });
     edStart = realm.start ? realm.start.slice() : null;
+    edFx = JSON.parse(JSON.stringify(realm.fx || {}));
+    edFx.flames = edFx.flames || [];
+    edFx.smoke = edFx.smoke || [];
     edBar = document.createElement('div');
     edBar.className = 'rw-editor pixel-frame';
     edBar.innerHTML =
       '<p class="rw-ed-head type-utility">PATH EDITOR \u00B7 <span id="rw-ed-mode"></span> \u00B7 <span id="rw-ed-count"></span>' +
       '<button class="rw-ed-min type-utility" id="rw-ed-min" type="button" title="Minimize">\u2013</button></p>' +
       '<div class="rw-ed-legend type-utility">' +
-        '<span><b>1\u20134</b> tools</span>' +
+        '<span><b>1\u20136</b> tools (5 flames \u00B7 6 smoke)</span>' +
         '<span><b>click</b> select (red) \u00B7 empty adds</span>' +
         '<span><b>node\u2192node</b> connects</span>' +
         '<span><b>sel+empty</b> extends</span>' +
         '<span><b>drag</b> move node</span>' +
         '<span><b>del</b> node+paths / path only</span>' +
         '<span><b>S</b> stairs on path</span>' +
+        '<span><b>[ ]</b> size flame/smoke</span>' +
         '<span><b>Z</b> undo</span>' +
         '<span><b>esc</b> deselect</span>' +
         '<span><b>\u2190\u2192</b> pan</span>' +
@@ -1612,5 +1719,6 @@
     });
     drawTrace();
     syncEditorBar();
+    edDressFx();
   }
 })();
