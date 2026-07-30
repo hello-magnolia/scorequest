@@ -354,16 +354,26 @@
       return nearestOnGraph(n[0] * worldW, n[1] * worldH);
     });
   }
-  function markerOnSpan(ei, t0, t1) {          // first LOCKED marker crossed
-    var lo = Math.min(t0, t1), hi = Math.max(t0, t1), hit = -1, hd = 2;
+  /* A waypoint hails Pomelo from a little way off rather than waiting to be
+     stood on. NEAR_IN is how close he must come for it to speak up, NEAR_OUT
+     how far he must get for it to fold away. The gap between the two is
+     hysteresis: a capybara loitering exactly on the edge of the circle must
+     not make the banner strobe. Both scale with the stage so the reach looks
+     the same on a laptop and a phone. */
+  function nearIn() { return Math.max(110, stageH * 0.26); }
+  function nearOut() { return nearIn() * 1.5; }
+  function nearestMark(p, radius, unpassedOnly) {
+    var best = -1, bd = radius;
     marks.forEach(function (m, i) {
-      if (passed[i] || m.e !== ei) return;
-      if (m.t > lo + 1e-4 && m.t < hi - 1e-4) {
-        var d = Math.abs(m.t - t0);
-        if (d < hd) { hd = d; hit = i; }
-      }
+      if (unpassedOnly && passed[i]) return;
+      var d = Math.hypot(m.x - p.x, m.y - p.y);
+      if (d < bd) { bd = d; best = i; }
     });
-    return hit;
+    return best;
+  }
+  function markDist(i, p) {
+    var m = marks[i];
+    return m ? Math.hypot(m.x - p.x, m.y - p.y) : Infinity;
   }
 
   /* junction steering: at a node, every branch answers to SOME key.
@@ -471,23 +481,22 @@
     return (vx || vy) ? { x: vx, y: vy } : null;
   }
 
-  /* the mover: advance dist along the graph, honoring locked markers.
-     Returns what stopped it: 'marker' (idx), 'node' (no branch), or null. */
+  /* the mover: advance dist along the graph. Trial markers are no longer
+     walls, so nothing here stops for one; a waypoint hails Pomelo from a
+     distance and he is free to walk on through.
+     Returns what stopped it: 'target', 'node' (no branch), or null. */
   function moveAlong(dist, steer) {
     var guard = 12;
     while (dist > 0.5 && guard-- > 0) {
       var ed = G.edges[cur.e];
       var dirT = steer.dirT;                    // +1 toward b, -1 toward a
       var targetT = steer.endT !== undefined ? steer.endT : (dirT > 0 ? 1 : 0);
-      var blocked = markerOnSpan(cur.e, cur.t, targetT);
-      if (blocked > -1) targetT = marks[blocked].t;
       var span = Math.abs(targetT - cur.t) * ed.len;
       var step = Math.min(dist, span);
       cur.t += (targetT > cur.t ? 1 : -1) * (step / ed.len);
       dist -= step;
       if (Math.abs(cur.t - targetT) * ed.len < 0.6) {
         cur.t = targetT;
-        if (blocked > -1) return { stop: 'marker', idx: blocked };
         if (steer.endT !== undefined && steer.atEnd) return { stop: 'target' };
         var node = cur.t <= 0.001 ? ed.a : (cur.t >= 0.999 ? ed.b : null);
         if (node === null) return { stop: 'target' };
@@ -546,7 +555,7 @@
     window.__SQ_REALM_PROG = passedCount();
   }
   function onNodeClick(i) {
-    if (editing || promptOpen || quizOpen) return;
+    if (editing || quizOpen) return;
     var m = marks[i];
     if (m && m.e === cur.e && Math.abs(m.t - cur.t) * G.edges[cur.e].len < 3) {
       openPrompt(i);                                // already standing on it
@@ -555,7 +564,7 @@
     routeTo(m);                                     // walk to that trial
   }
   function routeTo(target) {
-    if (!ready || quizOpen || promptOpen || walking) return;
+    if (!ready || quizOpen || walking) return;
     if (flop === 'flat') { flopUp(function () { routeTo(target); }); return; }
     if (flop || !target) return;
     route = dijkstra({ e: cur.e, t: cur.t }, { e: target.e, t: target.t });
@@ -578,12 +587,16 @@
   }
 
   /* ---------- the waypoint prompt: Start / Retry / Skip ----------
-     Pops when Pomelo reaches a trial. Space fires the armed button,
-     arrows switch, Escape (or Skip) waves it off. */
+     Pops when Pomelo comes within hailing distance of a trial and folds away
+     when he leaves. It is an offer, not a gate: the arrows keep walking him
+     the whole time, and strolling past is a perfectly good way to decline.
+     Space fires the armed button, Tab switches, Escape (or Skip) waves it off
+     until he has gone properly clear of that waypoint. */
   var promptEl = document.getElementById('rw-prompt');
   var promptGoBtn = document.getElementById('rw-prompt-go');
   var promptSkipBtn = document.getElementById('rw-prompt-skip');
   var promptOpen = false, promptIdx = -1, promptArmed = 0;
+  var promptWaived = -1;      // waved off by hand: stays quiet until he leaves
   function paintPromptArm() {
     promptGoBtn.classList.toggle('is-armed', promptArmed === 0);
     promptSkipBtn.classList.toggle('is-armed', promptArmed === 1);
@@ -592,6 +605,7 @@
     promptIdx = i;
     promptArmed = 0;
     promptOpen = true;
+    window.__SQ_PROMPT_D = Math.round(markDist(i, posXY()));   // hailing distance
     document.getElementById('rw-prompt-title').textContent =
       'Waypoint ' + (i + 1) + ' of ' + (realm.nodes || []).length +
       (passed[i] ? ' \u00B7 cleared' : '');
@@ -599,7 +613,8 @@
     paintPromptArm();
     promptEl.hidden = false;
   }
-  function closePrompt() {
+  function closePrompt(waive) {
+    if (waive && promptIdx > -1) promptWaived = promptIdx;
     promptOpen = false;
     promptEl.hidden = true;
   }
@@ -609,7 +624,7 @@
     openQuiz(i, !!passed[i]);          // a cleared trial reopens as practice
   }
   promptGoBtn.addEventListener('click', function (e) { e.stopPropagation(); promptGo(); });
-  promptSkipBtn.addEventListener('click', function (e) { e.stopPropagation(); closePrompt(); });
+  promptSkipBtn.addEventListener('click', function (e) { e.stopPropagation(); closePrompt(true); });
 
   /* ---------- the waypoint quiz ---------- */
   var quizEl = document.getElementById('rw-quiz');
@@ -857,18 +872,18 @@
     if (promptOpen) {
       if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        if (promptArmed === 0) promptGo(); else closePrompt();
+        if (promptArmed === 0) promptGo(); else closePrompt(true);
         return;
       }
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
-          e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Tab') {
+      if (e.key === 'Tab') {              // Tab switches: the arrows are busy walking
         e.preventDefault();
         promptArmed = promptArmed === 0 ? 1 : 0;
         paintPromptArm();
         return;
       }
-      if (e.key === 'Escape') { closePrompt(); return; }
-      return;
+      if (e.key === 'Escape') { closePrompt(true); return; }
+      /* everything else falls through, arrows included: walking on is a
+         perfectly good way to say no to a waypoint */
     }
     if (e.code === 'Space' || e.key === ' ') {
       e.preventDefault();
@@ -1005,7 +1020,7 @@
       return;
     }
     var speed = stageH * 0.38 * (dt / 1000); // an unhurried capybara pace
-    var hv = (quizOpen || promptOpen) ? null : heldVec();
+    var hv = quizOpen ? null : heldVec();   // the prompt never takes the reins
     if (hv) route = null;                        // hands on: the route yields
     var moving = false, arrivedMarker = -1, dirSignT = 0;
     if (hv) {
@@ -1032,7 +1047,6 @@
         dirSignT = steer.dirT;
         var res = moveAlong(reduceMotion ? speed * 3 : speed, steer);
         moving = true;
-        if (res && res.stop === 'marker') { arrivedMarker = res.idx; moving = false; }
         if (res && res.stop === 'node') moving = false;
       }
     } else if (route && route.length) {
@@ -1055,11 +1069,12 @@
         moving = true;
         if (resR) {
           moving = false;
-          if (resR.stop === 'marker') arrivedMarker = resR.idx;
           if (resR.stop === 'target' || resR.stop === 'node') {
             route = null;
+            /* He walked here on purpose (a tapped node), so the trial speaks up
+               even if it is already cleared: that is how Retry is reached. */
             marks.forEach(function (m, i) {
-              if (!passed[i] && m.e === cur.e &&
+              if (m.e === cur.e &&
                   Math.abs(m.t - cur.t) * G.edges[cur.e].len < 3) arrivedMarker = i;
             });
           }
@@ -1094,6 +1109,19 @@
         drawCapy(IDLE[Math.min(idleStep, IDLE.length - 1)][0]);
       }
     }
+    /* The waypoint watch. This sits outside the moving/idle split on purpose:
+       a trial must be able to hail him mid-stride and let go of him mid-stride,
+       and neither branch above is allowed to interrupt his walk to do it. */
+    var here = posXY();
+    if (promptWaived > -1 && markDist(promptWaived, here) > nearOut()) promptWaived = -1;
+    if (!quizOpen) {
+      if (promptOpen && markDist(promptIdx, here) > nearOut()) closePrompt();
+      if (!promptOpen && arrivedMarker < 0) {
+        var near = nearestMark(here, nearIn(), true);
+        if (near > -1 && near !== promptWaived) openPrompt(near);
+      }
+    }
+    window.__SQ_PROMPT = promptOpen ? promptIdx : -1;
     camera();
     if (posXY().x > worldW * 0.55) prefetchNext();
     if (!bossShown && inBossZone()) {

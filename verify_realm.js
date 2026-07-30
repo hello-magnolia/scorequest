@@ -47,14 +47,16 @@ const load = async (path) => {
   check('A second tap brings him back up',
     await until(() => w.__SQ_REALM_FLOP === null, 2500), String(w.__SQ_REALM_FLOP));
 
-  /* forward-only progression: space walks him to waypoint one, where the
-     waypoint prompt gates the way; Start opens the quiz; passed nodes
-     reopen as practice; no walking back */
+  /* progression: space walks him to waypoint one, which hails him on the
+     approach rather than gating the path; Start opens the quiz; passed nodes
+     reopen as practice */
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
-  check('Space walks Pomelo to the first waypoint, where the prompt offers Start',
+  check('Space walks Pomelo toward the first waypoint, which offers Start',
     await until(() => d.getElementById('rw-prompt').hidden === false, 9000) &&
     /Waypoint 1 of/.test(d.getElementById('rw-prompt-title').textContent) &&
     d.getElementById('rw-prompt-go').textContent === 'Start');
+  check('It hailed him from a distance, not from on top of the marker',
+    (w.__SQ_PROMPT_D || 0) > 60, 'opened at ' + w.__SQ_PROMPT_D + 'px');
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
   check('Space fires Start: the quiz opens fresh, not as practice',
     await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === false, 2500) &&
@@ -210,15 +212,22 @@ const load = async (path) => {
   check('Held left walks him down the left branch',
     await until(() => xy()[0] < p0[0] - 20, 2500), p0[0] + ' -> ' + xy()[0]);
   key('keyup', 'ArrowLeft');
-  key('keydown', 'ArrowRight');    // right runs into the locked trial marker
-  check('A locked trial blocks the way and prompts on arrival',
-    await until(() => !d.getElementById('rw-prompt').hidden, 7000));
-  key('keyup', 'ArrowRight');
+  key('keydown', 'ArrowRight');    // right walks him up on a trial marker
+  check('A trial hails him on the approach, before he stands on it',
+    await until(() => !d.getElementById('rw-prompt').hidden, 7000) &&
+    (w.__SQ_PROMPT_D || 0) > 60, 'opened at ' + w.__SQ_PROMPT_D + 'px');
+  const hailed = w.__SQ_PROMPT;
   const pQuiz = xy();
+  await new Promise(r => setTimeout(r, 900));   // right is still held down
+  check('The prompt never takes the reins: he keeps walking with it up',
+    Math.abs(xy()[0] - pQuiz[0]) > 15 || Math.abs(xy()[1] - pQuiz[1]) > 15,
+    pQuiz.join(',') + ' -> ' + xy().join(','));
+  key('keyup', 'ArrowRight');       // the right branch runs out; retreat instead
   key('keydown', 'ArrowLeft');
-  await new Promise(r => setTimeout(r, 500));
+  check('And that waypoint lets go of him once he is properly clear',
+    await until(() => w.__SQ_PROMPT !== hailed, 8000),
+    'still holding ' + w.__SQ_PROMPT + ' at ' + xy().join(','));
   key('keyup', 'ArrowLeft');
-  check('Keys go quiet while the prompt is up', xy()[0] === pQuiz[0] && xy()[1] === pQuiz[1]);
   const cov = w.__SQ_JUNCTION(1);  // the fork node: every branch has a key
   check('No dead paths: every branch at the fork answers to some key',
     cov.branches.length === 3 &&
