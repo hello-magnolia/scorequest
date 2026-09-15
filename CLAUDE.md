@@ -16,12 +16,12 @@ Pomelo the capybara is the companion. Live at hello-magnolia.github.io/scoreques
    take Magnolia's side on HTML, re-add Claude's script tags. Never commit `assets/companion/`.
 
 ## The gate (scoped: run what you touched, green before push)
-Runner: `bash gate.sh [suite ...]` (no args = all eight; serves + one line per suite).
+Runner: `bash gate.sh [suite ...]` (no args = all nine; serves + one line per suite).
 Scope by changed surface:
   realm.* -> verify_realm · boss.* -> verify_boss · map.*/profile.* -> verify_hub verify_map ·
   index hero/copy -> verify · auth/usernav -> verify_auth · checkout/pricing ->
-  verify_payment verify · parents/i18n -> verify_parents.
-Shared surfaces (css/style.css, auth.js, game.js, main.js, sfx.js) or multi-page edits,
+  verify_payment verify · parents/i18n -> verify_parents · plan/gating/wall -> verify_plan.
+Shared surfaces (css/style.css, auth.js, plan.js, game.js, main.js, sfx.js) or multi-page edits,
 or a rebase that pulled someone else's changes -> full `bash gate.sh`. Stamp-only bumps
 need no suites. Run the FULL gate once before the session's final push.
 Timing checks POLL (until-loops), never fixed sleeps. `__SQ_TICKS` (realm) and
@@ -77,6 +77,16 @@ re-run it on any existing project. verify_auth guards all of this.
   Sophist 8hp scroll · syntaxcitadel Parapet Pedant 9hp beam · mirrormines Twin Signs
   10hp twin+strike, faint art · infinityisles Doubling Hare 12hp beam · datadocks Mean
   Kraken 13hp PLACEHOLDER art · prismpeaks Tangent Talon 15hp flight+frameScale, finale.
+- plan.js: the only place that knows what a subscription buys. Plan resolves
+  profiles.plan -> sq_plan -> sq_all_access -> PREVIEW ('allaccess', so the demo and
+  marketing pages stay walkable with no plan on file). Basic = the frontier realm of
+  each section (two open at a time, advancing when a boss clears) + everything already
+  finished, and NO extra practice; All Access/Complete = all eight + unlimited practice.
+  SQPlan.wall(kind) is the shared teen-facing panel ('realm' | 'practice' | 'rematch');
+  firm walls drop the close button. Gates live in map.js (regions drawn shut), realm.js
+  (entry + Retry), boss.js (entry + rematch, sealed via state.over), game.js (hub cards,
+  AND-ed onto the old progression curve). A trial becomes real at success.html?plan=<id>,
+  which is where Stripe's payment link must return. Tripwire: `__SQ_WALL`.
 - Pricing ladder (decoy pattern): Basic $99 / All Access $129 (featured, center, default,
   "Most families choose this") / Complete $249. Anchor line prices tutoring at $400+.
   Comparison ledger table on index; parent-rail "plans, plainly" strip i18n EN/zh/ES/FR
@@ -86,6 +96,7 @@ re-run it on any existing project. verify_auth guards all of this.
 ## Backlog
 Datadocks boss art + prismpeaks nest backdrop/intro (mango.js still unloaded). Real
 question banks. XP for waypoint passes. Stair-walk animation. Weaver arena dressing.
-Parent dashboard (non-pixel, EN/zh, behind auth). Landing/onboarding. PLAN GATING +
-kid-facing upsell wall ("This realm is locked on Basic...", needs plan state first).
-Per-boss victory copy. Stripe + Supabase keys on Magnolia's side.
+Parent dashboard (non-pixel, EN/zh, behind auth). Landing/onboarding. Per-boss victory
+copy. Stripe + Supabase keys on Magnolia's side, with each payment link's return URL set
+to success.html?plan=<id> so the plan gate has something real to read. Complete's ACT
+half is sold but not yet distinct from All Access in plan.js.

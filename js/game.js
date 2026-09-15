@@ -75,6 +75,10 @@
       for (var j = idx - 1; j >= 0; j--) { if (REALMS[j].section === r.section) { prevSame = REALMS[j]; break; } }
       if (prevSame) unlocked = levelFromRec((pr.realms && pr.realms[prevSame.id]) || null) >= 2;
     }
+    // The plan has the last word: it can close a realm the progression rule
+    // already opened. With no plan on file SQPlan opens everything, so the
+    // curve above is what a visitor still sees.
+    if (unlocked && window.SQPlan && !window.SQPlan.canEnter(id)) unlocked = false;
     return {
       id: id, realm: r, level: level, xp: xp, cleared: cleared, unlocked: unlocked,
       xpInLevel: xpInLevel, xpToNext: xpToNext,

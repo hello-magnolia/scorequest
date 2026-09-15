@@ -26,6 +26,13 @@ alter table public.profiles add column if not exists auth_provider text;
 -- reads it to decide whether to run the naming scene, so a Google player gets
 -- asked exactly once rather than on every page load.
 alter table public.profiles add column if not exists hero_name_set boolean not null default false;
+-- plan is the subscription on file: 'basic' | 'allaccess' | 'complete'. NULL means
+-- no subscription has been recorded yet, which the client treats as a full preview
+-- rather than a lockout (js/plan.js owns that rule). Stripe writes the real value.
+alter table public.profiles add column if not exists plan text;
+alter table public.profiles drop constraint if exists profiles_plan_check;
+alter table public.profiles add constraint profiles_plan_check
+  check (plan is null or plan in ('basic', 'allaccess', 'complete'));
 
 -- 2. Row Level Security: this is the real protection. The public anon key
 --    shipped in the browser can do NOTHING except what these policies allow —

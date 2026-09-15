@@ -1811,6 +1811,21 @@ a { color: inherit; }
 /* the vivid layer: each realm's colors, boosted, shown on hover */
 .worldmap-svg .wm-vivid { pointer-events: none; opacity: 0; transition: opacity 110ms ease; }
 .worldmap-svg .wm-vivid.is-on { opacity: 1; }
+/* a realm the plan does not open: still there, still hoverable, but it
+   answers in a cooler color and a click opens the wall instead of the road */
+.worldmap-svg a.wm-locked:hover polygon, .worldmap-svg a.wm-locked:focus polygon {
+  stroke: rgba(154, 134, 217, 0.9);
+  fill: rgba(154, 134, 217, 0.12);
+}
+.worldmap-label.is-locked .worldmap-label-name,
+.worldmap-label.is-locked .worldmap-label-domain { opacity: 0.72; }
+.worldmap-label-lock {
+  font-family: var(--font-utility); font-weight: 700;
+  font-size: clamp(9px, 1.1vw, 13px); letter-spacing: 0.08em;
+  color: #cbbfe8; margin-top: 1px;
+  text-shadow: 2px 0 0 #16112B, -2px 0 0 #16112B, 0 2px 0 #16112B, 0 -2px 0 #16112B,
+    0 0 10px rgba(12, 9, 24, 0.95);
+}
 /* realm names live on the map itself, in the world's own letters */
 .worldmap-label {
   position: absolute; transform: translate(-50%, -50%);
@@ -2360,3 +2375,45 @@ html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }
 .mappage-only .mappage-caption { text-align: center; max-width: 640px; }
 .mappage-only .mappage-caption .mappage-title { font-size: clamp(1.7rem, 4vw, 2.5rem); margin: 0; }
 .mappage-only .mappage-caption .mappage-sub { margin-top: 8px; font-size: 1rem; }
+
+
+/* ============================================================
+   The plan wall: what a closed realm says for itself
+   ------------------------------------------------------------
+   Same pixel frame as the hero modal, warmer copy. A firm wall
+   (a realm this plan does not open) drops the close button, so
+   the only ways out are the realm that IS open and a grown-up.
+   ============================================================ */
+.sq-wall {
+  position: fixed; inset: 0; z-index: 240;
+  display: grid; place-items: center; padding: 24px;
+  background: rgba(11, 8, 24, 0.86);
+  animation: auth-fade 180ms ease;
+}
+.sq-wall[hidden] { display: none; }
+.sq-wall-card {
+  --frame: var(--dusk);
+  position: relative; width: 100%; max-width: 440px;
+  background: var(--ink-2); padding: 32px 30px 26px;
+  animation: auth-pop 200ms var(--reveal-ease);
+}
+.sq-wall-close {
+  position: absolute; top: 12px; right: 12px;
+  background: transparent; border: none; color: var(--parchment-dim);
+  font-size: 1.1rem; cursor: pointer; line-height: 1; padding: 4px;
+}
+.sq-wall-close:hover { color: var(--gold-bright); }
+.sq-wall-close[hidden] { display: none; }
+.sq-wall-eyebrow { margin-bottom: 6px; color: #cbbfe8; }
+.sq-wall-title { font-size: 1.5rem; line-height: 1.25; margin-bottom: 12px; }
+.sq-wall-body { color: var(--parchment-dim); line-height: 1.6; margin-bottom: 22px; }
+.sq-wall-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.sq-wall-row .btn { flex: 1 1 auto; text-align: center; }
+.sq-wall-row .btn[hidden] { display: none; }
+@media (max-width: 480px) {
+  .sq-wall-row { flex-direction: column; }
+}
+
+/* the plan line on the success page, under the trial confirmation */
+.suc-plan { color: var(--gold-bright); margin-top: -8px; margin-bottom: 4px; }
+.suc-plan[hidden] { display: none; }

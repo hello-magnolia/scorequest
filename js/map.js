@@ -419,6 +419,11 @@
       if (g) g.remove();
     });
   });
+  /* plan gating: a realm the current plan does not open is drawn shut and
+     answers a click with the wall instead of walking Pomelo into it */
+  function isLocked(id) {
+    return !!(window.SQPlan && !window.SQPlan.canEnter(id));
+  }
   var LABEL_AT = {
     lorewood: [12.9, 33.0], storyforge: [15.3, 60.7], syntaxcitadel: [36.5, 23.5],
     mirrormines: [44.9, 53.3], inkreef: [35.3, 84.0], datadocks: [65.2, 83.5],
@@ -435,6 +440,13 @@
     dm.textContent = R.domain;
     lb.appendChild(nm);
     lb.appendChild(dm);
+    if (isLocked(R.id)) {
+      lb.classList.add('is-locked');
+      var lk = document.createElement('span');
+      lk.className = 'worldmap-label-lock';
+      lk.textContent = '\uD83D\uDD12 closed for now';
+      lb.appendChild(lk);
+    }
     lb.style.left = LABEL_AT[R.id][0] + '%';
     lb.style.top = LABEL_AT[R.id][1] + '%';
     wrap.appendChild(lb);
@@ -442,7 +454,15 @@
   REGIONS.forEach(function (R) {
     var a = document.createElementNS(NS, 'a');
     a.setAttribute('href', 'realm.html?realm=' + R.id);
-    a.setAttribute('aria-label', R.name + ' \u00B7 ' + R.domain);
+    a.setAttribute('aria-label', R.name + ' \u00B7 ' + R.domain +
+      (isLocked(R.id) ? ' \u00B7 closed on ' + window.SQPlan.plan().name : ''));
+    if (isLocked(R.id)) {
+      a.setAttribute('class', 'wm-locked');
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.SQPlan.wall('realm', { realm: R.id });
+      });
+    }
     R.polys.forEach(function (poly) {
       var p = document.createElementNS(NS, 'polygon');
       p.setAttribute('points', poly.map(function (q) { return q[0] + ',' + q[1]; }).join(' '));

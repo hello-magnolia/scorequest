@@ -89,6 +89,29 @@ paste your project keys into `js/config.js`, the site runs in **demo mode**
 - `verify_auth.js` — 12 checks: demo-mode fallback, modal open/toggle, Google
   button, demo login, hero-name greeting, progress round-trip, sign-out.
 
+## Plans and what they open
+
+`js/plan.js` is the single source of truth for what a subscription buys, and for
+the cozy wall a player meets when they reach past it.
+
+- **Basic** keeps two realms open at a time: the first unfinished realm in
+  Reading and Writing and the first in Math. Clearing a guardian advances the
+  window; ground already cleared stays walkable. No extra practice, so a passed
+  trial does not reopen and a beaten guardian does not stand back up.
+- **All Access** and **Complete** open all eight at once with unlimited practice.
+- With **no plan on file** the prototype previews the whole world, so the demo
+  and the marketing pages stay walkable until Stripe writes a real plan.
+
+The plan resolves in order: `profiles.plan` (follows the account) -> `sq_plan` in
+localStorage -> the old `sq_all_access` test flag -> preview. A trial becomes real
+at `success.html?plan=<basic|allaccess|complete>`, which is the URL each Stripe
+payment link should return to. To see the gating by hand, open
+`success.html?plan=basic` and then the world map.
+
+The wall itself (`SQPlan.wall`) is a teen surface: no prices, no countdowns, and
+nothing framed as lost. It offers the realm that is open and a route to a
+grown-up. `verify_plan.js` covers all of it in 39 checks.
+
 ## Notes
 
 - Respects `prefers-reduced-motion`: static frame, no typewriter loop, instant reveals.

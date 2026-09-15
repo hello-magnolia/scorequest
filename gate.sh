@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# ScoreQuest gate runner. Usage: bash gate.sh [suite ...]   (no args = all eight)
+# ScoreQuest gate runner. Usage: bash gate.sh [suite ...]   (no args = all nine)
 # Prints one line per suite; exits nonzero if any suite fails.
 cd "$(dirname "$0")"
 (setsid python3 -m http.server 8000 >/dev/null 2>&1 < /dev/null &)
 sleep 1
-suites="${*:-verify_realm verify_boss verify_hub verify_map verify verify_auth verify_payment verify_parents}"
+suites="${*:-verify_realm verify_boss verify_hub verify_map verify verify_auth verify_payment verify_parents verify_plan}"
 fail=0
 for s in $suites; do
   if out=$(node "$s.js" 2>&1); then ok="green"; else ok="RED"; fail=1; fi

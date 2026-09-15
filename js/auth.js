@@ -86,7 +86,7 @@
     if (!supabase || !state.user) return Promise.resolve();
     return supabase
       .from('profiles')
-      .select('hero_name, hero_name_set, full_name, avatar_url, xp, streak, realms, updated_at')
+      .select('hero_name, hero_name_set, full_name, avatar_url, plan, xp, streak, realms, updated_at')
       .eq('id', state.user.id)
       .single()
       .then(function (res) {
@@ -95,6 +95,7 @@
             hero_name_set: !!res.data.hero_name_set,
             full_name: res.data.full_name,
             avatar_url: res.data.avatar_url || null,
+            plan: res.data.plan || null,
             xp: res.data.xp || 0, streak: res.data.streak || 0 };
           state.progress = {
             xp: res.data.xp || 0,
@@ -234,6 +235,7 @@
 
   function signOut() {
     try { window.localStorage.removeItem('sq_all_access'); } catch (e) {}
+    try { window.localStorage.removeItem('sq_plan'); } catch (e) {}
     if (supabase && state.user) supabase.auth.signOut();
     state.user = null; state.profile = null; state.progress = defaultProgress();
     if (state.demo) { try { window.localStorage.removeItem(localKey()); } catch (e) {} }
@@ -495,6 +497,16 @@
       if (p.hero_name_set || p.hero_name) return false;
       var chr = window.SQCharacter && window.SQCharacter.get && window.SQCharacter.get();
       return !(chr && chr.name);
+    },
+    /* The subscription on file. SQPlan owns what it means; this layer only
+       carries it between the browser and the profiles row. */
+    setPlan: function (id) {
+      state.profile = Object.assign({}, state.profile, { plan: id });
+      emit();
+      if (!state.user || !supabase) return Promise.resolve(false);
+      return supabase.from('profiles').update({ plan: id }).eq('id', state.user.id)
+        .then(function () { return true; })
+        .catch(function () { return false; });
     },
     /* The real account name. Parent surfaces ONLY: it is a legal name. */
     getFullName: function () { return (state.profile && state.profile.full_name) || null; },

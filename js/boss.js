@@ -545,6 +545,27 @@
   };
   window.__SQ_BOSS = state;
 
+  /* ---------- plan gate ----------
+     Two ways a fight is not on offer: the realm is closed on this plan, or
+     the guardian is already down and a rematch is extra practice. Either way
+     the arena still paints and `over` keeps every question sealed. */
+  var planGate = (function () {
+    var P = window.SQPlan;
+    if (!P) return null;
+    if (!P.canEnter(realmId)) return 'realm';
+    if (P.isFinished(realmId) && !P.canPractice()) return 'rematch';
+    return null;
+  })();
+  if (planGate) {
+    state.over = true;
+    window.SQPlan.wall(planGate, {
+      realm: realmId, firm: planGate === 'realm',
+      go: planGate === 'realm'
+        ? { label: '\u2190 Back to the map', href: 'map.html' }
+        : { label: '\u2190 Back to ' + (window.SQPlan.byId(realmId) || {}).name, href: 'realm.html?realm=' + realmId }
+    });
+  }
+
   /* ---------- dom ---------- */
   document.title = B.name + ', ScoreQuest';
   document.getElementById('bf-realm').textContent =
@@ -623,7 +644,7 @@
      middle and opens toward the sides, revealing the fight ---------- */
   (function () {
     var wrap = document.getElementById('bf-intro');
-    if (!wrap || !B.intro || reduceMotion) return;
+    if (!wrap || !B.intro || reduceMotion || planGate) return;
     var vid = document.getElementById('bf-intro-video');
     var volBtn = document.getElementById('bf-intro-vol');
     var curtain = document.getElementById('bf-curtain');

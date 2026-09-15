@@ -253,6 +253,16 @@
       reset.textContent = 'Cleared';
       setTimeout(function () { reset.textContent = 'Reset local progress'; }, 1500);
     });
+    /* the plan, stated plainly: what it is and what it opens */
+    var P = window.SQPlan;
+    if (P && document.getElementById('st-plan')) {
+      put('st-plan', P.plan().name);
+      var openNow = P.openSet().filter(function (id) { return !P.isFinished(id); })
+        .map(function (id) { return P.byId(id).name; });
+      put('st-plan-note', P.allRealmsOpen()
+        ? 'All eight realms are open, and extra practice is unlimited.'
+        : 'Two realms stay open at a time. Right now: ' + openNow.join(' and ') + '.');
+    }
     var out = document.getElementById('st-signout');
     if (out) out.addEventListener('click', function () {
       window.SQAuth.signOut().then(function () { window.location.href = 'index.html'; });

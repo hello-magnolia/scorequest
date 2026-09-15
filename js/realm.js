@@ -205,10 +205,24 @@
   var popup = document.getElementById('rw-popup');
   var trace = document.getElementById('rw-trace');
 
+  /* ---------- plan gate ----------
+     A realm the plan does not open still paints: the art is the point of
+     wanting it. The wall on top is firm (no close button, no stray keys),
+     and the realm is NOT marked visited, so the map keeps its fog. */
+  var planLocked = !!(window.SQPlan && !window.SQPlan.canEnter(realm.id) && !editing);
+  if (planLocked) {
+    window.SQPlan.wall('realm', {
+      realm: realm.id, firm: true,
+      go: { label: '\u2190 Back to the map', href: 'map.html' }
+    });
+  }
+
   /* ---------- HUD ---------- */
   document.title = realm.name + ', ScoreQuest';
-  try { window.localStorage.setItem('sq_visited_' + realm.id, '1'); } catch (e) {}
-  if (window.SQAuth && window.SQAuth.reportRealm) window.SQAuth.reportRealm(realm.id);
+  if (!planLocked) {
+    try { window.localStorage.setItem('sq_visited_' + realm.id, '1'); } catch (e) {}
+    if (window.SQAuth && window.SQAuth.reportRealm) window.SQAuth.reportRealm(realm.id);
+  }
   document.getElementById('rw-title').textContent = realm.name;
   if (realm.ui) document.body.classList.add('rw-ui-' + realm.ui);   // per-realm ui skin
   document.getElementById('rw-meta').textContent =
@@ -248,6 +262,14 @@
     fightBtn.id = 'rw-fight';
     fightBtn.href = 'boss.html?realm=' + realm.id;
     fightBtn.textContent = '\u2694 Face the guardian';
+    /* the guardian is already down and this plan has no extra practice:
+       the rematch is the wall, not the arena */
+    if (window.SQPlan && window.SQPlan.isFinished(realm.id) && !window.SQPlan.canPractice()) {
+      fightBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.SQPlan.wall('rematch', { realm: realm.id });
+      });
+    }
     var row = popup.querySelector('.rw-popup-row');
     row.insertBefore(fightBtn, row.firstChild);
     popupNext.classList.remove('btn-gold');
@@ -611,6 +633,7 @@
     promptSkipBtn.classList.toggle('is-armed', promptArmed === 1);
   }
   function openPrompt(i) {
+    if (planLocked) return;            // nothing hails him from behind the wall
     promptIdx = i;
     promptArmed = 0;
     promptOpen = true;
@@ -630,7 +653,12 @@
   function promptGo() {
     var i = promptIdx;
     closePrompt();
-    openQuiz(i, !!passed[i]);          // a cleared trial reopens as practice
+    // a cleared trial reopens as practice, which not every plan includes
+    if (passed[i] && window.SQPlan && !window.SQPlan.canPractice()) {
+      window.SQPlan.wall('practice', { realm: realm.id });
+      return;
+    }
+    openQuiz(i, !!passed[i]);
   }
   promptGoBtn.addEventListener('click', function (e) { e.stopPropagation(); promptGo(); });
   promptSkipBtn.addEventListener('click', function (e) { e.stopPropagation(); closePrompt(true); });
@@ -858,6 +886,7 @@
     return { x: e.clientX + camNow, y: e.clientY };
   }
   stage.addEventListener('click', function (e) {
+    if (planLocked) return;
     if (e.target.closest('.rw-hud') || e.target.closest('.rw-popup') || e.target.closest('.rw-editor')) return;
     if (!ready) return;
     var w = worldPoint(e);
@@ -877,6 +906,7 @@
     ArrowDown: 'down', s: 'down', S: 'down'
   };
   document.addEventListener('keydown', function (e) {
+    if (planLocked) return;                 // nothing steers behind the wall
     if (editing) { editorKey(e); return; }
     if (promptOpen) {
       if (e.code === 'Space' || e.key === ' ' || e.key === 'Enter') {
