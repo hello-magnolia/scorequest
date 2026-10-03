@@ -196,3 +196,30 @@ where u.id = p.id
 -- Done. Next: enable the Google provider under Authentication -> Providers,
 -- and add your GitHub Pages URL under Authentication -> URL Configuration
 -- (see SETUP_AUTH.md).
+
+
+-- ============================================================
+-- 7. Practice attempts: one row per answered question (practice.html).
+--    Powers progress by skill and, later, difficulty calibration.
+--    Safe to re-run.
+-- ============================================================
+create table if not exists public.attempts (
+  id          bigint generated always as identity primary key,
+  user_id     uuid not null references auth.users (id) on delete cascade,
+  question_id text not null,
+  correct     boolean not null,
+  response    text,
+  ms          integer,
+  skill       text,
+  domain      text,
+  difficulty  smallint,
+  session_id  text,
+  created_at  timestamptz not null default now()
+);
+create index if not exists attempts_user_time on public.attempts (user_id, created_at desc);
+create index if not exists attempts_question on public.attempts (question_id);
+alter table public.attempts enable row level security;
+drop policy if exists "attempts: insert own" on public.attempts;
+create policy "attempts: insert own" on public.attempts for insert with check (auth.uid() = user_id);
+drop policy if exists "attempts: read own" on public.attempts;
+create policy "attempts: read own" on public.attempts for select using (auth.uid() = user_id);

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#16112b" />
+<title>Practice, ScoreQuest</title>
+<meta name="description" content="Practice Digital SAT questions by section, domain and difficulty, with explanations for every answer." />
+<script>
+try { if (window.localStorage.getItem('sb-moasnmwcikwybriwaoip-auth-token')) document.documentElement.classList.add('is-authed'); } catch (e) {}
+</script>
+<link rel="stylesheet" href="css/style.css?v=b20261003a" />
+<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261003a" />
+<link rel="icon" type="image/png" href="assets/logo.png" />
+</head>
+<body class="page-map page-practice">
+
+<header class="nav is-scrolled" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="ScoreQuest home">
+      <img class="brand-coin" src="assets/logo.png" alt="" aria-hidden="true" />
+      <span class="brand-name">ScoreQuest</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="map.html">Map</a>
+      <a href="practice.html" aria-current="page">Practice</a>
+    </nav>
+    <div class="nav-cta"></div>
+  </div>
+</header>
+
+<main class="pr" id="pr">
+  <!-- 1. choose a session -->
+  <section class="pr-setup" id="pr-setup">
+    <h1 class="pf-page-title">Practice</h1>
+    <p class="pr-lede">Pick what to work on. Every answer comes with an explanation, and nothing here is timed.</p>
+
+    <div class="pr-card pixel-frame">
+      <p class="pr-label type-utility">Section</p>
+      <div class="pr-seg" id="pr-section" role="radiogroup" aria-label="Section">
+        <button type="button" data-v="math" role="radio">Math</button>
+        <button type="button" data-v="rw" role="radio">Reading and Writing</button>
+        <button type="button" data-v="" role="radio">Both</button>
+      </div>
+
+      <p class="pr-label type-utility">Domains</p>
+      <div class="pr-chips" id="pr-domains"></div>
+
+      <p class="pr-label type-utility">Difficulty</p>
+      <div class="pr-seg" id="pr-diff" role="radiogroup" aria-label="Difficulty">
+        <button type="button" data-v="" role="radio">Any</button>
+        <button type="button" data-v="1" role="radio">Easy</button>
+        <button type="button" data-v="2" role="radio">Medium</button>
+        <button type="button" data-v="3" role="radio">Hard</button>
+      </div>
+
+      <p class="pr-label type-utility">Questions</p>
+      <div class="pr-seg" id="pr-len" role="radiogroup" aria-label="Number of questions">
+        <button type="button" data-v="5" role="radio">5</button>
+        <button type="button" data-v="10" role="radio">10</button>
+        <button type="button" data-v="20" role="radio">20</button>
+      </div>
+
+      <div class="pr-start-row">
+        <span class="pr-avail" id="pr-avail"></span>
+        <button class="btn btn-gold" id="pr-start" type="button">Start</button>
+      </div>
+    </div>
+    <div class="pr-card pixel-frame pr-resume" id="pr-resume" hidden>
+      <span id="pr-resume-text"></span>
+      <button class="btn btn-outline" id="pr-resume-go" type="button">Pick up where you left off</button>
+    </div>
+  </section>
+
+  <!-- 2. one question at a time -->
+  <section class="pr-run" id="pr-run" hidden>
+    <div class="pr-top">
+      <span class="pr-count type-utility" id="pr-count"></span>
+      <div class="pr-dots" id="pr-dots" aria-hidden="true"></div>
+      <button class="pr-end" id="pr-end" type="button">End session</button>
+    </div>
+    <div class="pr-stage" id="pr-stage">
+      <article class="pr-passage pr-paper" id="pr-passage" hidden></article>
+      <article class="pr-q pr-paper" id="pr-q" aria-live="polite"></article>
+    </div>
+  </section>
+
+  <!-- 3. summary -->
+  <section class="pr-summary" id="pr-summary" hidden>
+    <h1 class="pf-page-title" id="pr-sum-title">Session complete</h1>
+    <div class="pr-card pixel-frame">
+      <p class="pr-score" id="pr-score"></p>
+      <div id="pr-skills"></div>
+    </div>
+    <div class="pr-card pixel-frame" id="pr-missed-card">
+      <h3 class="pf-h3">Review</h3>
+      <ol class="pr-missed" id="pr-missed"></ol>
+    </div>
+    <div class="pr-actions">
+      <button class="btn btn-gold" id="pr-again-missed" type="button">Practice the skills I missed</button>
+      <button class="btn btn-outline" id="pr-new" type="button">New session</button>
+      <a class="btn btn-outline" href="map.html">Back to the map</a>
+    </div>
+  </section>
+</main>
+
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="assets/katex/katex.min.js?v=b20261003a"></script>
+<script defer src="assets/katex/auto-render.min.js?v=b20261003a"></script>
+<script defer src="js/config.js?v=b20261003a"></script>
+<script defer src="js/auth.js?v=b20261003a"></script>
+<script defer src="js/usernav.js?v=b20261003a"></script>
+<script defer src="data/questions.js?v=b20261003a"></script>
+<script defer src="js/figures.js?v=b20261003a"></script>
+<script defer src="js/questions.js?v=b20261003a"></script>
+<script defer src="js/practice.js?v=b20261003a"></script>
+</body>
+</html>

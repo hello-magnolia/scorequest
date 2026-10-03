@@ -511,6 +511,16 @@
         })
         .catch(function () { return false; });
     },
+    /* One answered question (practice page). Signed-in players get a row in the
+       attempts table (supabase_setup.sql section 7); everyone keeps a local copy
+       through SQAttempts. Fails quietly: practice never waits on the network. */
+    recordAttempt: function (row) {
+      if (!state.user || state.demo || !supabase) return Promise.resolve(false);
+      var r = Object.assign({ user_id: state.user.id }, row);
+      delete r.created_at;
+      return supabase.from('attempts').insert(r).then(function (res) { return !res.error; })
+        .catch(function () { return false; });
+    },
     getProgress: function () { return state.progress; },
     saveProgress: saveProgress,
     reportRealm: reportRealm,
