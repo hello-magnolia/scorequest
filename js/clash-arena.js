@@ -523,7 +523,7 @@ window.SQArena={
     if(hp<=0){B.upside=true;B.dizzy=true;B.ox=8;banner={text:"Dispelled!",t:1};setLog(`${name} is dispelled. ${biomeName(biomeId)} is clear.`);return}
     if(motion==="off"){setLog(hp<max?`${name} is back, ${hp} of ${max} ward pips left.`:`${name} guards ${biomeName(biomeId)}.`);return}
     B.ox=90;B.busy=true;
-    setLog(hp<max?`${name} is back, ${hp} of ${max} ward pips left.`:`${name} guards ${biomeName(biomeId)}. Every correct answer breaks one pip of its ward.`);
+    setLog(hp<max?`${name} is back, ${hp} of ${max} ward pips left.`:`${name} guards ${biomeName(biomeId)}.`);
     await tween(520,t=>{B.ox=Math.round(90*(1-easeOut(t)));if(t<.8&&Math.random()<.4)dust(B.cx+B.ox,-1,1)});
     B.ox=0;B.busy=false;await squash(B,1.12,.86,90);await squash(B,1,1,120);
   })},
@@ -555,7 +555,7 @@ window.SQArena={
     setLog(`${B.name} used ${m.name}!`);
     if(motion==="full"){await doMove(B,A,m);await zenShrug(A)}
     else if(motion==="calm"){await strike(B,A,m,{knock:2,shakeAmt:0});A._said=false}
-    setLog(`Pomelo shakes it off. The explanation is on the left.`);
+    setLog(`Pomelo shakes it off.`);
     if(motion==="full")await victoryHop(B,1);
   })},
   idle(){return chain},

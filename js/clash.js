@@ -137,6 +137,10 @@
     $('#mini-ward').innerHTML = segs(m, w);
     $('#mini-ward').classList.toggle('low', w <= 1);
     $('#mini-boss').textContent = biome.bossName;
+    var all = BANK.filter(function (q) { return q.domain === biome.domain; }).length;
+    var pct = all ? Math.round(100 * hits() / all) : 0;
+    $('#doneFill').style.width = pct + '%';
+    $('#donePct').textContent = pct + '%';
   }
   function pomOuch() {
     pomHp = Math.max(0, pomHp - 1); bars();
@@ -166,9 +170,9 @@
       var st = progress[q.id] ? progress[q.id].result : '';
       h += (i ? '<span class="seg"></span>' : '') + '<button type="button" class="node ' + st + (i === cur ? ' cur' : '') + '" data-i="' + i + '" aria-label="Question ' + (i + 1) +
         (st ? (st === 'won' ? ', correct' : ', revisit') : '') + '"' + (i === cur ? ' aria-current="step"' : '') + '>' +
-        (st === 'won' ? '✓' : st === 'missed' ? '⚑' : (i + 1)) + (i === cur ? '<span class="here">' + LANTERN + '</span>' : '') + '</button>';
+        (st === 'won' ? '✓' : st === 'missed' ? '!' : '') + (i === cur ? '<span class="here">' + LANTERN + '</span>' : '') + '</button>';
     });
-    h += '<span class="seg"></span><span class="lair">' + lairIcon(biome.id) + '<span>Lair</span></span>';
+    h += '<span class="seg"></span><span class="lair" title="The ' + esc(biome.bossName) + "'s lair" + '">' + lairIcon(biome.id) + '</span>';
     $('#trail').innerHTML = h;
     Array.prototype.forEach.call(document.querySelectorAll('#trail .node'), function (b) {
       b.addEventListener('click', function () { open(+b.getAttribute('data-i')); });
@@ -206,7 +210,7 @@
       '<button class="btn" id="bRetry" type="button" hidden>Try again</button>' +
       '<button class="btn" id="bNext" type="button" hidden>' + (cur + 1 < qs.length ? 'Next ▶' : 'Back to 1 ▶') + '</button></div></div>';
     $('#read').innerHTML = h;
-    $('#why').innerHTML = '<p class="wait">Pick an answer and press Check. The explanation shows up here.</p>';
+    $('#why').innerHTML = ''; $('#whybox').hidden = true;
     math($('#read'));
     wire(q);
     if (prev) showResult(q, prev.response, prev.result === 'won', false);
@@ -241,7 +245,7 @@
     progress[q.id] = { result: r.correct ? 'won' : 'missed', response: picked, at: Date.now() };
     save();
     showResult(q, picked, r.correct, true);
-    trail();
+    trail(); bars();
     if (r.correct) ARENA.hit().then(bars); else ARENA.miss().then(pomOuch);
   }
   function showResult(q, resp, won, fresh) {
@@ -262,6 +266,7 @@
       (won ? 'Correct! A hit on the ' + esc(biome.bossName) + '.' : 'Not this time. The answer is ' + esc(r.key) + '.') + '</p>' +
       (slip ? '<p class="slip">' + esc(slip) + '</p>' : '') +
       '<div class="body">' + String(q.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
+    $('#whybox').hidden = false;
     math($('#why'));
     $('#bCheck').hidden = true;
     $('#bNext').hidden = false;
@@ -293,7 +298,7 @@
 
   /* ---------- header + keys ---------- */
   var sel = $('#biome');
-  sel.innerHTML = BIOMES.map(function (b) { return '<option value="' + b.id + '">' + esc(b.name) + ' (' + esc(b.domain) + ')</option>'; }).join('');
+  sel.innerHTML = BIOMES.map(function (b) { return '<option value="' + b.id + '" title="' + esc(b.domain) + '">' + esc(b.name) + '</option>'; }).join('');
   sel.value = biome.id;
   sel.addEventListener('change', function () {
     biome = BIOMES.filter(function (b) { return b.id === sel.value; })[0];
