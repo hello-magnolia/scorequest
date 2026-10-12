@@ -158,6 +158,7 @@
     qs = BANK.filter(function (q) { return q.domain === biome.domain && (!diff || +diff === q.difficulty); })
       .sort(function (a, b) { return (a.difficulty - b.difficulty) || (a.id < b.id ? -1 : 1); });
     store('sq_clash_last', biome.id);
+    if (window.SQAmbient) window.SQAmbient.biome(biome.id);
     document.title = 'Critter Clash: ' + biome.name + ' · ScoreQuest';
     ARENA.enter(biome.id, biome.boss, biome.bossName, wardLeft(), wardMax()).then(bars);
     var firstOpen = qs.findIndex(function (q) { return !progress[q.id]; });
@@ -292,6 +293,7 @@
   }
   function setMotion(m, save) {
     ARENA.setMotion(m);
+    if (window.SQAmbient) window.SQAmbient.setMotion(m);
     $('#bMotion').textContent = 'Motion: ' + m;
     if (save) try { window.localStorage.setItem('sq_motion', m); } catch (e) {}
   }
