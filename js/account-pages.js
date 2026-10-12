@@ -240,12 +240,29 @@
       });
       paint();
     }
+    var mot = document.getElementById('st-motion');
+    if (mot) {
+      var MOTIONS = ['full', 'calm', 'off'];
+      var getMotion = function () {
+        var m = null;
+        try { m = window.localStorage.getItem('sq_motion'); } catch (e) {}
+        if (MOTIONS.indexOf(m) >= 0) return m;
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'calm' : 'full';
+      };
+      var paintMotion = function () { mot.textContent = 'Animations: ' + getMotion(); };
+      mot.addEventListener('click', function () {
+        var next = MOTIONS[(MOTIONS.indexOf(getMotion()) + 1) % MOTIONS.length];
+        try { window.localStorage.setItem('sq_motion', next); } catch (e) {}
+        paintMotion();
+      });
+      paintMotion();
+    }
     var reset = document.getElementById('st-reset');
     if (reset) reset.addEventListener('click', function () {
       if (!window.confirm('Clear this device\u2019s local progress? Your account keeps everything synced to it; this only resets what this browser remembers.')) return;
       try {
         Object.keys(window.localStorage).forEach(function (k) {
-          if (k.indexOf('sq_visited_') === 0 || k.indexOf('sq_realm_prog_') === 0 || k.indexOf('sq_boss_') === 0) {
+          if (k.indexOf('sq_visited_') === 0 || k.indexOf('sq_realm_prog_') === 0 || k.indexOf('sq_boss_') === 0 || k.indexOf('sq_clash_') === 0) {
             window.localStorage.removeItem(k);
           }
         });

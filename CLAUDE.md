@@ -44,8 +44,9 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
 
 ## Copy rules
 No em dashes in rendered copy (verify.js enforces). Realm names: plain-content-word +
-plain-place-word. Low-anxiety: losing is retreat, damage is "dispelling", no player HP
-drain visuals, no performance pressure on teen surfaces. Parent surfaces use SAT-domain
+plain-place-word. Low-anxiety: losing is retreat, damage is "dispelling", no performance pressure on
+teen surfaces. Player HP may drain ONLY if empty is never a loss (clash: Pomelo rests,
+refills, boss keeps its cracks); never a game over, never lost progress. Parent surfaces use SAT-domain
 language, never game words (verify_parents enforces).
 
 ## Identity (two names, never merge them)
@@ -62,10 +63,14 @@ re-run it on any existing project. verify_auth guards all of this.
 - Pages: index (hero, parents demo w/ 4-lang i18n, pricing), map.html (world map + labels,
   caption below, gray fog until visited), realm.html (walkabout; editor at &edit=1),
   boss.html, checkout, success, parents, profile, settings, bookmarks.
-- clash.html (art-style experiment, linked under index #world): research question-viewer layout
-  per biome (?realm=); arena box tops the middle column. ONE boss critter per biome (BIOMES
-  in clash.js) with a ward = ceil(60% of biome qs), 3..10 pips; each correct answer = one pip,
-  misses never heal it; progress sq_clash_<biome>.
+- clash.html (Critter Clash practice, linked under index #world), per biome (?realm=).
+  Layout: trail across the top (position only: number / check / flag, lantern marks current,
+  lair icon at the end, NO health on it); left = 4:3 battle screen with Pokemon-style plates
+  (Pomelo HP 5, boss WARD) + explanation panel; right = passage, stem, answers, Check.
+  ONE boss per biome (BIOMES in clash.js), ward = ceil(60% of biome qs) clamped 3..10, one pip
+  per correct answer, misses never heal it. Focus (F, sq_clash_focus) swaps the screen for two
+  quiet bars. Motion full/calm/off = localStorage sq_motion, also on settings.html (#st-motion),
+  defaults to calm under prefers-reduced-motion. Progress sq_clash_<biome>.
   js/clash.js page, js/clash-arena.js (critter sprites+moves from Magnolia's Critter Clash
   artifact; no numbers, Pomelo never takes damage), js/clash-figures.js + data/clash-bank.js
   (copies of the practice-engine patch's figures.js / questions.js; 150 Originals). KaTeX via cdnjs.

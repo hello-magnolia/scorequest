@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Critter Clash Practice · ScoreQuest</title>
-<meta name="description" content="Practice one SAT biome at a time in the question viewer layout, while a boss critter for every question squares off with Pomelo in the corner." />
+<meta name="description" content="Practice one SAT biome at a time while Pomelo and the biome's boss critter square off in a little battle screen." />
 <link rel="icon" href="assets/logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,184 +13,199 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <style>
-/* the question viewer's format: quiet paper, serif reading, a list on the left */
 :root {
-  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1c1a; --muted: #6b6860; --line: #e3e0d8;
-  --accent: #3b5bdb; --accent-soft: #e7ecff; --good: #1f8a4c; --good-soft: #e3f5ea;
-  --warn: #b35c00; --warn-soft: #fff1e0; --chip: #efede7;
-  --pix-ink: #2b2118; --pix-panel: #f6f1e3; --pix-accent: #e8742a;
+  --bg: #efe9da; --card: #fffdf7; --ink: #2b2118; --muted: #6f6252; --line: #d9cfba;
+  /* calm feedback: sage for right, clay for wrong, butter for picked */
+  --good: #4f7a55; --good-soft: #e7eee2; --good-line: #9bb79c;
+  --warn: #9a6232; --warn-soft: #f5ebdf; --warn-line: #d2ad86;
+  --pick: #f6efd6; --pick-line: #c9b27a;
+  --ward: #8a6bc9; --ward-low: #c99a4a; --hp: #6aa86a; --hp-low: #d1a04c; --frame: #2b2118;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
   --pixel: "Pixelify Sans", ui-monospace, "Courier New", monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #161614; --panel: #1f1f1c; --ink: #ecebe6; --muted: #a09d94; --line: #34332f;
-    --accent: #8ea4ff; --accent-soft: #252c47; --good: #5fd28f; --good-soft: #1b3325;
-    --warn: #ffb45e; --warn-soft: #3a2a17; --chip: #2a2a26;
-    --pix-ink: #0f0c09; --pix-panel: #232b1e;
+    --bg: #16130f; --card: #211d18; --ink: #efe6d4; --muted: #a99a83; --line: #3a332a;
+    --good: #9cc69f; --good-soft: #1f2b20; --good-line: #4f7a55;
+    --warn: #e0b07e; --warn-soft: #2e241a; --warn-line: #7a5634;
+    --pick: #2f2a1a; --pick-line: #7d6c3e; --frame: #0c0a08;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #161614; --panel: #1f1f1c; --ink: #ecebe6; --muted: #a09d94; --line: #34332f;
-  --accent: #8ea4ff; --accent-soft: #252c47; --good: #5fd28f; --good-soft: #1b3325;
-  --warn: #ffb45e; --warn-soft: #3a2a17; --chip: #2a2a26;
-  --pix-ink: #0f0c09; --pix-panel: #232b1e;
+  --bg: #16130f; --card: #211d18; --ink: #efe6d4; --muted: #a99a83; --line: #3a332a;
+  --good: #9cc69f; --good-soft: #1f2b20; --good-line: #4f7a55;
+  --warn: #e0b07e; --warn-soft: #2e241a; --warn-line: #7a5634;
+  --pick: #2f2a1a; --pick-line: #7d6c3e; --frame: #0c0a08;
 }
-body { --fig-ink: var(--ink); --fig-grid: var(--line); --fig-bg: var(--panel); --fig-fill-1: #c4c4c4; --fig-fill-2: #5a5a5a; }
+body { --fig-ink: var(--ink); --fig-grid: var(--line); --fig-bg: var(--card); --fig-fill-1: #c4c4c4; --fig-fill-2: #5a5a5a; }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; }
-body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); display: flex; flex-direction: column; }
-header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
-header h1 { font: 700 18px/1 var(--pixel); margin: 0 8px 0 0; letter-spacing: .3px; }
-header .home { color: var(--muted); text-decoration: none; font-size: 13px; }
-header .home:hover { color: var(--ink); }
-select, button { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); min-height: 100vh; }
+button, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
-button:focus-visible, select:focus-visible, .choices button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.spacer { flex: 1; }
-.stats { color: var(--muted); font-size: 12px; }
-main { flex: 1; display: flex; min-height: 0; }
-nav { width: 320px; flex-shrink: 0; overflow-y: auto; border-right: 1px solid var(--line); background: var(--panel); padding-bottom: 24px; }
-nav .bossline { display: flex; align-items: center; gap: 8px; margin: 0 14px 8px; font-size: 12px; color: var(--muted); }
-nav .bossline img { image-rendering: pixelated; }
-nav .bossline b { color: var(--ink); font-weight: 600; }
-nav h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 14px 6px; }
-nav .row { display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 11px; cursor: pointer; border-left: 3px solid transparent; width: 100%; background: none; border-radius: 0; border-top: 0; border-right: 0; border-bottom: 0; text-align: left; }
-nav .row:hover { background: var(--bg); }
-nav .row.sel { background: var(--accent-soft); border-left-color: var(--accent); }
-nav .num { width: 22px; font-variant-numeric: tabular-nums; font-weight: 600; }
-nav .crit { width: 26px; height: 22px; display: grid; place-items: end center; flex-shrink: 0; }
-nav .crit img { image-rendering: pixelated; max-height: 22px; max-width: 26px; }
-nav .row.won .crit img { transform: scaleY(-1); opacity: .55; }
-nav .prev { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 12px; }
-nav .mark { font-size: 11px; font-weight: 600; }
-nav .mark.won { color: var(--good); }
-nav .mark.missed { color: var(--warn); }
-.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.d1 { background: #4caf7a; } .d2 { background: #e0a526; } .d3 { background: #d9534f; }
-#view { flex: 1; display: flex; min-width: 0; min-height: 0; overflow: hidden; }
-#arena-park { display: none; }
-.pane { flex: 1; overflow-y: auto; padding: 22px 28px 60px; min-width: 0; }
-.passage { border-right: 1px solid var(--line); background: var(--panel); font-family: var(--serif); font-size: 16px; line-height: 1.65; }
-.passage .intro { font-family: var(--sans); font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-.passage .partlabel { font-family: var(--sans); font-weight: 650; font-size: 13px; margin: 18px 0 6px; }
+button:focus-visible, select:focus-visible { outline: 3px dashed var(--muted); outline-offset: 2px; }
+
+/* ---------- top bar ---------- */
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 20px; border-bottom: 3px solid var(--frame); background: var(--card); }
+.top .home { color: var(--muted); text-decoration: none; font: 600 13px var(--pixel); }
+.top .home:hover { color: var(--ink); }
+.top h1 { font: 700 20px/1 var(--pixel); margin: 0 4px 0 0; letter-spacing: .3px; }
+.top select { font: 600 14px var(--pixel); background: var(--bg); border: 2px solid var(--frame); padding: 4px 8px; }
+.top .spacer { flex: 1; }
+.tbtn { font: 700 13px var(--pixel); background: var(--card); border: 2px solid var(--frame); padding: 5px 10px; box-shadow: 2px 2px 0 var(--frame); }
+.tbtn[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+.tbtn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--frame); }
+
+/* ---------- the trail: where you are, nothing else ---------- */
+.trail { display: flex; align-items: center; padding: 34px 20px 14px; overflow-x: auto; max-width: 1320px; margin: 0 auto; }
+.trail .node { position: relative; flex-shrink: 0; width: 30px; height: 30px; border: 3px solid var(--frame); background: var(--card); display: grid; place-items: center; font: 700 13px var(--pixel); padding: 0; }
+.trail .node.won { background: var(--good-soft); color: var(--good); border-color: var(--good); }
+.trail .node.missed { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
+.trail .node.cur { outline: 3px solid var(--frame); outline-offset: 3px; }
+.trail .seg { flex: 1 1 22px; min-width: 10px; height: 0; border-top: 3px dotted var(--muted); }
+.trail .here { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 6px; pointer-events: none; }
+.trail .lair { display: flex; align-items: center; gap: 8px; flex-shrink: 0; padding-left: 8px; font: 700 13px var(--pixel); color: var(--muted); }
+svg.px { image-rendering: pixelated; shape-rendering: crispEdges; display: block; }
+
+/* ---------- layout: battle + explanation on the left, reading card on the right ---------- */
+.lay { max-width: 1320px; margin: 0 auto; padding: 4px 20px 48px; display: grid; grid-template-columns: minmax(300px, 400px) 1fr; gap: 28px; align-items: start; }
+.left { display: grid; gap: 16px; }
+
+.screen { position: relative; border: 4px solid var(--frame); background: #000; line-height: 0; box-shadow: 5px 5px 0 var(--frame); aspect-ratio: 4 / 3; }
+.screen canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; }
+/* Pokemon-style name plates, each above its own critter */
+.plate { position: absolute; top: 10px; width: calc(50% - 15px); line-height: 1.15; color: #2b2118; background: #f8f2df; border: 3px solid #2b2118; box-shadow: 3px 3px 0 rgba(0, 0, 0, .35); font-family: var(--pixel); padding: 5px 8px 7px; }
+.plate.me { left: 10px; }
+.plate.boss { right: 10px; }
+.plate .nm { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; }
+.plate .nm span { overflow: hidden; text-overflow: ellipsis; }
+.plate .nm svg { flex-shrink: 0; }
+.plate .row { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.plate .lbl { font: 700 10px var(--pixel); background: #2b2118; color: #f8c84a; padding: 1px 4px 2px; letter-spacing: .5px; }
+.plate .lbl.hpl { color: #9fe09f; }
+.bar { flex: 1; display: flex; height: 10px; border: 2px solid #2b2118; background: #e3dac2; border-radius: 2px; overflow: hidden; }
+.bar i { flex: 1; background: transparent; transition: background .35s steps(3); }
+.bar i + i { border-left: 2px solid rgba(43, 33, 24, .35); }
+.ward i.on { background: var(--ward); }
+.ward.low i.on { background: var(--ward-low); }
+.hp i.on { background: var(--hp); }
+.hp.low i.on { background: var(--hp-low); }
+.hp.rest { animation: rest .5s steps(2) 3; }
+@keyframes rest { 50% { opacity: .25; } }
+.log { font: 600 14px/1.35 var(--pixel); min-height: 2.7em; margin: -4px 2px 0; }
+
+/* focus status: the fight as two quiet bars, shown only in focus mode */
+.mini { display: none; background: var(--card); border: 3px solid var(--frame); padding: 10px 12px; font: 700 13px var(--pixel); gap: 8px; }
+.mini .row { display: flex; align-items: center; gap: 8px; }
+.mini .row span:first-child { width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .bar { height: 8px; border-width: 2px; border-color: var(--frame); }
+
+.whybox { background: var(--card); border: 3px solid var(--frame); box-shadow: 5px 5px 0 var(--frame); padding: 14px 16px 16px; }
+.whybox h3 { font: 700 13px var(--pixel); margin: 0 0 8px; color: var(--muted); letter-spacing: .3px; }
+.whybox .wait { margin: 0; color: var(--muted); font: italic 14px/1.5 var(--serif); }
+.verdict { font: 700 14px var(--pixel); margin: 0 0 6px; }
+.verdict.won { color: var(--good); } .verdict.missed { color: var(--warn); }
+.slip { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
+.whybox .body { font: 15px/1.6 var(--serif); }
+.whybox .body p { margin: 0 0 8px; }
+
+.card { background: var(--card); border: 3px solid var(--frame); box-shadow: 5px 5px 0 var(--frame); padding: 26px 32px 30px; min-width: 0; }
+.passage { font: 18px/1.75 var(--serif); max-width: 68ch; }
 .passage p { margin: 0 0 14px; }
 .passage ul { padding-left: 1.2em; }
-.question { max-width: 760px; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-.chip { background: var(--chip); border-radius: 999px; padding: 2px 10px; font-size: 12px; color: var(--muted); }
-.chip.boss { background: var(--warn-soft); color: var(--warn); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-.chip.boss img { image-rendering: pixelated; height: 14px; }
-.qnum { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-.stem { font-family: var(--serif); font-size: 17px; line-height: 1.6; margin: 0 0 18px; }
-.choices { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.choices button { width: 100%; display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-family: var(--serif); font-size: 16px; text-align: left; line-height: 1.5; }
+.passage .intro { font: 13px var(--sans); color: var(--muted); }
+.passage .partlabel { font: 700 13px var(--pixel); color: var(--muted); margin: 16px 0 6px; }
+.qbox { max-width: 68ch; }
+.passage + .qbox { margin-top: 20px; padding-top: 18px; border-top: 2px dashed var(--line); }
+.qmeta { font: 600 12px var(--pixel); color: var(--muted); margin-bottom: 6px; letter-spacing: .3px; }
+.stem { font: 18px/1.6 var(--serif); margin: 0 0 16px; }
+.answers { max-width: 68ch; }
+.choices { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.choices button { width: 100%; display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 10px 14px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); font: 16px/1.5 var(--serif); }
 .choices button:hover:not(:disabled) { border-color: var(--muted); }
-.choices .k { font: 650 13px/1 var(--sans); width: 24px; height: 24px; border: 1.5px solid var(--muted); border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-top: 1px; }
-.choices button.picked { border-color: var(--accent); background: var(--accent-soft); }
-.choices button.picked .k { border-color: var(--accent); background: var(--accent); color: #fff; }
-.choices button.correct { border-color: var(--good); background: var(--good-soft); }
-.choices button.correct .k { border-color: var(--good); background: var(--good); color: #fff; }
-.choices button.wrong { border-color: var(--warn); background: var(--warn-soft); }
-.choices button.wrong .k { border-color: var(--warn); background: var(--warn); color: #fff; }
-.choices button:disabled { cursor: default; color: inherit; }
-.spr { padding: 12px 14px; border: 1px dashed var(--line); border-radius: 10px; font-size: 14px; display: grid; gap: 6px; max-width: 360px; }
-.spr input { font: 18px var(--serif); padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 160px; }
+.choices .k { font: 700 12px/1 var(--pixel); width: 22px; height: 22px; border: 2px solid var(--muted); border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
+.choices button.picked { border-color: var(--pick-line); background: var(--pick); }
+.choices button.picked .k { border-color: var(--ink); }
+.choices button.correct { border-color: var(--good-line); background: var(--good-soft); }
+.choices button.correct .k { border-color: var(--good); color: var(--good); }
+.choices button.wrong { border-color: var(--warn-line); background: var(--warn-soft); }
+.choices button.wrong .k { border-color: var(--warn); color: var(--warn); }
+.choices button:disabled { cursor: default; }
+.spr { display: grid; gap: 6px; max-width: 360px; }
+.spr label { font: 700 13px var(--pixel); color: var(--muted); }
+.spr input { font: 18px var(--serif); padding: 6px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 160px; }
 .spr .hint { color: var(--muted); font-size: 12px; margin: 0; }
+.acts { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn { font: 700 15px var(--pixel); padding: 8px 18px; border: 3px solid var(--frame); background: var(--card); color: var(--ink); box-shadow: 3px 3px 0 var(--frame); }
+.btn.main { background: var(--ink); color: var(--card); }
+.btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+.btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--frame); }
+.msg { color: var(--warn); font-size: 13px; margin: 8px 0 0; min-height: 1em; }
 table.data { border-collapse: collapse; margin: 6px 0 18px; font-size: 14px; }
 table.data caption { font-weight: 650; padding-bottom: 4px; }
 table.data th, table.data td { border: 1px solid var(--line); padding: 5px 10px; text-align: center; }
-table.data th { background: var(--chip); }
+table.data th { background: var(--bg); }
 figure { margin: 0 0 18px; }
-.fig-built { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
-.fig-built .sq-fig, .fig-built svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.fig-built { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px; max-width: 560px; }
+.fig-built svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
 .choices .fig-built { border: 0; padding: 0; background: transparent; }
-.acts { display: flex; gap: 8px; margin-top: 16px; align-items: center; flex-wrap: wrap; }
-.btn-main { background: var(--ink); color: var(--panel); border-color: var(--ink); font-weight: 600; padding: 7px 16px; }
-.btn-main:disabled { opacity: .45; cursor: not-allowed; }
-.msg { color: var(--warn); font-size: 13px; min-height: 1em; margin: 8px 0 0; }
-.verdict { margin-top: 16px; font-weight: 650; }
-.verdict.won { color: var(--good); }
-.verdict.missed { color: var(--warn); }
-.slip { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
-.explain { margin-top: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; font: 14px/1.55 var(--serif); }
-.explain h4 { margin: 0 0 6px; font: 600 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
-.explain p { margin: 0 0 8px; }
-.empty { margin: auto; color: var(--muted); text-align: center; padding: 40px; }
-.keys { font-size: 11px; color: var(--muted); padding: 10px 14px 16px; border-top: 1px solid var(--line); margin-top: 12px; }
+.keys { max-width: 1320px; margin: 0 auto; padding: 0 20px 30px; color: var(--muted); font-size: 12px; }
 kbd { font: 11px var(--sans); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+.empty { padding: 40px; text-align: center; color: var(--muted); }
 
-/* the arena: a box at the top of the middle column, in Critter Clash's pixel look */
-.arena { width: 100%; margin: 0 0 22px; font-family: var(--pixel); color: var(--ink);
-  background: transparent; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--line); }
-.arena-bar { display: flex; align-items: center; gap: 8px; padding: 5px 6px 5px 10px; border-bottom: 3px solid var(--ink); background: transparent; color: var(--ink); }
-.arena-bar b { font-weight: 700; font-size: 15px; letter-spacing: .3px; }
-.arena-bar .vs { font-size: 13px; font-weight: 600; opacity: .8; }
-.arena-bar .boss { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
-.arena-bar #cx-boss { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ward { display: inline-flex; gap: 2px; flex-shrink: 0; }
-.ward i { width: 9px; height: 11px; border: 2px solid var(--ink); background: transparent; }
-.ward i.on { background: #8e5ce0; }
-.arena-bar button { font: 700 13px/1 var(--pixel); background: transparent; color: var(--ink); border: 2px solid var(--ink); border-radius: 0; padding: 3px 7px; }
-.arena-stage { background: #000; line-height: 0; border-bottom: 3px solid var(--ink); }
-.arena canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; }
-.arena-log { margin: 0; padding: 5px 10px 6px; font-size: 14px; line-height: 1.3; min-height: 2.6em; color: var(--ink); background: transparent; font-family: var(--pixel); }
-.arena.min .arena-stage, .arena.min .arena-log { display: none; }
+/* ---------- focus mode: the battle screen steps aside, two quiet bars remain ---------- */
+body.focus .screen, body.focus .log { display: none; }
+body.focus .mini { display: grid; }
+body.focus .trail .here { display: none; }
 
-@media (max-width: 900px) {
-  body { height: auto; min-height: 100%; }
-  main { flex-direction: column; }
-  nav { width: auto; max-height: 26vh; border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 0; }
-  #view { flex-direction: column; overflow: visible; }
-  .pane { overflow: visible; padding: 16px; }
-  .passage { border-right: 0; border-bottom: 1px solid var(--line); }
-  .arena { margin-bottom: 16px; }
-  .arena-log { font-size: 12px; }
+@media (max-width: 860px) {
+  .lay { grid-template-columns: 1fr; }
+  .left { order: 2; }
+  .card { order: 1; padding: 20px; }
+  .screen { max-width: 440px; width: 100%; margin: 0 auto; }
   .keys { display: none; }
-}
-@media (max-width: 600px) {
-  .arena { border-width: 2px; }
-  .arena-bar { padding: 3px 4px 3px 7px; border-bottom-width: 2px; gap: 6px; }
-  .arena-bar b, .arena-bar #cx-boss { font-size: 12px; }
-  .arena-bar .vs { font-size: 11px; }
-  .ward i { width: 6px; height: 9px; border-width: 1px; }
-  .arena-bar button { font-size: 11px; padding: 2px 5px; }
 }
 </style>
 </head>
 <body>
-<header>
+<div class="top">
   <a class="home" href="index.html#world">&larr; ScoreQuest</a>
   <h1>Critter Clash</h1>
-  <select id="biome" title="Biome" aria-label="Biome"></select>
-  <select id="fDiff" title="Difficulty" aria-label="Difficulty">
+  <select id="biome" aria-label="Biome"></select>
+  <select id="fDiff" aria-label="Difficulty">
     <option value="">Any difficulty</option>
     <option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option>
   </select>
-  <button id="bReset" type="button" title="Clear this biome's answers and start the bosses over">Start over</button>
   <span class="spacer"></span>
-  <span class="stats" id="stats" aria-live="polite"></span>
-</header>
-<main>
-  <nav id="list" aria-label="Questions"></nav>
-  <div id="view"><div class="empty">Loading the biome&hellip;</div></div>
-  <div id="arena-park">
-    <section class="arena" id="arena" aria-label="Critter Clash arena">
-      <div class="arena-bar">
-        <b>Pomelo</b><span class="vs">vs</span>
-        <span class="boss"><span id="cx-boss"></span><span class="ward" id="cx-ward" role="img"></span></span>
-        <button type="button" id="cx-min" aria-expanded="true" title="Hide the arena">_</button>
-      </div>
-      <div class="arena-stage"><canvas id="cx-cv" aria-hidden="true"></canvas></div>
-      <p class="arena-log" id="cx-log" aria-live="polite">Pomelo is ready.</p>
-    </section>
+  <button class="tbtn" id="bFocus" type="button" aria-pressed="false" title="Hide the battle screen (F)">Focus</button>
+  <button class="tbtn" id="bMotion" type="button" title="Battle animations. Also in Settings">Motion: full</button>
+  <button class="tbtn" id="bReset" type="button" title="Clear this biome's answers and start the boss over">Start over</button>
+</div>
+<nav class="trail" id="trail" aria-label="Question trail"></nav>
+<main class="lay">
+  <div class="left">
+    <div class="screen" id="screen">
+      <canvas id="cx-cv" aria-hidden="true"></canvas>
+      <div class="plate me"><div class="nm" id="me-name"><span>Pomelo</span></div>
+        <div class="row"><span class="lbl hpl">HP</span><span class="bar hp" id="me-hp" role="img"></span></div></div>
+      <div class="plate boss"><div class="nm"><span id="cx-boss"></span></div>
+        <div class="row"><span class="lbl">WARD</span><span class="bar ward" id="cx-ward" role="img"></span></div></div>
+    </div>
+    <p class="log" id="cx-log" aria-live="polite"></p>
+    <div class="mini" id="mini" aria-hidden="true">
+      <div class="row"><span>Pomelo</span><span class="bar hp" id="mini-hp"></span></div>
+      <div class="row"><span id="mini-boss"></span><span class="bar ward" id="mini-ward"></span></div>
+    </div>
+    <section class="whybox" aria-live="polite"><h3>Explanation</h3><div id="why"></div></section>
   </div>
+  <article class="card" id="read"><div class="empty">Loading the biome&hellip;</div></article>
 </main>
+<p class="keys"><kbd>A</kbd>&ndash;<kbd>D</kbd> pick &nbsp; <kbd>Enter</kbd> check / next &nbsp; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move along the trail &nbsp; <kbd>F</kbd> focus</p>
 
-<script src="js/clash-figures.js?v=b20261012c"></script>
-<script src="data/clash-bank.js?v=b20261012c"></script>
-<script src="js/clash-arena.js?v=b20261012c"></script>
-<script src="js/clash.js?v=b20261012c"></script>
+<script src="js/clash-figures.js?v=b20261012d"></script>
+<script src="data/clash-bank.js?v=b20261012d"></script>
+<script src="js/clash-arena.js?v=b20261012d"></script>
+<script src="js/clash.js?v=b20261012d"></script>
 </body>
 </html>
