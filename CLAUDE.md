@@ -63,7 +63,9 @@ re-run it on any existing project. verify_auth guards all of this.
   caption below, gray fog until visited), realm.html (walkabout; editor at &edit=1),
   boss.html, checkout, success, parents, profile, settings, bookmarks.
 - clash.html (art-style experiment, linked under index #world): research question-viewer layout
-  per biome (?realm=), one Critter Clash boss per question vs Pomelo in a corner arena.
+  per biome (?realm=); arena box tops the middle column. ONE boss critter per biome (BIOMES
+  in clash.js) with a ward = ceil(60% of biome qs), 3..10 pips; each correct answer = one pip,
+  misses never heal it; progress sq_clash_<biome>.
   js/clash.js page, js/clash-arena.js (critter sprites+moves from Magnolia's Critter Clash
   artifact; no numbers, Pomelo never takes damage), js/clash-figures.js + data/clash-bank.js
   (copies of the practice-engine patch's figures.js / questions.js; 150 Originals). KaTeX via cdnjs.

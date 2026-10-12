@@ -38,7 +38,7 @@ const ROSTER = {
 };
 
 // ---------- setup ----------
-const W=136,H=84,GROUND=70;
+const W=240,H=72,GROUND=60;
 const cv=document.getElementById("cx-cv"), ctx=cv.getContext("2d");
 const low=document.createElement("canvas"); low.width=W; low.height=H;
 const lx=low.getContext("2d"); lx.imageSmoothingEnabled=false;
@@ -67,7 +67,7 @@ let A,B, parts=[], floats=[], fxs=[], shake=0, running=false, banner=null;
 function makeFighter(key,side){
   const r=ROSTER[key], sp=SPRITES[key];
   return {key,side,face:side<0?1:-1,name:r.name,max:r.hp,hp:r.hp,spd:r.spd,moves:r.moves,w:sp.w,h:sp.h,
-    cx:side<0?38:98,ox:0,oy:0,sx:1,sy:1,rot:0,flash:0,alpha:1,upside:false,guard:false,dodge:false,
+    cx:side<0?84:156,ox:0,oy:0,sx:1,sy:1,rot:0,flash:0,alpha:1,upside:false,guard:false,dodge:false,
     tint:null,clip:false,bare:false,busy:false,dizzy:false};
 }
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -428,19 +428,20 @@ const BIOME_BG = {
 };
 const bg=document.createElement("canvas"); bg.width=W; bg.height=H;
 function paintBg(id){
+  /* wide strip: sky to ~55%, hills, grass from ~70%, a path the two fighters stand on */
   const p=BIOME_BG[id]||BIOME_BG.inkreef, b=bg.getContext("2d");
   b.clearRect(0,0,W,H);
-  const band=Math.ceil(44/p.sky.length);
+  const skyH=40, band=Math.ceil(skyH/p.sky.length);
   p.sky.forEach((c,i)=>{b.fillStyle=c;b.fillRect(0,i*band,W,band+1)});
   b.fillStyle="rgba(255,255,255,.55)";
-  [[14,10,16],[84,7,20],[112,18,12],[50,20,10]].forEach(([x,y,w])=>{b.fillRect(x,y,w,2);b.fillRect(x+3,y-1,w-7,1)});
-  b.fillStyle=p.far; for(let x=0;x<W;x++){const h=Math.round(40+Math.sin(x/13)*4+Math.sin(x/5)*1.3);b.fillRect(x,h,1,H-h)}
-  b.fillStyle=p.near; for(let x=0;x<W;x++){const h=Math.round(48+Math.sin(x/4.5)*2+Math.sin(x/2.1)*1);b.fillRect(x,h,1,H-h)}
-  b.fillStyle=p.grass; b.fillRect(0,54,W,H-54);
-  b.fillStyle=p.tuft; for(let y=57;y<H;y+=4)for(let x=(y%8);x<W;x+=8)b.fillRect(x,y,1,1);
-  b.fillStyle=p.path; for(let y=62;y<H;y++){const t=(y-62)/(H-62),hw=Math.round(50+t*20);b.fillRect(68-hw,y,hw*2,1)}
-  b.fillStyle="rgba(0,0,0,.08)"; for(let y=66;y<H;y+=5)for(let x=26+(y%10);x<112;x+=13)b.fillRect(x,y,2,1);
-  [[6,64],[128,70],[10,78],[124,80]].forEach(([x,y])=>{b.fillStyle=p.dot;b.fillRect(x,y,1,1);b.fillRect(x-1,y+1,3,1);b.fillRect(x,y+2,1,1)});
+  [[14,9,16],[70,6,22],[128,14,12],[176,8,20],[214,17,12]].forEach(([x,y,w])=>{b.fillRect(x,y,w,2);b.fillRect(x+3,y-1,w-7,1)});
+  b.fillStyle=p.far; for(let x=0;x<W;x++){const h=Math.round(32+Math.sin(x/13)*4+Math.sin(x/5)*1.3);b.fillRect(x,h,1,H-h)}
+  b.fillStyle=p.near; for(let x=0;x<W;x++){const h=Math.round(40+Math.sin(x/4.5)*2+Math.sin(x/2.1)*1);b.fillRect(x,h,1,H-h)}
+  b.fillStyle=p.grass; b.fillRect(0,46,W,H-46);
+  b.fillStyle=p.tuft; for(let y=49;y<H;y+=4)for(let x=(y%8);x<W;x+=8)b.fillRect(x,y,1,1);
+  b.fillStyle=p.path; for(let y=54;y<H;y++){const t=(y-54)/(H-54),hw=Math.round(66+t*22);b.fillRect(W/2-hw,y,hw*2,1)}
+  b.fillStyle="rgba(0,0,0,.08)"; for(let y=58;y<H;y+=5)for(let x=60+(y%10);x<180;x+=13)b.fillRect(x,y,2,1);
+  [[8,56],[230,62],[16,68],[222,52],[36,50],[204,69]].forEach(([x,y])=>{b.fillStyle=p.dot;b.fillRect(x,y,1,1);b.fillRect(x-1,y+1,3,1);b.fillRect(x,y+2,1,1)});
 }
 
 async function returnHome(f,ms=260){const ox=f.ox,oy=f.oy,rot=f.rot;await tween(ms,t=>{const e=easeOut(t);f.ox=Math.round(ox*(1-e));f.oy=Math.round(oy*(1-e)-Math.sin(t*Math.PI)*4);f.rot=rot*(1-e)});Object.assign(f,{ox:0,oy:0,rot:0,sx:1,sy:1})}
@@ -461,7 +462,6 @@ async function strike(att,def,move,{knock=4,shakeAmt=1,colors=["#fff"],hx}={}){
   return true;
 }
 function setLog(a,b=""){const l=document.getElementById("cx-log");if(l)l.textContent=a}
-function hud(){const n=document.getElementById("cx-boss");if(n)n.textContent=B?B.name:""}
 
 async function doMove(att,def,move){
   att.busy=true;
@@ -488,42 +488,56 @@ async function knockOver(f){
   await squash(f,1.15,.85,90);await squash(f,1,1,120);f.dizzy=true;
 }
 
-const BOSS_KEYS=["frog","rabbit","hedgehog","turtle","bear"];
+/* one boss per biome. Its ward (health) drops by one pip per correct answer;
+   at zero it is dispelled. Pomelo has no health at all. */
 const POMELO_MOVES=ROSTER.capybara.moves.filter(m=>m.dmg);
-let chain=Promise.resolve(), started=false, winCount=0;
+let chain=Promise.resolve(), started=false, winCount=0, ward={hp:0,max:0};
 function queue(fn){chain=chain.then(fn).catch(e=>{console.error(e)});return chain}
 function freshPomelo(){A=makeFighter("capybara",-1);A.name="Pomelo";A.soft=true}
+function pips(){
+  const el=document.getElementById("cx-ward"); if(!el)return;
+  let h="";for(let i=0;i<ward.max;i++)h+='<i class="'+(i<ward.hp?"on":"")+'"></i>';
+  el.innerHTML=h; el.setAttribute("aria-label",B?B.name+" ward: "+ward.hp+" of "+ward.max+" left":"");
+}
+function hud(){const n=document.getElementById("cx-boss");if(n)n.textContent=B?B.name:"";pips()}
 
 window.SQArena={
-  BOSS_KEYS,
   bossName:k=>ROSTER[k]?ROSTER[k].name:k,
   sprite:k=>SPRITES[k],
   ready:loadAll().then(()=>{resize();freshPomelo();if(!started){started=true;requestAnimationFrame(loop)}
     if("ResizeObserver" in window)new ResizeObserver(resize).observe(cv.parentElement)}),
-  biome(id){paintBg(id)},
-  /* a new boss for a new question; state 'won' arrives already dispelled */
-  enter(key,state){return queue(async()=>{
+  /* the biome's boss walks in with hp of max ward pips left */
+  enter(biomeId,key,name,hp,max){return queue(async()=>{
+    paintBg(biomeId);
     banner=null;fxs=[];parts=[];floats=[];
-    if(!A)freshPomelo();Object.assign(A,{ox:0,oy:0,rot:0,sx:1,sy:1,busy:false,tint:null,upside:false,dizzy:false,flash:0});
-    if(B&&B.alpha>0){const old=B;old.busy=true;
-      await tween(220,t=>{old.ox=Math.round((old.upside?6:0)+50*easeIn(t));old.alpha=1-t})}
-    B=makeFighter(key,1);hud();
-    if(state==="won"){B.upside=true;B.dizzy=true;B.ox=6;setLog(`${B.name} already dispelled. Pomelo is resting.`);return}
-    B.ox=60;B.busy=true;
-    setLog(state==="missed"?`${B.name} is still here. Try it again?`:`A wild ${B.name} blocks the path.`);
-    await tween(420,t=>{B.ox=Math.round(60*(1-easeOut(t)));if(t<.8&&Math.random()<.4)dust(B.cx+B.ox,-1,1)});
+    freshPomelo();
+    ward={hp,max};
+    B=makeFighter(key,1);B.name=name;hud();
+    if(hp<=0){B.upside=true;B.dizzy=true;B.ox=8;banner={text:"Dispelled!",t:1};setLog(`${name} is dispelled. ${biomeName(biomeId)} is clear.`);return}
+    B.ox=90;B.busy=true;
+    setLog(hp<max?`${name} is back, ${hp} of ${max} ward pips left.`:`${name} guards ${biomeName(biomeId)}. Every correct answer breaks one pip of its ward.`);
+    await tween(520,t=>{B.ox=Math.round(90*(1-easeOut(t)));if(t<.8&&Math.random()<.4)dust(B.cx+B.ox,-1,1)});
     B.ox=0;B.busy=false;await squash(B,1.12,.86,90);await squash(B,1,1,120);
   })},
-  win(){return queue(async()=>{
-    if(!B||B.upside)return;
+  /* a correct answer: one hit, one pip */
+  hit(){return queue(async()=>{
+    if(!B)return;
     const m=POMELO_MOVES[winCount++%POMELO_MOVES.length];
+    if(B.upside){setLog(`Already dispelled. Pomelo does a happy hop anyway.`);await victoryHop(A,1);return}
     setLog(`Pomelo used ${m.name}!`);
-    await doMove(A,B,m);await sleep(120);
-    await knockOver(B);
-    setLog(`${B.name} is dispelled. Nice work.`);
+    await doMove(A,B,m);
+    ward.hp=Math.max(0,ward.hp-1);pips();
+    if(ward.hp>0){
+      float(ward.hp===1?"one pip left":"ward cracks",B.cx,GROUND-B.h-6,"#ffd36a",false,true);
+      setLog(ward.hp===1?`${B.name} is wobbling. One more correct answer!`:`${B.name}'s ward cracks. ${ward.hp} of ${ward.max} pips left.`);
+      return;
+    }
+    await sleep(120);await knockOver(B);
     banner={text:"Dispelled!",t:0};
-    await victoryHop(A,2);
+    setLog(`${B.name} is dispelled! The biome is clear.`);
+    await victoryHop(A,3);
   })},
+  /* a miss: the boss shows off, Pomelo stays unbothered, the ward stays where it was */
   miss(){return queue(async()=>{
     if(!B||B.upside)return;
     const atk=ROSTER[B.key].moves.filter(m=>m.dmg);
@@ -531,11 +545,13 @@ window.SQArena={
     setLog(`${B.name} used ${m.name}!`);
     await doMove(B,A,m);
     await zenShrug(A);
-    setLog(`Pomelo is unbothered. Read the explanation, then try the next one.`);
+    setLog(`Pomelo is unbothered. Read the explanation, then keep going.`);
     await victoryHop(B,1);
   })},
-  /* test hook: no animation in flight */
-  idle(){return chain}
+  idle(){return chain},
+  get ward(){return {hp:ward.hp,max:ward.max}}
 };
+const BIOME_NAMES={lorewood:"Lorewood",storyforge:"Story Forge",inkreef:"Ink Reef",syntaxcitadel:"Syntax Citadel",mirrormines:"Mirror Mines",infinityisles:"Infinity Isles",datadocks:"Data Docks",prismpeaks:"Prism Peaks"};
+function biomeName(id){return BIOME_NAMES[id]||id}
 
 })();

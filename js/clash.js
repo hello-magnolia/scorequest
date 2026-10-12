@@ -19,14 +19,14 @@
 
   /* the eight biomes, in map order, each with its SAT domain */
   var BIOMES = [
-    { id: 'lorewood', name: 'Lorewood', domain: 'Information and Ideas' },
-    { id: 'storyforge', name: 'Story Forge', domain: 'Craft and Structure' },
-    { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas' },
-    { id: 'syntaxcitadel', name: 'Syntax Citadel', domain: 'Standard English Conventions' },
-    { id: 'mirrormines', name: 'Mirror Mines', domain: 'Algebra' },
-    { id: 'infinityisles', name: 'Infinity Isles', domain: 'Advanced Math' },
-    { id: 'datadocks', name: 'Data Docks', domain: 'Problem-Solving and Data Analysis' },
-    { id: 'prismpeaks', name: 'Prism Peaks', domain: 'Geometry and Trigonometry' }
+    { id: 'lorewood', name: 'Lorewood', domain: 'Information and Ideas', boss: 'rabbit', bossName: 'Lantern Rabbit' },
+    { id: 'storyforge', name: 'Story Forge', domain: 'Craft and Structure', boss: 'hedgehog', bossName: 'Forge Hedgehog' },
+    { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', boss: 'turtle', bossName: 'Reef Turtle' },
+    { id: 'syntaxcitadel', name: 'Syntax Citadel', domain: 'Standard English Conventions', boss: 'frog', bossName: 'Citadel Frog King' },
+    { id: 'mirrormines', name: 'Mirror Mines', domain: 'Algebra', boss: 'bear', bossName: 'Crystal Bear' },
+    { id: 'infinityisles', name: 'Infinity Isles', domain: 'Advanced Math', boss: 'rabbit', bossName: 'Doubling Rabbit' },
+    { id: 'datadocks', name: 'Data Docks', domain: 'Problem-Solving and Data Analysis', boss: 'turtle', bossName: 'Dockside Turtle' },
+    { id: 'prismpeaks', name: 'Prism Peaks', domain: 'Geometry and Trigonometry', boss: 'bear', bossName: 'Summit Bear' }
   ];
 
   function store(k, v) {
@@ -107,11 +107,16 @@
     return { correct: ok, key: acc[0] };
   }
 
-  /* ---------- bosses: one critter per question, cycling through the roster ---------- */
-  function bossFor(i) {
-    var keys = ARENA.BOSS_KEYS, off = BIOMES.indexOf(biome);
-    return keys[(i + off) % keys.length];
+  /* ---------- the biome's boss: its ward has one pip per correct answer needed ----------
+     about 60% of the biome's questions, never more than 10, so one sitting can clear it */
+  function wardMax() {
+    var n = BANK.filter(function (q) { return q.domain === biome.domain; }).length;
+    return Math.max(3, Math.min(10, Math.ceil(n * 0.6)));
   }
+  function hits() {
+    return Object.keys(progress).filter(function (id) { return progress[id] && progress[id].result === 'won'; }).length;
+  }
+  function wardLeft() { return Math.max(0, wardMax() - hits()); }
   function critImg(key, h) {
     var sp = ARENA.sprite(key);
     return '<img src="' + sp.src + '" alt="" width="' + Math.round(sp.w * h / sp.h) + '" height="' + h + '">';
@@ -123,7 +128,7 @@
     qs = BANK.filter(function (q) { return q.domain === biome.domain && (!diff || +diff === q.difficulty); })
       .sort(function (a, b) { return (a.difficulty - b.difficulty) || (a.id < b.id ? -1 : 1); });
     store('sq_clash_last', biome.id);
-    ARENA.biome(biome.id);
+    ARENA.enter(biome.id, biome.boss, biome.bossName, wardLeft(), wardMax());
     document.title = 'Critter Clash: ' + biome.name + ' · ScoreQuest';
     var firstOpen = qs.findIndex(function (q) { return !progress[q.id]; });
     cur = firstOpen < 0 ? 0 : firstOpen;
@@ -131,17 +136,19 @@
   }
   function stats() {
     var won = qs.filter(function (q) { return progress[q.id] && progress[q.id].result === 'won'; }).length;
-    var tried = qs.filter(function (q) { return progress[q.id]; }).length;
-    $('#stats').textContent = biome.domain + ' · ' + won + ' of ' + qs.length + ' bosses dispelled' + (tried > won ? ' · ' + (tried - won) + ' to revisit' : '');
+    var left = wardLeft();
+    $('#stats').textContent = biome.domain + ' · ' + won + ' of ' + qs.length + ' correct · ' +
+      (left ? biome.bossName + ': ' + left + ' to go' : biome.bossName + ' dispelled');
   }
   function renderList() {
-    var h = '<h3>' + esc(biome.name) + ' · ' + qs.length + ' questions</h3>';
+    var h = '<h3>' + esc(biome.name) + ' · ' + qs.length + ' questions</h3>' +
+      '<p class="bossline">' + critImg(biome.boss, 18) + '<span>Boss: <b>' + esc(biome.bossName) + '</b></span></p>';
     h += qs.map(function (q, i) {
       var p = progress[q.id], st = p ? p.result : '';
       return '<button type="button" class="row' + (i === cur ? ' sel' : '') + (st ? ' ' + st : '') + '" data-i="' + i + '">' +
-        '<span class="num">' + (i + 1) + '</span><span class="crit">' + critImg(bossFor(i), 18) + '</span>' +
+        '<span class="num">' + (i + 1) + '</span>' +
         '<span class="prev">' + esc(preview(q)) + '</span>' +
-        (st === 'won' ? '<span class="mark won" title="Dispelled">&#10003;</span>' : st === 'missed' ? '<span class="mark missed" title="Revisit">&#8635;</span>' : '') +
+        (st === 'won' ? '<span class="mark won" title="Correct">&#10003;</span>' : st === 'missed' ? '<span class="mark missed" title="Revisit">&#8635;</span>' : '') +
         '<span class="dot d' + q.difficulty + '" title="' + LV[q.difficulty] + '"></span></button>';
     }).join('');
     h += '<div class="keys"><kbd>A</kbd>&ndash;<kbd>D</kbd> pick &nbsp; <kbd>Enter</kbd> check / next<br><kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between questions</div>';
@@ -164,7 +171,7 @@
     if (!qs.length) { $('#view').innerHTML = '<div class="empty">No questions match. Try another difficulty.</div>'; return; }
     cur = Math.max(0, Math.min(qs.length - 1, i));
     picked = null;
-    var q = qs[cur], p = q.passage, prev = progress[q.id], key = bossFor(cur);
+    var q = qs[cur], p = q.passage, prev = progress[q.id];
     markList();
     var h = '';
     if (p) {
@@ -179,8 +186,7 @@
     }
     h += '<div class="pane qpane"><div class="question">' +
       '<div class="qnum">Question ' + (cur + 1) + ' of ' + qs.length + '</div>' +
-      '<div class="chips"><span class="chip boss">' + critImg(key, 14) + 'Boss: ' + esc(ARENA.bossName(key)) + '</span>' +
-      '<span class="chip">' + esc(q.skill) + '</span><span class="chip">' + LV[q.difficulty] + '</span></div>' +
+      '<div class="chips"><span class="chip">' + esc(q.skill) + '</span><span class="chip">' + LV[q.difficulty] + '</span></div>' +
       '<div class="stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure);
     if (q.type === 'mcq') {
       h += '<ol class="choices" aria-label="Answer choices">' + q.choices.map(function (c) {
@@ -193,8 +199,8 @@
     }
     h += '<p class="msg" id="msg" role="status"></p><div id="feedback"></div>' +
       '<div class="acts"><button class="btn-main" id="bCheck" type="button">Check</button>' +
-      '<button id="bRetry" type="button" hidden>Try this boss again</button>' +
-      '<button class="btn-main" id="bNext" type="button" hidden>' + (cur + 1 < qs.length ? 'Next boss' : 'Back to the first boss') + '</button></div>' +
+      '<button id="bRetry" type="button" hidden>Try this one again</button>' +
+      '<button class="btn-main" id="bNext" type="button" hidden>' + (cur + 1 < qs.length ? 'Next question' : 'Back to question 1') + '</button></div>' +
       '</div></div>';
     var view = $('#view');
     view.innerHTML = h;
@@ -202,7 +208,6 @@
     Array.prototype.forEach.call(view.querySelectorAll('.pane'), function (el) { el.scrollTop = 0; math(el); });
     wire(q);
     if (prev) showResult(q, prev.response, prev.result === 'won', false);
-    ARENA.enter(key, prev ? prev.result : null);
   }
   function wire(q) {
     Array.prototype.forEach.call(document.querySelectorAll('.choices button'), function (b) {
@@ -235,7 +240,7 @@
     save();
     renderList(); markList();
     showResult(q, picked, r.correct, true);
-    if (r.correct) ARENA.win(); else ARENA.miss();
+    if (r.correct) ARENA.hit(); else ARENA.miss();
   }
   function showResult(q, resp, won, fresh) {
     var r = check(q, resp), slip = '';
@@ -251,8 +256,7 @@
     } else {
       var inp = $('#spr-in'); inp.value = resp; inp.disabled = true;
     }
-    var boss = ARENA.bossName(bossFor(cur));
-    var verdict = won ? 'Correct. The ' + boss + ' is dispelled.'
+    var verdict = won ? 'Correct. Pomelo lands a hit on the ' + esc(biome.bossName) + '.'
       : 'Not this time. The answer is ' + esc(r.key) + '.';
     $('#feedback').innerHTML = '<p class="verdict ' + (won ? 'won' : 'missed') + '">' + verdict + '</p>' +
       (slip ? '<p class="slip">' + esc(slip) + '</p>' : '') +
