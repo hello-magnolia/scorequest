@@ -174,20 +174,24 @@
     var q = qs[cur], p = q.passage, prev = progress[q.id];
     markList();
     var h = '';
+    var visual = !p && (q.figure || q.table);
+    h += '<div class="pane passage mid"><div id="arena-slot"></div>';
     if (p) {
-      h += '<div class="pane passage">' + (p.intro ? '<p class="intro">' + rich(p.intro) + '</p>' : '');
+      h += (p.intro ? '<p class="intro">' + rich(p.intro) + '</p>' : '');
       (p.parts || []).forEach(function (pt) {
         if (pt.label) h += '<div class="partlabel">' + esc(pt.label) + '</div>';
         if (p.kind === 'notes') h += '<ul>' + pt.paragraphs.map(function (x) { return '<li>' + rich(x, true) + '</li>'; }).join('') + '</ul>';
         else h += pt.paragraphs.map(function (x) { return '<p>' + rich(x, true) + '</p>'; }).join('');
       });
       (p.figures || []).forEach(function (f) { h += figure(f); });
-      h += '</div>';
+    } else if (visual) {
+      h += table(q.table) + figure(q.figure);
     }
+    h += '</div>';
     h += '<div class="pane qpane"><div class="question">' +
       '<div class="qnum">Question ' + (cur + 1) + ' of ' + qs.length + '</div>' +
       '<div class="chips"><span class="chip">' + esc(q.skill) + '</span><span class="chip">' + LV[q.difficulty] + '</span></div>' +
-      '<div class="stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure);
+      '<div class="stem">' + rich(q.stem) + '</div>' + (visual ? '' : table(q.table) + figure(q.figure));
     if (q.type === 'mcq') {
       h += '<ol class="choices" aria-label="Answer choices">' + q.choices.map(function (c) {
         return '<li><button type="button" data-k="' + c.key + '"><span class="k">' + c.key + '</span><span>' +
@@ -202,8 +206,10 @@
       '<button id="bRetry" type="button" hidden>Try this one again</button>' +
       '<button class="btn-main" id="bNext" type="button" hidden>' + (cur + 1 < qs.length ? 'Next question' : 'Back to question 1') + '</button></div>' +
       '</div></div>';
-    var view = $('#view');
+    var view = $('#view'), arena = $('#arena');
+    $('#arena-park').appendChild(arena);   // keep the live arena out of the way while the view is rebuilt
     view.innerHTML = h;
+    $('#arena-slot').appendChild(arena);
     view.scrollTop = 0;
     Array.prototype.forEach.call(view.querySelectorAll('.pane'), function (el) { el.scrollTop = 0; math(el); });
     wire(q);
