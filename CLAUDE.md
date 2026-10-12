@@ -28,8 +28,8 @@ Timing checks POLL (until-loops), never fixed sleeps. `__SQ_TICKS` (realm) and
 `__SQ_BOSS` state are the tripwires. Pages deploys lag pushes ~10 min (CDN caches HTML).
 
 ## Version discipline
-Every deploy: one sed bumps `?v=` in ALL TEN html files (index, map, checkout, success,
-parents, realm, boss, bookmarks, profile, settings). Lineage `b<YYYYMMDD><letter>`; check
+Every deploy: one sed bumps `?v=` in ALL ELEVEN html files (index, map, checkout, success,
+parents, realm, boss, bookmarks, profile, settings, clash). Lineage `b<YYYYMMDD><letter>`; check
 index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
 
 ## Edits and sprites
@@ -62,6 +62,11 @@ re-run it on any existing project. verify_auth guards all of this.
 - Pages: index (hero, parents demo w/ 4-lang i18n, pricing), map.html (world map + labels,
   caption below, gray fog until visited), realm.html (walkabout; editor at &edit=1),
   boss.html, checkout, success, parents, profile, settings, bookmarks.
+- clash.html (art-style experiment, linked under index #world): research question-viewer layout
+  per biome (?realm=), one Critter Clash boss per question vs Pomelo in a corner arena.
+  js/clash.js page, js/clash-arena.js (critter sprites+moves from Magnolia's Critter Clash
+  artifact; no numbers, Pomelo never takes damage), js/clash-figures.js + data/clash-bank.js
+  (copies of the practice-engine patch's figures.js / questions.js; 150 Originals). KaTeX via cdnjs.
 - realm.js: 8 manifests; path is a walk graph {nodes, edges, stairs}; Pomelo at {edge, t};
   arrows/WASD steer, SPACE routes to nearest open trial. ARRIVAL OPENS A PROMPT
   (Start/Retry/Skip; Space fires armed) then the quiz. Progress = passed-set in
