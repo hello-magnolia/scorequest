@@ -71,6 +71,8 @@ re-run it on any existing project. verify_auth guards all of this.
   per correct answer, misses never heal it. Focus (F, sq_clash_focus) swaps the screen for two
   quiet bars. Motion full/calm/off = localStorage sq_motion, also on settings.html (#st-motion),
   defaults to calm under prefers-reduced-motion. Progress sq_clash_<biome>.
+  js/clash-ambient.js: fixed canvas behind the page, per-biome mood (Lorewood pixel maple
+  leaves; add PALETTES for others), obeys sq_motion. Soft look: --edge/--shadow tokens, no hard offsets.
   js/clash.js page, js/clash-arena.js (critter sprites+moves from Magnolia's Critter Clash
   artifact; no numbers, Pomelo never takes damage), js/clash-figures.js + data/clash-bank.js
   (copies of the practice-engine patch's figures.js / questions.js; 150 Originals). KaTeX via cdnjs.
