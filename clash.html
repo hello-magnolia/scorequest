@@ -50,7 +50,7 @@ button { cursor: pointer; }
 button:focus-visible, select:focus-visible { outline: 3px dashed var(--muted); outline-offset: 2px; }
 
 /* ---------- top bar ---------- */
-.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 36px; border-bottom: var(--edge); background: var(--card); position: relative; z-index: 1; }
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 36px; border-bottom: var(--edge); background: var(--card); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 0 rgba(43, 33, 24, .06); }
 .top .home { color: var(--muted); text-decoration: none; font: 600 13px var(--pixel); }
 .top .home:hover { color: var(--ink); }
 .top h1 { font: 700 20px/1 var(--pixel); margin: 0 4px 0 0; letter-spacing: .3px; }
@@ -209,10 +209,10 @@ body.focus .trail .here { display: none; }
   <article class="card" id="read"><div class="empty">Loading the biome&hellip;</div></article>
 </main>
 
-<script src="js/clash-figures.js?v=b20261012f"></script>
-<script src="data/clash-bank.js?v=b20261012f"></script>
-<script src="js/clash-arena.js?v=b20261012f"></script>
-<script src="js/clash-ambient.js?v=b20261012f"></script>
-<script src="js/clash.js?v=b20261012f"></script>
+<script src="js/clash-figures.js?v=b20261013a"></script>
+<script src="data/clash-bank.js?v=b20261013a"></script>
+<script src="js/clash-arena.js?v=b20261013a"></script>
+<script src="js/clash-ambient.js?v=b20261013a"></script>
+<script src="js/clash.js?v=b20261013a"></script>
 </body>
 </html>
