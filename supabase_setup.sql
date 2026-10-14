@@ -376,6 +376,29 @@ alter function public.touch_updated_at() set search_path = public;
 alter function public.mark_hero_named() set search_path = public;
 alter function public.sat_number(text) set search_path = public;
 
+-- ============================================================
+-- 9. Official SAT items (College Board) for TESTING AND CALIBRATION ONLY.
+--    Locked: RLS on, no policies, no client grants, so only the service role
+--    can read it, and nothing in the app reads it. Loaded from the research
+--    folder with pipeline/export_calibration.py (copy at tools/).
+-- ============================================================
+create table if not exists public.calibration_questions (
+  id          text primary key,
+  bank        text not null,
+  section     text not null check (section in ('math', 'rw')),
+  domain      text,
+  skill       text,
+  difficulty  text,
+  type        text not null check (type in ('mcq', 'spr')),
+  status      text not null default 'imported',
+  item        jsonb not null,
+  imported_at timestamptz not null default now()
+);
+create index if not exists calibration_questions_bank on public.calibration_questions (bank, section);
+create index if not exists calibration_questions_skill on public.calibration_questions (domain, skill);
+alter table public.calibration_questions enable row level security;
+revoke all on public.calibration_questions from public, anon, authenticated;
+
 -- Done. Publish the bank from the research folder:
 --   SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python3 pipeline/export_app_bank.py --supabase
 -- Applied to the ScoreQuest project on 2026-10-14 (migrations sq_attempts_table,
