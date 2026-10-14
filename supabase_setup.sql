@@ -249,7 +249,7 @@ create table if not exists public.questions (
   version     integer not null default 1,
   updated_at  timestamptz not null default now()
 );
-create index if not exists questions_domain_skill on public.questions (domain, skill, difficulty) where status = 'approved';
+create index if not exists questions_live_domain_skill on public.questions (domain, skill, difficulty) where status <> 'retired';
 
 create table if not exists public.question_keys (
   question_id text primary key references public.questions (id) on delete cascade,
@@ -287,7 +287,9 @@ create table if not exists public.waypoints (
 alter table public.waypoints add column if not exists also jsonb;   -- extra skills folded into this marker
 create index if not exists waypoints_realm on public.waypoints (realm, position);
 
--- Visible questions and waypoints: any signed-in player, approved rows only.
+-- Visible questions and waypoints: any signed-in player, every row that is not
+-- retired (drafts are live on the site until the review pass; tighten to
+-- status = 'approved' once it is done).
 -- Keys: nobody. Reports: insert your own. Writes to the bank: service role only
 -- (the pipeline), which bypasses RLS.
 alter table public.questions enable row level security;
@@ -295,8 +297,9 @@ alter table public.question_keys enable row level security;
 alter table public.question_reports enable row level security;
 alter table public.waypoints enable row level security;
 drop policy if exists "questions: read approved" on public.questions;
-create policy "questions: read approved" on public.questions for select
-  using (auth.role() = 'authenticated' and status = 'approved');
+drop policy if exists "questions: read live" on public.questions;
+create policy "questions: read live" on public.questions for select
+  using (auth.role() = 'authenticated' and status <> 'retired');
 drop policy if exists "waypoints: read" on public.waypoints;
 create policy "waypoints: read" on public.waypoints for select using (auth.role() = 'authenticated');
 drop policy if exists "reports: insert own" on public.question_reports;
@@ -318,7 +321,7 @@ declare
   a text;
 begin
   if auth.uid() is null then raise exception 'sign in first'; end if;
-  select * into q from public.questions where id = p_question_id and status = 'approved';
+  select * into q from public.questions where id = p_question_id and status <> 'retired';
   if not found then raise exception 'unknown question'; end if;
   select * into k from public.question_keys where question_id = p_question_id;
   if q.type = 'mcq' then
@@ -362,6 +365,20 @@ grant usage, select on sequence public.question_reports_id_seq to authenticated;
 grant execute on function public.check_answer(text, text, integer, text) to authenticated;
 grant execute on function public.sat_number(text) to authenticated;
 revoke all on public.question_keys from anon, authenticated;
+-- Trigger functions are not an API; the grader is for signed-in players only.
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+revoke execute on function public.sync_auth_identity() from public, anon, authenticated;
+revoke execute on function public.touch_updated_at() from public, anon, authenticated;
+revoke execute on function public.mark_hero_named() from public, anon, authenticated;
+revoke execute on function public.check_answer(text, text, integer, text) from public, anon;
+revoke execute on function public.sat_number(text) from public, anon;
+alter function public.touch_updated_at() set search_path = public;
+alter function public.mark_hero_named() set search_path = public;
+alter function public.sat_number(text) set search_path = public;
 
 -- Done. Publish the bank from the research folder:
 --   SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python3 pipeline/export_app_bank.py --supabase
+-- Applied to the ScoreQuest project on 2026-10-14 (migrations sq_attempts_table,
+-- sq_question_bank_and_waypoints, sq_profiles_identity_upgrade, sq_serve_drafts_until_review);
+-- 150 questions, 150 keys and 45 waypoints loaded. Note: the Supabase MCP migration
+-- tool cancels on any DROP, so split this file around the drop lines if applying it that way.

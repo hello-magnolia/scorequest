@@ -22,7 +22,7 @@
      SQAttempts.list()
 
    Bank source: the Supabase questions table when the player is signed in and
-   it answers (approved rows, no answer keys), otherwise the static
+   it answers (live rows, no answer keys), otherwise the static
    data/questions.js. Supabase rows are cached in localStorage sq_bank_cache
    so a bad connection does not block a session.
 
