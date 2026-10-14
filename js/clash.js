@@ -51,81 +51,8 @@
   var diff = '', qs = [], cur = 0, picked = null, progress = {}, pomHp = POM_HP, shownAt = 0;
 
   /* ---------- text helpers ---------- */
-  function math(el) {
-    if (el && window.renderMathInElement) {
-      try { window.renderMathInElement(el, { delimiters: [{ left: '\\[', right: '\\]', display: true }, { left: '\\(', right: '\\)', display: false }], throwOnError: false }); } catch (e) {}
-    }
-  }
-  function rich(s, passage) {
-    var h = esc(s).replace(/(\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\])|\\\$/g, function (m, mm) { return mm ? m : '$'; });
-    h = h.replace(/\{s\d+\}/g, '<u>').replace(/\{\/s\d+\}/g, '</u>');
-    if (passage) h = h.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-    return h;
-  }
-  function figure(f) {
-    if (!f) return '';
-    var spec = f.spec || f;
-    if (!window.SQFigures || !spec.kind) return '';
-    var svg;
-    try { svg = window.SQFigures.render(spec); } catch (e) { return ''; }
-    var alt = f.alt || (window.SQFigures.describe ? window.SQFigures.describe(spec) : '');
-    return '<figure class="fig-built" role="img" aria-label="' + esc(alt) + '">' + svg + '</figure>';
-  }
-  function table(t) {
-    if (!t) return '';
-    return '<table class="data">' + (t.caption ? '<caption>' + esc(t.caption) + '</caption>' : '') +
-      '<tr>' + t.columns.map(function (c) { return '<th>' + rich(c) + '</th>'; }).join('') + '</tr>' +
-      t.rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + rich(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>';
-  }
+  var C = window.SQCard, math = C.math, rich = C.rich, figure = C.figure, table = C.table, value = C.value, gridIn = C.gridIn, check = C.check, LANTERN = C.LANTERN, LEAF = C.LEAF, lairIcon = C.lairIcon;
 
-  /* ---------- answer checking (Digital SAT grid-in rules) ---------- */
-  function value(t) {
-    t = String(t).trim().replace(/−/g, '-');
-    if (/^-?\d+\/\d+$/.test(t)) { var p = t.split('/'); return +p[0] / +p[1]; }
-    var v = parseFloat(t);
-    return isNaN(v) ? null : v;
-  }
-  function gridIn(t) {
-    t = String(t == null ? '' : t).trim();
-    if (!t) return 'Type an answer first.';
-    if (/\d\s+\d+\/\d/.test(t)) return 'Mixed numbers are not allowed. Enter 3 1/2 as 7/2 or 3.5.';
-    if (/[,%$]/.test(t)) return 'Leave out commas, percent signs and dollar signs.';
-    if (!/^-?(\d+\.?\d*|\.\d+|\d+\/\d+)$/.test(t)) return 'Use digits with at most one decimal point or one fraction bar, like 12, 0.75 or 3/4.';
-    if (t.length > (t.charAt(0) === '-' ? 6 : 5)) return 'Answers fit in 5 characters (6 with a minus sign). Round or use a fraction.';
-    if (/\/0+$/.test(t)) return 'A fraction cannot have 0 on the bottom.';
-    return '';
-  }
-  function check(q, resp) {
-    if (window.SQQuestions && window.SQQuestions.check) {
-      var r = window.SQQuestions.check(q, resp);
-      return { correct: !!r.correct, key: q.type === 'mcq' ? r.key : (q.accepted || [])[0] };
-    }
-    if (q.type === 'mcq') {
-      var key = q.choices.filter(function (c) { return c.correct; })[0];
-      return { correct: !!key && key.key === resp, key: key && key.key };
-    }
-    var acc = q.accepted || (q.answer && q.answer.accepted) || [], v = value(resp);
-    var ok = acc.some(function (a) { var av = value(a); return String(a).trim() === String(resp).trim() || (av !== null && v !== null && Math.abs(av - v) < 1e-9); });
-    return { correct: ok, key: acc[0] };
-  }
-
-  /* ---------- tiny pixel art for the trail: one character per pixel ---------- */
-  function px(rows, pal, s) {
-    var w = rows[0].length, h = rows.length, r = '';
-    rows.forEach(function (row, y) { for (var x = 0; x < w; x++) { var c = pal[row[x]]; if (c) r += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + c + '"/>'; } });
-    return '<svg class="px" viewBox="0 0 ' + w + ' ' + h + '" width="' + w * s + '" height="' + h * s + '" aria-hidden="true">' + r + '</svg>';
-  }
-  var LANTERN = px(['...k...', '..kkk..', '.kkkkk.', '.kyyyk.', '.kyoyk.', '.kyyyk.', '..kkk..', '...k...', '.kkkkk.'], { k: '#2b2118', y: '#f2c84b', o: '#e8742a' }, 3);
-  var LEAF = px(['...gg', '..ggg', '.ggg.', 'ggg..', 'k....'], { g: '#6f9a5a', k: '#2b2118' }, 2);
-  var TORII = px(['kkkkkkkkkkkkkk', 'krrrrrrrrrrrrk', '.kkkkkkkkkkkk.', '..kr......kr..', '.krrrrrrrrrrk.', '..kr......kr..', '..kr......kr..', '..kr......kr..', '..kr......kr..', '..kk......kk..'], { k: '#2b2118', r: '#b5473a' }, 3);
-  var LAIR_TINT = { storyforge: '#d9803a', inkreef: '#4fa3b5', syntaxcitadel: '#c9b25a', mirrormines: '#9a7ae0', infinityisles: '#d98ab5', datadocks: '#6a90b0', prismpeaks: '#8fd3f0' };
-  function lairIcon(id) {
-    if (id === 'lorewood') return TORII;
-    return px(['k.k.k.k.k', 'kkkkkkkkk', 'ksssssssk', 'ksssfsssk', 'ksssssssk', 'kssdddssk', 'ksdddddsk', 'ksdddddsk', 'kkkkkkkkk'],
-      { k: '#2b2118', s: '#cfc4ab', f: LAIR_TINT[id] || '#f2c84b', d: '#2b2118' }, 3);
-  }
-
-  /* ---------- ward and HP ---------- */
   function wardMax() {
     var n = BANK.filter(function (q) { return q.domain === biome.domain; }).length;
     return Math.max(3, Math.min(10, Math.ceil(n * 0.6)));
@@ -249,18 +176,21 @@
     var q = qs[cur];
     if (progress[q.id] || picked == null || picked === '') return;
     if (q.type !== 'mcq') { var bad = gridIn(picked); if (bad) { $('#msg').textContent = bad; return; } }
-    var r = check(q, picked);
-    progress[q.id] = { result: r.correct ? 'won' : 'missed', response: picked, at: Date.now() };
-    save();
-    if (window.SQAttempts) {
-      try { window.SQAttempts.record({ question_id: q.id, correct: r.correct, response: picked, ms: Date.now() - shownAt, skill: q.skill, domain: q.domain, difficulty: q.difficulty, session_id: 'clash:' + biome.id }); } catch (e) {}
-    }
-    showResult(q, picked, r.correct, true);
-    trail(); bars();
-    if (r.correct) ARENA.hit().then(bars); else ARENA.miss().then(pomOuch);
+    $('#bCheck').disabled = true;
+    var resp = picked, ms = Date.now() - shownAt;
+    /* grade on the server when signed in (the key never reaches the browser); it records the attempt */
+    window.SQQuestions.grade(q, resp, { ms: ms, session_id: 'clash:' + biome.id }).then(function (r) {
+      if (qs[cur] !== q) return;   /* moved on meanwhile */
+      progress[q.id] = { result: r.correct ? 'won' : 'missed', response: resp, at: Date.now(), key: r.key, explanation: r.explanation, trap: r.trap };
+      save();
+      showResult(q, resp, r.correct, true);
+      trail(); bars();
+      if (r.correct) ARENA.hit().then(bars); else ARENA.miss().then(pomOuch);
+    });
   }
   function showResult(q, resp, won, fresh) {
-    var r = check(q, resp), slip = '';
+    var p = progress[q.id] || {}, slip = '';
+    var r = { key: p.key != null ? p.key : check(q, resp).key, explanation: p.explanation || q.explanation };
     if (q.type === 'mcq') {
       Array.prototype.forEach.call(document.querySelectorAll('.choices button'), function (b) {
         var k = b.getAttribute('data-k');
@@ -268,15 +198,15 @@
         if (k === r.key) b.classList.add('correct');
         else if (k === resp) b.classList.add('wrong');
       });
-      var pc = q.choices.filter(function (c) { return c.key === resp; })[0];
-      if (!won && pc && pc.trap) slip = 'Common slip: ' + String(pc.trap).replace(/-/g, ' ') + '.';
+      var pc = q.choices.filter(function (c) { return c.key === resp; })[0], trap = p.trap || (pc && pc.trap);
+      if (!won && trap) slip = 'Common slip: ' + String(trap).replace(/-/g, ' ') + '.';
     } else {
       var inp = $('#spr-in'); inp.value = resp; inp.disabled = true;
     }
     $('#why').innerHTML = '<p class="verdict ' + (won ? 'won' : 'missed') + '">' +
       (won ? 'Correct! A hit on the ' + esc(biome.bossName) + '.' : 'Not this time. The answer is ' + esc(r.key) + '.') + '</p>' +
       (slip ? '<p class="slip">' + esc(slip) + '</p>' : '') +
-      '<div class="body">' + String(q.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
+      '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
     $('#whybox').hidden = false;
     math($('#why'));
     $('#bCheck').hidden = true;

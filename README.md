@@ -79,6 +79,20 @@ a four-hex palette, which keeps the set visually consistent.
 - `verify_map.js` — 18 checks: node render, XP math, unlock gating, card overlays,
   clear state, persistence, and the full quest loop reaching an XP result.
 
+## Realm walkabouts & Critter Clash
+
+`realm.html` is where practice actually happens: Pomelo walks a biome's path and
+each marker is a waypoint (`data/waypoints.js`, one per SAT skill). Reaching one
+opens the Critter Clash overlay (`js/clash-overlay.js`, sharing `js/clash-arena.js`,
+`js/qcard.js` and `css/clash.css` with `clash.html`): a lesson scroll
+(`data/lessons.js`) or a five-question round against the biome's boss critter.
+Rounds climb in difficulty (1 easy, 2 medium, 3 hard) and clear at 4 of 5; a miss
+dispels one of Pomelo's HP pips, and an empty bar only means he rests and refills.
+Progress lives in `sq_realm_prog_<realm>` and `sq_realm_rounds_<realm>`. Empty
+waypoints stay hidden in play and show in the editor (`&edit=1`). Answers grade
+through `SQQuestions.grade()`: on the server (`check_answer`) when signed in, from
+the static bank otherwise. See `data/README.md` for the bank and the Supabase steps.
+
 ## Login & accounts
 
 Real accounts, Google login, and saved progress run on **Supabase** (free tier).
@@ -89,8 +103,9 @@ paste your project keys into `js/config.js`, the site runs in **demo mode**
 - `js/auth.js` — Supabase client, Google + email login, the "Choose your hero"
   modal, signed-in nav state, and progress persistence (with demo fallback).
 - `js/config.js` — the two public values you paste in (safe to commit).
-- `supabase_setup.sql` — run once in Supabase: profiles table + Row Level
-  Security (each user can touch only their own row) + auto-profile trigger.
+- `supabase_setup.sql` — run in Supabase (idempotent, re-run on upgrades): profiles
+  + attempts + the question bank tables and the `check_answer` grader (section 8),
+  each behind Row Level Security.
 - `verify_auth.js` — 12 checks: demo-mode fallback, modal open/toggle, Google
   button, demo login, hero-name greeting, progress round-trip, sign-out.
 

@@ -514,6 +514,34 @@
     /* One answered question (practice page). Signed-in players get a row in the
        attempts table (supabase_setup.sql section 7); everyone keeps a local copy
        through SQAttempts. Fails quietly: practice never waits on the network. */
+    /* ---- the question bank in Supabase (setup SQL section 8) ----
+       fetchBank(): approved questions for a signed-in player, no answer keys.
+       checkAnswer(): grades on the server, returns {correct, key, explanation, trap}
+       and records the attempt there. Both resolve null when Supabase is not
+       available, so the engine falls back to the static bank. */
+    fetchBank: function () {
+      if (!state.user || state.demo || !supabase) return Promise.resolve(null);
+      return supabase.from('questions').select('id,section,domain,skill,difficulty,type,status,stem,choices,passage,figure,table').eq('status', 'approved')
+        .then(function (res) { return res.error || !res.data ? null : res.data; })
+        .catch(function () { return null; });
+    },
+    fetchWaypoints: function (realm) {
+      if (!state.user || state.demo || !supabase) return Promise.resolve(null);
+      var q = supabase.from('waypoints').select('*').order('position');
+      if (realm) q = q.eq('realm', realm);
+      return q.then(function (res) { return res.error || !res.data ? null : res.data; }).catch(function () { return null; });
+    },
+    checkAnswer: function (questionId, response, ms, sessionId) {
+      if (!state.user || state.demo || !supabase) return Promise.resolve(null);
+      return supabase.rpc('check_answer', { p_question_id: questionId, p_response: String(response), p_ms: ms == null ? null : Math.round(ms), p_session_id: sessionId || null })
+        .then(function (res) { return res.error || !res.data ? null : res.data; })
+        .catch(function () { return null; });
+    },
+    reportQuestion: function (questionId, page, note) {
+      if (!state.user || state.demo || !supabase) return Promise.resolve(false);
+      return supabase.from('question_reports').insert({ user_id: state.user.id, question_id: questionId, page: page || null, note: note || null })
+        .then(function (res) { return !res.error; }).catch(function () { return false; });
+    },
     recordAttempt: function (row) {
       if (!state.user || state.demo || !supabase) return Promise.resolve(false);
       var r = Object.assign({ user_id: state.user.id }, row);

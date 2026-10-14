@@ -223,3 +223,145 @@ drop policy if exists "attempts: insert own" on public.attempts;
 create policy "attempts: insert own" on public.attempts for insert with check (auth.uid() = user_id);
 drop policy if exists "attempts: read own" on public.attempts;
 create policy "attempts: read own" on public.attempts for select using (auth.uid() = user_id);
+
+-- ============================================================
+-- 8. The question bank lives here (source of truth: the research pipeline's
+--    originals/, published with pipeline/export_app_bank.py --supabase).
+--    Two tables on purpose: what a student SEES (questions) and what grades
+--    them (question_keys). The browser can read questions when signed in and
+--    can never read question_keys; it grades by calling check_answer(), which
+--    returns correct-or-not plus the explanation and records the attempt in
+--    the same step. Safe to re-run.
+-- ============================================================
+create table if not exists public.questions (
+  id          text primary key,                     -- SQ-ALG-001
+  section     text not null check (section in ('math', 'rw')),
+  domain      text not null,
+  skill       text not null,
+  difficulty  smallint not null check (difficulty between 1 and 3),
+  type        text not null check (type in ('mcq', 'spr')),
+  status      text not null default 'draft' check (status in ('draft', 'reviewed', 'approved', 'retired')),
+  stem        text not null,
+  choices     jsonb,          -- [{key, text|figure}] WITHOUT correct or trap
+  passage     jsonb,
+  figure      jsonb,
+  "table"     jsonb,
+  version     integer not null default 1,
+  updated_at  timestamptz not null default now()
+);
+create index if not exists questions_domain_skill on public.questions (domain, skill, difficulty) where status = 'approved';
+
+create table if not exists public.question_keys (
+  question_id text primary key references public.questions (id) on delete cascade,
+  correct_key text,            -- mcq
+  accepted    text[],          -- spr, Digital SAT entry forms
+  traps       jsonb,           -- {"A": "subtracted-wrong-side", ...}
+  explanation text not null
+);
+
+create table if not exists public.question_reports (
+  id          bigint generated always as identity primary key,
+  user_id     uuid references auth.users (id) on delete set null,
+  question_id text not null references public.questions (id) on delete cascade,
+  page        text,
+  note        text,
+  created_at  timestamptz not null default now()
+);
+
+-- Waypoints: the map as data. One row per marker on a realm's path, in order.
+-- mode: clash (a 5-question round that gates progress), lesson (a scroll on the
+-- skill with two checks), rapid (timed, never gates), reading (one passage, many
+-- questions), empty (placed in the editor, hidden in play). rounds: how many
+-- difficulty tiers a clash waypoint has (1 easy, 2 adds medium, 3 adds hard).
+create table if not exists public.waypoints (
+  id          text primary key,                     -- lorewood-1
+  realm       text not null,
+  position    smallint not null,
+  skill       text,
+  mode        text not null default 'clash' check (mode in ('clash', 'lesson', 'rapid', 'reading', 'boss', 'empty')),
+  rounds      smallint not null default 1 check (rounds between 1 and 3),
+  title       text,
+  lesson      jsonb,                                -- lesson mode: {intro, patterns[], example{...}, checks[]}
+  updated_at  timestamptz not null default now()
+);
+alter table public.waypoints add column if not exists also jsonb;   -- extra skills folded into this marker
+create index if not exists waypoints_realm on public.waypoints (realm, position);
+
+-- Visible questions and waypoints: any signed-in player, approved rows only.
+-- Keys: nobody. Reports: insert your own. Writes to the bank: service role only
+-- (the pipeline), which bypasses RLS.
+alter table public.questions enable row level security;
+alter table public.question_keys enable row level security;
+alter table public.question_reports enable row level security;
+alter table public.waypoints enable row level security;
+drop policy if exists "questions: read approved" on public.questions;
+create policy "questions: read approved" on public.questions for select
+  using (auth.role() = 'authenticated' and status = 'approved');
+drop policy if exists "waypoints: read" on public.waypoints;
+create policy "waypoints: read" on public.waypoints for select using (auth.role() = 'authenticated');
+drop policy if exists "reports: insert own" on public.question_reports;
+create policy "reports: insert own" on public.question_reports for insert
+  with check (auth.uid() = user_id);
+
+-- Grade an answer on the server. The key never reaches the browser.
+-- Grid-ins: exact match or numeric equality against each accepted form
+-- (1/2, .5 and 0.5 all count). Records the attempt as the calling user.
+create or replace function public.check_answer(
+  p_question_id text, p_response text, p_ms integer default null, p_session_id text default null
+) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  q public.questions%rowtype;
+  k public.question_keys%rowtype;
+  ok boolean := false;
+  v numeric;
+  a text;
+begin
+  if auth.uid() is null then raise exception 'sign in first'; end if;
+  select * into q from public.questions where id = p_question_id and status = 'approved';
+  if not found then raise exception 'unknown question'; end if;
+  select * into k from public.question_keys where question_id = p_question_id;
+  if q.type = 'mcq' then
+    ok := (p_response = k.correct_key);
+  else
+    v := public.sat_number(p_response);
+    foreach a in array coalesce(k.accepted, '{}') loop
+      if trim(a) = trim(p_response) or (v is not null and public.sat_number(a) = v) then ok := true; end if;
+    end loop;
+  end if;
+  insert into public.attempts (user_id, question_id, correct, response, ms, skill, domain, difficulty, session_id)
+    values (auth.uid(), q.id, ok, p_response, p_ms, q.skill, q.domain, q.difficulty, p_session_id);
+  return jsonb_build_object(
+    'correct', ok,
+    'key', case when q.type = 'mcq' then k.correct_key else k.accepted[1] end,
+    'explanation', k.explanation,
+    'trap', case when q.type = 'mcq' and not ok then k.traps ->> p_response else null end
+  );
+end $$;
+
+-- "3/4" -> 0.75, "1.25" -> 1.25, anything else -> null
+create or replace function public.sat_number(t text) returns numeric
+language plpgsql immutable as $$
+declare n numeric; d numeric;
+begin
+  t := replace(trim(t), '−', '-');
+  if t ~ '^-?\d+/\d+$' then
+    n := split_part(t, '/', 1)::numeric; d := split_part(t, '/', 2)::numeric;
+    if d = 0 then return null; end if;
+    return round(n / d, 9);
+  elsif t ~ '^-?(\d+\.?\d*|\.\d+)$' then
+    return round(t::numeric, 9);
+  end if;
+  return null;
+exception when others then return null;
+end $$;
+
+grant select on public.questions, public.waypoints to authenticated;
+grant insert on public.question_reports to authenticated;
+grant usage, select on sequence public.question_reports_id_seq to authenticated;
+grant execute on function public.check_answer(text, text, integer, text) to authenticated;
+grant execute on function public.sat_number(text) to authenticated;
+revoke all on public.question_keys from anon, authenticated;
+
+-- Done. Publish the bank from the research folder:
+--   SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python3 pipeline/export_app_bank.py --supabase

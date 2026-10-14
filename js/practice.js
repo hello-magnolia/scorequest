@@ -104,7 +104,7 @@
       var a = run.answers[k];
       return '<span class="pr-dot' + (k === run.i ? ' cur' : '') + (a ? (a.correct ? ' ok' : ' miss') : '') + '"></span>';
     }).join('');
-    $('#pr-count').textContent = 'Question ' + (run.i + 1) + ' of ' + run.questions.length;
+    $('#pr-count').textContent = run.review ? 'Reviewing question ' + (run.i + 1) : 'Question ' + (run.i + 1) + ' of ' + run.questions.length;
   }
   function renderQuestion() {
     current = window.SQQuestions.get(run.questions[run.i]);
@@ -166,20 +166,26 @@
     });
     $('#pr-msg').textContent = '';
   }
+  var reviewing = false;
   function doCheck() {
     if (checked) return;
     var q = current, resp = q.type === 'mcq' ? picked : ($('#pr-spr-in').value || '').trim();
-    var r = window.SQQuestions.check(q, resp);
-    if (r.status !== 'checked') { $('#pr-msg').textContent = r.message; return; }
+    var pre = window.SQQuestions.check(q, resp);
+    if (pre.status !== 'checked') { $('#pr-msg').textContent = pre.message; return; }
     checked = true;
     var ms = Date.now() - shownAt;
+    $('#pr-check').disabled = true;
+    /* grade on the server when signed in (the key never reaches the browser); it records the attempt */
+    window.SQQuestions.grade(q, resp, { ms: ms, session_id: run.id, record: !reviewing }).then(function (r) { showVerdict(q, resp, r, ms); });
+  }
+  function showVerdict(q, resp, r, ms) {
+    if (current !== q) return;                      // the player moved on before the verdict landed
     run.answers[run.i] = { response: resp, correct: r.correct, ms: ms };
     store(SAVE, run);
-    window.SQAttempts.record({ question_id: q.id, correct: r.correct, response: resp, ms: ms, skill: q.skill, domain: q.domain, difficulty: q.difficulty, session_id: run.id });
 
     var fb = '';
     if (q.type === 'mcq') {
-      var key = r.key, pickedChoice = q.choices.filter(function (c) { return c.key === resp; })[0];
+      var key = r.key, pickedChoice = { trap: r.trap };
       Array.prototype.forEach.call(document.querySelectorAll('.pr-choice'), function (b) {
         var k = b.getAttribute('data-k');
         b.disabled = true;
@@ -192,16 +198,23 @@
       $('#pr-spr-in').disabled = true;
       $('#pr-spr-in').classList.add(r.correct ? 'right' : 'missed');
       fb = r.correct ? '<p class="pr-verdict ok">Correct.</p>'
-        : '<p class="pr-verdict miss">Not quite. One correct answer is ' + rich(q.accepted[0]) + '.</p>';
-      if (q.accepted.length > 1) fb += '<p class="pr-slip">Accepted forms: ' + q.accepted.map(esc).join(', ') + '</p>';
+        : '<p class="pr-verdict miss">Not quite. One correct answer is ' + rich(r.key) + '.</p>';
+      if (q.accepted && q.accepted.length > 1) fb += '<p class="pr-slip">Accepted forms: ' + q.accepted.map(esc).join(', ') + '</p>';
     }
-    fb += '<div class="pr-explain"><h4>Explanation</h4>' + String(q.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
+    fb += '<div class="pr-explain"><h4>Explanation</h4>' + String(r.explanation || q.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
     var box = $('#pr-feedback');
     box.innerHTML = fb; box.hidden = false;
     math(box);
     $('#pr-msg').textContent = '';
     $('#pr-check').hidden = true;
     $('#pr-next').hidden = false;
+    if (run.review) {
+      var nb = $('#pr-next').cloneNode(true);
+      nb.textContent = 'Back to results';
+      $('#pr-next').replaceWith(nb);
+      nb.addEventListener('click', function () { run = run.back; show('pr-summary'); });
+      $('#pr-count').textContent = 'Reviewing question ' + (run.i + 1);
+    }
     try { $('#pr-next').focus(); } catch (e) {}
     renderDots();
   }
@@ -252,15 +265,9 @@
     var a = keep.answers[k];
     if (current.type === 'mcq') pick(a.response); else $('#pr-spr-in').value = a.response;
     checked = false;
-    var rec = window.SQAttempts.record;
-    window.SQAttempts.record = function () {};      // reviewing is not a new attempt
-    doCheck();
-    window.SQAttempts.record = rec;
-    $('#pr-next').textContent = 'Back to results';
-    $('#pr-next').onclick = null;
-    var nb = $('#pr-next').cloneNode(true);
-    $('#pr-next').replaceWith(nb);
-    nb.addEventListener('click', function () { run = keep; show('pr-summary'); });
+    reviewing = true;                                // reviewing is not a new attempt
+    doCheck();                                       // the verdict callback relabels Next
+    reviewing = false;
     $('#pr-count').textContent = 'Reviewing question ' + (k + 1);
   }
 

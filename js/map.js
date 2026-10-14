@@ -21,49 +21,29 @@
   var G = window.SQGame;
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- tiny sample quests per realm (demo content) ---------- */
-  var QUESTS = {
-    info: [
-      { q: 'A passage’s central idea is best described as its…', why: 'The central idea is the point the whole passage supports, not any single detail.', a: ['main point', 'first sentence', 'longest word', 'title'], correct: 0 },
-      { q: '“Command of evidence” asks you to…', why: 'Command of evidence means choosing the lines that directly back up a claim.', a: ['guess the author’s mood', 'find text that supports a claim', 'count paragraphs', 'define a word'], correct: 1 },
-      { q: 'An inference is a conclusion based on…', why: 'An inference combines what the text says with what it implies. No outside guessing.', a: ['stated + implied clues', 'the answer key', 'your opinion', 'the title only'], correct: 0 },
-    ],
-    craft: [
-      { q: '“Words in context” questions test a word’s…', why: 'The test asks what the word means in this sentence, which can differ from its everyday meaning.', a: ['dictionary rank', 'meaning in that sentence', 'syllable count', 'origin'], correct: 1 },
-      { q: 'Two texts that disagree have a relationship of…', why: 'When two passages push against each other, describe the relationship as tension or contrast.', a: ['agreement', 'tension / contrast', 'repetition', 'no connection'], correct: 1 },
-      { q: 'An author’s “purpose” is…', why: 'Purpose is the author\'s reason for writing: to argue, explain, or entertain.', a: ['why they wrote it', 'how long it is', 'the font', 'the date'], correct: 0 },
-    ],
-    expression: [
-      { q: 'A transition like “however” signals…', why: 'However tells the reader the next idea pushes against the previous one.', a: ['a contrast', 'an example', 'a cause', 'agreement'], correct: 0 },
-      { q: 'The best transition depends on the…', why: 'Pick the transition that matches the logic between the sentences, not the fanciest word.', a: ['sentence length', 'logical relationship', 'first letter', 'paragraph number'], correct: 1 },
-      { q: 'Rhetorical synthesis rewards the choice that…', why: 'The right choice is the one that accomplishes the stated goal, even if others sound fine.', a: ['is longest', 'meets the stated goal', 'sounds fancy', 'repeats the prompt'], correct: 1 },
-    ],
-    conventions: [
-      { q: 'Two independent clauses can be joined with…', why: 'A comma alone splices two complete sentences. A semicolon can legally join them.', a: ['a comma alone', 'a semicolon', 'nothing', 'an apostrophe'], correct: 1 },
-      { q: 'Subject–verb agreement means the verb matches the subject’s…', why: 'Singular subjects take singular verbs and plural subjects take plural verbs. Match the number.', a: ['number', 'color', 'length', 'tense only'], correct: 0 },
-      { q: '“Its” vs “it’s”: “it’s” means…', why: 'It\'s is the contraction of it is or it has. Its (no apostrophe) shows possession.', a: ['belonging to it', 'it is / it has', 'many its', 'a typo'], correct: 1 },
-    ],
-    algebra: [
-      { q: 'Solve 2x + 4 = 10. x = ?', why: 'Subtract 4 from both sides to get 2x = 6, then divide by 2: x = 3.', a: ['2', '3', '4', '7'], correct: 1 },
-      { q: 'The slope of y = 3x − 1 is…', why: 'In y = mx + b form, the slope is m, the number multiplying x. Here that is 3.', a: ['−1', '1', '3', '0'], correct: 2 },
-      { q: 'A system with no solution has lines that are…', why: 'Parallel lines share a slope but never meet, so the system has no solution.', a: ['parallel', 'the same', 'perpendicular', 'curved'], correct: 0 },
-    ],
-    advmath: [
-      { q: 'The vertex form of a parabola is y = a(x − h)² + …', why: 'Vertex form is y = a(x - h)² + k, where (h, k) is the vertex.', a: ['k', 'b', 'x', 'c'], correct: 0 },
-      { q: 'x² = 9 has solutions x = …', why: 'Both 3 and -3 square to 9, so take both roots: x = ±3.', a: ['3 only', '−3 only', '±3', '9'], correct: 2 },
-      { q: '2³ · 2² = …', why: 'When multiplying powers with the same base, add the exponents: 3 + 2 = 5.', a: ['2⁵', '2⁶', '4⁵', '2¹'], correct: 0 },
-    ],
-    data: [
-      { q: '20 is what percent of 50?', why: '20 ÷ 50 = 0.4, and 0.4 written as a percent is 40%.', a: ['20%', '30%', '40%', '50%'], correct: 2 },
-      { q: 'The median of 2, 4, 9 is…', why: 'The median is the middle value once the list is in order: 2, 4, 9 gives 4.', a: ['2', '4', '5', '9'], correct: 1 },
-      { q: 'A rate of 60 miles in 2 hours is…', why: 'Divide distance by time: 60 miles ÷ 2 hours = 30 mph.', a: ['30 mph', '60 mph', '120 mph', '2 mph'], correct: 0 },
-    ],
-    geometry: [
-      { q: 'Angles in a triangle sum to…', why: 'The interior angles of any triangle always add up to 180°.', a: ['90°', '180°', '270°', '360°'], correct: 1 },
-      { q: 'The area of a circle is…', why: 'Area is πr². The formula 2πr gives the circumference instead.', a: ['2πr', 'πr²', 'πd', 'r²'], correct: 1 },
-      { q: 'In a right triangle, a² + b² = …', why: 'The legs squared sum to the hypotenuse squared: a² + b² = c².', a: ['c', 'c²', '2c', 'ab'], correct: 1 },
-    ],
+  /* ---------- side quests draw from the shared bank ----------
+     Three easy multiple-choice questions for the realm's SAT domain, from
+     data/questions.js (SQQuestions). The realm page is the real route; this
+     drawer is a taste on the home page, so answers here are not recorded. */
+  var REALM_DOMAIN = { info: 'Information and Ideas', craft: 'Craft and Structure', expression: 'Expression of Ideas', conventions: 'Standard English Conventions',
+    algebra: 'Algebra', advmath: 'Advanced Math', data: 'Problem-Solving and Data Analysis', geometry: 'Geometry and Trigonometry' };
+  var plain = function (t) {
+    return String(t || '').replace(/\\\$/g, '$').replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2').replace(/\\sqrt\{([^{}]*)\}/g, '\u221a$1')
+      .replace(/\\(cdot|times)/g, '\u00d7').replace(/\^\{?\\circ\}?/g, '\u00b0').replace(/\\[()[\]]/g, '').replace(/\\(text|mathrm)\{([^{}]*)\}/g, '$2')
+      .replace(/\\[a-zA-Z]+/g, '').replace(/[{}]/g, '').replace(/\{\/?s\d+\}/g, '').replace(/\s+/g, ' ').trim();
   };
+  function questsFor(realmId) {
+    var Q = window.SQQuestions;
+    if (!Q) return [];
+    var pool = Q.filter({ domains: [REALM_DOMAIN[realmId]] }).filter(function (q) { return q.type === 'mcq' && !q.passage && !q.figure && !q.table && q.choices.every(function (c) { return !c.figure; }); });
+    if (pool.length < 3) pool = Q.filter({ domains: [REALM_DOMAIN[realmId]] }).filter(function (q) { return q.type === 'mcq' && !q.figure && q.choices.every(function (c) { return !c.figure; }); });
+    pool.sort(function (a, b) { return a.difficulty - b.difficulty || Math.random() - 0.5; });
+    return pool.slice(0, 3).map(function (q) {
+      var ki = q.choices.findIndex(function (c) { return c.correct; });
+      var lead = q.passage ? plain((q.passage.parts[0] || {}).paragraphs.join(' ')).slice(0, 220) + (plain((q.passage.parts[0] || {}).paragraphs.join(' ')).length > 220 ? '\u2026 ' : ' ') : '';
+      return { q: lead + plain(q.stem), a: q.choices.map(function (c) { return plain(c.text); }), correct: ki, why: plain(q.explanation).split('. ').slice(0, 2).join('. ') + '.' };
+    });
+  }
 
   var mapWrap, drawer;
 
@@ -170,8 +150,9 @@
     if (!st.unlocked) return;
     if (!drawer) buildDrawer();
     var r = G.byId(realmId);
-    var pool = (QUESTS[realmId] || []).slice();
+    var pool = questsFor(realmId);
     session = { realmId: realmId, items: pool, i: 0, correct: 0, total: pool.length };
+    window.__SQ_QUEST = session;
 
     setQuestScene(r);
     drawer.querySelector('#quest-eyebrow').textContent = r.domain + ' · Lv ' + st.level;

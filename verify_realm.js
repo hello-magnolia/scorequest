@@ -47,66 +47,135 @@ const load = async (path) => {
   check('A second tap brings him back up',
     await until(() => w.__SQ_REALM_FLOP === null, 2500), String(w.__SQ_REALM_FLOP));
 
-  /* progression: space walks him to waypoint one, which hails him on the
-     approach rather than gating the path; Start opens the quiz; passed nodes
-     reopen as practice */
+  /* progression: space walks him to waypoint one (a lesson), which hails him on
+     the approach rather than gating the path; Start opens the Critter Clash
+     overlay; cleared nodes reopen as sparring */
+  const clickEl = (el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
   check('Space walks Pomelo toward the first waypoint, which offers Start',
     await until(() => d.getElementById('rw-prompt').hidden === false, 9000) &&
-    /Waypoint 1 of/.test(d.getElementById('rw-prompt-title').textContent) &&
+    /Lesson 1 of 4/.test(d.getElementById('rw-prompt-title').textContent) &&
     d.getElementById('rw-prompt-go').textContent === 'Start');
   check('It hailed him from a distance, not from on top of the marker',
     (w.__SQ_PROMPT_D || 0) > 60, 'opened at ' + w.__SQ_PROMPT_D + 'px');
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
-  check('Space fires Start: the quiz opens fresh, not as practice',
-    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === false, 2500) &&
-    d.getElementById('rw-quiz').hidden === false &&
-    d.querySelectorAll('#rw-quiz-choices button').length === 4);
-  const wrongIdx = (w.__SQ_QUIZ.correctIndex + 1) % 4;
-  d.querySelectorAll('#rw-quiz-choices button')[wrongIdx].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  check('A miss teaches and re-asks; progress holds at zero',
-    /The answer was [A-D]:/.test(d.getElementById('rw-quiz-feedback').textContent) &&
+  check('Space fires Start: the lesson scroll opens in the overlay, fresh (not sparring)',
+    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === false && w.__SQ_OVERLAY && w.__SQ_OVERLAY.mode === 'lesson', 2500) &&
+    d.querySelector('#sq-overlay').classList.contains('is-open') &&
+    d.querySelectorAll('#sq-overlay .check').length === 2 &&
+    d.getElementById('ov-done').disabled === true);
+  check('The scroll reads the skill, the moves and a worked example (no em dashes)',
+    /Central Ideas/.test(d.getElementById('ov-sub').textContent) &&
+    d.querySelectorAll('#sq-overlay .scroll ol li').length >= 2 &&
+    !!d.querySelector('#sq-overlay .ex .ans') &&
+    !d.getElementById('sq-overlay').textContent.includes('—'));
+  // first quick check: miss it, then the second: hit it; both settle the scroll
+  clickEl(d.querySelectorAll('#sq-overlay .check')[0].querySelectorAll('button')[0]);
+  check('A quick check teaches: the right answer lights up, the miss is marked, nothing is recorded',
+    d.querySelectorAll('#sq-overlay .check')[0].querySelectorAll('button.correct').length === 1 &&
     (w.__SQ_REALM_PROG || 0) === 0 &&
-    await until(() => !d.querySelector('#rw-quiz-choices button').disabled, 3000));
-  d.querySelectorAll('#rw-quiz-choices button')[w.__SQ_QUIZ.correctIndex].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  check('A pass unlocks the leg: progress one, node marked, continue offered',
+    JSON.parse(w.localStorage.getItem('sq_attempts') || '[]').length === 0);
+  clickEl(d.querySelectorAll('#sq-overlay .check')[1].querySelectorAll('button')[1]);
+  check('Both checks answered: Back to the path unlocks',
+    await until(() => d.getElementById('ov-done').disabled === false, 1000));
+  clickEl(d.getElementById('ov-done'));
+  check('Leaving the scroll clears the lesson leg: progress one, node marked, overlay gone',
     await until(() => w.__SQ_REALM_PROG === 1, 1500) &&
-    d.getElementById('rw-quiz-continue').hidden === false &&
-    d.querySelectorAll('.rw-node.is-passed').length === 1);
-  d.getElementById('rw-quiz-continue').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  await until(() => d.getElementById('rw-quiz').hidden === true, 1500);
+    d.querySelectorAll('.rw-node.is-passed').length === 1 &&
+    !d.querySelector('#sq-overlay').classList.contains('is-open') &&
+    !d.body.classList.contains('sq-overlay-open'));
+  // he finishes his walk to the marker on his own time; wait for him to settle
+  const settled = async () => { let last = null, still = 0; await until(() => { const xy = String(w.__SQ_REALM_XY); still = xy === last ? still + 1 : 0; last = xy; return still >= 6; }, 9000); };
+  await settled();
   const leftBefore = d.getElementById('rw-capy').style.left;
-  d.querySelector('.rw-node.is-passed').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  clickEl(d.querySelector('.rw-node.is-passed'));
   await new Promise(r => setTimeout(r, 700));
   const ticksAt = w.__SQ_TICKS || 0;
   await new Promise(r => setTimeout(r, 350));
   check('The tick loop runs to completion every frame (no silent mid-tick throws)',
     (w.__SQ_TICKS || 0) > ticksAt + 3, (w.__SQ_TICKS || 0) + ' vs ' + ticksAt);
-  check('A passed node reopens through the prompt as Retry, and Pomelo stays put',
+  check('A cleared node reopens through the prompt as Read again, and Pomelo stays put',
     await until(() => d.getElementById('rw-prompt').hidden === false, 2500) &&
     /cleared/.test(d.getElementById('rw-prompt-title').textContent) &&
-    d.getElementById('rw-prompt-go').textContent === 'Retry' &&
-    d.getElementById('rw-capy').style.left === leftBefore);
-  d.getElementById('rw-prompt-go').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  check('Retry reopens the quiz as extra practice',
-    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true, 2500) &&
-    /EXTRA PRACTICE/.test(d.getElementById('rw-quiz-kicker').textContent));
-  // settle the practice item, then test the handoff: with the cleared trial's
-  // Retry banner up, walking toward trial 2 must hand the hail over mid-stride
-  d.querySelectorAll('#rw-quiz-choices button')[w.__SQ_QUIZ.correctIndex].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  await until(() => d.getElementById('rw-quiz-continue').hidden === false, 2500);
-  d.getElementById('rw-quiz-continue').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  await until(() => d.getElementById('rw-quiz').hidden === true, 1500);
-  d.querySelector('.rw-node.is-passed').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    d.getElementById('rw-prompt-go').textContent === 'Read again' &&
+    d.getElementById('rw-capy').style.left === leftBefore,
+    d.getElementById('rw-prompt-title').textContent + ' / ' + d.getElementById('rw-prompt-go').textContent + ' / ' + leftBefore + ' -> ' + d.getElementById('rw-capy').style.left + ' hidden=' + d.getElementById('rw-prompt').hidden);
+  clickEl(d.getElementById('rw-prompt-go'));
+  check('Read again reopens the scroll as sparring',
+    await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true && w.__SQ_OVERLAY && w.__SQ_OVERLAY.open, 2500));
+  clickEl(d.getElementById('ov-close'));
+  check('Leave closes the overlay without touching progress',
+    await until(() => !w.__SQ_OVERLAY, 1000) && w.__SQ_REALM_PROG === 1);
+  // the handoff: with the cleared trial's banner up, walking toward trial 2
+  // must hand the hail over mid-stride
+  clickEl(d.querySelector('.rw-node.is-passed'));
   await until(() => d.getElementById('rw-prompt').hidden === false &&
     /cleared/.test(d.getElementById('rw-prompt-title').textContent), 2500);
-  d.querySelectorAll('.rw-node:not(.is-passed)')[0].dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  clickEl(d.querySelectorAll('.rw-node:not(.is-passed)')[0]);
   check('The hail hands over: the next trial takes the banner from the cleared one, from a distance',
     await until(() => d.getElementById('rw-prompt').hidden === false &&
       /Waypoint 2 of/.test(d.getElementById('rw-prompt-title').textContent), 9000) &&
+    /round 1 of 2/.test(d.getElementById('rw-prompt-title').textContent) &&
     d.getElementById('rw-prompt-go').textContent === 'Start' &&
     (w.__SQ_PROMPT_D || 0) > 60,
     d.getElementById('rw-prompt-title').textContent + ' at ' + (w.__SQ_PROMPT_D || 0) + 'px');
+
+  /* a clash round: five bank questions on the waypoint's skill, Pomelo versus the
+     biome boss; a miss drains HP, never progress; 4 of 5 clears the round */
+  clickEl(d.getElementById('rw-prompt-go'));
+  check('Start opens a clash round on the skill with the biome boss on screen',
+    await until(() => w.__SQ_OVERLAY && w.__SQ_OVERLAY.mode === 'clash' && d.querySelectorAll('#sq-overlay .choices button').length >= 3, 6000) &&
+    /Central Ideas/.test(d.getElementById('ov-title').textContent) &&
+    /Round 1 of 2/.test(d.getElementById('ov-sub').textContent) &&
+    w.SQClashOverlay.state.qs.length === 5 &&
+    w.SQClashOverlay.state.qs.every(q => q.skill === 'Central Ideas and Details') &&
+    !!d.getElementById('cx-cv') && !!d.getElementById('me-hp'));
+  const answer = async (right) => {
+    const st = w.SQClashOverlay.state, q = st.qs[st.i], i = st.i;
+    const pick = q.choices.find(c => right ? c.correct : !c.correct).key;
+    clickEl(d.querySelector('#sq-overlay .choices button[data-k="' + pick + '"]'));
+    clickEl(d.getElementById('bCheck'));
+    await until(() => st.results[i] != null && !d.getElementById('whybox').hidden, 4000);
+    return st.results[i];
+  };
+  const miss = await answer(false);
+  check('A miss teaches: explanation shows, the key is lit, progress holds at zero for the leg',
+    miss === false && !!d.querySelector('#sq-overlay .choices button.correct') &&
+    /Not this time/.test(d.getElementById('why').textContent) &&
+    w.__SQ_REALM_PROG === 1);
+  check('The miss dispels one of Pomelo\'s HP pips (never below empty, never a loss)',
+    await until(() => w.SQClashOverlay.state.hp === 4, 6000), 'hp ' + w.SQClashOverlay.state.hp);
+  clickEl(d.getElementById('bNext'));
+  let hits = 0;
+  for (let k = 0; k < 4; k++) { if (await answer(true)) hits++; clickEl(d.getElementById('bNext')); }
+  check('Four hits after the miss clear the round (4 of 5)',
+    hits === 4 && await until(() => w.__SQ_OVERLAY && w.__SQ_OVERLAY.done && w.__SQ_OVERLAY.cleared, 3000) &&
+    /Round cleared/.test(d.getElementById('ov-body').textContent));
+  check('Every clash answer is recorded as an attempt against the realm session',
+    JSON.parse(w.localStorage.getItem('sq_attempts') || '[]').filter(a => /^realm:lorewood:lorewood-2:r1$/.test(a.session_id)).length === 5);
+  clickEl(d.getElementById('ov-done'));
+  check('Round 1 of 2 is remembered; the waypoint stays open until round 2 (no pass yet)',
+    await until(() => !w.__SQ_OVERLAY, 1000) &&
+    (JSON.parse(w.localStorage.getItem('sq_realm_rounds_lorewood') || '{}')['1'] === 1) &&
+    w.__SQ_REALM_PROG === 1 && d.querySelectorAll('.rw-node.is-passed').length === 1);
+  clickEl(d.querySelectorAll('.rw-node:not(.is-passed)')[0]);
+  check('Coming back offers Continue on round 2',
+    await until(() => d.getElementById('rw-prompt').hidden === false && /round 2 of 2/.test(d.getElementById('rw-prompt-title').textContent), 6000) &&
+    d.getElementById('rw-prompt-go').textContent === 'Continue');
+
+  /* waypoints as data: every realm's markers map to a row; empties hide in play */
+  check('Every realm marker has a waypoint row (data/waypoints.js), and modes are known',
+    Array.isArray(w.SQ_WAYPOINTS) && w.SQ_WAYPOINTS.length >= 40 &&
+    w.SQ_WAYPOINTS.every(r => /^(clash|lesson|rapid|reading|empty)$/.test(r.mode)) &&
+    w.SQ_WAYPOINTS.filter(r => r.mode === 'clash').every(r => r.skill && r.rounds >= 1 && r.rounds <= 3));
+  check('Every lesson waypoint has a written scroll',
+    w.SQ_WAYPOINTS.filter(r => r.mode === 'lesson').every(r => w.SQ_LESSONS && w.SQ_LESSONS[r.skill] && w.SQ_LESSONS[r.skill].checks.length === 2));
+  w = await load('realm.html?realm=storyforge');
+  d = w.document;
+  check('Story Forge: empty waypoints are hidden in play (5 of 7 markers shown)',
+    d.querySelectorAll('.rw-node').length === 7 &&
+    [...d.querySelectorAll('.rw-node')].filter(n => !n.hidden).length === 5 &&
+    d.querySelectorAll('.rw-node.is-lesson').length === 2);
 
   /* the editor */
   w = await load('realm.html?realm=lorewood&edit=1');

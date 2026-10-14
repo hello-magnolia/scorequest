@@ -1,0 +1,165 @@
+/* ScoreQuest: the Critter Clash question card and battle screen. Loaded by
+   clash.html and realm.html (the waypoint overlay). Tokens come from the page
+   (--bg, --card, --ink, --muted, --line, --frame, --edge, --shadow, --pixel,
+   --serif, --sans, --good*, --warn*, --pick*, --ward*, --hp*). The .sq-clash block below
+   carries the same tokens for the overlay, scoped so the host page keeps its own. */
+.sq-clash {
+  --bg: #efe9da; --card: #fffdf7; --ink: #2b2118; --muted: #6f6252; --line: #d9cfba;
+  /* calm feedback: sage for right, clay for wrong, butter for picked */
+  --good: #4f7a55; --good-soft: #e7eee2; --good-line: #9bb79c;
+  --warn: #9a6232; --warn-soft: #f5ebdf; --warn-line: #d2ad86;
+  --pick: #f6efd6; --pick-line: #c9b27a;
+  --ward: #a48fcb; --ward-low: #d2a96a; --hp: #8fb07c; --hp-low: #d2a96a; --frame: #2b2118;
+  --shadow: 4px 4px 0 rgba(43, 33, 24, .13); --edge: 2px solid rgba(43, 33, 24, .78);
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  --pixel: "Pixelify Sans", ui-monospace, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  .sq-clash:not([data-theme="light"]) {
+    --bg: #16130f; --card: #211d18; --ink: #efe6d4; --muted: #a99a83; --line: #3a332a;
+    --good: #9cc69f; --good-soft: #1f2b20; --good-line: #4f7a55;
+    --warn: #e0b07e; --warn-soft: #2e241a; --warn-line: #7a5634;
+    --pick: #2f2a1a; --pick-line: #7d6c3e; --frame: #0c0a08;
+    --shadow: 4px 4px 0 rgba(0, 0, 0, .35); --edge: 2px solid rgba(239, 230, 212, .28);
+  }
+}
+.sq-clash[data-theme="dark"] {
+  --bg: #16130f; --card: #211d18; --ink: #efe6d4; --muted: #a99a83; --line: #3a332a;
+  --good: #9cc69f; --good-soft: #1f2b20; --good-line: #4f7a55;
+  --warn: #e0b07e; --warn-soft: #2e241a; --warn-line: #7a5634;
+  --pick: #2f2a1a; --pick-line: #7d6c3e; --frame: #0c0a08;
+    --shadow: 4px 4px 0 rgba(0, 0, 0, .35); --edge: 2px solid rgba(239, 230, 212, .28);
+}
+.sq-clash { --fig-ink: var(--ink); --fig-grid: var(--line); --fig-bg: var(--card); --fig-fill-1: #c4c4c4; --fig-fill-2: #5a5a5a; color: var(--ink); font: 15px/1.5 var(--sans); }
+.screen { position: relative; border: 3px solid var(--frame); border-radius: 4px; overflow: hidden; background: #000; line-height: 0; box-shadow: var(--shadow); aspect-ratio: 4 / 3; }
+.screen canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; }
+/* Pokemon-style name plates, each above its own critter */
+.plate { position: absolute; top: 12px; width: calc(50% - 18px); line-height: 1.15; color: #3a2e22; background: rgba(251, 246, 233, .9); border: 2px solid rgba(43, 33, 24, .55); border-radius: 4px; box-shadow: 0 2px 0 rgba(0, 0, 0, .12); font-family: var(--pixel); padding: 5px 8px 7px; }
+.plate.me { left: 10px; }
+.plate.boss { right: 10px; }
+.plate .nm { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: clamp(13px, 1.25vw, 18px); white-space: nowrap; overflow: hidden; }
+.plate .nm span { overflow: hidden; text-overflow: ellipsis; }
+.plate .nm svg { flex-shrink: 0; }
+.plate .row { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.plate .lbl { font: 700 10px var(--pixel); color: #8a7a64; letter-spacing: .6px; min-width: 2.6em; }
+.bar { flex: 1; display: flex; height: clamp(8px, .7vw, 11px); border: 1px solid rgba(43, 33, 24, .35); background: #ebe3cf; border-radius: 3px; overflow: hidden; gap: 1px; padding: 1px; }
+.bar i { flex: 1; background: transparent; border-radius: 1px; transition: background .35s steps(3); }
+.ward i.on { background: var(--ward); }
+.ward.low i.on { background: var(--ward-low); }
+.hp i.on { background: var(--hp); }
+.hp.low i.on { background: var(--hp-low); }
+.hp.rest { animation: rest .5s steps(2) 3; }
+@keyframes rest { 50% { opacity: .25; } }
+.log { font: 600 15px/1.35 var(--pixel); min-height: 1.4em; margin: -4px 2px 0; }
+
+/* focus status: the fight as two quiet bars, shown only in focus mode */
+.mini { display: none; background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 10px 12px; font: 700 13px var(--pixel); gap: 8px; }
+.mini .row { display: flex; align-items: center; gap: 8px; }
+.mini .row span:first-child { width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .bar { height: 9px; }
+
+.whybox { background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 14px 16px 16px; }
+.whybox h3 { font: 700 13px var(--pixel); margin: 0 0 8px; color: var(--muted); letter-spacing: .3px; }
+.whybox[hidden] { display: none; }
+.verdict { font: 700 14px var(--pixel); margin: 0 0 6px; }
+.verdict.won { color: var(--good); } .verdict.missed { color: var(--warn); }
+.slip { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
+.whybox .body { font: 15px/1.6 var(--serif); }
+.whybox .body p { margin: 0 0 8px; }
+
+.card { background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 24px 28px 28px; min-width: 0; }
+.passage { font: 18px/1.75 var(--serif); }
+.passage p { margin: 0 0 14px; }
+.passage ul { padding-left: 1.2em; }
+.passage .intro { font: 13px var(--sans); color: var(--muted); }
+.passage .partlabel { font: 700 13px var(--pixel); color: var(--muted); margin: 16px 0 6px; }
+
+.passage + .qbox { margin-top: 20px; padding-top: 18px; border-top: 2px dashed var(--line); }
+.qmeta { font: 600 12px var(--pixel); color: var(--muted); margin-bottom: 6px; letter-spacing: .3px; }
+.stem { font: 18px/1.6 var(--serif); margin: 0 0 16px; }
+
+.choices { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.choices button { width: 100%; display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 10px 14px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); font: 16px/1.5 var(--serif); }
+.choices button:hover:not(:disabled) { border-color: var(--muted); }
+.choices .k { font: 700 12px/1 var(--pixel); width: 22px; height: 22px; border: 2px solid var(--muted); border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
+.choices button.picked { border-color: var(--pick-line); background: var(--pick); }
+.choices button.picked .k { border-color: var(--ink); }
+.choices button.correct { border-color: var(--good-line); background: var(--good-soft); }
+.choices button.correct .k { border-color: var(--good); color: var(--good); }
+.choices button.wrong { border-color: var(--warn-line); background: var(--warn-soft); }
+.choices button.wrong .k { border-color: var(--warn); color: var(--warn); }
+.choices button:disabled { cursor: default; }
+.spr { display: grid; gap: 6px; max-width: 360px; }
+.spr label { font: 700 13px var(--pixel); color: var(--muted); }
+.spr input { font: 18px var(--serif); padding: 6px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 160px; }
+.spr .hint { color: var(--muted); font-size: 12px; margin: 0; }
+.acts { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn { font: 700 15px var(--pixel); padding: 8px 18px; border: var(--edge); background: var(--card); color: var(--ink); box-shadow: 3px 3px 0 rgba(43, 33, 24, .14); }
+.btn.main { background: var(--ink); color: var(--card); }
+.btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+.btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+.msg { color: var(--warn); font-size: 13px; margin: 8px 0 0; min-height: 1em; }
+table.data { border-collapse: collapse; margin: 6px 0 18px; font-size: 14px; }
+table.data caption { font-weight: 650; padding-bottom: 4px; }
+table.data th, table.data td { border: 1px solid var(--line); padding: 5px 10px; text-align: center; }
+table.data th { background: var(--bg); }
+figure { margin: 0 0 18px; }
+.fig-built { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px; max-width: 560px; }
+.fig-built svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.choices .fig-built { border: 0; padding: 0; background: transparent; }
+.empty { padding: 40px; text-align: center; color: var(--muted); }
+
+
+/* ---------- the waypoint overlay on realm.html ---------- */
+.sq-overlay { position: fixed; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; display: none; }
+.sq-overlay.is-open { display: block; }
+.sq-overlay .ov-top { display: flex; align-items: center; gap: 12px; padding: 10px 24px; border-bottom: var(--edge); background: var(--card); position: sticky; top: 0; z-index: 2; }
+.sq-overlay .ov-top h2 { font: 700 18px/1 var(--pixel); margin: 0; }
+.sq-overlay .ov-top .sub { font: 600 13px var(--pixel); color: var(--muted); }
+.sq-overlay .ov-top .spacer { flex: 1; }
+.sq-overlay .ov-top .tbtn { font: 700 13px var(--pixel); background: var(--card); color: var(--ink); border: var(--edge); padding: 5px 10px; box-shadow: 2px 2px 0 rgba(43, 33, 24, .13); cursor: pointer; }
+.sq-overlay .ov-dots { display: flex; gap: 6px; }
+.sq-overlay .ov-dots i { width: 12px; height: 12px; border: 2px solid var(--frame); background: var(--card); display: block; }
+.sq-overlay .ov-dots i.won { background: var(--good-soft); border-color: var(--good); }
+.sq-overlay .ov-dots i.missed { background: var(--warn-soft); border-color: var(--warn); }
+.sq-overlay .ov-dots i.cur { outline: 2px solid var(--frame); outline-offset: 2px; }
+.sq-overlay .lay { padding: 16px 24px 40px; display: grid; grid-template-columns: minmax(300px, 38%) 1fr; gap: 24px; align-items: start; }
+.sq-overlay .left { display: grid; gap: 14px; }
+.sq-overlay .whybox[hidden] { display: none; }
+.sq-overlay .msg { color: var(--warn); font-size: 13px; margin: 8px 0 0; min-height: 1em; }
+.sq-overlay .round-end { background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 22px 26px; max-width: 560px; margin: 40px auto; text-align: center; }
+.sq-overlay .round-end h3 { font: 700 22px var(--pixel); margin: 0 0 8px; }
+.sq-overlay .round-end p { margin: 0 0 14px; }
+.sq-overlay .round-end .acts { justify-content: center; }
+/* lesson scroll */
+.sq-overlay .lesson { max-width: 760px; margin: 20px auto 40px; padding: 0 24px; }
+.sq-overlay .scroll { background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 28px 34px; font: 17px/1.7 var(--serif); }
+.sq-overlay .scroll h3 { font: 700 22px var(--pixel); margin: 0 0 6px; }
+.sq-overlay .scroll .kicker { font: 600 12px var(--pixel); color: var(--muted); letter-spacing: .3px; margin-bottom: 14px; }
+.sq-overlay .scroll h4 { font: 700 13px var(--pixel); color: var(--muted); margin: 22px 0 8px; letter-spacing: .3px; }
+.sq-overlay .scroll ol { padding-left: 1.3em; }
+.sq-overlay .scroll li { margin: 0 0 10px; }
+.sq-overlay .scroll .ex { background: var(--bg); border-left: 3px solid var(--line); padding: 10px 14px; margin: 6px 0 0; }
+.sq-overlay .scroll .ex p { margin: 0 0 8px; }
+.sq-overlay .scroll .ex .ans { font-weight: 600; }
+.sq-overlay .checks { margin-top: 18px; }
+.sq-overlay .check { margin-bottom: 14px; }
+.sq-overlay .check p { margin: 0 0 6px; font-weight: 600; }
+.sq-overlay .check .opts { display: grid; gap: 6px; }
+.sq-overlay .check button { text-align: left; font: 15px/1.4 var(--serif); padding: 8px 12px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); cursor: pointer; }
+.sq-overlay .check button.correct { border-color: var(--good-line); background: var(--good-soft); }
+.sq-overlay .check button.wrong { border-color: var(--warn-line); background: var(--warn-soft); }
+@media (max-width: 860px) {
+  .sq-overlay .lay { grid-template-columns: 1fr; padding: 12px 16px 32px; }
+  .sq-overlay .left { order: 2; }
+  .sq-overlay .card { order: 1; }
+  .sq-overlay .screen { max-width: 440px; width: 100%; margin: 0 auto; }
+}
+/* the host page (realm.html) styles buttons globally; the card's own rules win inside the overlay */
+.sq-overlay .choices button, .sq-overlay .choices button span { color: var(--ink); text-shadow: none; letter-spacing: 0; text-transform: none; }
+.sq-overlay .choices button .k { color: var(--muted); }
+.sq-overlay .choices button.correct .k { color: var(--good); }
+.sq-overlay .choices button.wrong .k { color: var(--warn); }
+.sq-overlay .btn, .sq-overlay .tbtn { text-shadow: none; text-transform: none; letter-spacing: 0; border-radius: 0; }
+.sq-overlay .btn.main { color: var(--card); }

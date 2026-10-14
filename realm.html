@@ -7,7 +7,10 @@
 <meta name="theme-color" content="#16112b" />
 <title>Realm, ScoreQuest</title>
 <meta name="description" content="Walk the realm: a side-view stroll through one biome of the quest." />
-<link rel="stylesheet" href="css/style.css?v=b20261013b" />
+<link rel="stylesheet" href="css/style.css?v=b20261014a" />
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261014a" />
+<link rel="stylesheet" href="css/clash.css?v=b20261014a" />
 <link rel="icon" type="image/png" href="assets/logo.png" />
 </head>
 <body class="page-realm">
@@ -45,18 +48,6 @@
     <p class="rw-prompt-keys type-utility">space chooses &middot; arrows switch</p>
   </div>
 
-  <div class="rw-quiz pixel-frame" id="rw-quiz" hidden>
-    <p class="rw-quiz-kicker type-utility" id="rw-quiz-kicker"></p>
-    <p class="rw-quiz-q" id="rw-quiz-q"></p>
-    <div class="rw-quiz-choices" id="rw-quiz-choices"></div>
-    <p class="rw-quiz-feedback" id="rw-quiz-feedback"></p>
-    <div class="rw-quiz-row">
-      <button class="btn btn-outline" id="rw-quiz-close" type="button">Close</button>
-      <button class="sq-skip-test" id="rw-quiz-skip" type="button">Skip (testing)</button>
-      <button class="btn btn-gold" id="rw-quiz-continue" type="button" hidden>Continue (space)</button>
-    </div>
-  </div>
-
   <div class="rw-veil" id="rw-veil">
     <div class="paw-loader" aria-hidden="true"></div>
     <p class="type-utility" id="rw-veil-text">entering the realm&hellip;</p>
@@ -72,11 +63,21 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20261013b"></script>
-<script src="js/auth.js?v=b20261013b"></script>
-<script src="js/paws.js?v=b20261013b"></script>
-<script src="js/sfx.js?v=b20261013b"></script>
-<script src="js/companion.js?v=b20261013b"></script>
-<script src="js/realm.js?v=b20261013b"></script>
+<script src="js/config.js?v=b20261014a"></script>
+<script src="js/auth.js?v=b20261014a"></script>
+<script src="js/paws.js?v=b20261014a"></script>
+<script src="js/sfx.js?v=b20261014a"></script>
+<script src="js/companion.js?v=b20261014a"></script>
+<script src="assets/katex/katex.min.js?v=b20261014a"></script>
+<script src="assets/katex/auto-render.min.js?v=b20261014a"></script>
+<script src="data/questions.js?v=b20261014a"></script>
+<script src="data/waypoints.js?v=b20261014a"></script>
+<script src="data/lessons.js?v=b20261014a"></script>
+<script src="js/figures.js?v=b20261014a"></script>
+<script src="js/questions.js?v=b20261014a"></script>
+<script src="js/qcard.js?v=b20261014a"></script>
+<script src="js/clash-arena.js?v=b20261014a"></script>
+<script src="js/clash-overlay.js?v=b20261014a"></script>
+<script src="js/realm.js?v=b20261014a"></script>
 </body>
 </html>

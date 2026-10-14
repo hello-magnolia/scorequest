@@ -39,7 +39,10 @@ const ROSTER = {
 
 // ---------- setup ----------
 const W=128,H=96,GROUND=77,A_X=36,B_X=94;
-const cv=document.getElementById("cx-cv"), ctx=cv.getContext("2d");
+/* the canvas: #cx-cv on the page at load, or whatever bind(root) points at later (the realm overlay) */
+let root=document, cv=document.getElementById("cx-cv")||document.createElement("canvas"), ctx=cv.getContext("2d");
+function bind(r){root=r||document;const c=root.querySelector?root.querySelector("#cx-cv"):null;if(c&&c!==cv){cv=c;ctx=cv.getContext("2d");resize()}}
+const $id=(id)=>(root.querySelector?root.querySelector("#"+id):null)||document.getElementById(id);
 const low=document.createElement("canvas"); low.width=W; low.height=H;
 const lx=low.getContext("2d"); lx.imageSmoothingEnabled=false;
 const reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -55,6 +58,7 @@ function loadAll(){
   })));
 }
 function resize(){
+  if(!cv.parentElement)return;
   const w=cv.parentElement.clientWidth*(window.devicePixelRatio||1);
   S=Math.max(2,Math.ceil(w/W)); cv.width=W*S; cv.height=H*S; ctx.imageSmoothingEnabled=false;
 }
@@ -468,7 +472,7 @@ async function strike(att,def,move,{knock=4,shakeAmt=1,colors=["#fff"],hx}={}){
   def.ox=ox0;def.sx=1;def.busy=false;
   return true;
 }
-function setLog(a,b=""){const l=document.getElementById("cx-log");if(l)l.textContent=a}
+function setLog(a,b=""){const l=$id("cx-log");if(l)l.textContent=a}
 
 async function doMove(att,def,move){
   att.busy=true;
@@ -502,17 +506,18 @@ let chain=Promise.resolve(), started=false, winCount=0, ward={hp:0,max:0}, motio
 function queue(fn){chain=chain.then(fn).catch(e=>{console.error(e)});return chain}
 function freshPomelo(){A=makeFighter("capybara",-1);A.name="Pomelo";A.soft=true}
 function pips(){
-  const el=document.getElementById("cx-ward"); if(!el)return;
+  const el=$id("cx-ward"); if(!el)return;
   let h="";for(let i=0;i<ward.max;i++)h+='<i class="'+(i<ward.hp?"on":"")+'"></i>';
   el.innerHTML=h; el.setAttribute("aria-label",B?B.name+" ward: "+ward.hp+" of "+ward.max+" left":"");
 }
-function hud(){const n=document.getElementById("cx-boss");if(n)n.textContent=B?B.name:"";pips()}
+function hud(){const n=$id("cx-boss");if(n)n.textContent=B?B.name:"";pips()}
 
 window.SQArena={
   bossName:k=>ROSTER[k]?ROSTER[k].name:k,
   sprite:k=>SPRITES[k],
   ready:loadAll().then(()=>{resize();freshPomelo();if(!started){started=true;requestAnimationFrame(loop)}
-    if("ResizeObserver" in window)new ResizeObserver(resize).observe(cv.parentElement)}),
+    if("ResizeObserver" in window&&cv.parentElement)new ResizeObserver(resize).observe(cv.parentElement)}),
+  bind,
   /* the biome's boss walks in with hp of max ward pips left */
   enter(biomeId,key,name,hp,max){return queue(async()=>{
     paintBg(biomeId);

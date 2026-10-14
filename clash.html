@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261013b" />
+<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261014a" />
+<link rel="stylesheet" href="css/clash.css?v=b20261014a" />
 <style>
 :root {
   --bg: #efe9da; --card: #fffdf7; --ink: #2b2118; --muted: #6f6252; --line: #d9cfba;
@@ -78,84 +79,6 @@ svg.px { image-rendering: pixelated; shape-rendering: crispEdges; display: block
 .lay { padding: 4px 28px 40px 36px; display: grid; grid-template-columns: minmax(340px, 40%) 1fr; gap: 28px; align-items: start; position: relative; z-index: 1; }
 .left { display: grid; gap: 16px; }
 
-.screen { position: relative; border: 3px solid var(--frame); border-radius: 4px; overflow: hidden; background: #000; line-height: 0; box-shadow: var(--shadow); aspect-ratio: 4 / 3; }
-.screen canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges; }
-/* Pokemon-style name plates, each above its own critter */
-.plate { position: absolute; top: 12px; width: calc(50% - 18px); line-height: 1.15; color: #3a2e22; background: rgba(251, 246, 233, .9); border: 2px solid rgba(43, 33, 24, .55); border-radius: 4px; box-shadow: 0 2px 0 rgba(0, 0, 0, .12); font-family: var(--pixel); padding: 5px 8px 7px; }
-.plate.me { left: 10px; }
-.plate.boss { right: 10px; }
-.plate .nm { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: clamp(13px, 1.25vw, 18px); white-space: nowrap; overflow: hidden; }
-.plate .nm span { overflow: hidden; text-overflow: ellipsis; }
-.plate .nm svg { flex-shrink: 0; }
-.plate .row { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
-.plate .lbl { font: 700 10px var(--pixel); color: #8a7a64; letter-spacing: .6px; min-width: 2.6em; }
-.bar { flex: 1; display: flex; height: clamp(8px, .7vw, 11px); border: 1px solid rgba(43, 33, 24, .35); background: #ebe3cf; border-radius: 3px; overflow: hidden; gap: 1px; padding: 1px; }
-.bar i { flex: 1; background: transparent; border-radius: 1px; transition: background .35s steps(3); }
-.ward i.on { background: var(--ward); }
-.ward.low i.on { background: var(--ward-low); }
-.hp i.on { background: var(--hp); }
-.hp.low i.on { background: var(--hp-low); }
-.hp.rest { animation: rest .5s steps(2) 3; }
-@keyframes rest { 50% { opacity: .25; } }
-.log { font: 600 15px/1.35 var(--pixel); min-height: 1.4em; margin: -4px 2px 0; }
-
-/* focus status: the fight as two quiet bars, shown only in focus mode */
-.mini { display: none; background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 10px 12px; font: 700 13px var(--pixel); gap: 8px; }
-.mini .row { display: flex; align-items: center; gap: 8px; }
-.mini .row span:first-child { width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mini .bar { height: 9px; }
-
-.whybox { background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 14px 16px 16px; }
-.whybox h3 { font: 700 13px var(--pixel); margin: 0 0 8px; color: var(--muted); letter-spacing: .3px; }
-.whybox[hidden] { display: none; }
-.verdict { font: 700 14px var(--pixel); margin: 0 0 6px; }
-.verdict.won { color: var(--good); } .verdict.missed { color: var(--warn); }
-.slip { margin: 0 0 6px; color: var(--muted); font-size: 13px; }
-.whybox .body { font: 15px/1.6 var(--serif); }
-.whybox .body p { margin: 0 0 8px; }
-
-.card { background: var(--card); border: var(--edge); box-shadow: var(--shadow); padding: 24px 28px 28px; min-width: 0; }
-.passage { font: 18px/1.75 var(--serif); }
-.passage p { margin: 0 0 14px; }
-.passage ul { padding-left: 1.2em; }
-.passage .intro { font: 13px var(--sans); color: var(--muted); }
-.passage .partlabel { font: 700 13px var(--pixel); color: var(--muted); margin: 16px 0 6px; }
-
-.passage + .qbox { margin-top: 20px; padding-top: 18px; border-top: 2px dashed var(--line); }
-.qmeta { font: 600 12px var(--pixel); color: var(--muted); margin-bottom: 6px; letter-spacing: .3px; }
-.stem { font: 18px/1.6 var(--serif); margin: 0 0 16px; }
-
-.choices { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
-.choices button { width: 100%; display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 10px 14px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); font: 16px/1.5 var(--serif); }
-.choices button:hover:not(:disabled) { border-color: var(--muted); }
-.choices .k { font: 700 12px/1 var(--pixel); width: 22px; height: 22px; border: 2px solid var(--muted); border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
-.choices button.picked { border-color: var(--pick-line); background: var(--pick); }
-.choices button.picked .k { border-color: var(--ink); }
-.choices button.correct { border-color: var(--good-line); background: var(--good-soft); }
-.choices button.correct .k { border-color: var(--good); color: var(--good); }
-.choices button.wrong { border-color: var(--warn-line); background: var(--warn-soft); }
-.choices button.wrong .k { border-color: var(--warn); color: var(--warn); }
-.choices button:disabled { cursor: default; }
-.spr { display: grid; gap: 6px; max-width: 360px; }
-.spr label { font: 700 13px var(--pixel); color: var(--muted); }
-.spr input { font: 18px var(--serif); padding: 6px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 160px; }
-.spr .hint { color: var(--muted); font-size: 12px; margin: 0; }
-.acts { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.btn { font: 700 15px var(--pixel); padding: 8px 18px; border: var(--edge); background: var(--card); color: var(--ink); box-shadow: 3px 3px 0 rgba(43, 33, 24, .14); }
-.btn.main { background: var(--ink); color: var(--card); }
-.btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
-.btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
-.msg { color: var(--warn); font-size: 13px; margin: 8px 0 0; min-height: 1em; }
-table.data { border-collapse: collapse; margin: 6px 0 18px; font-size: 14px; }
-table.data caption { font-weight: 650; padding-bottom: 4px; }
-table.data th, table.data td { border: 1px solid var(--line); padding: 5px 10px; text-align: center; }
-table.data th { background: var(--bg); }
-figure { margin: 0 0 18px; }
-.fig-built { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px; max-width: 560px; }
-.fig-built svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-.choices .fig-built { border: 0; padding: 0; background: transparent; }
-.empty { padding: 40px; text-align: center; color: var(--muted); }
-
 /* ---------- focus mode: the battle screen steps aside, two quiet bars remain ---------- */
 body.focus .screen, body.focus .log { display: none; }
 body.focus .mini { display: grid; }
@@ -208,15 +131,16 @@ body.focus .trail .here { display: none; }
 </main>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="assets/katex/katex.min.js?v=b20261013b"></script>
-<script defer src="assets/katex/auto-render.min.js?v=b20261013b"></script>
-<script defer src="js/config.js?v=b20261013b"></script>
-<script defer src="js/auth.js?v=b20261013b"></script>
-<script defer src="data/questions.js?v=b20261013b"></script>
-<script defer src="js/figures.js?v=b20261013b"></script>
-<script defer src="js/questions.js?v=b20261013b"></script>
-<script defer src="js/clash-arena.js?v=b20261013b"></script>
-<script defer src="js/clash-ambient.js?v=b20261013b"></script>
-<script defer src="js/clash.js?v=b20261013b"></script>
+<script defer src="assets/katex/katex.min.js?v=b20261014a"></script>
+<script defer src="assets/katex/auto-render.min.js?v=b20261014a"></script>
+<script defer src="js/config.js?v=b20261014a"></script>
+<script defer src="js/auth.js?v=b20261014a"></script>
+<script defer src="data/questions.js?v=b20261014a"></script>
+<script defer src="js/figures.js?v=b20261014a"></script>
+<script defer src="js/questions.js?v=b20261014a"></script>
+<script defer src="js/qcard.js?v=b20261014a"></script>
+<script defer src="js/clash-arena.js?v=b20261014a"></script>
+<script defer src="js/clash-ambient.js?v=b20261014a"></script>
+<script defer src="js/clash.js?v=b20261014a"></script>
 </body>
 </html>

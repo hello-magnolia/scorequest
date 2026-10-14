@@ -187,21 +187,24 @@
     if (window.SQAuth && window.SQAuth.reportRealm) window.SQAuth.reportRealm(realm.id);
   }
   var quizOpen = false;
-  var PRACTICE = [       // placeholder items until the real banks arrive
-    { q: 'Which of these is a complete sentence?',
-      choices: ['Running through the trees.', 'The lanterns glow.', 'Because the path turned.', 'After the second gate.'], a: 1 },
-    { q: 'Pomelo reads 12 pages a day. At that pace, how many pages in a week?',
-      choices: ['74', '84', '96', '112'], a: 1 },
-    { q: 'Which word best replaces the vague word in: \u201CThe view from the peak was nice\u201D?',
-      choices: ['good', 'fine', 'breathtaking', 'okay'], a: 2 },
-    { q: 'If 3x + 5 = 20, then x equals\u2026',
-      choices: ['3', '5', '15', '25'], a: 1 },
-    { q: 'An author lists three examples right after a claim. The examples mainly serve to\u2026',
-      choices: ['contradict the claim', 'support the claim', 'summarize the passage', 'introduce a new topic'], a: 1 },
-    { q: 'A recipe doubles. If it needed 3/4 cup before, it now needs\u2026',
-      choices: ['1 cup', '1 1/4 cups', '1 1/2 cups', '2 cups'], a: 2 }
-  ];
-  var qOffset = 0;
+  /* ---------- waypoints: the map as data ----------
+     One row per marker, in walking order (data/waypoints.js, mirrored in the
+     Supabase waypoints table). mode clash / lesson / empty; rounds for clash.
+     Empty waypoints keep their marker in the editor and vanish in play.
+     Progress: passed[i] once every round of marker i is clear; roundsDone[i]
+     counts cleared rounds so a 3-round waypoint resumes where it left off. */
+  var WPS = (window.SQ_WAYPOINTS || []).filter(function (w) { return w.realm === realm.id; }).sort(function (a, b) { return a.position - b.position; });
+  function waypointAt(i) { return WPS[i] || { id: realm.id + '-' + (i + 1), realm: realm.id, position: i + 1, mode: 'clash', rounds: 1 }; }
+  function wpHidden(i) { return !editing && waypointAt(i).mode === 'empty'; }
+  var ROUNDS_KEY = 'sq_realm_rounds_' + realm.id;
+  var roundsDone = {};
+  try { roundsDone = JSON.parse(window.localStorage.getItem(ROUNDS_KEY) || '{}') || {}; } catch (e) {}
+  function saveRounds() { try { window.localStorage.setItem(ROUNDS_KEY, JSON.stringify(roundsDone)); } catch (e) {} }
+  if (window.SQAuth && window.SQAuth.fetchWaypoints) {
+    window.SQAuth.fetchWaypoints(realm.id).then(function (rows) {
+      if (rows && rows.length) { WPS = rows.sort(function (a, b) { return a.position - b.position; }); syncNodeStates(); }
+    });
+  }
   var popup = document.getElementById('rw-popup');
   var trace = document.getElementById('rw-trace');
 
@@ -533,8 +536,9 @@
     nodeEls = [];
     (realm.nodes || []).forEach(function (n, i) {
       var el = document.createElement('div');
-      el.className = 'rw-node';
+      el.className = 'rw-node' + (waypointAt(i).mode === 'lesson' ? ' is-lesson' : '');
       el.setAttribute('data-node', i + 1);
+      el.title = waypointAt(i).mode === 'empty' ? 'Empty waypoint (editor only)' : (waypointAt(i).title || waypointAt(i).skill || '');
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         onNodeClick(i);
@@ -559,6 +563,8 @@
       if (!el) return;
       el.classList.toggle('is-passed', !!passed[i]);
       el.classList.toggle('is-next', !passed[i]);
+      el.classList.toggle('is-empty', waypointAt(i).mode === 'empty');
+      el.hidden = wpHidden(i);
       el.classList.remove('is-locked');   // order-free: every trial approachable
     });
     window.__SQ_REALM_PROG = passedCount();
@@ -583,7 +589,7 @@
     var best = null, bd = Infinity;
     var p = posXY();
     marks.forEach(function (m, i) {
-      if (passed[i]) return;
+      if (passed[i] || wpHidden(i)) return;
       var d = Math.hypot(m.x - p.x, m.y - p.y);   // crow-flies triage
       if (d < bd) { bd = d; best = m; }
     });
@@ -615,10 +621,12 @@
     promptArmed = 0;
     promptOpen = true;
     window.__SQ_PROMPT_D = Math.round(markDist(i, posXY()));   // hailing distance
+    var wp = waypointAt(i), rd = roundsDone[i] || 0;
     document.getElementById('rw-prompt-title').textContent =
-      'Waypoint ' + (i + 1) + ' of ' + (realm.nodes || []).length +
-      (passed[i] ? ' \u00B7 cleared' : '');
-    promptGoBtn.textContent = passed[i] ? 'Retry' : 'Start';
+      (wp.mode === 'lesson' ? 'Lesson' : 'Waypoint') + ' ' + (i + 1) + ' of ' + (realm.nodes || []).length +
+      (wp.title || wp.skill ? ' \u00B7 ' + (wp.title || wp.skill) : '') +
+      (passed[i] ? ' \u00B7 cleared' : (wp.mode === 'clash' && wp.rounds > 1 ? ' \u00B7 round ' + (rd + 1) + ' of ' + wp.rounds : ''));
+    promptGoBtn.textContent = passed[i] ? (wp.mode === 'lesson' ? 'Read again' : 'Spar again') : (rd ? 'Continue' : 'Start');
     paintPromptArm();
     promptEl.hidden = false;
   }
@@ -630,96 +638,64 @@
   function promptGo() {
     var i = promptIdx;
     closePrompt();
-    openQuiz(i, !!passed[i]);          // a cleared trial reopens as practice
+    openWaypoint(i, !!passed[i]);      // a cleared trial reopens as sparring
   }
   promptGoBtn.addEventListener('click', function (e) { e.stopPropagation(); promptGo(); });
   promptSkipBtn.addEventListener('click', function (e) { e.stopPropagation(); closePrompt(true); });
 
-  /* ---------- the waypoint quiz ---------- */
-  var quizEl = document.getElementById('rw-quiz');
-  var quizRank = 0, quizPractice = false;
-  function quizItem() {
-    var count = (realm.nodes || []).length || 1;
-    return PRACTICE[(idx * 2 + quizRank + qOffset) % PRACTICE.length];
-  }
-  function openQuiz(rank, practice) {
-    quizRank = rank;
-    quizPractice = practice;
-    quizOpen = true;
-    renderQuiz();
-    quizEl.hidden = false;
-  }
-  function renderQuiz() {
-    var item = quizItem();
-    document.getElementById('rw-quiz-kicker').textContent =
-      (quizPractice ? 'EXTRA PRACTICE \u00B7 ' : '') + 'Waypoint ' + (quizRank + 1) + ' of ' + (realm.nodes || []).length;
-    document.getElementById('rw-quiz-q').textContent = item.q;
-    var box = document.getElementById('rw-quiz-choices');
-    var feed = document.getElementById('rw-quiz-feedback');
-    feed.textContent = '';
-    feed.className = 'rw-quiz-feedback';
-    document.getElementById('rw-quiz-continue').hidden = true;
-    box.innerHTML = '';
-    item.choices.forEach(function (choice, i) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = String.fromCharCode(65 + i) + '.  ' + choice;
-      b.addEventListener('click', function (e) { e.stopPropagation(); answerQuiz(i, item); });
-      box.appendChild(b);
+  /* ---------- the waypoint: a Critter Clash round or a lesson, in the overlay ----------
+     Questions come from the shared bank by the waypoint's skill (and any "also"
+     skills), one difficulty tier per round: round 1 easy, 2 medium, 3 hard, falling
+     back to neighbours when a tier is thin. A round clears at 4 of 5. */
+  function pickRound(wp, round) {
+    var Q = window.SQQuestions;
+    if (!Q) return [];
+    var skills = [wp.skill].concat(wp.also || []).filter(Boolean);
+    var tier = Math.min(3, Math.max(1, round));
+    var pool = Q.filter({ domains: [], skills: skills });
+    if (!pool.length) pool = Q.all().filter(function (q) { return REALM_DOMAIN[realm.id] === q.domain; });
+    var seen = {};
+    try { (window.SQAttempts ? window.SQAttempts.list() : []).forEach(function (a) { if (a.correct) seen[a.question_id] = true; }); } catch (e) {}
+    var order = [tier, tier + 1, tier - 1, tier + 2, tier - 2].filter(function (d) { return d >= 1 && d <= 3; });
+    var out = [];
+    order.forEach(function (d) {
+      var tierQs = pool.filter(function (q) { return q.difficulty === d && out.indexOf(q) < 0; });
+      tierQs.sort(function (a, b) { return (seen[a.id] ? 1 : 0) - (seen[b.id] ? 1 : 0) || Math.random() - 0.5; });
+      tierQs.forEach(function (q) { if (out.length < 5) out.push(q); });
     });
-    window.__SQ_QUIZ = { rank: quizRank, practice: quizPractice, correctIndex: item.a };
+    return out;
   }
-  function answerQuiz(i, item) {
-    var feed = document.getElementById('rw-quiz-feedback');
-    document.getElementById('rw-quiz-choices').querySelectorAll('button')
-      .forEach(function (b) { b.disabled = true; });
-    if (i === item.a) {
-      feed.textContent = quizPractice ? 'Right again. Pomelo approves.' : 'Passed! The way forward is open.';
-      feed.className = 'rw-quiz-feedback is-hit';
-      if (!quizPractice && !passed[quizRank]) {
-        passed[quizRank] = true;
-        savePassed();
-        syncNodeStates();
-      }
-      document.getElementById('rw-quiz-continue').hidden = false;
-      if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
-    } else {
-      feed.textContent = 'The answer was ' + String.fromCharCode(65 + item.a) + ': ' +
-        item.choices[item.a] + '. Here is another\u2026';
-      feed.className = 'rw-quiz-feedback is-miss';
-      qOffset += 1;
-      setTimeout(function () { if (quizOpen) renderQuiz(); }, 1800);
-      if (window.SQSfx && window.SQSfx.uiTick) window.SQSfx.uiTick();
-    }
+  var REALM_DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Structure', inkreef: 'Expression of Ideas', syntaxcitadel: 'Standard English Conventions',
+    mirrormines: 'Algebra', infinityisles: 'Advanced Math', datadocks: 'Problem-Solving and Data Analysis', prismpeaks: 'Geometry and Trigonometry' };
+  function openWaypoint(i, sparring) {
+    var wp = waypointAt(i);
+    if (!window.SQClashOverlay) return;
+    quizOpen = true;
+    var round = sparring ? 1 + Math.floor(Math.random() * (wp.rounds || 1)) : Math.min((roundsDone[i] || 0) + 1, wp.rounds || 1);
+    var launch = function () {
+      window.SQClashOverlay.open({
+        realm: realm.id, waypoint: wp, round: round,
+        questions: wp.mode === 'lesson' ? [] : pickRound(wp, round),
+        onDone: function (res) {
+          quizOpen = false;
+          if (res && res.cleared && !sparring) {
+            roundsDone[i] = Math.max(roundsDone[i] || 0, round);
+            saveRounds();
+            if (roundsDone[i] >= (wp.rounds || 1) && !passed[i]) { passed[i] = true; savePassed(); }
+            syncNodeStates();
+            if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
+          }
+          window.__SQ_QUIZ = null;
+        },
+        onLeave: function () { quizOpen = false; window.__SQ_QUIZ = null; },
+        onRetry: function () { openWaypoint(i, sparring); }
+      });
+      window.__SQ_QUIZ = { rank: i, practice: !!sparring, mode: wp.mode, round: round };
+    };
+    if (window.SQQuestions && window.SQQuestions.ready && wp.mode !== 'lesson') window.SQQuestions.ready.then(launch, launch);
+    else launch();
   }
-  function closeQuiz() {
-    quizOpen = false;
-    quizEl.hidden = true;
-    window.__SQ_QUIZ = null;
-  }
-  /* TEMP-SKIP (testing): a quiet pass; advances the waypoint like a
-     correct answer, minus the fanfare */
-  document.getElementById('rw-quiz-skip').addEventListener('click', function (e) {
-    e.stopPropagation();
-    document.getElementById('rw-quiz-choices').querySelectorAll('button')
-      .forEach(function (b) { b.disabled = true; });
-    var feed = document.getElementById('rw-quiz-feedback');
-    feed.textContent = 'Skipped.';
-    feed.className = 'rw-quiz-feedback';
-    if (!quizPractice && !passed[quizRank]) {
-      passed[quizRank] = true;
-      savePassed();
-      syncNodeStates();
-    }
-    document.getElementById('rw-quiz-continue').hidden = false;
-  });
-  document.getElementById('rw-quiz-close').addEventListener('click', function (e) {
-    e.stopPropagation(); closeQuiz();
-  });
-  document.getElementById('rw-quiz-continue').addEventListener('click', function (e) {
-    e.stopPropagation(); closeQuiz();
-  });
-
+  function closeQuiz() { if (window.SQClashOverlay) window.SQClashOverlay.close(); quizOpen = false; window.__SQ_QUIZ = null; }
 
   var ctx = null;
   try { ctx = capy.getContext('2d'); } catch (e) {}
@@ -896,11 +872,7 @@
     }
     if (e.code === 'Space' || e.key === ' ') {
       e.preventDefault();
-      if (quizOpen) {
-        // space closes a passed quiz (the Continue button), otherwise waits
-        if (!document.getElementById('rw-quiz-continue').hidden) closeQuiz();
-        return;
-      }
+      if (quizOpen) return;   // the overlay owns the keys while it is open
       advance();
     }
     var dir = KEYMAP[e.key];

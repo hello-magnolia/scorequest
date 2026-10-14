@@ -87,9 +87,23 @@ re-run it on any existing project. verify_auth guards all of this.
   js/questions.js (SQQuestions.check, SQAttempts.record session_id clash:<biome>), self-hosted KaTeX.
 - realm.js: 8 manifests; path is a walk graph {nodes, edges, stairs}; Pomelo at {edge, t};
   arrows/WASD steer, SPACE routes to nearest open trial. ARRIVAL OPENS A PROMPT
-  (Start/Retry/Skip; Space fires armed) then the quiz. Progress = passed-set in
-  sq_realm_prog_<id>; sq_last_realm records where he wandered. Editor: select-first,
+  (Start/Continue/Spar again/Read again/Skip; Space fires armed) then the WAYPOINT in the
+  Critter Clash overlay (js/clash-overlay.js: SQClashOverlay.open({realm, waypoint, round,
+  questions, onDone, onLeave, onRetry}); reuses SQArena.bind(root), SQCard (js/qcard.js),
+  css/clash.css .sq-clash tokens). Waypoints = data/waypoints.js rows (mode clash|lesson|
+  rapid|reading|empty, rounds 1..3, also[]); lessons = data/lessons.js[skill]. Clash round
+  = 5 qs from pickRound (tier by round, neighbour fallback, prefers unseen), clears at 4;
+  roundsDone in sq_realm_rounds_<id>, passed-set in sq_realm_prog_<id>; empties hidden in
+  play (el.hidden), shown in the editor. Tripwires __SQ_OVERLAY, __SQ_QUIZ {rank, practice,
+  mode, round}. sq_last_realm records where he wandered. Editor: select-first,
   tools 1 graph / 2 markers / 3 start / 4 boss, S stairs, Z undo, Copy JSON exports.
+- Grading: SQQuestions.grade(q, resp, {ms, session_id, record}) everywhere (practice, clash,
+  overlay). Signed in -> SQAuth.checkAnswer -> Supabase RPC check_answer (keys never reach the
+  browser; it writes attempts); else local check + SQAttempts.record. SQQuestions.ready
+  resolves after fetchBank (4s cap). Supabase section 8: questions / question_keys (locked) /
+  question_reports / waypoints; publish with research pipeline/export_app_bank.py --supabase
+  (copy kept at tools/export_app_bank.py) and tools/seed_waypoints.py; service role key ENV
+  ONLY, never in chat or the repo. map.js drawer draws 3 easy mcq via questsFor(realmId).
 - boss.js: per-boss manifests. Attack mechanics: projectile | beam | strike {delay} |
   flight (composes attackSeq from takeoffSeq + flapSeq fwd/rev x loops + reversed takeoff;
   rig rises flight.rise px, damage at flight.delay; retry resets rig transform).
@@ -107,8 +121,10 @@ re-run it on any existing project. verify_auth guards all of this.
   config.js STRIPE_LINKS keys: basic_/allaccess_/complete_ x monthly/annual.
 
 ## Backlog
-Datadocks boss art + prismpeaks nest backdrop/intro (mango.js still unloaded). Wire realms/bosses to
-SQQuestions (realm = domain). XP for waypoint passes. Stair-walk animation. Weaver arena dressing.
+Datadocks boss art + prismpeaks nest backdrop/intro (mango.js still unloaded). Fold boss.html into
+the realm lair (big sprites, retire its 64 inline questions); decide practice.html's fate; strip
+answer keys from data/questions.js once reads come from Supabase. Rapid fire + reading room waypoint
+modes (Notion, Later). XP for waypoint passes. Stair-walk animation. Weaver arena dressing.
 Parent dashboard (non-pixel, EN/zh, behind auth). Landing/onboarding. PLAN GATING +
 kid-facing upsell wall ("This realm is locked on Basic...", needs plan state first).
 Per-boss victory copy. Stripe + Supabase keys on Magnolia's side.

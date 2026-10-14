@@ -11,9 +11,20 @@
      SQQuestions.check(q, response)             {correct, status, message}
      SQQuestions.gridIn(text)                   {ok, message} for student-produced answers
 
+     SQQuestions.grade(q, response, opts)        async: grades on the server when signed in
+                                                (the key never reaches the browser), else
+                                                locally; records the attempt either way
+     SQQuestions.ready                          resolves once the bank source is settled
+     SQQuestions.source                         'supabase' or 'static'
+
      SQAttempts.record({...})                   keeps every answer locally and, when signed
                                                 in, in the Supabase attempts table
      SQAttempts.list()
+
+   Bank source: the Supabase questions table when the player is signed in and
+   it answers (approved rows, no answer keys), otherwise the static
+   data/questions.js. Supabase rows are cached in localStorage sq_bank_cache
+   so a bad connection does not block a session.
 
    Grid-in rules follow the Digital SAT: up to 5 characters (6 with a
    leading minus), digits, one decimal point or one fraction bar, no
@@ -23,6 +34,8 @@
 (function () {
   'use strict';
   var bank = (window.SQ_QUESTION_BANK && window.SQ_QUESTION_BANK.questions) || [];
+  var source = 'static', CACHE = 'sq_bank_cache';
+  var listeners = [];
   var DOMAIN_ORDER = ['Algebra', 'Advanced Math', 'Problem-Solving and Data Analysis', 'Geometry and Trigonometry',
     'Information and Ideas', 'Craft and Structure', 'Expression of Ideas', 'Standard English Conventions'];
 
@@ -109,10 +122,61 @@
     return { correct: ok, status: 'checked', key: acc[0], message: '' };
   }
 
+  /* grade: the server when it can (signed in, Supabase up), else the local check.
+     Resolves {correct, status, key, explanation, trap, message, remote}. Records the
+     attempt once: the server does it inside check_answer, the fallback goes through
+     SQAttempts.record. */
+  function grade(q, response, opts) {
+    opts = opts || {};
+    var local = check(q, response);
+    if (local.status !== 'checked') return Promise.resolve(local);
+    var done = function (r) {
+      return { correct: !!r.correct, status: 'checked', key: r.key, message: '',
+        explanation: r.explanation != null ? r.explanation : q.explanation, trap: r.trap || null, remote: !!r.remote };
+    };
+    var fallback = function () {
+      var pc = q.type === 'mcq' ? (q.choices || []).filter(function (c) { return c.key === response; })[0] : null;
+      if (opts.record !== false) window.SQAttempts.record({ question_id: q.id, correct: local.correct, response: response, ms: opts.ms, skill: q.skill, domain: q.domain, difficulty: q.difficulty, session_id: opts.session_id });
+      return done({ correct: local.correct, key: local.key, trap: pc && !local.correct ? pc.trap : null });
+    };
+    if (opts.record === false || source !== 'supabase' || !window.SQAuth || !window.SQAuth.checkAnswer) return Promise.resolve(fallback());
+    return window.SQAuth.checkAnswer(q.id, response, opts.ms, opts.session_id).then(function (r) {
+      if (!r) return fallback();
+      r.remote = true;
+      /* keep the local list in step so per-skill summaries work offline */
+      var all = list(); all.push({ question_id: q.id, correct: !!r.correct, response: String(response), ms: Math.max(0, Math.round(opts.ms || 0)), skill: q.skill, domain: q.domain, difficulty: q.difficulty, session_id: opts.session_id || null, created_at: new Date().toISOString() });
+      try { window.localStorage.setItem(KEY, JSON.stringify(all.slice(-2000))); } catch (e) {}
+      return done(r);
+    }, fallback);
+  }
+
+  /* swap in the Supabase bank once the player is signed in and it answers */
+  function adopt(rows, from) {
+    if (!rows || !rows.length) return false;
+    bank = rows; source = 'supabase';
+    if (from !== 'cache') { try { window.localStorage.setItem(CACHE, JSON.stringify({ at: Date.now(), rows: rows })); } catch (e) {} }
+    listeners.forEach(function (fn) { try { fn(); } catch (e) {} });
+    return true;
+  }
+  var ready = new Promise(function (resolve) {
+    var settle = function () { resolve(source); };
+    if (!window.SQAuth || !window.SQAuth.onChange) return settle();
+    var asked = false;
+    window.SQAuth.onChange(function (st) {
+      if (asked || !st || !st.user) return;
+      asked = true;
+      try { var c = JSON.parse(window.localStorage.getItem(CACHE) || 'null'); if (c && c.rows && Date.now() - c.at < 7 * 864e5) adopt(c.rows, 'cache'); } catch (e) {}
+      window.SQAuth.fetchBank().then(function (rows) { adopt(rows, 'live'); settle(); }, settle);
+    });
+    setTimeout(settle, 4000);   /* signed out, or Supabase slow: the static bank it is */
+  });
+
   window.SQQuestions = {
     all: function () { return bank.slice(); },
     get: function (id) { return bank.filter(function (q) { return q.id === id; })[0] || null; },
-    domains: domains, filter: filter, session: session, check: check, gridIn: gridIn, value: value,
+    domains: domains, filter: filter, session: session, check: check, grade: grade, gridIn: gridIn, value: value,
+    ready: ready, onBankChange: function (fn) { listeners.push(fn); },
+    get source() { return source; },
     meta: (window.SQ_QUESTION_BANK && window.SQ_QUESTION_BANK.meta) || {},
   };
 

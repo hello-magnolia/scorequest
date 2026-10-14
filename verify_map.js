@@ -91,7 +91,8 @@ const vc = new VirtualConsole(); vc.on('error',()=>{}); vc.on('jsdomError',()=>{
 
   // wrong answers surface an explanation and wait for Continue
   const q1Answers = drawer.querySelectorAll('.quest-answer');
-  q1Answers[1].dispatchEvent(new window.MouseEvent('click', { bubbles: true })); // Q1 correct is 0
+  const wrongIdx = (window.__SQ_QUEST.items[0].correct + 1) % q1Answers.length;   // any wrong choice
+  q1Answers[wrongIdx].dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await new Promise(r => setTimeout(r, 60));
   const fb = drawer.querySelector('.quest-feedback');
   check('Wrong answer shows explanation + Continue', !!fb && fb.classList.contains('is-wrong') &&

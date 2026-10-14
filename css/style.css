@@ -2462,3 +2462,9 @@ html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }
   .pr-paper { padding: 16px; font-size: 1rem; }
   .pr { padding-top: 76px; }
 }
+
+/* waypoint modes on the realm path: lesson markers read as scrolls */
+.rw-node.is-lesson { border-radius: 3px; background: #f2e6c4; box-shadow: 0 0 14px rgba(242, 230, 196, 0.5); }
+.rw-node.is-lesson.is-passed { background: #d8c9a0; }
+.rw-node.is-empty { opacity: 0.35; border-style: dashed; animation: none; }
+body.sq-overlay-open { overflow: hidden; }

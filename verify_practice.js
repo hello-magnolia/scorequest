@@ -64,6 +64,7 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
       d.querySelector('#pr-spr-in').value = k === 0 ? q.accepted[0] : '99999';
     }
     click(w, d.querySelector('#pr-check'));
+    await until(() => !d.querySelector('#pr-feedback').hidden, 3000);
     if (k === 0) check('Right answer says Correct and shows the explanation', /Correct\./.test(d.querySelector('#pr-feedback').textContent) && !!d.querySelector('.pr-explain'));
     else {
       if (d.querySelector('.pr-slip')) sawSlip = true;
@@ -78,6 +79,7 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
   check('Summary breaks results down by skill', d.querySelectorAll('.pr-skill').length >= 1);
   check('Missed questions listed for review', d.querySelectorAll('.pr-review').length === 4);
   click(w, d.querySelector('.pr-review'));
+  await until(() => !!d.querySelector('.pr-explain') && /Reviewing/.test(d.querySelector('#pr-count').textContent) && /Back to results/.test(d.querySelector('#pr-next').textContent), 3000);
   check('Review reopens a missed question with its explanation', !d.querySelector('#pr-run').hidden && !!d.querySelector('.pr-explain') && /Reviewing/.test(d.querySelector('#pr-count').textContent));
   check('Reviewing does not add attempts', JSON.parse(w.localStorage.getItem('sq_attempts')).length === 5);
   click(w, d.querySelector('#pr-next'));
@@ -105,6 +107,7 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
   P.start([mcq]);
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: key.toLowerCase(), bubbles: true }));
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  await until(() => /Correct\./.test(d.querySelector('#pr-feedback').textContent), 3000);
   check('Keyboard: letter picks, Enter checks', /Correct\./.test(d.querySelector('#pr-feedback').textContent));
 
   /* deep link + resume */
