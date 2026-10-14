@@ -515,13 +515,14 @@
        attempts table (supabase_setup.sql section 7); everyone keeps a local copy
        through SQAttempts. Fails quietly: practice never waits on the network. */
     /* ---- the question bank in Supabase (setup SQL section 8) ----
-       fetchBank(): live (not retired) questions for a signed-in player, no answer keys.
+       fetchBank(): the live bank (bank_live view: originals plus official SAT items when
+       switched on) for a signed-in player, no answer keys, each row tagged source/source_label.
        checkAnswer(): grades on the server, returns {correct, key, explanation, trap}
        and records the attempt there. Both resolve null when Supabase is not
        available, so the engine falls back to the static bank. */
     fetchBank: function () {
       if (!state.user || state.demo || !supabase) return Promise.resolve(null);
-      return supabase.from('questions').select('id,section,domain,skill,difficulty,type,status,stem,choices,passage,figure,table').neq('status', 'retired')
+      return supabase.from('bank_live').select('id,section,domain,skill,difficulty,type,status,stem,choices,passage,figure,table,source,source_label')
         .then(function (res) { return res.error || !res.data ? null : res.data; })
         .catch(function () { return null; });
     },

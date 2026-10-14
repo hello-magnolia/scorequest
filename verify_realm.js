@@ -129,6 +129,7 @@ const load = async (path) => {
     /Round 1 of 2/.test(d.getElementById('ov-sub').textContent) &&
     w.SQClashOverlay.state.qs.length === 5 &&
     w.SQClashOverlay.state.qs.every(q => q.skill === 'Central Ideas and Details') &&
+    /ScoreQuest original/.test(d.querySelector('#sq-overlay .qmeta .qsrc').textContent) &&
     !!d.getElementById('cx-cv') && !!d.getElementById('me-hp'));
   const answer = async (right) => {
     const st = w.SQClashOverlay.state, q = st.qs[st.i], i = st.i;

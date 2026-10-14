@@ -399,6 +399,104 @@ create index if not exists calibration_questions_skill on public.calibration_que
 alter table public.calibration_questions enable row level security;
 revoke all on public.calibration_questions from public, anon, authenticated;
 
+-- ============================================================
+-- 10. The bank as the app reads it: bank_live = originals plus, when the
+--     official_in_waypoints switch is on, official items that carry a skill tag
+--     (the College Board Question Bank today; practice tests have no skill tags
+--     and stay out). One shape, never an answer key, each row tagged with
+--     source / source_label so the card can say where it came from. The view
+--     runs as its owner, so calibration_questions stays locked for direct reads.
+--     check_answer grades both kinds. Flip the switch in Table Editor >
+--     bank_settings. Applied 2026-10-14 as migration sq_bank_live_view_with_official_items.
+-- ============================================================
+create table if not exists public.bank_settings (
+  key   text primary key,
+  value jsonb not null,
+  note  text
+);
+alter table public.bank_settings enable row level security;
+revoke all on public.bank_settings from public, anon, authenticated;
+insert into public.bank_settings (key, value, note) values
+  ('official_in_waypoints', 'true'::jsonb, 'Serve College Board items (calibration_questions with a skill tag) alongside ScoreQuest Originals in waypoints and practice. Set to false to go originals-only.')
+on conflict (key) do nothing;
+
+create or replace function public.official_items_on() returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select value = 'true'::jsonb from public.bank_settings where key = 'official_in_waypoints'), false);
+$$;
+revoke execute on function public.official_items_on() from public, anon;
+
+create or replace view public.bank_live as
+  select q.id, q.section, q.domain, q.skill, q.difficulty, q.type, q.status, q.stem,
+         q.choices, q.passage, q.figure, q."table",
+         'original'::text as source, 'ScoreQuest original'::text as source_label
+    from public.questions q
+   where q.status <> 'retired'
+  union all
+  select c.id, c.section, c.domain,
+         case when c.skill = 'Cross-text Connections' then 'Cross-Text Connections' else c.skill end,
+         case c.difficulty when 'easy' then 1 when 'hard' then 3 else 2 end::smallint,
+         c.type, c.status, c.item ->> 'stem',
+         case when c.item ? 'choices' then (select jsonb_agg(jsonb_strip_nulls(jsonb_build_object('key', ch ->> 'key', 'text', ch ->> 'text', 'figure', ch -> 'figure')) order by ord)
+                                             from jsonb_array_elements(c.item -> 'choices') with ordinality as t(ch, ord)) end,
+         c.item -> 'passage', c.item -> 'figure', c.item -> 'table',
+         c.bank,
+         case when c.bank in ('QB_MATH', 'QB_RW') then 'College Board Question Bank'
+              when c.bank like 'DSAT\_%' escape '\' then 'SAT Practice Test ' || ltrim(substr(c.bank, 6), '0')
+              else 'Official SAT' end
+    from public.calibration_questions c
+   where public.official_items_on() and c.skill is not null and c.status <> 'retired';
+grant select on public.bank_live to authenticated;
+
+create or replace function public.check_answer(
+  p_question_id text, p_response text, p_ms integer default null, p_session_id text default null
+) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  q public.questions%rowtype;
+  c public.calibration_questions%rowtype;
+  v_skill text; v_domain text; v_diff smallint; v_type text;
+  v_key text; v_accepted text[]; v_traps jsonb; v_expl text;
+  ok boolean := false;
+  v numeric;
+  a text;
+begin
+  if auth.uid() is null then raise exception 'sign in first'; end if;
+  select * into q from public.questions where id = p_question_id and status <> 'retired';
+  if found then
+    select k.correct_key, k.accepted, k.traps, k.explanation into v_key, v_accepted, v_traps, v_expl
+      from public.question_keys k where k.question_id = q.id;
+    v_skill := q.skill; v_domain := q.domain; v_diff := q.difficulty; v_type := q.type;
+  else
+    select * into c from public.calibration_questions where id = p_question_id and skill is not null and status <> 'retired';
+    if not found or not public.official_items_on() then raise exception 'unknown question'; end if;
+    v_skill := c.skill; v_domain := c.domain; v_type := c.type;
+    v_diff := case c.difficulty when 'easy' then 1 when 'hard' then 3 else 2 end;
+    v_expl := c.item ->> 'explanation';
+    if c.type = 'mcq' then
+      select ch ->> 'key' into v_key from jsonb_array_elements(c.item -> 'choices') ch where (ch ->> 'correct')::boolean limit 1;
+    else
+      select array_agg(x) into v_accepted from jsonb_array_elements_text(c.item -> 'answer' -> 'accepted') x;
+    end if;
+  end if;
+  if v_type = 'mcq' then
+    ok := (p_response = v_key);
+  else
+    v := public.sat_number(p_response);
+    foreach a in array coalesce(v_accepted, '{}') loop
+      if trim(a) = trim(p_response) or (v is not null and public.sat_number(a) = v) then ok := true; end if;
+    end loop;
+  end if;
+  insert into public.attempts (user_id, question_id, correct, response, ms, skill, domain, difficulty, session_id)
+    values (auth.uid(), p_question_id, ok, p_response, p_ms, v_skill, v_domain, v_diff, p_session_id);
+  return jsonb_build_object(
+    'correct', ok,
+    'key', case when v_type = 'mcq' then v_key else v_accepted[1] end,
+    'explanation', v_expl,
+    'trap', case when v_type = 'mcq' and not ok then v_traps ->> p_response else null end
+  );
+end $$;
+
 -- Done. Publish the bank from the research folder:
 --   SUPABASE_URL=... SUPABASE_SERVICE_KEY=... python3 pipeline/export_app_bank.py --supabase
 -- Applied to the ScoreQuest project on 2026-10-14 (migrations sq_attempts_table,

@@ -77,6 +77,8 @@
 
 .passage + .qbox { margin-top: 20px; padding-top: 18px; border-top: 2px dashed var(--line); }
 .qmeta { font: 600 12px var(--pixel); color: var(--muted); margin-bottom: 6px; letter-spacing: .3px; }
+.qsrc { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 3px; font: 600 11px var(--pixel); color: var(--muted); background: var(--bg); vertical-align: middle; }
+.qsrc.official { border-color: var(--pick-line); background: var(--pick); color: var(--ink); }
 .stem { font: 18px/1.6 var(--serif); margin: 0 0 16px; }
 
 .choices { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }

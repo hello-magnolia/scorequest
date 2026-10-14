@@ -2408,6 +2408,8 @@ html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }
 .pr-notes li { margin-bottom: 8px; }
 .pr-u { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 .pr-meta { color: #7a6a4f; font-size: 1rem; margin-bottom: 8px; }
+.pr-src { display: inline-block; margin-left: 10px; padding: 1px 8px; border: 1px solid rgba(43, 33, 24, .25); border-radius: 3px; font-size: .85rem; vertical-align: middle; }
+.pr-src.official { background: #f6efd6; border-color: #c9b27a; color: #2b2118; }
 .pr-stem { margin-bottom: 16px; }
 .pr-fig { margin: 0 0 16px; background: var(--fig-bg); padding: 8px; border: 1px solid #d8cba9; overflow-x: auto; }
 .pr-fig .sq-fig { display: block; margin: 0 auto; max-width: 100%; height: auto; }

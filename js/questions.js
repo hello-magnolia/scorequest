@@ -16,14 +16,16 @@
                                                 locally; records the attempt either way
      SQQuestions.ready                          resolves once the bank source is settled
      SQQuestions.source                         'supabase' or 'static'
+     SQQuestions.sourceLabel(q)                 'ScoreQuest original', 'College Board Question Bank', ...
 
      SQAttempts.record({...})                   keeps every answer locally and, when signed
                                                 in, in the Supabase attempts table
      SQAttempts.list()
 
-   Bank source: the Supabase questions table when the player is signed in and
-   it answers (live rows, no answer keys), otherwise the static
-   data/questions.js. Supabase rows are cached in localStorage sq_bank_cache
+   Bank source: the Supabase bank_live view when the player is signed in and it
+   answers (originals plus official SAT items when switched on, no answer keys,
+   each tagged with source_label), otherwise the static data/questions.js
+   (originals only). Supabase rows are cached in localStorage sq_bank_cache
    so a bad connection does not block a session.
 
    Grid-in rules follow the Digital SAT: up to 5 characters (6 with a
@@ -135,6 +137,8 @@
         explanation: r.explanation != null ? r.explanation : q.explanation, trap: r.trap || null, remote: !!r.remote };
     };
     var fallback = function () {
+      /* an official item carries no key in the browser: without the server there is no verdict */
+      if (q.source && q.source !== 'original') return { correct: false, status: 'error', key: null, message: 'Could not reach the grader. Check your connection and try again.' };
       var pc = q.type === 'mcq' ? (q.choices || []).filter(function (c) { return c.key === response; })[0] : null;
       if (opts.record !== false) window.SQAttempts.record({ question_id: q.id, correct: local.correct, response: response, ms: opts.ms, skill: q.skill, domain: q.domain, difficulty: q.difficulty, session_id: opts.session_id });
       return done({ correct: local.correct, key: local.key, trap: pc && !local.correct ? pc.trap : null });
@@ -177,6 +181,8 @@
     domains: domains, filter: filter, session: session, check: check, grade: grade, gridIn: gridIn, value: value,
     ready: ready, onBankChange: function (fn) { listeners.push(fn); },
     get source() { return source; },
+    sourceLabel: function (q) { return (q && q.source_label) || 'ScoreQuest original'; },
+    isOfficial: function (q) { return !!(q && q.source && q.source !== 'original'); },
     meta: (window.SQ_QUESTION_BANK && window.SQ_QUESTION_BANK.meta) || {},
   };
 

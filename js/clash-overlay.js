@@ -115,6 +115,8 @@
     state.busy = true; $('#bCheck', el).disabled = true;
     var o = state.o, sid = 'realm:' + o.realm + ':' + o.waypoint.id + ':r' + (o.round || 1);
     window.SQQuestions.grade(q, resp, { ms: Date.now() - state.shownAt, session_id: sid }).then(function (r) {
+      if (!state || state.qs[state.i] !== q) return;
+      if (r.status !== 'checked') { state.busy = false; $('#bCheck', el).disabled = false; $('#msg', el).textContent = r.message || 'Try again.'; return; }
       state.results[state.i] = !!r.correct;
       if (r.correct) state.right++;
       var read = $('#read', el);

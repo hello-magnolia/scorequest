@@ -49,6 +49,12 @@ const click = (w, el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: t
   click(w, d.querySelector('#pr-len [data-v="5"]'));
   click(w, d.querySelector('#pr-start'));
   const P = w.__SQ_PRACTICE;
+  check('Every question card names its source; the static bank is all ScoreQuest originals',
+    /ScoreQuest original/.test(d.querySelector('.pr-src').textContent) && !d.querySelector('.pr-src.official') &&
+    Q.sourceLabel(P.current) === 'ScoreQuest original' && !Q.isOfficial(P.current));
+  check('An official SAT row is labeled by its source and is never graded in the browser',
+    Q.sourceLabel({ source: 'QB_MATH', source_label: 'College Board Question Bank' }) === 'College Board Question Bank' &&
+    Q.isOfficial({ source: 'QB_MATH' }) && !Q.isOfficial({ source: 'original' }));
   check('Start opens a 5-question session', !d.querySelector('#pr-run').hidden && P.run.questions.length === 5 && /Question 1 of 5/.test(d.querySelector('#pr-count').textContent));
 
   /* answer every question: first right, the rest wrong where possible */

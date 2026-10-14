@@ -131,7 +131,7 @@
       (p.figures || []).forEach(function (f) { h += figure(f); });
       h += '</div>';
     }
-    h += '<div class="qbox"><div class="qmeta">Question ' + (cur + 1) + ' of ' + qs.length + ' · ' + esc(q.skill) + ' · ' + LV[q.difficulty] + '</div>' +
+    h += '<div class="qbox"><div class="qmeta">Question ' + (cur + 1) + ' of ' + qs.length + ' · ' + esc(q.skill) + ' · ' + LV[q.difficulty] + C.sourceChip(q) + '</div>' +
       '<div class="stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure) + '</div><div class="answers">';
     if (q.type === 'mcq') {
       h += '<ol class="choices" aria-label="Answer choices">' + q.choices.map(function (c) {
@@ -181,6 +181,7 @@
     /* grade on the server when signed in (the key never reaches the browser); it records the attempt */
     window.SQQuestions.grade(q, resp, { ms: ms, session_id: 'clash:' + biome.id }).then(function (r) {
       if (qs[cur] !== q) return;   /* moved on meanwhile */
+      if (r.status !== 'checked') { $('#bCheck').disabled = false; $('#msg').textContent = r.message || 'Try again.'; return; }
       progress[q.id] = { result: r.correct ? 'won' : 'missed', response: resp, at: Date.now(), key: r.key, explanation: r.explanation, trap: r.trap };
       save();
       showResult(q, resp, r.correct, true);

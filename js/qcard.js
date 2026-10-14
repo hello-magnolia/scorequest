@@ -101,8 +101,14 @@
     (p.figures || []).forEach(function (f) { h += figure(f); });
     return h + '</div>';
   }
+  /* where a question comes from: a ScoreQuest original or an official SAT item */
+  function sourceChip(q) {
+    var label = (window.SQQuestions && window.SQQuestions.sourceLabel) ? window.SQQuestions.sourceLabel(q) : ((q && q.source_label) || 'ScoreQuest original');
+    var official = !!(q && q.source && q.source !== 'original');
+    return '<span class="qsrc' + (official ? ' official' : '') + '" title="' + (official ? 'An official College Board question' : 'Written for ScoreQuest') + '">' + esc(label) + '</span>';
+  }
   function questionHTML(q, n, total, meta) {
-    var h = '<div class="qbox"><div class="qmeta">' + (meta != null ? meta : 'Question ' + n + ' of ' + total + ' \u00b7 ' + esc(q.skill) + ' \u00b7 ' + LV[q.difficulty]) + '</div>' +
+    var h = '<div class="qbox"><div class="qmeta">' + (meta != null ? meta : 'Question ' + n + ' of ' + total + ' \u00b7 ' + esc(q.skill) + ' \u00b7 ' + LV[q.difficulty]) + sourceChip(q) + '</div>' +
       '<div class="stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure) + '</div><div class="answers">';
     if (q.type === 'mcq') {
       h += '<ol class="choices" aria-label="Answer choices">' + q.choices.map(function (c) {
@@ -115,5 +121,5 @@
     return h;   /* caller closes .answers after its buttons */
   }
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
-    px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML };
+    px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip };
 })();

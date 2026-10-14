@@ -42,6 +42,7 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
 
   /* wiring: the shared bank, engine and renderer, nothing duplicated */
   check('Shared bank loaded (data/questions.js, originals only)', w.SQ_QUESTION_BANK && w.SQ_QUESTION_BANK.questions.length >= 150 && w.SQ_QUESTION_BANK.questions.every(q => /^SQ-/.test(q.id)));
+  check('The question card names its source (ScoreQuest original on the static bank)', /ScoreQuest original/.test(d.querySelector('.qmeta .qsrc').textContent) && !d.querySelector('.qsrc.official'));
   check('Shared engine and figure renderer present', !!(w.SQQuestions && w.SQAttempts && w.SQFigures));
   check('Lorewood opens on Information and Ideas', w.__SQ_CLASH.state.biome === 'lorewood' && /Information and Ideas/.test(d.querySelector('.qmeta').textContent) === false && d.querySelector('.passage'), 'passage shown');
   const n = sorted(w, 'Information and Ideas').length;

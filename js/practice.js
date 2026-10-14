@@ -126,7 +126,9 @@
     } else { pane.innerHTML = ''; pane.hidden = true; }
     $('#pr-stage').classList.toggle('two', !!p);
 
-    var meta = '<div class="pr-meta type-utility">' + esc(q.domain) + ' · ' + esc(q.skill) + ' · ' + esc(LV[q.difficulty] || '') + '</div>';
+    var src = window.SQQuestions.sourceLabel(q), official = window.SQQuestions.isOfficial(q);
+    var meta = '<div class="pr-meta type-utility">' + esc(q.domain) + ' · ' + esc(q.skill) + ' · ' + esc(LV[q.difficulty] || '') +
+      '<span class="pr-src' + (official ? ' official' : '') + '">' + esc(src) + '</span></div>';
     var body = meta + '<div class="pr-stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure);
     if (q.type === 'mcq') {
       body += '<ol class="pr-choices" role="listbox" aria-label="Answer choices">' + q.choices.map(function (c) {
@@ -180,6 +182,9 @@
   }
   function showVerdict(q, resp, r, ms) {
     if (current !== q) return;                      // the player moved on before the verdict landed
+    if (r.status !== 'checked') {                   // no verdict (an official item with the grader unreachable)
+      checked = false; $('#pr-check').disabled = false; $('#pr-msg').textContent = r.message || 'Try again.'; return;
+    }
     run.answers[run.i] = { response: resp, correct: r.correct, ms: ms };
     store(SAVE, run);
 

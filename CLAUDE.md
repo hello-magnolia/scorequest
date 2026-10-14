@@ -104,6 +104,13 @@ re-run it on any existing project. verify_auth guards all of this.
   question_reports / waypoints; publish with research pipeline/export_app_bank.py --supabase
   (copy kept at tools/export_app_bank.py) and tools/seed_waypoints.py; service role key ENV
   ONLY, never in chat or the repo. map.js drawer draws 3 easy mcq via questsFor(realmId).
+  Official College Board items live in calibration_questions (locked, loaded by research
+  pipeline/export_calibration.py). Signed-in players read the bank_live VIEW (section 10):
+  originals + official items with a skill tag (QB_MATH/QB_RW; DSAT tests have no skills so
+  stay out) while bank_settings.official_in_waypoints is true. Rows carry source/source_label;
+  SQCard.sourceChip / .pr-src label every card ("ScoreQuest original" or "College Board
+  Question Bank"). Official rows have no key in the browser: grade() returns status 'error'
+  if the server is unreachable and the card re-enables Check. Static file stays originals only.
 - boss.js: per-boss manifests. Attack mechanics: projectile | beam | strike {delay} |
   flight (composes attackSeq from takeoffSeq + flapSeq fwd/rev x loops + reversed takeoff;
   rig rises flight.rise px, damage at flight.delay; retry resets rig transform).
