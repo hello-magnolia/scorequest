@@ -250,11 +250,31 @@
       window.localStorage.removeItem('sq_demo_progress');
       window.localStorage.setItem('sq_all_access', '1'); // full paid capabilities
     } catch (e) {}
-    demoLogin('Tester');
-    // already on the map? reload so the intro actually replays
-    if (!window.__SQ_NO_REDIRECT && document.body.classList.contains('page-map')) {
-      window.location.reload();
-    }
+    var replay = function () {
+      // already on the map? reload so the intro actually replays
+      if (!window.__SQ_NO_REDIRECT && document.body.classList.contains('page-map')) window.location.reload();
+    };
+    if (!supabase) { demoLogin('Tester'); replay(); return Promise.resolve({ demo: true }); }
+    // With Supabase configured, a guest is a real anonymous account: it reads the
+    // live bank (originals plus official items), grades on the server and keeps
+    // its own attempts, exactly like a signed-in student, with nothing to type.
+    // Needs "Allow anonymous sign-ins" on in Authentication > Sign In / Providers;
+    // if it is off, fall back to the local demo so testing never stalls.
+    if (state.user) supabase.auth.signOut();
+    return supabase.auth.signInAnonymously().then(function (res) {
+      if (res.error || !res.data || !res.data.user) throw res.error || new Error('no user');
+      state.demo = false;
+      state.user = res.data.user;
+      state.profile = { hero_name: null, guest: true };
+      closeModal();
+      enterWorld();
+      replay();
+      return { guest: true };
+    }).catch(function (e) {
+      console.warn('[ScoreQuest] anonymous sign-in unavailable, using the local demo.', e && e.message);
+      demoLogin('Tester'); replay();
+      return { demo: true, notice: 'Guest accounts are off in Supabase (Authentication > Sign In / Providers > Allow anonymous sign-ins). Running the local demo instead.' };
+    });
   }
 
   /* ---------- demo mode helpers ---------- */
@@ -308,7 +328,7 @@
         '<h2 id="auth-title" class="auth-title" data-mode="in">Choose your hero</h2>' +
         '<button class="btn btn-google btn-block auth-google">' +
           '<span class="g-mark" aria-hidden="true">G</span> Continue with Google</button>' +
-        '<button class="btn btn-outline btn-block auth-guest">Test as new user (replays the intro)</button>' +
+        '<button class="btn btn-outline btn-block auth-guest">Test as new user (guest account, replays the intro)</button>' +
         '<div class="auth-or"><span>or</span></div>' +
         '<label class="auth-field auth-heroname" hidden><span class="type-utility">Hero name</span>' +
           '<input type="text" autocomplete="nickname" maxlength="24" placeholder="e.g. Nightscholar" /></label>' +
@@ -373,7 +393,7 @@
     });
 
     modal.querySelector('.auth-guest').addEventListener('click', function () {
-      testAsNewUser();
+      testAsNewUser().then(function (r) { if (r && r.notice) demoNotice(r.notice); });
     });
 
     submit.addEventListener('click', function () {
@@ -498,6 +518,7 @@
     },
     /* The real account name. Parent surfaces ONLY: it is a legal name. */
     getFullName: function () { return (state.profile && state.profile.full_name) || null; },
+    isGuest: function () { return !!(state.user && (state.user.is_anonymous || (state.profile && state.profile.guest))); },
     setHeroName: function (name) {
       name = String(name || '').trim().slice(0, 24);
       if (!name || !state.user || !supabase) return Promise.resolve(false);
