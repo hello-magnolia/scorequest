@@ -54,7 +54,7 @@ const load = async (path) => {
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
   check('Space walks Pomelo toward the first waypoint: a clash (never a lesson), offering Start',
     await until(() => d.getElementById('rw-prompt').hidden === false, 9000) &&
-    /Waypoint 1 of 4 · Central Ideas and Details I · Easy/.test(d.getElementById('rw-prompt-title').textContent) &&
+    /^Central Ideas and Details I$/.test(d.getElementById('rw-prompt-title').textContent) &&
     d.getElementById('rw-prompt-go').textContent === 'Start');
   check('It hailed him from a distance, not from on top of the marker',
     (w.__SQ_PROMPT_D || 0) > 60, 'opened at ' + w.__SQ_PROMPT_D + 'px');
@@ -112,7 +112,7 @@ const load = async (path) => {
     (w.__SQ_TICKS || 0) > ticksAt + 3, (w.__SQ_TICKS || 0) + ' vs ' + ticksAt);
   check('A cleared node reopens through the prompt as Spar again, and Pomelo stays put',
     await until(() => d.getElementById('rw-prompt').hidden === false, 2500) &&
-    /cleared/.test(d.getElementById('rw-prompt-title').textContent) &&
+    d.getElementById('rw-prompt').classList.contains('is-cleared') &&
     d.getElementById('rw-prompt-go').textContent === 'Spar again' &&
     d.getElementById('rw-capy').style.left === leftBefore,
     d.getElementById('rw-prompt-title').textContent + ' / ' + d.getElementById('rw-prompt-go').textContent);
@@ -126,11 +126,11 @@ const load = async (path) => {
   // must hand the hail over mid-stride
   clickEl(d.querySelector('.rw-node.is-passed'));
   await until(() => d.getElementById('rw-prompt').hidden === false &&
-    /cleared/.test(d.getElementById('rw-prompt-title').textContent), 2500);
+    d.getElementById('rw-prompt').classList.contains('is-cleared'), 2500);
   clickEl(d.querySelectorAll('.rw-node:not(.is-passed)')[0]);
   check('The hail hands over: the next marker (the lesson) takes the banner from the cleared one, from a distance',
     await until(() => d.getElementById('rw-prompt').hidden === false &&
-      /Lesson 2 of 4/.test(d.getElementById('rw-prompt-title').textContent), 9000) &&
+      /Reading the room/.test(d.getElementById('rw-prompt-title').textContent), 9000) &&
     /Reading the room/.test(d.getElementById('rw-prompt-title').textContent) &&
     d.getElementById('rw-prompt-go').textContent === 'Start' &&
     (w.__SQ_PROMPT_D || 0) > 60,

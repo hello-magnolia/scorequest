@@ -36,13 +36,14 @@ parents, realm, boss, bookmarks, profile, settings, clash, practice). Lineage `b
 index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
 
 ## Edits and sprites
-- Realm waypoint markers (.rw-node) are game objects hovering over the painted realm: one big
-  unframed pixel icon (16x16 art px drawn at 3px, ink outline, px() in realm.js) bobbing over a
-  warm light pool + ground shadow. Icon = mode (scroll lesson / critter face clash / moss banner
-  cleared); three pips under a clash icon = tier. paintNode(i) swaps the icon. Arrival prompt
-  (.rw-prompt) is a small parchment card ANCHORED above the marker (anchorPrompt, --ax/--ay),
-  not a bottom bar. Magnolia's direction: not white, not icon-in-a-box, salient, hovering over
-  interactable scenery (she places markers herself in the editor). Backlog: per-realm boss icon.
+- Realm waypoint markers (.rw-node): a parchment speech bubble (tail down) bobbing over a warm
+  light pool + ground shadow, holding one 48px pixel icon (px() in realm.js, 3px per art px).
+  Clash = the REALM GEM (GEM[realm] colors; tier 1 one gem, 2 a pair, 3 a crown of three);
+  lesson = open book; is-locked = gray stone + dim bubble; is-passed = moss bubble + check
+  badge on the icon; empties dashed, editor only. paintNode(i) swaps icons. Arrival prompt
+  (.rw-prompt) = topic + Start/Skip only, parchment, ANCHORED above the marker (anchorPrompt);
+  cleared adds .is-cleared (suites check that, not title text). Magnolia hovers markers over
+  interactable scenery herself in the editor. Locked is a look only; play stays order-free.
 - Prefer verified single str_replace edits; for bulk Python .replace() assert every anchor
   before writing (atomic), order overlapping anchors, beware short anchors appearing twice.
 - Sprite uploads (zip, not inline) arrive on a baked ground: checkerboard OR flat color.

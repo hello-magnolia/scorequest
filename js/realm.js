@@ -545,60 +545,70 @@
         out += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + c + '"/>';
       }
     });
-    return '<svg viewBox="0 0 16 16" aria-hidden="true">' + out + '</svg>';
+    var w = Math.max.apply(null, cells.map(function (r) { return r.length; }));
+    return '<svg viewBox="0 0 ' + w + ' ' + cells.length + '" aria-hidden="true">' + out + '</svg>';
+  }
+  /* realm gems: every realm has its own stone, and a harder trial shows a
+     bigger cluster (tier 1 one gem, 2 a pair, 3 a crown of three). Locked
+     stones go gray; a cleared trial shows the same gem on a moss banner. */
+  var GEM = {
+    lorewood:      { l: '#ffd9a8', g: '#f0803a', d: '#a8401a' },   /* sunset amber */
+    storyforge:    { l: '#ffc8a0', g: '#e05a30', d: '#8a2a14' },   /* forge ember */
+    inkreef:       { l: '#ffd6e4', g: '#ee7fa8', d: '#a0355f' },   /* coral pink */
+    syntaxcitadel: { l: '#dbe6f5', g: '#7f9cc8', d: '#3d5584' },   /* battlement blue */
+    mirrormines:   { l: '#d8fbff', g: '#5fd4e8', d: '#227a93' },   /* crystal cyan */
+    infinityisles: { l: '#e8d6ff', g: '#a77ae6', d: '#5a3a9c' },   /* loop violet */
+    datadocks:     { l: '#cfeeff', g: '#4aa7e0', d: '#1f5a8c' },   /* harbor blue */
+    prismpeaks:    { l: '#eef6ff', g: '#9ec4f0', d: '#4a6fa8' }    /* ice */
+  };
+  var GEM_LOCKED = { l: '#cfc5ad', g: '#8f8674', d: '#4f4a40' };
+  var GEM_CELLS = {
+    1: ['................','.......kk.......','......kllk......','.....kllggk.....','....kllgggkk....','...kllggggggk...','...klggggggggk..',
+        '..klgggggggggk..','..kggggggggggk..','...kgggggggdk...','...kggggggddk...','....kgggdddk....','.....kgdddk.....','......kddk......','.......kk.......','................'],
+    2: ['................','....kk..........','...kllk..kk.....','..kllggkkllk....','..klggggkllgk...','.klgggggklgggk..','.kggggggkggggk..','.kgggggdkggggk..',
+        '..kgggddkgggdk..','..kggddkkggddk..','...kddk.kgdddk..','....kk..kdddk...','.........kdk....','..........k.....','................','................'],
+    3: ['.......kk.......','......kllk......','..kk.kllggk.kk..','.kllkklgggkkllk.','.klgkklgggkklgk.','.kgggkkgggkkgggk','.kgggkkggdkkgggk','.kgggdkggdkkggdk',
+        '..kgddkkddkkgdk.','..kgddkkddkkddk.','...kdk.kddk.kdk.','....k..kdk..k...','........k.......','................','................','................']
+  };
+  function gemIcon(realmId, tier, locked) {
+    var c = locked ? GEM_LOCKED : (GEM[realmId] || GEM.lorewood);
+    return px(GEM_CELLS[Math.min(3, Math.max(1, tier || 1))], { k: '#2b2118', l: c.l, g: c.g, d: c.d });
   }
   var ICONS = {
     lesson: px([
-      '....kkkkkkkk....',
-      '...kggggggggk...',
-      '..kgpppppppppk..',
-      '..kpppppppppkk..',
-      '..kppbbbbbppk...',
-      '..kpppppppppk...',
-      '..kppbbbbppppk..',
-      '..kpppppppppk...',
-      '..kppbbbbbbppk..',
-      '..kpppppppppk...',
-      '..kppbbbbppppk..',
-      '..kpppppppppk...',
-      '..kpppppppppkk..',
-      '..kgpppppppppk..',
-      '...kggggggggk...',
-      '....kkkkkkkk....'], { k: '#2b2118', g: '#d2ad86', p: '#f3e6c4', b: '#9a6232' }),
-    clash: px([
-      '....kk....kk....',
-      '...kffk..kffk...',
-      '...kfffkkfffk...',
-      '..kffffffffffk..',
-      '..kffffffffffk..',
-      '.kffffffffffffk.',
-      '.kffkkffffkkffk.',
-      '.kffkwffffwkffk.',
-      '.kffffffffffffk.',
-      '.kfffffnnfffffk.',
-      '.kffffffffffffk.',
-      '..kffffffffffk..',
-      '..kffffffffffk..',
-      '...kffffffffk...',
-      '....kkkkkkkk....',
-      '................'], { k: '#2b2118', f: '#c68556', w: '#fffdf7', n: '#4f342f' }),
-    passed: px([
-      '..kkkkkkkkkkkk..',
-      '.kmmmmmmmmmmmmk.',
-      '.kmmmmmmmmmmmmk.',
-      '.kmmmmmmmmmmwmk.',
-      '.kmmmmmmmmmwwmk.',
-      '.kmmmmmmmmwwmmk.',
-      '.kmwwmmmmwwmmmk.',
-      '.kmmwwmmwwmmmmk.',
-      '.kmmmwwwwmmmmmk.',
-      '.kmmmmwwmmmmmmk.',
-      '.kmmmmmmmmmmmmk.',
-      '.kmmmmmmmmmmmmk.',
-      '.kmmmkmmmmkmmmk.',
-      '.kmmk..kk..kmmk.',
-      '.kkk........kkk.',
-      '................'], { k: '#2b2118', m: '#4f7a55', w: '#fffdf7' }),
+      '................',
+      '................',
+      '.kkkkkkk.kkkkkkk',
+      'kpppppppkpppppppk',
+      'kpbbbbppkppbbbbpk',
+      'kpppppppkpppppppk',
+      'kpbbbbbpkpbbbbbpk',
+      'kpppppppkpppppppk',
+      'kpbbbbppkppbbbbpk',
+      'kpppppppkpppppppk',
+      'kpbbbbbpkpbbbbbpk',
+      'kpppppppkpppppppk',
+      '.kkkkkkkkkkkkkkk',
+      '................',
+      '................',
+      '................'], { k: '#2b2118', p: '#fff7e0', b: '#9a6232' }),
+    lessonLocked: px([
+      '................',
+      '................',
+      '.kkkkkkk.kkkkkkk',
+      'kpppppppkpppppppk',
+      'kpbbbbppkppbbbbpk',
+      'kpppppppkpppppppk',
+      'kpbbbbbpkpbbbbbpk',
+      'kpppppppkpppppppk',
+      'kpbbbbppkppbbbbpk',
+      'kpppppppkpppppppk',
+      'kpbbbbbpkpbbbbbpk',
+      'kpppppppkpppppppk',
+      '.kkkkkkkkkkkkkkk',
+      '................',
+      '................',
+      '................'], { k: '#2b2118', p: '#cfc5ad', b: '#8f8674' }),
     empty: px([
       '.k.k.k.k.k.k.k..',
       '................',
@@ -626,12 +636,7 @@
       el.className = 'rw-node' + (wp.mode === 'lesson' ? ' is-lesson' : '');
       el.setAttribute('data-node', i + 1);
       el.title = wp.mode === 'empty' ? 'Empty waypoint (editor only)' : (wp.title || wp.skill || '');
-      /* three pips under a clash tag show its tier: one filled is easy,
-         three is hard; all three turn moss once the marker is cleared */
-      var pips = '';
-      if (wp.mode === 'clash' && wp.tier) {
-        pips = '<span class="rw-node-pips" aria-hidden="true"><span></span><span></span><span></span></span>';
-      }
+      var pips = '';   /* the gem itself carries the tier, nothing else on the bubble */
       el.innerHTML = '<span class="rw-node-pool" aria-hidden="true"></span>' +
         '<span class="rw-node-float"><span class="rw-node-icon"></span>' + pips + '</span>';
       el.addEventListener('click', function (e) {
@@ -645,14 +650,14 @@
   function paintNode(i) {
     var el = nodeEls[i], wp = waypointAt(i);
     if (!el) return;
-    var key = passed[i] ? 'passed' : (wp.mode === 'lesson' ? 'lesson' : wp.mode === 'empty' ? 'empty' : 'clash');
+    var locked = el.classList.contains('is-locked');
+    var key = wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
+      : 'gem-' + realm.id + '-' + (wp.tier || 1) + (locked ? '-locked' : '');
     var icon = el.querySelector('.rw-node-icon');
-    if (icon && icon.getAttribute('data-key') !== key) { icon.innerHTML = ICONS[key]; icon.setAttribute('data-key', key); }
-    var tier = Math.min(3, wp.tier || 0);
-    Array.prototype.forEach.call(el.querySelectorAll('.rw-node-pips span'), function (p, r) {
-      p.classList.toggle('is-tier', r < tier);
-      p.classList.toggle('is-done', !!passed[i]);
-    });
+    if (icon && icon.getAttribute('data-key') !== key) {
+      icon.innerHTML = ICONS[key] || gemIcon(realm.id, wp.tier, locked);
+      icon.setAttribute('data-key', key);
+    }
   }
   function layoutNodes() {
     layoutMarks();
@@ -730,11 +735,10 @@
     promptOpen = true;
     window.__SQ_PROMPT_D = Math.round(markDist(i, posXY()));   // hailing distance
     var wp = waypointAt(i), rd = roundsDone[i] || 0;
-    document.getElementById('rw-prompt-title').textContent =
-      (wp.mode === 'lesson' ? 'Lesson' : 'Waypoint') + ' ' + (i + 1) + ' of ' + (realm.nodes || []).length +
-      (wp.title || wp.skill ? ' \u00B7 ' + (wp.title || wp.skill) : '') +
-      (wp.mode === 'clash' && wp.tier ? ' \u00B7 ' + ['Easy', 'Medium', 'Hard'][wp.tier - 1] : '') +
-      (passed[i] ? ' \u00B7 cleared' : (wp.mode === 'clash' && wp.rounds > 1 ? ' \u00B7 round ' + (rd + 1) + ' of ' + wp.rounds : ''));
+    /* the ask is the topic and one verb; mode, tier and position are already
+       on the marker (book or gem cluster) and in the overlay's header */
+    document.getElementById('rw-prompt-title').textContent = wp.title || wp.skill || (wp.mode === 'lesson' ? 'Lesson' : 'Waypoint');
+    promptEl.classList.toggle('is-cleared', !!passed[i]);
     promptGoBtn.textContent = passed[i] ? (wp.mode === 'lesson' ? 'Read again' : 'Spar again') : (rd ? 'Continue' : 'Start');
     paintPromptArm();
     anchorPrompt(i);
@@ -746,9 +750,9 @@
     var el = nodeEls[i];
     var r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
     if (!r || (!r.width && !r.height && !r.left && !r.top)) { promptEl.classList.remove('is-anchored'); return; }
-    var w = Math.min(320, window.innerWidth * 0.92);
+    var w = Math.min(promptEl.offsetWidth || 240, window.innerWidth * 0.92);
     var x = Math.min(Math.max(r.left, w / 2 + 12), window.innerWidth - w / 2 - 12);
-    var y = Math.max(r.top - 92, 130);
+    var y = Math.max(r.top - 118, 130);
     promptEl.style.setProperty('--ax', Math.round(x) + 'px');
     promptEl.style.setProperty('--ay', Math.round(y) + 'px');
     promptEl.classList.add('is-anchored');
