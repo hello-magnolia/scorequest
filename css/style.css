@@ -1385,6 +1385,8 @@ a { color: inherit; }
   width: 12px; height: 8px; background: #f3e6c4; clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 .rw-node-icon { display: block; width: 48px; height: 48px; }
+.rw-node.is-wide .rw-node-icon { width: 102px; height: 33px; }   /* three 10px stars at 3px, two gaps */
+.rw-prompt-icon.is-wide { width: 102px; height: 33px; }
 .rw-node-icon svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
 .rw-node-pips { display: flex; gap: 4px; }
 .rw-node-pips span { width: 7px; height: 7px; background: #f3e6c4; box-shadow: 0 0 0 2px #2b2118; }
@@ -2040,15 +2042,29 @@ a { color: inherit; }
   padding: 14px 18px 10px; text-align: center;
 }
 .rw-prompt.is-anchored { left: var(--ax, 50%); top: var(--ay, 40%); }
+/* grow from the marker's bubble: the card starts scaled to the bubble's box
+   (--grow, set by growPrompt) and eases to full size; text fades in behind
+   the icon, which stays the same size throughout. The marker's own bubble
+   hides while the card speaks for it. */
+.rw-prompt { display: flex; align-items: center; gap: 14px; text-align: left; transform-origin: 50% 100%;
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.rw-prompt:not(.is-open) { transform: translate(-50%, -100%) var(--grow, scale(0.6)); }
+.rw-prompt.is-open { transform: translate(-50%, -100%); }
+.rw-prompt-icon { display: block; width: 48px; height: 48px; flex: none; }
+.rw-prompt-icon svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
+.rw-prompt-body { display: flex; flex-direction: column; gap: 10px; opacity: 0; transition: opacity 0.18s ease 0.1s; }
+.rw-prompt.is-open .rw-prompt-body { opacity: 1; }
+.rw-node.is-speaking .rw-node-float { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { .rw-prompt, .rw-prompt-body { transition: none; } .rw-prompt:not(.is-open) { transform: translate(-50%, -100%); } .rw-prompt-body { opacity: 1; } }
 .rw-prompt::after {                /* pointer tail toward the marker below */
   content: ""; position: absolute; left: 50%; bottom: -17px; transform: translateX(-50%);
   width: 22px; height: 14px; background: #2b2118;
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
-.rw-prompt-title { margin: 0 0 12px; color: #2b2118; letter-spacing: 0.02em; font-size: 1.15rem; line-height: 1.35; }
+.rw-prompt-title { margin: 0; color: #2b2118; letter-spacing: 0.02em; font-size: 1.15rem; line-height: 1.35; }
 .rw-prompt.is-cleared .rw-prompt-title::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; background: #4f7a55; box-shadow: 0 0 0 2px #2b2118; vertical-align: -1px; }
 .rw-prompt-row .btn-outline { font-size: 0.95rem; }
-.rw-prompt-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
+.rw-prompt-row { display: flex; gap: 12px; justify-content: flex-start; align-items: center; }
 .rw-prompt-row .btn { min-width: 120px; }
 .rw-prompt-row .btn-gold { background: #4f7a55; color: #fffdf7; --frame: #2b2118; }
 .rw-prompt-row .btn { min-width: 0; padding-left: 18px; padding-right: 18px; }

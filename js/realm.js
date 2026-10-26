@@ -548,31 +548,43 @@
     var w = Math.max.apply(null, cells.map(function (r) { return r.length; }));
     return '<svg viewBox="0 0 ' + w + ' ' + cells.length + '" aria-hidden="true">' + out + '</svg>';
   }
-  /* realm gems: every realm has its own stone, and a harder trial shows a
-     bigger cluster (tier 1 one gem, 2 a pair, 3 a crown of three). Locked
-     stones go gray; a cleared trial shows the same gem on a moss banner. */
-  var GEM = {
-    lorewood:      { l: '#ffd9a8', g: '#f0803a', d: '#a8401a' },   /* sunset amber */
-    storyforge:    { l: '#ffc8a0', g: '#e05a30', d: '#8a2a14' },   /* forge ember */
-    inkreef:       { l: '#ffd6e4', g: '#ee7fa8', d: '#a0355f' },   /* coral pink */
-    syntaxcitadel: { l: '#dbe6f5', g: '#7f9cc8', d: '#3d5584' },   /* battlement blue */
-    mirrormines:   { l: '#d8fbff', g: '#5fd4e8', d: '#227a93' },   /* crystal cyan */
-    infinityisles: { l: '#e8d6ff', g: '#a77ae6', d: '#5a3a9c' },   /* loop violet */
-    datadocks:     { l: '#cfeeff', g: '#4aa7e0', d: '#1f5a8c' },   /* harbor blue */
-    prismpeaks:    { l: '#eef6ff', g: '#9ec4f0', d: '#4a6fa8' }    /* ice */
+  /* difficulty stars: three stars under every clash marker, filled left to
+     right by tier (one easy, two medium, three hard). The filled star takes
+     the realm's color, muted so it sits in the painting; empty stars are
+     parchment with the ink outline. Locked markers go gray. */
+  var STAR = {
+    lorewood:      '#d8894a',   /* muted sunset amber */
+    storyforge:    '#c9603c',   /* ember */
+    inkreef:       '#d98aa6',   /* coral */
+    syntaxcitadel: '#7d93b8',   /* battlement blue */
+    mirrormines:   '#6fbccb',   /* crystal teal */
+    infinityisles: '#9b83c6',   /* loop violet */
+    datadocks:     '#5f9ac4',   /* harbor blue */
+    prismpeaks:    '#9cb6d6'    /* ice */
   };
-  var GEM_LOCKED = { l: '#cfc5ad', g: '#8f8674', d: '#4f4a40' };
-  var GEM_CELLS = {
-    1: ['................','.......kk.......','......kllk......','.....kllggk.....','....kllgggkk....','...kllggggggk...','...klggggggggk..',
-        '..klgggggggggk..','..kggggggggggk..','...kgggggggdk...','...kggggggddk...','....kgggdddk....','.....kgdddk.....','......kddk......','.......kk.......','................'],
-    2: ['................','....kk..........','...kllk..kk.....','..kllggkkllk....','..klggggkllgk...','.klgggggklgggk..','.kggggggkggggk..','.kgggggdkggggk..',
-        '..kgggddkgggdk..','..kggddkkggddk..','...kddk.kgdddk..','....kk..kdddk...','.........kdk....','..........k.....','................','................'],
-    3: ['.......kk.......','......kllk......','..kk.kllggk.kk..','.kllkklgggkkllk.','.klgkklgggkklgk.','.kgggkkgggkkgggk','.kgggkkggdkkgggk','.kgggdkggdkkggdk',
-        '..kgddkkddkkgdk.','..kgddkkddkkddk.','...kdk.kddk.kdk.','....k..kdk..k...','........k.......','................','................','................']
-  };
-  function gemIcon(realmId, tier, locked) {
-    var c = locked ? GEM_LOCKED : (GEM[realmId] || GEM.lorewood);
-    return px(GEM_CELLS[Math.min(3, Math.max(1, tier || 1))], { k: '#2b2118', l: c.l, g: c.g, d: c.d });
+  var STAR_CELLS = [
+    '....kk....',
+    '...kffk...',
+    '...kffk...',
+    'kkkkffkkkk',
+    'kffffffffk',
+    '.kffffffk.',
+    '..kffffk..',
+    '..kffffk..',
+    '.kffkkffk.',
+    'kffk..kffk',
+    'kkk....kkk'];
+  function starRow(realmId, tier, locked) {
+    var fill = locked ? '#8f8674' : (STAR[realmId] || STAR.lorewood);
+    var rows = [], y;
+    for (y = 0; y < STAR_CELLS.length; y++) rows.push('');
+    for (var n = 0; n < 3; n++) {
+      var on = n < Math.min(3, tier || 1);
+      for (y = 0; y < STAR_CELLS.length; y++) {
+        rows[y] += (n ? '..' : '') + STAR_CELLS[y].replace(/f/g, on ? 'f' : (locked ? 'e' : 'p'));
+      }
+    }
+    return px(rows, { k: '#2b2118', f: fill, p: '#fbf3dc', e: '#ddd3bb' });
   }
   var ICONS = {
     lesson: px([
@@ -652,11 +664,12 @@
     if (!el) return;
     var locked = el.classList.contains('is-locked');
     var key = wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
-      : 'gem-' + realm.id + '-' + (wp.tier || 1) + (locked ? '-locked' : '');
+      : 'stars-' + realm.id + '-' + (wp.tier || 1) + (locked ? '-locked' : '');
     var icon = el.querySelector('.rw-node-icon');
     if (icon && icon.getAttribute('data-key') !== key) {
-      icon.innerHTML = ICONS[key] || gemIcon(realm.id, wp.tier, locked);
+      icon.innerHTML = ICONS[key] || starRow(realm.id, wp.tier, locked);
       icon.setAttribute('data-key', key);
+      el.classList.toggle('is-wide', wp.mode === 'clash');
     }
   }
   function layoutNodes() {
@@ -742,7 +755,33 @@
     promptGoBtn.textContent = passed[i] ? (wp.mode === 'lesson' ? 'Read again' : 'Spar again') : (rd ? 'Continue' : 'Start');
     paintPromptArm();
     anchorPrompt(i);
+    growPrompt(i);
+  }
+  /* The marker's bubble is the prompt: on arrival the bubble grows into the
+     card (its icon rides along, the text fades in behind it); on close the
+     card shrinks back onto the marker. FLIP: lay the card out at full size,
+     then start it scaled to the bubble's box and let the transition run. */
+  var promptBubbleIdx = -1;
+  function growPrompt(i) {
+    var el = nodeEls[i], bub = el && el.querySelector('.rw-node-float');
+    var icon = el && el.querySelector('.rw-node-icon');
+    document.getElementById('rw-prompt-icon').innerHTML = icon ? icon.innerHTML : '';
+    document.getElementById('rw-prompt-icon').classList.toggle('is-wide', !!(el && el.classList.contains('is-wide')));
+    if (promptBubbleIdx > -1 && promptBubbleIdx !== i && nodeEls[promptBubbleIdx]) nodeEls[promptBubbleIdx].classList.remove('is-speaking');
+    promptBubbleIdx = i;
     promptEl.hidden = false;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!bub || reduce || !bub.getBoundingClientRect) { if (el) el.classList.add('is-speaking'); promptEl.classList.add('is-open'); return; }
+    var from = bub.getBoundingClientRect(), to = promptEl.getBoundingClientRect();
+    if (!to.width || !from.width) { el.classList.add('is-speaking'); promptEl.classList.add('is-open'); return; }
+    var sx = from.width / to.width, sy = from.height / to.height;
+    var dx = (from.left + from.width / 2) - (to.left + to.width / 2);
+    var dy = from.bottom - to.bottom;
+    promptEl.classList.remove('is-open');
+    promptEl.style.setProperty('--grow', 'translate(' + Math.round(dx) + 'px, ' + Math.round(dy) + 'px) scale(' + sx.toFixed(3) + ', ' + sy.toFixed(3) + ')');
+    el.classList.add('is-speaking');
+    void promptEl.offsetWidth;                       // commit the start frame
+    requestAnimationFrame(function () { promptEl.classList.add('is-open'); });
   }
   /* the prompt floats above the marker it speaks for, clamped to the
      viewport; no anchor (editor, tests without layout) leaves it centered */
@@ -760,7 +799,23 @@
   function closePrompt(waive) {
     if (waive && promptIdx > -1) promptWaived = promptIdx;
     promptOpen = false;
-    promptEl.hidden = true;
+    var speaking = promptBubbleIdx > -1 ? nodeEls[promptBubbleIdx] : null;
+    promptBubbleIdx = -1;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !promptEl.classList.contains('is-open') || !promptEl.style.getPropertyValue('--grow')) {
+      promptEl.hidden = true; promptEl.classList.remove('is-open');
+      if (speaking) speaking.classList.remove('is-speaking');
+      return;
+    }
+    promptEl.classList.remove('is-open');             // shrink back onto the marker
+    var done = false;
+    function finish() {
+      if (done) return; done = true;
+      promptEl.removeEventListener('transitionend', finish);
+      if (!promptOpen) { promptEl.hidden = true; if (speaking) speaking.classList.remove('is-speaking'); }
+    }
+    promptEl.addEventListener('transitionend', finish);
+    setTimeout(finish, 320);
   }
   function promptGo() {
     var i = promptIdx;
