@@ -12,7 +12,7 @@
 
    The boss critter here is the biome's sparring partner (same critter as
    clash.html). Its ward is the round: 5 pips, one per correct answer, and a
-   round clears at 4 of 5. Pomelo's HP drains on misses and refills between
+   round clears at 8 of 10. Pomelo's HP drains on misses and refills between
    rounds; empty is never a loss. Grading goes through SQQuestions.grade (the
    server when signed in), so every answer is an attempt with
    session_id "realm:<realm>:<waypoint>:r<round>".
@@ -22,7 +22,7 @@
 (function () {
   'use strict';
   var C = window.SQCard, $ = function (s, r) { return (r || document).querySelector(s); };
-  var ROUND = 5, PASS = 4, POM_HP = 5;
+  var ROUND = 10, PASS = 8, POM_HP = 5;   /* a round is 10 questions, clears at 8 */
   var BOSS = {
     lorewood: { key: 'rabbit', name: 'Lantern Rabbit' }, storyforge: { key: 'hedgehog', name: 'Forge Hedgehog' },
     inkreef: { key: 'turtle', name: 'Reef Turtle' }, syntaxcitadel: { key: 'frog', name: 'Citadel Frog King' },
@@ -210,5 +210,5 @@
     state = null;
   }
   function leave() { var o = state && state.o; close(); if (o && o.onLeave) o.onLeave(); }
-  window.SQClashOverlay = { open: open, close: close, get state() { return state; } };
+  window.SQClashOverlay = { open: open, close: close, ROUND: ROUND, PASS: PASS, get state() { return state; } };
 })();

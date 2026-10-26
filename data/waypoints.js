@@ -8,7 +8,7 @@
            rapid    timed, easy only, never gates          (backlog)
            reading  one passage, several questions        (backlog)
            empty    placed in the editor, hidden in play
-   rounds  clash only: 1 easy, 2 adds medium, 3 adds hard. A round clears at 4 of 5.
+   rounds  clash only: 1 easy, 2 adds medium, 3 adds hard. A round is 10 questions and clears at 8.
    The boss (lair) is not a waypoint: clearing every clash waypoint unlocks it. */
 window.SQ_WAYPOINTS = [
   /* Lorewood: Information and Ideas (4 markers) */

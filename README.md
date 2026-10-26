@@ -85,8 +85,8 @@ a four-hex palette, which keeps the set visually consistent.
 each marker is a waypoint (`data/waypoints.js`, one per SAT skill). Reaching one
 opens the Critter Clash overlay (`js/clash-overlay.js`, sharing `js/clash-arena.js`,
 `js/qcard.js` and `css/clash.css` with `clash.html`): a lesson scroll
-(`data/lessons.js`) or a five-question round against the biome's boss critter.
-Rounds climb in difficulty (1 easy, 2 medium, 3 hard) and clear at 4 of 5; a miss
+(`data/lessons.js`) or a ten-question round against the biome's boss critter.
+Rounds climb in difficulty (1 easy, 2 medium, 3 hard) and clear at 8 of 10; a miss
 dispels one of Pomelo's HP pips, and an empty bar only means he rests and refills.
 Progress lives in `sq_realm_prog_<realm>` and `sq_realm_rounds_<realm>`. Empty
 waypoints stay hidden in play and show in the editor (`&edit=1`). Answers grade

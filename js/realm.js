@@ -646,7 +646,8 @@
   /* ---------- the waypoint: a Critter Clash round or a lesson, in the overlay ----------
      Questions come from the shared bank by the waypoint's skill (and any "also"
      skills), one difficulty tier per round: round 1 easy, 2 medium, 3 hard, falling
-     back to neighbours when a tier is thin. A round clears at 4 of 5. */
+     back to neighbours when a tier is thin. A round is 10 questions and clears at 8. */
+  var ROUND_LEN = (window.SQClashOverlay && window.SQClashOverlay.ROUND) || 10;
   function pickRound(wp, round) {
     var Q = window.SQQuestions;
     if (!Q) return [];
@@ -658,11 +659,16 @@
     try { (window.SQAttempts ? window.SQAttempts.list() : []).forEach(function (a) { if (a.correct) seen[a.question_id] = true; }); } catch (e) {}
     var order = [tier, tier + 1, tier - 1, tier + 2, tier - 2].filter(function (d) { return d >= 1 && d <= 3; });
     var out = [];
-    order.forEach(function (d) {
-      var tierQs = pool.filter(function (q) { return q.difficulty === d && out.indexOf(q) < 0; });
-      tierQs.sort(function (a, b) { return (seen[a.id] ? 1 : 0) - (seen[b.id] ? 1 : 0) || Math.random() - 0.5; });
-      tierQs.forEach(function (q) { if (out.length < 5) out.push(q); });
-    });
+    var take = function (from) {
+      order.forEach(function (d) {
+        var tierQs = from.filter(function (q) { return q.difficulty === d && out.indexOf(q) < 0; });
+        tierQs.sort(function (a, b) { return (seen[a.id] ? 1 : 0) - (seen[b.id] ? 1 : 0) || Math.random() - 0.5; });
+        tierQs.forEach(function (q) { if (out.length < ROUND_LEN) out.push(q); });
+      });
+    };
+    take(pool);
+    /* a thin skill (the static bank has five per skill) tops up from the realm's domain */
+    if (out.length < ROUND_LEN) take(Q.all().filter(function (q) { return REALM_DOMAIN[realm.id] === q.domain; }));
     return out;
   }
   var REALM_DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Structure', inkreef: 'Expression of Ideas', syntaxcitadel: 'Standard English Conventions',

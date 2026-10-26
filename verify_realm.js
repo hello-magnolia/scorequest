@@ -121,14 +121,15 @@ const load = async (path) => {
     d.getElementById('rw-prompt-title').textContent + ' at ' + (w.__SQ_PROMPT_D || 0) + 'px');
 
   /* a clash round: five bank questions on the waypoint's skill, Pomelo versus the
-     biome boss; a miss drains HP, never progress; 4 of 5 clears the round */
+     biome boss; a miss drains HP, never progress; 8 of 10 clears the round */
   clickEl(d.getElementById('rw-prompt-go'));
-  check('Start opens a clash round on the skill with the biome boss on screen',
+  check('Start opens a clash round on the skill (topped up from the realm domain when the skill is thin) with the biome boss on screen',
     await until(() => w.__SQ_OVERLAY && w.__SQ_OVERLAY.mode === 'clash' && d.querySelectorAll('#sq-overlay .choices button').length >= 3, 6000) &&
     /Central Ideas/.test(d.getElementById('ov-title').textContent) &&
     /Round 1 of 2/.test(d.getElementById('ov-sub').textContent) &&
-    w.SQClashOverlay.state.qs.length === 5 &&
-    w.SQClashOverlay.state.qs.every(q => q.skill === 'Central Ideas and Details') &&
+    w.SQClashOverlay.state.qs.length === 10 &&
+    w.SQClashOverlay.state.qs.slice(0, 5).every(q => q.skill === 'Central Ideas and Details') &&
+    w.SQClashOverlay.state.qs.every(q => q.domain === 'Information and Ideas') &&
     /ScoreQuest original/.test(d.querySelector('#sq-overlay .qmeta .qsrc').textContent) &&
     !!d.getElementById('cx-cv') && !!d.getElementById('me-hp'));
   const answer = async (right) => {
@@ -148,12 +149,12 @@ const load = async (path) => {
     await until(() => w.SQClashOverlay.state.hp === 4, 6000), 'hp ' + w.SQClashOverlay.state.hp);
   clickEl(d.getElementById('bNext'));
   let hits = 0;
-  for (let k = 0; k < 4; k++) { if (await answer(true)) hits++; clickEl(d.getElementById('bNext')); }
-  check('Four hits after the miss clear the round (4 of 5)',
-    hits === 4 && await until(() => w.__SQ_OVERLAY && w.__SQ_OVERLAY.done && w.__SQ_OVERLAY.cleared, 3000) &&
+  for (let k = 0; k < 9; k++) { if (await answer(true)) hits++; clickEl(d.getElementById('bNext')); }
+  check('Nine hits after the miss clear the round (8 of 10 needed)',
+    hits === 9 && await until(() => w.__SQ_OVERLAY && w.__SQ_OVERLAY.done && w.__SQ_OVERLAY.cleared, 3000) &&
     /Round cleared/.test(d.getElementById('ov-body').textContent));
   check('Every clash answer is recorded as an attempt against the realm session',
-    JSON.parse(w.localStorage.getItem('sq_attempts') || '[]').filter(a => /^realm:lorewood:lorewood-2:r1$/.test(a.session_id)).length === 5);
+    JSON.parse(w.localStorage.getItem('sq_attempts') || '[]').filter(a => /^realm:lorewood:lorewood-2:r1$/.test(a.session_id)).length === 10);
   clickEl(d.getElementById('ov-done'));
   check('Round 1 of 2 is remembered; the waypoint stays open until round 2 (no pass yet)',
     await until(() => !w.__SQ_OVERLAY, 1000) &&
