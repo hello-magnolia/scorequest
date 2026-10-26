@@ -533,11 +533,89 @@
 
   /* marker icons, 12x12 on a pixel grid: a scroll for lessons, the boss
      face for clashes, a check once cleared, a dashed box for empties */
+  /* marker icons on a 16x16 pixel grid, drawn big (3px per pixel) with a
+     one-pixel ink outline so they read as game objects, not UI chrome:
+     a rolled scroll for a lesson, the realm boss's silhouette for a clash,
+     a moss banner with a check once cleared, a dashed box for empties */
+  function px(cells, pal) {           /* cells: rows of palette letters */
+    var out = '';
+    cells.forEach(function (row, y) {
+      for (var x = 0; x < row.length; x++) {
+        var c = pal[row[x]]; if (!c) continue;
+        out += '<rect x="' + x + '" y="' + y + '" width="1" height="1" fill="' + c + '"/>';
+      }
+    });
+    return '<svg viewBox="0 0 16 16" aria-hidden="true">' + out + '</svg>';
+  }
   var ICONS = {
-    lesson: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="8" height="1" fill="#2b2118"/><rect x="2" y="1" width="8" height="1" fill="#d2ad86"/><rect x="1" y="2" width="1" height="8" fill="#2b2118"/><rect x="10" y="2" width="1" height="8" fill="#2b2118"/><rect x="2" y="10" width="8" height="1" fill="#2b2118"/><rect x="2" y="2" width="8" height="8" fill="#fffdf7"/><rect x="3" y="4" width="6" height="1" fill="#9a6232"/><rect x="3" y="6" width="5" height="1" fill="#9a6232"/><rect x="3" y="8" width="6" height="1" fill="#9a6232"/><rect x="1" y="1" width="1" height="1" fill="#2b2118"/><rect x="10" y="1" width="1" height="1" fill="#2b2118"/></svg>',
-    clash: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="2" height="2" fill="#2b2118"/><rect x="8" y="1" width="2" height="2" fill="#2b2118"/><rect x="2" y="3" width="8" height="7" fill="#2b2118"/><rect x="1" y="4" width="10" height="5" fill="#2b2118"/><rect x="3" y="3" width="6" height="6" fill="#c68556"/><rect x="2" y="4" width="8" height="4" fill="#c68556"/><rect x="3" y="5" width="1" height="1" fill="#2b2118"/><rect x="8" y="5" width="1" height="1" fill="#2b2118"/><rect x="5" y="7" width="2" height="1" fill="#4f342f"/><rect x="4" y="10" width="1" height="1" fill="#2b2118"/><rect x="7" y="10" width="1" height="1" fill="#2b2118"/></svg>',
-    passed: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="1" y="1" width="10" height="10" fill="#4f7a55"/><rect x="3" y="6" width="1" height="1" fill="#fffdf7"/><rect x="4" y="7" width="1" height="1" fill="#fffdf7"/><rect x="5" y="8" width="1" height="1" fill="#fffdf7"/><rect x="6" y="7" width="1" height="1" fill="#fffdf7"/><rect x="7" y="6" width="1" height="1" fill="#fffdf7"/><rect x="8" y="5" width="1" height="1" fill="#fffdf7"/><rect x="9" y="4" width="1" height="1" fill="#fffdf7"/></svg>',
-    empty: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="5" y="5" width="2" height="2" fill="#fffdf7"/></svg>'
+    lesson: px([
+      '....kkkkkkkk....',
+      '...kggggggggk...',
+      '..kgpppppppppk..',
+      '..kpppppppppkk..',
+      '..kppbbbbbppk...',
+      '..kpppppppppk...',
+      '..kppbbbbppppk..',
+      '..kpppppppppk...',
+      '..kppbbbbbbppk..',
+      '..kpppppppppk...',
+      '..kppbbbbppppk..',
+      '..kpppppppppk...',
+      '..kpppppppppkk..',
+      '..kgpppppppppk..',
+      '...kggggggggk...',
+      '....kkkkkkkk....'], { k: '#2b2118', g: '#d2ad86', p: '#f3e6c4', b: '#9a6232' }),
+    clash: px([
+      '....kk....kk....',
+      '...kffk..kffk...',
+      '...kfffkkfffk...',
+      '..kffffffffffk..',
+      '..kffffffffffk..',
+      '.kffffffffffffk.',
+      '.kffkkffffkkffk.',
+      '.kffkwffffwkffk.',
+      '.kffffffffffffk.',
+      '.kfffffnnfffffk.',
+      '.kffffffffffffk.',
+      '..kffffffffffk..',
+      '..kffffffffffk..',
+      '...kffffffffk...',
+      '....kkkkkkkk....',
+      '................'], { k: '#2b2118', f: '#c68556', w: '#fffdf7', n: '#4f342f' }),
+    passed: px([
+      '..kkkkkkkkkkkk..',
+      '.kmmmmmmmmmmmmk.',
+      '.kmmmmmmmmmmmmk.',
+      '.kmmmmmmmmmmwmk.',
+      '.kmmmmmmmmmwwmk.',
+      '.kmmmmmmmmwwmmk.',
+      '.kmwwmmmmwwmmmk.',
+      '.kmmwwmmwwmmmmk.',
+      '.kmmmwwwwmmmmmk.',
+      '.kmmmmwwmmmmmmk.',
+      '.kmmmmmmmmmmmmk.',
+      '.kmmmmmmmmmmmmk.',
+      '.kmmmkmmmmkmmmk.',
+      '.kmmk..kk..kmmk.',
+      '.kkk........kkk.',
+      '................'], { k: '#2b2118', m: '#4f7a55', w: '#fffdf7' }),
+    empty: px([
+      '.k.k.k.k.k.k.k..',
+      '................',
+      'k..............k',
+      '................',
+      'k..............k',
+      '................',
+      'k......kk......k',
+      '.......kk.......',
+      'k..............k',
+      '................',
+      'k..............k',
+      '................',
+      'k..............k',
+      '................',
+      '.k.k.k.k.k.k.k..',
+      '................'], { k: '#f3e6c4' })
   };
   function renderNodes() {
     nodeEls.forEach(function (el) { el.remove(); });
@@ -555,7 +633,7 @@
         pips = '<span class="rw-node-pips" aria-hidden="true"><span></span><span></span><span></span></span>';
       }
       el.innerHTML = '<span class="rw-node-pool" aria-hidden="true"></span>' +
-        '<span class="rw-node-tag"><span class="rw-node-icon"></span>' + pips + '</span>';
+        '<span class="rw-node-float"><span class="rw-node-icon"></span>' + pips + '</span>';
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         onNodeClick(i);
@@ -659,7 +737,21 @@
       (passed[i] ? ' \u00B7 cleared' : (wp.mode === 'clash' && wp.rounds > 1 ? ' \u00B7 round ' + (rd + 1) + ' of ' + wp.rounds : ''));
     promptGoBtn.textContent = passed[i] ? (wp.mode === 'lesson' ? 'Read again' : 'Spar again') : (rd ? 'Continue' : 'Start');
     paintPromptArm();
+    anchorPrompt(i);
     promptEl.hidden = false;
+  }
+  /* the prompt floats above the marker it speaks for, clamped to the
+     viewport; no anchor (editor, tests without layout) leaves it centered */
+  function anchorPrompt(i) {
+    var el = nodeEls[i];
+    var r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+    if (!r || (!r.width && !r.height && !r.left && !r.top)) { promptEl.classList.remove('is-anchored'); return; }
+    var w = Math.min(320, window.innerWidth * 0.92);
+    var x = Math.min(Math.max(r.left, w / 2 + 12), window.innerWidth - w / 2 - 12);
+    var y = Math.max(r.top - 92, 130);
+    promptEl.style.setProperty('--ax', Math.round(x) + 'px');
+    promptEl.style.setProperty('--ay', Math.round(y) + 'px');
+    promptEl.classList.add('is-anchored');
   }
   function closePrompt(waive) {
     if (waive && promptIdx > -1) promptWaived = promptIdx;

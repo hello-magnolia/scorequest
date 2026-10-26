@@ -36,11 +36,13 @@ parents, realm, boss, bookmarks, profile, settings, clash, practice). Lineage `b
 index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
 
 ## Edits and sprites
-- Realm waypoint markers (.rw-node) are a UI layer over the painted realm, never scenery: a warm
-  light pool on the ground plus a cream paper tag floating above it (icon = mode: scroll /
-  boss face / check; three pips under a clash tag = tier). States is-passed / is-empty / is-lesson
-  drive the look; paintNode(i) swaps the icon. The arrival prompt (.rw-prompt) is the same paper
-  card with one moss button; proposals live in the "Realm waypoint proposals" design canvas.
+- Realm waypoint markers (.rw-node) are game objects hovering over the painted realm: one big
+  unframed pixel icon (16x16 art px drawn at 3px, ink outline, px() in realm.js) bobbing over a
+  warm light pool + ground shadow. Icon = mode (scroll lesson / critter face clash / moss banner
+  cleared); three pips under a clash icon = tier. paintNode(i) swaps the icon. Arrival prompt
+  (.rw-prompt) is a small parchment card ANCHORED above the marker (anchorPrompt, --ax/--ay),
+  not a bottom bar. Magnolia's direction: not white, not icon-in-a-box, salient, hovering over
+  interactable scenery (she places markers herself in the editor). Backlog: per-realm boss icon.
 - Prefer verified single str_replace edits; for bulk Python .replace() assert every anchor
   before writing (atomic), order overlapping anchors, beware short anchors appearing twice.
 - Sprite uploads (zip, not inline) arrive on a baked ground: checkerboard OR flat color.

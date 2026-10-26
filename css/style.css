@@ -1346,50 +1346,45 @@ a { color: inherit; }
 
 /* realm v2: path trace overlay, node markers, path editor */
 .rw-trace { position: absolute; top: 0; left: 0; pointer-events: none; }
-/* A waypoint is a UI layer over the painted realm, never scenery: a warm
-   pool of light on the ground and a small paper tag floating above it.
-   Cream and that soft light exist in none of the eight paintings, so the
-   same marker reads in every realm. The tag carries the mode (scroll for a
-   lesson, the boss face for a clash, a check once cleared) and, for a
-   multi-round clash, one pip per round. */
+/* A waypoint is a game object hovering over the painted realm: one big
+   pixel icon (48px, 3px per art pixel, ink outline) floating above a warm
+   pool of light, with a shadow on the ground beneath it. No frame around
+   the icon, so it reads as a thing in the world rather than a widget. The
+   icon says the mode (scroll for a lesson, the boss for a clash, a moss
+   banner once cleared); three pips under a clash icon say its tier. */
 .rw-node {
   position: absolute; width: 0; height: 0; cursor: pointer;
-  --tag: #fffdf7; --tag-ink: #2b2118; --pool: rgba(255, 226, 160, 0.75);
+  --pool: rgba(255, 214, 130, 0.7);
 }
 .rw-node-pool {
-  position: absolute; left: 0; top: 0; width: 64px; height: 32px;
+  position: absolute; left: 0; top: 0; width: 72px; height: 34px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(closest-side, var(--pool), rgba(255, 226, 160, 0.22) 55%, transparent);
+  background: radial-gradient(closest-side, var(--pool), rgba(255, 214, 130, 0.2) 55%, transparent);
   pointer-events: none;
   animation: rw-pool-breathe 2.6s ease-in-out infinite;
 }
-.rw-node-tag {
-  position: absolute; left: 0; bottom: 14px; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 4px 5px 3px; background: var(--tag); color: var(--tag-ink);
-  box-shadow:
-    0 -3px 0 0 var(--tag-ink), 0 3px 0 0 var(--tag-ink),
-    -3px 0 0 0 var(--tag-ink), 3px 0 0 0 var(--tag-ink),
-    3px 6px 0 0 rgba(43, 33, 24, 0.35);
-  animation: rw-tag-bob 2.6s ease-in-out infinite;
+.rw-node-pool::after {             /* the ground shadow under the hovering icon */
+  content: ""; position: absolute; left: 50%; top: 50%; width: 30px; height: 10px;
+  transform: translate(-50%, -50%); background: rgba(43, 33, 24, 0.35); border-radius: 50%;
 }
-.rw-node-tag::after {              /* the little tail pointing at the pool */
-  content: ""; position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%);
-  width: 6px; height: 6px; background: var(--tag-ink);
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
+.rw-node-float {
+  position: absolute; left: 0; bottom: 18px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  animation: rw-tag-bob 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 3px 0 rgba(43, 33, 24, 0.45));
 }
-.rw-node-icon { display: block; width: 24px; height: 24px; image-rendering: pixelated; }
+.rw-node-icon { display: block; width: 48px; height: 48px; }
 .rw-node-icon svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
-.rw-node-pips { display: flex; gap: 3px; }
-.rw-node-pips span { width: 6px; height: 6px; background: var(--tag); box-shadow: 0 0 0 2px var(--tag-ink); }
-.rw-node-pips span.is-tier { background: var(--tag-ink); }
+.rw-node-pips { display: flex; gap: 4px; }
+.rw-node-pips span { width: 7px; height: 7px; background: rgba(43, 33, 24, 0.55); box-shadow: 0 0 0 2px #2b2118; }
+.rw-node-pips span.is-tier { background: #f3e6c4; }
 .rw-node-pips span.is-done { background: #4f7a55; }
-.rw-node.is-passed { --tag: #e7eee2; --pool: rgba(155, 183, 156, 0.5); }
-.rw-node.is-passed .rw-node-pool { background: radial-gradient(closest-side, var(--pool), rgba(155, 183, 156, 0.15) 60%, transparent); animation: none; }
-.rw-node.is-passed .rw-node-tag { animation: none; }
-@keyframes rw-pool-breathe { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
-@keyframes rw-tag-bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -4px); } }
-@media (prefers-reduced-motion: reduce) { .rw-node-pool, .rw-node-tag, .rw-bosszone.is-near { animation: none; opacity: 1; } }
+.rw-node.is-passed { --pool: rgba(155, 183, 156, 0.55); }
+.rw-node.is-passed .rw-node-pool { background: radial-gradient(closest-side, var(--pool), rgba(155, 183, 156, 0.15) 55%, transparent); animation: none; }
+.rw-node.is-passed .rw-node-float { animation: none; bottom: 14px; }
+@keyframes rw-pool-breathe { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+@keyframes rw-tag-bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -6px); } }
+@media (prefers-reduced-motion: reduce) { .rw-node-pool, .rw-node-float, .rw-bosszone.is-near { animation: none; opacity: 1; } }
 
 .is-editing .rw-stage { cursor: crosshair; }
 .rw-editor {
@@ -2016,20 +2011,27 @@ a { color: inherit; }
 /* the waypoint prompt: a small ask before the trial begins.
    Space fires the highlighted button; arrows move the highlight */
 .rw-prompt {
-  position: fixed; z-index: 30; left: 50%; bottom: 22px;
-  transform: translateX(-50%);
-  width: min(460px, 92vw); background: #fffdf7; color: #2b2118;
+  position: fixed; z-index: 30; left: 50%; top: 40%;
+  transform: translate(-50%, -100%);
+  width: min(320px, 92vw); background: #f3e6c4; color: #2b2118;
   --frame: #2b2118; --pix: 3px;
   box-shadow:
     0 calc(var(--pix) * -1) 0 0 var(--frame), 0 var(--pix) 0 0 var(--frame),
     calc(var(--pix) * -1) 0 0 0 var(--frame), var(--pix) 0 0 0 var(--frame),
     6px 8px 0 0 rgba(43, 33, 24, 0.22);
-  padding: 16px 20px 10px; text-align: center;
+  padding: 14px 18px 10px; text-align: center;
 }
-.rw-prompt-title { margin: 0 0 12px; color: #2b2118; letter-spacing: 0.04em; font-size: 1.05rem; }
+.rw-prompt.is-anchored { left: var(--ax, 50%); top: var(--ay, 40%); }
+.rw-prompt::after {                /* pointer tail toward the marker below */
+  content: ""; position: absolute; left: 50%; bottom: -17px; transform: translateX(-50%);
+  width: 22px; height: 14px; background: #2b2118;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.rw-prompt-title { margin: 0 0 12px; color: #2b2118; letter-spacing: 0.04em; font-size: 1rem; line-height: 1.4; }
 .rw-prompt-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
 .rw-prompt-row .btn { min-width: 120px; }
 .rw-prompt-row .btn-gold { background: #4f7a55; color: #fffdf7; --frame: #2b2118; }
+.rw-prompt-row .btn { min-width: 0; padding-left: 18px; padding-right: 18px; }
 .rw-prompt-row .btn-gold:hover { background: #3b6d11; }
 .rw-prompt-row .btn-outline { background: transparent; color: #6f6252; --frame: transparent; box-shadow: none; text-decoration: underline; text-underline-offset: 4px; min-width: 0; }
 .rw-prompt-row .btn-outline:hover { background: transparent; color: #2b2118; }
@@ -2054,7 +2056,7 @@ a { color: inherit; }
 /* node progression states: is-next and is-locked are kept as hooks for the
    suites; the look lives on the pool and tag above */
 .rw-node.is-locked { opacity: 0.5; }
-.rw-node.is-locked .rw-node-pool, .rw-node.is-locked .rw-node-tag { animation: none; }
+.rw-node.is-locked .rw-node-pool, .rw-node.is-locked .rw-node-float { animation: none; }
 
 /* realm biome dressing: lantern glow anchored to the world (percent
    positioning rides resizes for free), leaves falling over the stage */
@@ -2503,6 +2505,6 @@ html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }
    scroll, clash face); empties show only in the editor as a dashed tag */
 .rw-node.is-lesson { --pool: rgba(246, 239, 214, 0.55); }
 .rw-node.is-empty { opacity: 0.45; }
-.rw-node.is-empty .rw-node-tag { background: transparent; box-shadow: none; outline: 2px dashed var(--tag); animation: none; }
-.rw-node.is-empty .rw-node-tag::after, .rw-node.is-empty .rw-node-pool { display: none; }
+.rw-node.is-empty .rw-node-float { animation: none; filter: none; }
+.rw-node.is-empty .rw-node-pool { display: none; }
 body.sq-overlay-open { overflow: hidden; }
