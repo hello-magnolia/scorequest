@@ -1346,20 +1346,50 @@ a { color: inherit; }
 
 /* realm v2: path trace overlay, node markers, path editor */
 .rw-trace { position: absolute; top: 0; left: 0; pointer-events: none; }
+/* A waypoint is a UI layer over the painted realm, never scenery: a warm
+   pool of light on the ground and a small paper tag floating above it.
+   Cream and that soft light exist in none of the eight paintings, so the
+   same marker reads in every realm. The tag carries the mode (scroll for a
+   lesson, the boss face for a clash, a check once cleared) and, for a
+   multi-round clash, one pip per round. */
 .rw-node {
-  position: absolute; width: 16px; height: 16px;
-  transform: translate(-50%, -50%) rotate(45deg);
-  background: var(--ink); border: 3px solid var(--gold);
-  box-shadow: 0 0 14px rgba(242, 182, 60, 0.5);
-  animation: rw-node-pulse 1.8s ease-in-out infinite;
+  position: absolute; width: 0; height: 0; cursor: pointer;
+  --tag: #fffdf7; --tag-ink: #2b2118; --pool: rgba(255, 226, 160, 0.75);
 }
-.rw-node.is-visited {
-  background: #7FE3C0; border-color: #7FE3C0;
-  box-shadow: 0 0 10px rgba(127, 227, 192, 0.6);
-  animation: none;
+.rw-node-pool {
+  position: absolute; left: 0; top: 0; width: 64px; height: 32px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--pool), rgba(255, 226, 160, 0.22) 55%, transparent);
+  pointer-events: none;
+  animation: rw-pool-breathe 2.6s ease-in-out infinite;
 }
-@keyframes rw-node-pulse { 0%,100% { box-shadow: 0 0 14px rgba(242,182,60,0.5); } 50% { box-shadow: 0 0 4px rgba(242,182,60,0.25); } }
-@media (prefers-reduced-motion: reduce) { .rw-node, .rw-bosszone.is-near { animation: none; opacity: 1; } }
+.rw-node-tag {
+  position: absolute; left: 0; bottom: 14px; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 4px 5px 3px; background: var(--tag); color: var(--tag-ink);
+  box-shadow:
+    0 -3px 0 0 var(--tag-ink), 0 3px 0 0 var(--tag-ink),
+    -3px 0 0 0 var(--tag-ink), 3px 0 0 0 var(--tag-ink),
+    3px 6px 0 0 rgba(43, 33, 24, 0.35);
+  animation: rw-tag-bob 2.6s ease-in-out infinite;
+}
+.rw-node-tag::after {              /* the little tail pointing at the pool */
+  content: ""; position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%);
+  width: 6px; height: 6px; background: var(--tag-ink);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.rw-node-icon { display: block; width: 24px; height: 24px; image-rendering: pixelated; }
+.rw-node-icon svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
+.rw-node-pips { display: flex; gap: 3px; }
+.rw-node-pips span { width: 6px; height: 6px; background: var(--tag); box-shadow: 0 0 0 2px var(--tag-ink); }
+.rw-node-pips span.is-tier { background: var(--tag-ink); }
+.rw-node-pips span.is-done { background: #4f7a55; }
+.rw-node.is-passed { --tag: #e7eee2; --pool: rgba(155, 183, 156, 0.5); }
+.rw-node.is-passed .rw-node-pool { background: radial-gradient(closest-side, var(--pool), rgba(155, 183, 156, 0.15) 60%, transparent); animation: none; }
+.rw-node.is-passed .rw-node-tag { animation: none; }
+@keyframes rw-pool-breathe { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
+@keyframes rw-tag-bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -4px); } }
+@media (prefers-reduced-motion: reduce) { .rw-node-pool, .rw-node-tag, .rw-bosszone.is-near { animation: none; opacity: 1; } }
 
 .is-editing .rw-stage { cursor: crosshair; }
 .rw-editor {
@@ -1988,14 +2018,23 @@ a { color: inherit; }
 .rw-prompt {
   position: fixed; z-index: 30; left: 50%; bottom: 22px;
   transform: translateX(-50%);
-  width: min(420px, 92vw); background: rgba(22, 17, 43, 0.97);
+  width: min(460px, 92vw); background: #fffdf7; color: #2b2118;
+  --frame: #2b2118; --pix: 3px;
+  box-shadow:
+    0 calc(var(--pix) * -1) 0 0 var(--frame), 0 var(--pix) 0 0 var(--frame),
+    calc(var(--pix) * -1) 0 0 0 var(--frame), var(--pix) 0 0 0 var(--frame),
+    6px 8px 0 0 rgba(43, 33, 24, 0.22);
   padding: 16px 20px 10px; text-align: center;
 }
-.rw-prompt-title { margin: 0 0 12px; color: var(--gold); letter-spacing: 0.1em; }
-.rw-prompt-row { display: flex; gap: 12px; justify-content: center; }
+.rw-prompt-title { margin: 0 0 12px; color: #2b2118; letter-spacing: 0.04em; font-size: 1.05rem; }
+.rw-prompt-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
 .rw-prompt-row .btn { min-width: 120px; }
-.rw-prompt-row .btn.is-armed { outline: var(--pix, 4px) solid var(--gold); outline-offset: 2px; }
-.rw-prompt-keys { margin: 10px 0 0; opacity: 0.6; font-size: 0.8rem; letter-spacing: 0.08em; }
+.rw-prompt-row .btn-gold { background: #4f7a55; color: #fffdf7; --frame: #2b2118; }
+.rw-prompt-row .btn-gold:hover { background: #3b6d11; }
+.rw-prompt-row .btn-outline { background: transparent; color: #6f6252; --frame: transparent; box-shadow: none; text-decoration: underline; text-underline-offset: 4px; min-width: 0; }
+.rw-prompt-row .btn-outline:hover { background: transparent; color: #2b2118; }
+.rw-prompt-row .btn.is-armed { outline: var(--pix, 3px) solid #f07a22; outline-offset: 3px; }
+.rw-prompt-keys { margin: 10px 0 0; color: #6f6252; font-size: 0.8rem; letter-spacing: 0.08em; }
 .rw-quiz-kicker { margin: 0 0 6px; color: var(--gold); letter-spacing: 0.1em; }
 .rw-quiz-q { font-family: var(--font-utility); font-size: 1.3rem; line-height: 1.5; margin: 0 0 12px; color: var(--parchment); }
 .rw-quiz-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -2012,15 +2051,10 @@ a { color: inherit; }
 .rw-quiz-row { display: flex; gap: 12px; justify-content: flex-end; }
 @media (max-width: 640px) { .rw-quiz-choices { grid-template-columns: 1fr; } }
 
-/* node progression states */
-.rw-node.is-passed { background: #7FE3C0; box-shadow: 0 0 10px rgba(127, 227, 192, 0.6); }
-.rw-node.is-next { animation: rw-node-beckon 1.6s ease-in-out infinite; cursor: pointer; }
-.rw-node.is-locked { opacity: 0.35; }
-@keyframes rw-node-beckon {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 182, 60, 0.7); }
-  50% { box-shadow: 0 0 0 9px rgba(242, 182, 60, 0); }
-}
-@media (prefers-reduced-motion: reduce) { .rw-node.is-next { animation: none; } }
+/* node progression states: is-next and is-locked are kept as hooks for the
+   suites; the look lives on the pool and tag above */
+.rw-node.is-locked { opacity: 0.5; }
+.rw-node.is-locked .rw-node-pool, .rw-node.is-locked .rw-node-tag { animation: none; }
 
 /* realm biome dressing: lantern glow anchored to the world (percent
    positioning rides resizes for free), leaves falling over the stage */
@@ -2465,8 +2499,10 @@ html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }
   .pr { padding-top: 76px; }
 }
 
-/* waypoint modes on the realm path: lesson markers read as scrolls */
-.rw-node.is-lesson { border-radius: 3px; background: #f2e6c4; box-shadow: 0 0 14px rgba(242, 230, 196, 0.5); }
-.rw-node.is-lesson.is-passed { background: #d8c9a0; }
-.rw-node.is-empty { opacity: 0.35; border-style: dashed; animation: none; }
+/* waypoint modes on the realm path: the icon on the tag says which (lesson
+   scroll, clash face); empties show only in the editor as a dashed tag */
+.rw-node.is-lesson { --pool: rgba(246, 239, 214, 0.55); }
+.rw-node.is-empty { opacity: 0.45; }
+.rw-node.is-empty .rw-node-tag { background: transparent; box-shadow: none; outline: 2px dashed var(--tag); animation: none; }
+.rw-node.is-empty .rw-node-tag::after, .rw-node.is-empty .rw-node-pool { display: none; }
 body.sq-overlay-open { overflow: hidden; }

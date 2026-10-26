@@ -531,20 +531,49 @@
     return p;
   }
 
+  /* marker icons, 12x12 on a pixel grid: a scroll for lessons, the boss
+     face for clashes, a check once cleared, a dashed box for empties */
+  var ICONS = {
+    lesson: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="8" height="1" fill="#2b2118"/><rect x="2" y="1" width="8" height="1" fill="#d2ad86"/><rect x="1" y="2" width="1" height="8" fill="#2b2118"/><rect x="10" y="2" width="1" height="8" fill="#2b2118"/><rect x="2" y="10" width="8" height="1" fill="#2b2118"/><rect x="2" y="2" width="8" height="8" fill="#fffdf7"/><rect x="3" y="4" width="6" height="1" fill="#9a6232"/><rect x="3" y="6" width="5" height="1" fill="#9a6232"/><rect x="3" y="8" width="6" height="1" fill="#9a6232"/><rect x="1" y="1" width="1" height="1" fill="#2b2118"/><rect x="10" y="1" width="1" height="1" fill="#2b2118"/></svg>',
+    clash: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="2" height="2" fill="#2b2118"/><rect x="8" y="1" width="2" height="2" fill="#2b2118"/><rect x="2" y="3" width="8" height="7" fill="#2b2118"/><rect x="1" y="4" width="10" height="5" fill="#2b2118"/><rect x="3" y="3" width="6" height="6" fill="#c68556"/><rect x="2" y="4" width="8" height="4" fill="#c68556"/><rect x="3" y="5" width="1" height="1" fill="#2b2118"/><rect x="8" y="5" width="1" height="1" fill="#2b2118"/><rect x="5" y="7" width="2" height="1" fill="#4f342f"/><rect x="4" y="10" width="1" height="1" fill="#2b2118"/><rect x="7" y="10" width="1" height="1" fill="#2b2118"/></svg>',
+    passed: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="1" y="1" width="10" height="10" fill="#4f7a55"/><rect x="3" y="6" width="1" height="1" fill="#fffdf7"/><rect x="4" y="7" width="1" height="1" fill="#fffdf7"/><rect x="5" y="8" width="1" height="1" fill="#fffdf7"/><rect x="6" y="7" width="1" height="1" fill="#fffdf7"/><rect x="7" y="6" width="1" height="1" fill="#fffdf7"/><rect x="8" y="5" width="1" height="1" fill="#fffdf7"/><rect x="9" y="4" width="1" height="1" fill="#fffdf7"/></svg>',
+    empty: '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="5" y="5" width="2" height="2" fill="#fffdf7"/></svg>'
+  };
   function renderNodes() {
     nodeEls.forEach(function (el) { el.remove(); });
     nodeEls = [];
     (realm.nodes || []).forEach(function (n, i) {
+      var wp = waypointAt(i);
       var el = document.createElement('div');
-      el.className = 'rw-node' + (waypointAt(i).mode === 'lesson' ? ' is-lesson' : '');
+      el.className = 'rw-node' + (wp.mode === 'lesson' ? ' is-lesson' : '');
       el.setAttribute('data-node', i + 1);
-      el.title = waypointAt(i).mode === 'empty' ? 'Empty waypoint (editor only)' : (waypointAt(i).title || waypointAt(i).skill || '');
+      el.title = wp.mode === 'empty' ? 'Empty waypoint (editor only)' : (wp.title || wp.skill || '');
+      /* three pips under a clash tag show its tier: one filled is easy,
+         three is hard; all three turn moss once the marker is cleared */
+      var pips = '';
+      if (wp.mode === 'clash' && wp.tier) {
+        pips = '<span class="rw-node-pips" aria-hidden="true"><span></span><span></span><span></span></span>';
+      }
+      el.innerHTML = '<span class="rw-node-pool" aria-hidden="true"></span>' +
+        '<span class="rw-node-tag"><span class="rw-node-icon"></span>' + pips + '</span>';
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         onNodeClick(i);
       });
       world.appendChild(el);
       nodeEls.push(el);
+    });
+  }
+  function paintNode(i) {
+    var el = nodeEls[i], wp = waypointAt(i);
+    if (!el) return;
+    var key = passed[i] ? 'passed' : (wp.mode === 'lesson' ? 'lesson' : wp.mode === 'empty' ? 'empty' : 'clash');
+    var icon = el.querySelector('.rw-node-icon');
+    if (icon && icon.getAttribute('data-key') !== key) { icon.innerHTML = ICONS[key]; icon.setAttribute('data-key', key); }
+    var tier = Math.min(3, wp.tier || 0);
+    Array.prototype.forEach.call(el.querySelectorAll('.rw-node-pips span'), function (p, r) {
+      p.classList.toggle('is-tier', r < tier);
+      p.classList.toggle('is-done', !!passed[i]);
     });
   }
   function layoutNodes() {
@@ -566,6 +595,7 @@
       el.classList.toggle('is-empty', waypointAt(i).mode === 'empty');
       el.hidden = wpHidden(i);
       el.classList.remove('is-locked');   // order-free: every trial approachable
+      paintNode(i);
     });
     window.__SQ_REALM_PROG = passedCount();
   }

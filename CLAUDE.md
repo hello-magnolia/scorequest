@@ -12,6 +12,8 @@ Pomelo the capybara is the companion. Live at hello-magnolia.github.io/scoreques
 2. Clone to `/home/claude/repo`. Deps: `npm i --legacy-peer-deps jsdom canvas@npm:@napi-rs/canvas`
    (the ALIAS is load-bearing: jsdom require()s literal `canvas`; without it getContext()
    is null and timing checks fail while static ones pass, misreading as flakiness).
+   Oct 2026: @napi-rs/canvas 1.x breaks jsdom's getContext (read-only ctx.canvas); install
+   `canvas@npm:@napi-rs/canvas@0.1.73` and every suite goes green.
 3. Parallel Claude session may push: fetch + rebase before EVERY push. Conflicts:
    take Magnolia's side on HTML, re-add Claude's script tags. Never commit `assets/companion/`.
 
@@ -34,6 +36,11 @@ parents, realm, boss, bookmarks, profile, settings, clash, practice). Lineage `b
 index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
 
 ## Edits and sprites
+- Realm waypoint markers (.rw-node) are a UI layer over the painted realm, never scenery: a warm
+  light pool on the ground plus a cream paper tag floating above it (icon = mode: scroll /
+  boss face / check; three pips under a clash tag = tier). States is-passed / is-empty / is-lesson
+  drive the look; paintNode(i) swaps the icon. The arrival prompt (.rw-prompt) is the same paper
+  card with one moss button; proposals live in the "Realm waypoint proposals" design canvas.
 - Prefer verified single str_replace edits; for bulk Python .replace() assert every anchor
   before writing (atomic), order overlapping anchors, beware short anchors appearing twice.
 - Sprite uploads (zip, not inline) arrive on a baked ground: checkerboard OR flat color.
