@@ -49,6 +49,12 @@
       fx: { leaves: 10, lamps: [
         [0.072, 0.606, 3.5], [0.11, 0.469, 3.5], [0.129, 0.531, 3], [0.134, 0.675, 4],
         [0.242, 0.573, 3], [0.709, 0.682, 3.5], [0.764, 0.502, 3], [0.85, 0.649, 4]
+      ],
+      /* a stone lantern cut from the painting and repainted lit, four frames
+         left to right (dark, kindling, bright, full). [x, y, w, h] = the
+         sheet's one frame as fractions of the art; it lights as Pomelo nears. */
+      lanterns: [
+        { sheet: 'assets/fx/lanterns/lorewood-stone.png', frames: 4, x: 0.16582, y: 0.08056, w: 0.08094, h: 0.28611 }
       ] },
       nodes: [[0.363, 0.503], [0.501, 0.663], [0.613, 0.666], [0.817, 0.534]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', fight: true, ground: 0.80,
@@ -1147,7 +1153,42 @@
     for (var i = 0; i < FX_TYPES.length; i++) if (FX_TYPES[i].key === key) return FX_TYPES[i];
     return FX_TYPES[0];
   }
+  /* lanterns: a repainted cut of the painting laid exactly over the original,
+     stepping through its frames when Pomelo comes near (tickLanterns) */
+  var lanternEls = [];
+  function buildLanterns(cfg, fx) {
+    lanternEls = [];
+    (cfg.lanterns || []).forEach(function (L) {
+      var el = document.createElement('span');
+      el.className = 'rw-lantern';
+      el.style.left = (L.x * 100) + '%';
+      el.style.top = (L.y * 100) + '%';
+      el.style.width = (L.w * 100) + '%';
+      el.style.height = (L.h * 100) + '%';
+      el.style.backgroundImage = 'url(' + L.sheet + ')';
+      el.style.backgroundSize = (L.frames * 100) + '% 100%';
+      el.setAttribute('data-frames', L.frames);
+      fx.appendChild(el);
+      lanternEls.push({ el: el, cx: L.x + L.w / 2, cy: L.y + L.h * 0.45, frames: L.frames, frame: 0, lit: false });
+    });
+  }
+  function tickLanterns(p) {
+    if (!lanternEls.length) return;
+    var reach = Math.max(120, stageH * 0.3);
+    lanternEls.forEach(function (L) {
+      var d = Math.hypot(L.cx * worldW - p.x, L.cy * worldH - p.y);
+      var lit = d < reach;
+      if (lit !== L.lit) {
+        L.lit = lit;
+        L.el.classList.toggle('is-lit', lit);
+        L.el.classList.toggle('is-dimming', !lit);       // settle back down through the frames
+        clearTimeout(L.dimT);
+        if (!lit) L.dimT = setTimeout(function () { L.el.classList.remove('is-dimming'); }, 700);
+      }
+    });
+  }
   function buildFx(cfg, fx) {
+      buildLanterns(cfg, fx);
       FX_TYPES.forEach(function (t) {
         (cfg[t.cfg] || []).forEach(function (e) { t.build(fx, e); });
       });
@@ -1385,6 +1426,7 @@
     }
     window.__SQ_TICKS = (window.__SQ_TICKS || 0) + 1;   // proof the whole tick ran
     var xy = posXY();
+    tickLanterns(xy);
     window.__SQ_REALM_XY = [Math.round(xy.x), Math.round(xy.y)];
     window.__SQ_REALM_POS = { e: cur.e, t: Math.round(cur.t * 1000) / 1000 };
   }
