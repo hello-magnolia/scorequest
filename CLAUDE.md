@@ -45,11 +45,15 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   MARKER'S BUBBLE (growPrompt FLIP via --grow, .is-open; marker .is-speaking hides its bubble;
   closePrompt shrinks back, 320ms fallback). Cleared adds .is-cleared (suites check that, not
   title text). Magnolia hovers markers over scenery herself in the editor. Locked is a look only.
-- Lit props: realm manifest fx.lanterns = [{sheet, frames, x, y, w, h}] (fractions of the art),
-  a cut of the painting repainted lit, 4 frames in a row (frame 0 = the painting, so at rest it
-  is invisible). buildLanterns lays it over the original; tickLanterns adds .is-lit within
-  max(120px, 30% stage) of Pomelo (kindle steps + breathe), .is-dimming on leaving. Make a
-  sheet with tools/make_lantern.py (window boxes by hand from a pixel dump). Lorewood has one.
+- PROPS (pieces of the painting that react to Pomelo): realm manifest fx.props rows, x/y/w/h as
+  fractions of the art, laid exactly over the spot they were cut from (so at rest nothing shows).
+  kind 'frames' = a strip repainted by hand (lantern: dark/kindling/bright/full; .is-near steps
+  up + breathes, .is-leaving steps down; tools/make_lantern.py). kind 'sway' = sprite (object,
+  alpha) over patch (painting with the object inpainted away), swings from pivot while
+  .is-near (tools/make_prop.py, paper-colored objects; tune its color test for others).
+  buildProps puts them in #rw-world; tickProps toggles near within max(120px, 30% stage) and
+  Y-SORTS by `base` (foot line): .is-behind z1 / front z3, Pomelo z2, markers z4. Assets in
+  assets/fx/props/<realm>/. Lorewood: the stone lantern + two paper tags on the branch.
 - Prefer verified single str_replace edits; for bulk Python .replace() assert every anchor
   before writing (atomic), order overlapping anchors, beware short anchors appearing twice.
 - Sprite uploads (zip, not inline) arrive on a baked ground: checkerboard OR flat color.

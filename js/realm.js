@@ -50,11 +50,15 @@
         [0.072, 0.606, 3.5], [0.11, 0.469, 3.5], [0.129, 0.531, 3], [0.134, 0.675, 4],
         [0.242, 0.573, 3], [0.709, 0.682, 3.5], [0.764, 0.502, 3], [0.85, 0.649, 4]
       ],
-      /* a stone lantern cut from the painting and repainted lit, four frames
-         left to right (dark, kindling, bright, full). [x, y, w, h] = the
-         sheet's one frame as fractions of the art; it lights as Pomelo nears. */
-      lanterns: [
-        { sheet: 'assets/fx/lanterns/lorewood-stone.png', frames: 4, x: 0.16582, y: 0.08056, w: 0.08094, h: 0.28611 }
+      /* props: pieces of the painting that react when Pomelo comes near.
+         frames = a strip repainted by hand (the lantern: dark, kindling,
+         bright, full); sway = the object cut out (sprite) over the painting
+         with the object removed (patch), swinging from its pivot. x,y,w,h are
+         fractions of the art; base is the foot line for front/behind sorting. */
+      props: [
+        { kind: 'frames', sheet: 'assets/fx/props/lorewood/lantern.png', frames: 4, x: 0.16582, y: 0.08056, w: 0.08094, h: 0.28611, base: 0.33 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag1.png', patch: 'assets/fx/props/lorewood/tag1-patch.png', x: 0.23536, y: 0.11852, w: 0.01022, h: 0.04907, pivot: [0.577, 0.113], base: 0.2 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag2.png', patch: 'assets/fx/props/lorewood/tag2-patch.png', x: 0.24833, y: 0.13426, w: 0.01061, h: 0.05, pivot: [0.463, 0.074], base: 0.2, delay: 0.12 }
       ] },
       nodes: [[0.363, 0.503], [0.501, 0.663], [0.613, 0.666], [0.817, 0.534]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', fight: true, ground: 0.80,
@@ -1153,42 +1157,61 @@
     for (var i = 0; i < FX_TYPES.length; i++) if (FX_TYPES[i].key === key) return FX_TYPES[i];
     return FX_TYPES[0];
   }
-  /* lanterns: a repainted cut of the painting laid exactly over the original,
-     stepping through its frames when Pomelo comes near (tickLanterns) */
-  var lanternEls = [];
-  function buildLanterns(cfg, fx) {
-    lanternEls = [];
-    (cfg.lanterns || []).forEach(function (L) {
+  /* props: pieces of the painting that react to Pomelo. They live in the
+     world layer (not the fx layer) so each can sort in front of or behind
+     him by its foot line. kinds:
+       frames  a strip of N repainted frames (frame 0 = the painting, so at
+               rest it is invisible); near -> steps up, leaving -> steps down
+       sway    sprite (the object, alpha) over patch (the painting with the
+               object removed); near -> swings from its pivot for a moment */
+  var propEls = [];
+  function buildProps(cfg) {
+    propEls.forEach(function (P) { P.el.remove(); });
+    propEls = [];
+    var list = (cfg.props || []).concat((cfg.lanterns || []).map(function (L) { L.kind = 'frames'; return L; }));
+    list.forEach(function (P, i) {
       var el = document.createElement('span');
-      el.className = 'rw-lantern';
-      el.style.left = (L.x * 100) + '%';
-      el.style.top = (L.y * 100) + '%';
-      el.style.width = (L.w * 100) + '%';
-      el.style.height = (L.h * 100) + '%';
-      el.style.backgroundImage = 'url(' + L.sheet + ')';
-      el.style.backgroundSize = (L.frames * 100) + '% 100%';
-      el.setAttribute('data-frames', L.frames);
-      fx.appendChild(el);
-      lanternEls.push({ el: el, cx: L.x + L.w / 2, cy: L.y + L.h * 0.45, frames: L.frames, frame: 0, lit: false });
+      el.className = 'rw-prop rw-prop-' + P.kind;
+      el.style.left = (P.x * 100) + '%'; el.style.top = (P.y * 100) + '%';
+      el.style.width = (P.w * 100) + '%'; el.style.height = (P.h * 100) + '%';
+      if (P.kind === 'frames') {
+        el.style.backgroundImage = 'url(' + P.sheet + ')';
+        el.style.backgroundSize = (P.frames * 100) + '% 100%';
+      } else {
+        var patch = document.createElement('span'); patch.className = 'rw-prop-patch';
+        patch.style.backgroundImage = 'url(' + P.patch + ')';
+        var sp = document.createElement('span'); sp.className = 'rw-prop-sprite';
+        sp.style.backgroundImage = 'url(' + P.sprite + ')';
+        var pv = P.pivot || [0.5, 0];
+        sp.style.transformOrigin = (pv[0] * 100) + '% ' + (pv[1] * 100) + '%';
+        if (P.delay) sp.style.animationDelay = P.delay + 's';
+        el.appendChild(patch); el.appendChild(sp);
+      }
+      world.appendChild(el);
+      propEls.push({ el: el, cx: P.x + P.w / 2, cy: P.y + P.h / 2, base: P.base !== undefined ? P.base : P.y + P.h, near: false, reach: P.reach || 0 });
     });
   }
-  function tickLanterns(p) {
-    if (!lanternEls.length) return;
+  function tickProps(p) {
+    if (!propEls.length) return;
     var reach = Math.max(120, stageH * 0.3);
-    lanternEls.forEach(function (L) {
-      var d = Math.hypot(L.cx * worldW - p.x, L.cy * worldH - p.y);
-      var lit = d < reach;
-      if (lit !== L.lit) {
-        L.lit = lit;
-        L.el.classList.toggle('is-lit', lit);
-        L.el.classList.toggle('is-dimming', !lit);       // settle back down through the frames
-        clearTimeout(L.dimT);
-        if (!lit) L.dimT = setTimeout(function () { L.el.classList.remove('is-dimming'); }, 700);
+    var feet = p.y;
+    propEls.forEach(function (P) {
+      var d = Math.hypot(P.cx * worldW - p.x, P.cy * worldH - p.y);
+      var near = d < (P.reach ? P.reach * stageH : reach);
+      if (near !== P.near) {
+        P.near = near;
+        P.el.classList.toggle('is-near', near);
+        P.el.classList.toggle('is-leaving', !near);
+        clearTimeout(P.t);
+        if (!near) P.t = setTimeout(function () { P.el.classList.remove('is-leaving'); }, 700);
       }
+      /* y-sort: Pomelo stands in front of a prop whose foot line is above his feet */
+      var behind = P.base * worldH < feet;
+      if (behind !== P.behind) { P.behind = behind; P.el.classList.toggle('is-behind', behind); }
     });
   }
   function buildFx(cfg, fx) {
-      buildLanterns(cfg, fx);
+      buildProps(cfg);
       FX_TYPES.forEach(function (t) {
         (cfg[t.cfg] || []).forEach(function (e) { t.build(fx, e); });
       });
@@ -1426,7 +1449,7 @@
     }
     window.__SQ_TICKS = (window.__SQ_TICKS || 0) + 1;   // proof the whole tick ran
     var xy = posXY();
-    tickLanterns(xy);
+    tickProps(xy);
     window.__SQ_REALM_XY = [Math.round(xy.x), Math.round(xy.y)];
     window.__SQ_REALM_POS = { e: cur.e, t: Math.round(cur.t * 1000) / 1000 };
   }
