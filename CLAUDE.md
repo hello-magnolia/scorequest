@@ -53,7 +53,9 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   .is-near (tools/make_prop.py, paper-colored objects; tune its color test for others).
   buildProps puts them in #rw-world; tickProps toggles near within max(120px, 30% stage) and
   Y-SORTS by `base` (foot line): .is-behind z1 / front z3, Pomelo z2, markers z4. Assets in
-  assets/fx/props/<realm>/. Lorewood: the stone lantern + two paper tags on the branch.
+  assets/fx/props/<realm>/. Lorewood: all 4 stone lanterns on his path (a, b, c, d) + 17 paper
+  tags (branch, rope by the first torii, rope past the first stairs, the big torii's shide).
+  Rule from Magnolia: only lanterns and torii ON HIS PATH react; off-path ones stay still.
 - Prefer verified single str_replace edits; for bulk Python .replace() assert every anchor
   before writing (atomic), order overlapping anchors, beware short anchors appearing twice.
 - Sprite uploads (zip, not inline) arrive on a baked ground: checkerboard OR flat color.

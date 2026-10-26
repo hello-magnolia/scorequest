@@ -58,7 +58,28 @@
       props: [
         { kind: 'frames', sheet: 'assets/fx/props/lorewood/lantern.png', frames: 4, x: 0.16582, y: 0.08056, w: 0.08094, h: 0.28611, base: 0.33 },
         { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag1.png', patch: 'assets/fx/props/lorewood/tag1-patch.png', x: 0.23536, y: 0.11852, w: 0.01022, h: 0.04907, pivot: [0.577, 0.113], base: 0.2 },
-        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag2.png', patch: 'assets/fx/props/lorewood/tag2-patch.png', x: 0.24833, y: 0.13426, w: 0.01061, h: 0.05, pivot: [0.463, 0.074], base: 0.2, delay: 0.12 }
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag2.png', patch: 'assets/fx/props/lorewood/tag2-patch.png', x: 0.24833, y: 0.13426, w: 0.01061, h: 0.05, pivot: [0.463, 0.074], base: 0.2, delay: 0.12 },
+        /* the other three stone lanterns on his way, then the paper tags on
+           the rope by the first torii, the rope past the first stairs, and
+           the shide on the big torii (tools/make_prop.py over each rope) */
+        { kind: 'frames', sheet: 'assets/fx/props/lorewood/lantern-b.png', frames: 4, x: 0.47741, y: 0.41667, w: 0.06287, h: 0.23148, base: 0.606 },
+        { kind: 'frames', sheet: 'assets/fx/props/lorewood/lantern-c.png', frames: 4, x: 0.72299, y: 0.28241, w: 0.06483, h: 0.24074, base: 0.481 },
+        { kind: 'frames', sheet: 'assets/fx/props/lorewood/lantern-d.png', frames: 4, x: 0.8998, y: 0.40278, w: 0.0668, h: 0.24537, base: 0.606 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag3.png', patch: 'assets/fx/props/lorewood/tag3-patch.png', x: 0.02004, y: 0.1963, w: 0.00864, h: 0.03889, pivot: [0.591, 0.0], base: 0.235, delay: 0.07 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag4.png', patch: 'assets/fx/props/lorewood/tag4-patch.png', x: 0.04754, y: 0.19907, w: 0.00904, h: 0.04722, pivot: [0.087, 0.059], base: 0.246, delay: 0.14 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag5.png', patch: 'assets/fx/props/lorewood/tag5-patch.png', x: 0.05933, y: 0.21204, w: 0.00904, h: 0.04259, pivot: [0.174, 0.0], base: 0.255, delay: 0.21 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag6.png', patch: 'assets/fx/props/lorewood/tag6-patch.png', x: 0.07466, y: 0.21852, w: 0.00864, h: 0.03704, pivot: [0.227, 0.0], base: 0.256, delay: 0.28 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag7.png', patch: 'assets/fx/props/lorewood/tag7-patch.png', x: 0.33949, y: 0.325, w: 0.00864, h: 0.03796, pivot: [0.364, 0.0], base: 0.363, delay: 0.0 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag8.png', patch: 'assets/fx/props/lorewood/tag8-patch.png', x: 0.38978, y: 0.3287, w: 0.00904, h: 0.03889, pivot: [0.304, 0.0], base: 0.368, delay: 0.07 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag9.png', patch: 'assets/fx/props/lorewood/tag9-patch.png', x: 0.35874, y: 0.33333, w: 0.00943, h: 0.03704, pivot: [0.231, 0.0], base: 0.37, delay: 0.14 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag10.png', patch: 'assets/fx/props/lorewood/tag10-patch.png', x: 0.3776, y: 0.33519, w: 0.00943, h: 0.03981, pivot: [0.375, 0.0], base: 0.375, delay: 0.21 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag11.png', patch: 'assets/fx/props/lorewood/tag11-patch.png', x: 0.35599, y: 0.38426, w: 0.00747, h: 0.04167, pivot: [0.158, 0.111], base: 0.426, delay: 0.28 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag12.png', patch: 'assets/fx/props/lorewood/tag12-patch.png', x: 0.39568, y: 0.39074, w: 0.00864, h: 0.04074, pivot: [0.409, 0.0], base: 0.431, delay: 0.0 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag13.png', patch: 'assets/fx/props/lorewood/tag13-patch.png', x: 0.36896, y: 0.39537, w: 0.00864, h: 0.03704, pivot: [0.732, 0.0], base: 0.432, delay: 0.07 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag14.png', patch: 'assets/fx/props/lorewood/tag14-patch.png', x: 0.62908, y: 0.475, w: 0.00747, h: 0.04352, pivot: [0.816, 0.043], base: 0.519, delay: 0.14 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag15.png', patch: 'assets/fx/props/lorewood/tag15-patch.png', x: 0.59253, y: 0.47778, w: 0.00825, h: 0.04259, pivot: [0.19, 0.0], base: 0.52, delay: 0.21 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag16.png', patch: 'assets/fx/props/lorewood/tag16-patch.png', x: 0.60432, y: 0.47963, w: 0.00943, h: 0.04722, pivot: [0.104, 0.118], base: 0.527, delay: 0.28 },
+        { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag17.png', patch: 'assets/fx/props/lorewood/tag17-patch.png', x: 0.61847, y: 0.48519, w: 0.00904, h: 0.04167, pivot: [0.652, 0.0], base: 0.527, delay: 0.0 }
       ] },
       nodes: [[0.363, 0.503], [0.501, 0.663], [0.613, 0.666], [0.817, 0.534]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', fight: true, ground: 0.80,
@@ -782,7 +803,11 @@
     promptEl.hidden = false;
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!bub || reduce || !bub.getBoundingClientRect) { if (el) el.classList.add('is-speaking'); promptEl.classList.add('is-open'); return; }
+    /* measure the card at its open size with transitions off, else a card
+       mid-shrink from the last marker reports its scaled box */
+    promptEl.classList.add('is-measuring'); promptEl.classList.add('is-open');
     var from = bub.getBoundingClientRect(), to = promptEl.getBoundingClientRect();
+    promptEl.classList.remove('is-open'); void promptEl.offsetWidth; promptEl.classList.remove('is-measuring');
     if (!to.width || !from.width) { el.classList.add('is-speaking'); promptEl.classList.add('is-open'); return; }
     var sx = from.width / to.width, sy = from.height / to.height;
     var dx = (from.left + from.width / 2) - (to.left + to.width / 2);
