@@ -285,6 +285,7 @@ create table if not exists public.waypoints (
   updated_at  timestamptz not null default now()
 );
 alter table public.waypoints add column if not exists also jsonb;   -- extra skills folded into this marker
+alter table public.waypoints add column if not exists tier smallint check (tier between 1 and 3);   -- one round per marker: 1 easy, 2 medium, 3 hard
 create index if not exists waypoints_realm on public.waypoints (realm, position);
 
 -- Visible questions and waypoints: any signed-in player, every row that is not

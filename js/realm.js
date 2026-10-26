@@ -625,6 +625,7 @@
     document.getElementById('rw-prompt-title').textContent =
       (wp.mode === 'lesson' ? 'Lesson' : 'Waypoint') + ' ' + (i + 1) + ' of ' + (realm.nodes || []).length +
       (wp.title || wp.skill ? ' \u00B7 ' + (wp.title || wp.skill) : '') +
+      (wp.mode === 'clash' && wp.tier ? ' \u00B7 ' + ['Easy', 'Medium', 'Hard'][wp.tier - 1] : '') +
       (passed[i] ? ' \u00B7 cleared' : (wp.mode === 'clash' && wp.rounds > 1 ? ' \u00B7 round ' + (rd + 1) + ' of ' + wp.rounds : ''));
     promptGoBtn.textContent = passed[i] ? (wp.mode === 'lesson' ? 'Read again' : 'Spar again') : (rd ? 'Continue' : 'Start');
     paintPromptArm();
@@ -652,7 +653,7 @@
     var Q = window.SQQuestions;
     if (!Q) return [];
     var skills = [wp.skill].concat(wp.also || []).filter(Boolean);
-    var tier = Math.min(3, Math.max(1, round));
+    var tier = Math.min(3, Math.max(1, wp.tier || round));
     var pool = Q.filter({ domains: [], skills: skills });
     if (!pool.length) pool = Q.all().filter(function (q) { return REALM_DOMAIN[realm.id] === q.domain; });
     var seen = {};
@@ -1662,9 +1663,11 @@
         return (edFx[t.cfg] || []).length + ' ' + t.label.toLowerCase() + 's';
       }).join(' \u00B7 ') + ' \u00B7 ';
     }
+    var need = WPS.length - edMk.length;
     edBar.querySelector('#rw-ed-count').textContent =
       edG.nodes.length + ' nodes \u00B7 ' + edG.edges.length + ' paths \u00B7 ' +
-      edG.stairs.length + ' stairs \u00B7 ' + edMk.length + ' trials \u00B7 ' +
+      edG.stairs.length + ' stairs \u00B7 ' + edMk.length + ' trials' +
+      (need > 0 ? ' (ADD ' + need + ' for ' + WPS.length + ' waypoints)' : need < 0 ? ' (REMOVE ' + (-need) + ', only ' + WPS.length + ' waypoints)' : ' (matches ' + WPS.length + ' waypoints)') + ' \u00B7 ' +
       edBossA.length + ' boss pts \u00B7 ' + fxCounts +
       'start ' + (edStart ? '\u2713' : '\u2014');
     edBar.querySelectorAll('.rw-ed-tool').forEach(function (b) {

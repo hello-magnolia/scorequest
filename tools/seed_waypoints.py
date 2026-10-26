@@ -51,7 +51,7 @@ def main():
     rows, lessons = load_rows()
     out = [{"id": r["id"], "realm": r["realm"], "position": r["position"], "mode": r["mode"],
             "skill": r.get("skill"), "title": r.get("title"), "rounds": r.get("rounds", 1),
-            "also": r.get("also"), "lesson": lessons.get(r.get("skill")) if r["mode"] == "lesson" else None}
+            "also": r.get("also"), "tier": r.get("tier"), "lesson": lessons.get(r.get("skill")) if r["mode"] == "lesson" else None}
            for r in rows]
     rest(url, key, "waypoints", "POST", out, "resolution=merge-duplicates,return=minimal")
     print(f"upserted {len(out)} waypoints")

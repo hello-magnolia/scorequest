@@ -72,8 +72,8 @@
   function openClash(o) {
     state = { mode: 'clash', o: o, qs: o.questions.slice(0, ROUND), i: 0, results: [], right: 0, total: Math.min(ROUND, o.questions.length), hp: POM_HP, picked: null, shownAt: 0, busy: false };
     var boss = BOSS[o.realm] || BOSS.lorewood;
-    $('#ov-title', el).textContent = o.waypoint.skill;
-    $('#ov-sub', el).textContent = 'Round ' + (o.round || 1) + (o.waypoint.rounds > 1 ? ' of ' + o.waypoint.rounds : '') + ' · ' + state.total + ' questions, clear ' + Math.min(PASS, state.total);
+    $('#ov-title', el).textContent = o.waypoint.title || o.waypoint.skill;
+    $('#ov-sub', el).textContent = (o.waypoint.tier ? ['Easy', 'Medium', 'Hard'][o.waypoint.tier - 1] : 'Round ' + (o.round || 1) + (o.waypoint.rounds > 1 ? ' of ' + o.waypoint.rounds : '')) + ' · ' + state.total + ' questions, clear ' + Math.min(PASS, state.total);
     $('#ov-body', el).innerHTML = clashHTML();
     $('#me-name', el).insertAdjacentHTML('afterbegin', C.LEAF);
     var A = window.SQArena;

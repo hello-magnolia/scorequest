@@ -91,8 +91,12 @@ re-run it on any existing project. verify_auth guards all of this.
   Critter Clash overlay (js/clash-overlay.js: SQClashOverlay.open({realm, waypoint, round,
   questions, onDone, onLeave, onRetry}); reuses SQArena.bind(root), SQCard (js/qcard.js),
   css/clash.css .sq-clash tokens). Waypoints = data/waypoints.js rows (mode clash|lesson|
-  rapid|reading|empty, rounds 1..3, also[]); lessons = data/lessons.js[skill]. Clash round
-  = 10 qs from pickRound (tier by round, neighbour fallback, prefers unseen), clears at 8 (ROUND/PASS on SQClashOverlay);
+  rapid|reading|empty, tier 1..3 = one round per marker "Skill I/II/III", also[]); lessons =
+  data/lessons.js[skill]. RULES: first marker of every realm is a clash; a lesson follows the
+  first clash on its skill. 71 rows vs 45 placed markers: the editor count line says
+  "ADD n" / "REMOVE n" per realm; rows past the markers are unreachable until placed. Clash
+  round = 10 qs from pickRound (wp.tier, neighbour fallback, domain top-up, prefers unseen),
+  clears at 8 (ROUND/PASS on SQClashOverlay);
   roundsDone in sq_realm_rounds_<id>, passed-set in sq_realm_prog_<id>; empties hidden in
   play (el.hidden), shown in the editor. Tripwires __SQ_OVERLAY, __SQ_QUIZ {rank, practice,
   mode, round}. sq_last_realm records where he wandered. Editor: select-first,
