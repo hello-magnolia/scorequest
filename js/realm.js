@@ -820,13 +820,16 @@
   }
   /* the prompt floats above the marker it speaks for, clamped to the
      viewport; no anchor (editor, tests without layout) leaves it centered */
+  /* the card is part of the world: it sits above its marker in world
+     coordinates and pans with the painting, so it never drifts as the
+     camera follows Pomelo. Clamped to the painting's width. */
   function anchorPrompt(i) {
-    var el = nodeEls[i];
-    var r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
-    if (!r || (!r.width && !r.height && !r.left && !r.top)) { promptEl.classList.remove('is-anchored'); return; }
-    var w = Math.min(promptEl.offsetWidth || 240, window.innerWidth * 0.92);
-    var x = Math.min(Math.max(r.left, w / 2 + 12), window.innerWidth - w / 2 - 12);
-    var y = Math.max(r.top - 118, 130);
+    var n = (realm.nodes || [])[i];
+    if (!n || !worldW) { promptEl.classList.remove('is-anchored'); return; }
+    if (promptEl.parentNode !== world) world.appendChild(promptEl);
+    var w = Math.min(promptEl.offsetWidth || 220, worldW);
+    var x = Math.min(Math.max(n[0] * worldW, w / 2 + 8), worldW - w / 2 - 8);
+    var y = Math.max(n[1] * worldH - 96, 70);
     promptEl.style.setProperty('--ax', Math.round(x) + 'px');
     promptEl.style.setProperty('--ay', Math.round(y) + 'px');
     promptEl.classList.add('is-anchored');

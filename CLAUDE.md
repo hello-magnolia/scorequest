@@ -43,7 +43,9 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   is-passed = moss bubble + check badge; empties dashed, editor only. paintNode(i) swaps icons.
   Arrival prompt (.rw-prompt) = icon + topic + Start/Skip, parchment, and it GROWS OUT OF THE
   MARKER'S BUBBLE (growPrompt FLIP via --grow, .is-open; marker .is-speaking hides its bubble;
-  closePrompt shrinks back, 320ms fallback). Cleared adds .is-cleared (suites check that, not
+  closePrompt shrinks back, 320ms fallback). The card is moved INTO #rw-world on open
+  (anchorPrompt, world px, --ax/--ay) so it pans with its marker instead of floating fixed.
+  Compact: 32px icon, 0.95rem title, small buttons. Cleared adds .is-cleared (suites check that, not
   title text). Magnolia hovers markers over scenery herself in the editor. Locked is a look only.
 - PROPS (pieces of the painting that react to Pomelo): realm manifest fx.props rows, x/y/w/h as
   fractions of the art, laid exactly over the spot they were cut from (so at rest nothing shows).
