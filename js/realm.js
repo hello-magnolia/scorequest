@@ -1229,9 +1229,14 @@
       if (near !== P.near) {
         P.near = near;
         P.el.classList.toggle('is-near', near);
-        P.el.classList.toggle('is-leaving', !near);
         clearTimeout(P.t);
-        if (!near) P.t = setTimeout(function () { P.el.classList.remove('is-leaving'); }, 700);
+        if (near) { P.el.classList.remove('is-leaving'); P.el.classList.remove('is-gusting'); }
+        else {
+          /* a lantern steps back down; a swaying thing keeps swinging in the
+             wind he left behind, then settles (is-gusting runs one gust) */
+          P.el.classList.add('is-leaving'); P.el.classList.add('is-gusting');
+          P.t = setTimeout(function () { P.el.classList.remove('is-leaving'); P.el.classList.remove('is-gusting'); }, 3300);
+        }
       }
       /* y-sort: Pomelo stands in front of a prop whose foot line is above his feet */
       var behind = P.base * worldH < feet;
