@@ -2115,6 +2115,12 @@ a { color: inherit; }
 @keyframes rw-lantern-kindle { 0% { background-position: 0 0; } 50% { background-position: 33.333% 0; } 100% { background-position: 66.667% 0; } }
 /* the flicker: full and full-minus, uneven beats so it reads as a flame, not a blink */
 @keyframes rw-lantern-flicker { 0%, 100% { background-position: 66.667% 0; } 38% { background-position: 100% 0; } 52% { background-position: 66.667% 0; } 74% { background-position: 100% 0; } 86% { background-position: 66.667% 0; } }
+/* always-on frames (fires): cycle all four frames forever; nearer, the
+   fire quickens; after he leaves it eases back over the hang (is-leaving) */
+.rw-prop-frames.is-always { animation: rw-fire 0.9s steps(1, end) infinite; }
+.rw-prop-frames.is-always.is-near { animation: rw-fire 0.5s steps(1, end) infinite; }
+.rw-prop-frames.is-always.is-leaving { animation: rw-fire 0.7s steps(1, end) infinite; }
+@keyframes rw-fire { 0% { background-position: 0 0; } 25% { background-position: 33.333% 0; } 50% { background-position: 66.667% 0; } 75% { background-position: 100% 0; } 100% { background-position: 33.333% 0; } }
 /* sway: the patch fills the hole, the sprite swings from its pivot a few
    times when he comes near, then settles */
 .rw-prop-patch, .rw-prop-sprite { position: absolute; inset: 0; background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
@@ -2223,6 +2229,7 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .rw-glow { animation: none; }
   .rw-prop-frames.is-near { animation: none; background-position: 100% 0; }
+  .rw-prop-frames.is-always, .rw-prop-frames.is-always.is-near, .rw-prop-frames.is-always.is-leaving { animation: none; background-position: 0 0; }
   .rw-prop-frames.is-leaving, .rw-prop-sway .rw-prop-sprite { animation: none; }
   .rw-prop-sway.is-gusting .rw-prop-sprite { animation: none; }
   .rw-weather, .rw-flame, .rw-smoke, .rw-bubble { display: none; }

@@ -92,8 +92,24 @@
         stairs: [3,4,10,11,13,14,17,18,21] },
       nodes: [[0.236,0.248],[0.158,0.571],[0.281,0.819],[0.433,0.874],[0.439,0.469],[0.627,0.491],[0.884,0.831]],
       start: [0.091,0.258],
-      /* no fx shipped: Story Forge's flames, smoke, and lamps are placed by
-         Magnolia in the effects editor (?edit=1, tool 5) and pasted back */
+      /* flames, smoke and lamps as placeable effects are Magnolia's in the
+         effects editor (?edit=1, tool 5); the fires painted INTO the scene
+         burn on their own as always-on frame props (tools/make_fire.py):
+         the hearth, the smithy door, the east door, five chimneys, two
+         hanging lanterns and two lit windows. They quicken as he nears. */
+      fx: { props: [
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/hearth.png', frames: 4, x: 0.26876, y: 0.09815, w: 0.04401, h: 0.08889, base: 0.187 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/chimney-right.png', frames: 4, x: 0.4723, y: 0.04074, w: 0.02672, h: 0.0963, base: 0.137 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/chimney-mid.png', frames: 4, x: 0.65697, y: 0.03889, w: 0.03694, h: 0.14815, base: 0.187 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/forge-chimney-l.png', frames: 4, x: 0.81415, y: -0.00556, w: 0.02436, h: 0.0963, base: 0.091 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/forge-chimney-r.png', frames: 4, x: 0.95756, y: -0.00556, w: 0.02397, h: 0.0963, base: 0.091 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/smithy-door.png', frames: 4, x: 0.42397, y: 0.35741, w: 0.0389, h: 0.08333, base: 0.441 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/east-door.png', frames: 4, x: 0.93045, y: 0.70926, w: 0.0275, h: 0.09444, base: 0.804 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/lantern-a.png', frames: 4, x: 0.52731, y: 0.27037, w: 0.022, h: 0.06296, base: 0.333 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/lantern-b.png', frames: 4, x: 0.74578, y: 0.27037, w: 0.02593, h: 0.06667, base: 0.337 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/window-a.png', frames: 4, x: 0.48802, y: 0.32778, w: 0.01729, h: 0.06667, base: 0.394 },
+        { kind: 'frames', always: true, sheet: 'assets/fx/props/storyforge/window-b.png', frames: 4, x: 0.67505, y: 0.34444, w: 0.01415, h: 0.05556, base: 0.4 }
+      ] },
       bossArea: [[0.862,0.451],[0.859,0.323],[0.88,0.279],[0.902,0.278],[0.929,0.32],[0.928,0.449]] },
     { id: 'inkreef', name: 'Ink Reef', domain: 'Expression of Ideas', fight: true, ground: 0.82,
       boss: 'The grotto is dark with drifting ink. The water will not clear on its own.',
@@ -1205,6 +1221,7 @@
       if (P.kind === 'frames') {
         el.style.backgroundImage = 'url(' + P.sheet + ')';
         el.style.backgroundSize = (P.frames * 100) + '% 100%';
+        if (P.always) el.classList.add('is-always');   // a fire: burns on its own, quickens near him
       } else {
         var patch = document.createElement('span'); patch.className = 'rw-prop-patch';
         patch.style.backgroundImage = 'url(' + P.patch + ')';
