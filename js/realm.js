@@ -1221,7 +1221,7 @@
   }
   function tickProps(p) {
     if (!propEls.length) return;
-    var reach = Math.max(120, stageH * 0.3);
+    var reach = Math.max(70, stageH * 0.16);   // he has to come close: about a body length
     var feet = p.y;
     propEls.forEach(function (P) {
       var d = Math.hypot(P.cx * worldW - p.x, P.cy * worldH - p.y);
