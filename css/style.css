@@ -2109,11 +2109,12 @@ a { color: inherit; }
 /* frames: a strip; at rest frame 0 is the painting itself, so it is invisible.
    Near: step up through the frames, then breathe between the last two. */
 .rw-prop-frames { background-repeat: no-repeat; background-position: 0 0; }
-.rw-prop-frames.is-near { animation: rw-lantern-kindle 0.4s steps(1, end) forwards, rw-lantern-flicker 0.46s steps(1, end) 0.4s infinite; }
-.rw-prop-frames.is-leaving { animation: rw-lantern-kindle 0.5s steps(1, end) reverse forwards; }
+.rw-prop-frames.is-near { animation: rw-lantern-kindle 1.2s steps(1, end) forwards, rw-lantern-flicker 1.5s steps(1, end) 1.2s infinite; }
+/* the hang: after he leaves it keeps flickering for two cycles, then dims slowly */
+.rw-prop-frames.is-leaving { animation: rw-lantern-flicker 1.5s steps(1, end) 2, rw-lantern-kindle 1.4s steps(1, end) 3s reverse forwards; }
 @keyframes rw-lantern-kindle { 0% { background-position: 0 0; } 50% { background-position: 33.333% 0; } 100% { background-position: 66.667% 0; } }
 /* the flicker: full and full-minus, uneven beats so it reads as a flame, not a blink */
-@keyframes rw-lantern-flicker { 0%, 100% { background-position: 66.667% 0; } 30% { background-position: 100% 0; } 45% { background-position: 66.667% 0; } 70% { background-position: 100% 0; } 80% { background-position: 66.667% 0; } }
+@keyframes rw-lantern-flicker { 0%, 100% { background-position: 66.667% 0; } 38% { background-position: 100% 0; } 52% { background-position: 66.667% 0; } 74% { background-position: 100% 0; } 86% { background-position: 66.667% 0; } }
 /* sway: the patch fills the hole, the sprite swings from its pivot a few
    times when he comes near, then settles */
 .rw-prop-patch, .rw-prop-sprite { position: absolute; inset: 0; background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }

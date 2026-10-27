@@ -49,11 +49,14 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   title text). Magnolia hovers markers over scenery herself in the editor. Locked is a look only.
 - PROPS (pieces of the painting that react to Pomelo): realm manifest fx.props rows, x/y/w/h as
   fractions of the art, laid exactly over the spot they were cut from (so at rest nothing shows).
+  RULE (Magnolia): EVERY reaction HANGS after he leaves, never stops dead: 3 to 4.5s of afterglow
+  or after-swing (.is-leaving / .is-gusting, cleared by a 4.5s timeout in tickProps).
   kind 'frames' = a strip repainted by hand (lantern: dark / kindling / full / full-minus;
-  .is-near kindles then FLICKERS fast between the last two, .is-leaving steps down;
-  tools/make_lantern.py). kind 'sway' = sprite (object, alpha) over patch (painting with the
-  object inpainted away): swings 11deg while .is-near, then .is-gusting runs one 3.2s dying
-  gust after he passes (tools/make_prop.py, paper-colored objects; tune its color test for others).
+  .is-near kindles over 1.2s then flickers slowly (1.5s uneven beats) between the last two;
+  leaving = two more flicker cycles then a 1.4s dim; tools/make_lantern.py). kind 'sway' =
+  sprite (object, alpha) over patch (painting with the object inpainted away): swings 11deg
+  while .is-near, leaving = one 3.2s dying gust (tools/make_prop.py, paper-colored objects;
+  tune its color test for others). Any new prop kind gets a hang of its own.
   buildProps puts them in #rw-world; tickProps toggles near within max(70px, 16% stage) and
   Y-SORTS by `base` (foot line): .is-behind z1 / front z3, Pomelo z2, markers z4. Assets in
   assets/fx/props/<realm>/. Lorewood: all 4 stone lanterns on his path (a, b, c, d) + 17 paper

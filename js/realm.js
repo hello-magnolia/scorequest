@@ -1232,10 +1232,12 @@
         clearTimeout(P.t);
         if (near) { P.el.classList.remove('is-leaving'); P.el.classList.remove('is-gusting'); }
         else {
-          /* a lantern steps back down; a swaying thing keeps swinging in the
-             wind he left behind, then settles (is-gusting runs one gust) */
+          /* THE HANG (Magnolia's rule for every prop reaction): nothing stops
+             the moment he leaves. A lantern keeps flickering, then dims
+             slowly; a swaying thing keeps swinging in the wind he left
+             behind, then settles. ~3 to 4.5s of afterglow, see the CSS. */
           P.el.classList.add('is-leaving'); P.el.classList.add('is-gusting');
-          P.t = setTimeout(function () { P.el.classList.remove('is-leaving'); P.el.classList.remove('is-gusting'); }, 3300);
+          P.t = setTimeout(function () { P.el.classList.remove('is-leaving'); P.el.classList.remove('is-gusting'); }, 4500);
         }
       }
       /* y-sort: Pomelo stands in front of a prop whose foot line is above his feet */
