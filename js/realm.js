@@ -1959,7 +1959,24 @@
     /* H: let the selected marker hover somewhere else than it is reached
        (a diamond handle appears a little above it; drag it over the lantern
        or shrine the trial belongs to). H again puts the bubble back home. */
-    if ((e.key === 'h' || e.key === 'H') && edSel && (edSel.kind === 'mark' || edSel.kind === 'markv')) {
+    if (e.key === 'h' || e.key === 'H') {
+      /* which marker: the selected one, else the one under the mouse, else
+         the nearest within reach, so H works without a precise click first */
+      var hTarget = edSel && (edSel.kind === 'mark' || edSel.kind === 'markv') ? edSel.i : -1;
+      if (hTarget < 0 && edLastMouse) {
+        var hb = -1, hbd = 80 * 80;
+        edMk.forEach(function (p, i) {
+          var pts = p.length > 3 ? [[p[0], p[1]], [p[2], p[3]]] : [[p[0], p[1]]];
+          pts.forEach(function (q) {
+            var d = Math.pow(q[0] * worldW - edLastMouse.x, 2) + Math.pow(q[1] * worldH - edLastMouse.y, 2);
+            if (d < hbd) { hbd = d; hb = i; }
+          });
+        });
+        hTarget = hb;
+      }
+      if (hTarget < 0) { edBar && (edBar.querySelector('.rw-ed-status').textContent = 'H: point at a marker first'); return; }
+      if (edMode !== 'marks') { edMode = 'marks'; syncEditorBar(); }
+      edSel = { kind: 'mark', i: hTarget };
       e.preventDefault();
       pushUndo();
       var hm = edMk[edSel.i];
