@@ -47,7 +47,7 @@ const load = async (path) => {
   check('A second tap brings him back up',
     await until(() => w.__SQ_REALM_FLOP === null, 2500), String(w.__SQ_REALM_FLOP));
 
-  /* progression: space walks him to waypoint one (a lesson), which hails him on
+  /* progression: space walks him to waypoint one (a clash), which hails him on
      the approach rather than gating the path; Start opens the Critter Clash
      overlay; cleared nodes reopen as sparring */
   const clickEl = (el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
@@ -128,43 +128,26 @@ const load = async (path) => {
   await until(() => d.getElementById('rw-prompt').hidden === false &&
     d.getElementById('rw-prompt').classList.contains('is-cleared'), 2500);
   clickEl(d.querySelectorAll('.rw-node:not(.is-passed)')[0]);
-  check('The hail hands over: the next marker (the lesson) takes the banner from the cleared one, from a distance',
+  check('The hail hands over: the next marker (Central Ideas II, a clash) takes the banner from the cleared one, from a distance',
     await until(() => d.getElementById('rw-prompt').hidden === false &&
-      /Reading the room/.test(d.getElementById('rw-prompt-title').textContent), 9000) &&
-    /Reading the room/.test(d.getElementById('rw-prompt-title').textContent) &&
+      /^Central Ideas and Details II$/.test(d.getElementById('rw-prompt-title').textContent), 9000) &&
     d.getElementById('rw-prompt-go').textContent === 'Start' &&
     (w.__SQ_PROMPT_D || 0) > 60,
     d.getElementById('rw-prompt-title').textContent + ' at ' + (w.__SQ_PROMPT_D || 0) + 'px');
-
-  /* the lesson: a scroll with two quick checks, never recorded, never gating */
-  clickEl(d.getElementById('rw-prompt-go'));
-  check('Start opens the lesson scroll in the overlay',
-    await until(() => w.__SQ_OVERLAY && w.__SQ_OVERLAY.mode === 'lesson', 2500) &&
-    d.querySelectorAll('#sq-overlay .check').length === 2 &&
-    d.getElementById('ov-done').disabled === true);
-  check('The scroll reads the skill, the moves and a worked example (no em dashes)',
-    /Central Ideas/.test(d.getElementById('ov-sub').textContent) &&
-    d.querySelectorAll('#sq-overlay .scroll ol li').length >= 2 &&
-    !!d.querySelector('#sq-overlay .ex .ans') &&
-    !d.getElementById('sq-overlay').textContent.includes('—'));
-  const attemptsBefore = JSON.parse(w.localStorage.getItem('sq_attempts') || '[]').length;
-  clickEl(d.querySelectorAll('#sq-overlay .check')[0].querySelectorAll('button')[0]);
-  check('A quick check teaches: the right answer lights up, the miss is marked, nothing is recorded',
-    d.querySelectorAll('#sq-overlay .check')[0].querySelectorAll('button.correct').length === 1 &&
-    JSON.parse(w.localStorage.getItem('sq_attempts') || '[]').length === attemptsBefore);
-  clickEl(d.querySelectorAll('#sq-overlay .check')[1].querySelectorAll('button')[1]);
-  check('Both checks answered: Back to the path unlocks',
-    await until(() => d.getElementById('ov-done').disabled === false, 1000));
-  clickEl(d.getElementById('ov-done'));
-  check('Leaving the scroll marks the lesson leg: progress two',
-    await until(() => w.__SQ_REALM_PROG === 2, 1500) && d.querySelectorAll('.rw-node.is-passed').length === 2);
+  check('Clash II opens as a medium round on the same skill (no lesson in between)',
+    (clickEl(d.getElementById('rw-prompt-go')), await until(() => w.__SQ_OVERLAY && w.__SQ_OVERLAY.mode === 'clash' && w.SQClashOverlay.state.qs.length === 10, 6000)) &&
+    /^Medium · 10 questions, clear 8/.test(d.getElementById('ov-sub').textContent) &&
+    w.SQClashOverlay.state.qs.slice(0, 5).every(q => q.skill === 'Central Ideas and Details'));
+  clickEl(d.getElementById('ov-close'));
+  await until(() => !w.__SQ_OVERLAY, 1000);
 
   /* waypoints as data: every realm's markers map to a row; empties hide in play */
   check('Every realm marker has a waypoint row (data/waypoints.js), and modes are known',
     Array.isArray(w.SQ_WAYPOINTS) && w.SQ_WAYPOINTS.length >= 40 &&
     w.SQ_WAYPOINTS.every(r => /^(clash|lesson|rapid|reading|empty)$/.test(r.mode)) &&
     w.SQ_WAYPOINTS.filter(r => r.mode === 'clash').every(r => r.skill && (r.rounds == null || (r.rounds >= 1 && r.rounds <= 3))));
-  check('Every lesson waypoint has a written scroll',
+  check('Questions only for now: no lesson rows on any path (scrolls cut Nov 2026), and any that return have a written scroll',
+    w.SQ_WAYPOINTS.every(r => r.mode !== 'lesson') &&
     w.SQ_WAYPOINTS.filter(r => r.mode === 'lesson').every(r => w.SQ_LESSONS && w.SQ_LESSONS[r.skill] && w.SQ_LESSONS[r.skill].checks.length === 2));
   const realms = [...new Set(w.SQ_WAYPOINTS.map(r => r.realm))];
   check('Every clash round is its own marker with a tier, positions run 1..n with no gaps',
@@ -177,15 +160,16 @@ const load = async (path) => {
     realms.every(id => w.SQ_WAYPOINTS.find(r => r.realm === id && r.position === 1).mode === 'clash'));
   w = await load('realm.html?realm=storyforge');
   d = w.document;
-  check('Story Forge: all 7 placed markers show (9 rows, the editor says how many to add), lessons at 2 and 6',
+  check('Story Forge: all 7 placed markers show against 7 rows, every one a clash with stars, none a lesson',
     d.querySelectorAll('.rw-node').length === 7 &&
     [...d.querySelectorAll('.rw-node')].filter(n => !n.hidden).length === 7 &&
-    [...d.querySelectorAll('.rw-node')].map((n, i) => n.classList.contains('is-lesson') ? i + 1 : 0).filter(Boolean).join(',') === '2,6');
+    d.querySelectorAll('.rw-node.is-lesson').length === 0);
   w = await load('realm.html?realm=storyforge&edit=1');
   d = w.document;
   await new Promise(r => setTimeout(r, 700));
-  check('The editor counts the markers still to place against the waypoint rows',
-    /7 trials \(ADD 2 for 9 waypoints\)/.test(d.getElementById('rw-ed-count').textContent), d.getElementById('rw-ed-count').textContent);
+  check('The editor counts the markers against the waypoint rows (Story Forge: all 7 placed)',
+    /7 trials \(matches 7 waypoints\)/.test(d.getElementById('rw-ed-count').textContent) &&
+    /Markers 7 \/ 7 · all placed/.test(d.getElementById('rw-ed-markers').textContent), d.getElementById('rw-ed-count').textContent);
 
   /* the editor */
   w = await load('realm.html?realm=lorewood&edit=1');

@@ -131,8 +131,10 @@ re-run it on any existing project. verify_auth guards all of this.
   questions, onDone, onLeave, onRetry}); reuses SQArena.bind(root), SQCard (js/qcard.js),
   css/clash.css .sq-clash tokens). Waypoints = data/waypoints.js rows (mode clash|lesson|
   rapid|reading|empty, tier 1..3 = one round per marker "Skill I/II/III", also[]); lessons =
-  data/lessons.js[skill]. RULES: first marker of every realm is a clash; a lesson follows the
-  first clash on its skill. 71 rows vs 45 placed markers: the editor count line says
+  data/lessons.js[skill]. RULES: first marker of every realm is a clash. Nov 2026 (Magnolia):
+  QUESTIONS ONLY, all 9 lesson rows cut from waypoints.js (mode 'lesson' still works in
+  realm.js/overlay, verify_realm asserts none are placed). 62 rows vs 43 placed markers
+  (Ink Reef trimmed to 4 to match its rows): the editor count line says
   "ADD n" / "REMOVE n" per realm; rows past the markers are unreachable until placed. Clash
   round = 10 qs from pickRound (wp.tier, neighbour fallback, domain top-up, prefers unseen),
   clears at 8 (ROUND/PASS on SQClashOverlay);
