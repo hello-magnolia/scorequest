@@ -61,7 +61,9 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   tools/make_fire.py licks the flame pixels up/down per column + brightens ('gentle' for
   windows and lanterns: brightness only). Story Forge: 11 fires (hearth, smithy door, east
   door, 5 chimneys, 2 hanging lanterns, 2 lit windows).
-  buildProps puts them in #rw-world; tickProps toggles near within max(70px, 16% stage) and
+  buildProps puts them in #rw-world, ONCE per realm and NEVER while editing (an at-rest prop is
+  an opaque copy of the painting and hid the editor's graph; .rw-trace is z5 too);
+  tickProps toggles near within max(70px, 16% stage) and
   Y-SORTS by `base` (foot line): .is-behind z1 / front z3, Pomelo z2, markers z4. Assets in
   assets/fx/props/<realm>/. Lorewood: all 4 stone lanterns on his path (a, b, c, d) + 17 paper
   tags (branch, rope by the first torii, rope past the first stairs, the big torii's shide).

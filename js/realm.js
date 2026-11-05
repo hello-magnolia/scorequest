@@ -1211,6 +1211,10 @@
   var propEls = [];
   var propsBuiltFor = null;
   function buildProps(cfg) {
+    /* never in the editor: at rest a prop is an opaque copy of the painting,
+       and it sat above the trace canvas, hiding the graph lines and handles
+       under every lantern cut (the first Lorewood edge looked blocked) */
+    if (editing) return;
     var list = (cfg.props || []).concat((cfg.lanterns || []).map(function (L) { L.kind = 'frames'; return L; }));
     /* the editor repaints the fx layer on every click; props are not editable
        there, so build them once per realm rather than tearing them down and

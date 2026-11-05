@@ -1345,7 +1345,7 @@ a { color: inherit; }
 .realm-preview-links a:hover { border-color: var(--gold); color: var(--gold); }
 
 /* realm v2: path trace overlay, node markers, path editor */
-.rw-trace { position: absolute; top: 0; left: 0; pointer-events: none; }
+.rw-trace { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; }   /* above props and markers: the editor's graph is never hidden */
 /* A waypoint is a game object hovering over the painted realm: one big
    pixel icon (48px, 3px per art pixel, ink outline) floating above a warm
    pool of light, with a shadow on the ground beneath it. No frame around
