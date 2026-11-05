@@ -1209,10 +1209,18 @@
        sway    sprite (the object, alpha) over patch (the painting with the
                object removed); near -> swings from its pivot for a moment */
   var propEls = [];
+  var propsBuiltFor = null;
   function buildProps(cfg) {
-    propEls.forEach(function (P) { P.el.remove(); });
-    propEls = [];
     var list = (cfg.props || []).concat((cfg.lanterns || []).map(function (L) { L.kind = 'frames'; return L; }));
+    /* the editor repaints the fx layer on every click; props are not editable
+       there, so build them once per realm rather than tearing them down and
+       re-kindling the lit ones on each repaint (the first lantern used to
+       blink dark and relight every time she placed something) */
+    var sig = JSON.stringify(list);
+    if (propEls.length && propsBuiltFor === sig) return;
+    propsBuiltFor = sig;
+    propEls.forEach(function (P) { clearTimeout(P.t); P.el.remove(); });
+    propEls = [];
     list.forEach(function (P, i) {
       var el = document.createElement('span');
       el.className = 'rw-prop rw-prop-' + P.kind;
