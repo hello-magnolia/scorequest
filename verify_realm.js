@@ -175,6 +175,17 @@ const load = async (path) => {
   w = await load('realm.html?realm=lorewood&edit=1');
   d = w.document;
   await new Promise(r => setTimeout(r, 700)); // let the art chain exhaust to the dark fallback
+  check('Cmd+C in the marker tool copies the JSON and keeps every marker (plain C no longer clears; Shift+C does)',
+    (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '2', bubbles: true })),
+     d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'c', metaKey: true, bubbles: true })),
+     d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'c', bubbles: true })),
+     JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 4) &&
+    (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'C', shiftKey: true, bubbles: true })),
+     JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 0) &&
+    (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'z', bubbles: true })),
+     JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 4) &&
+    (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '1', bubbles: true })), true),   // back to the graph tool
+    d.getElementById('rw-ed-json').value.slice(0, 80));
   check('Path editor mode opens with a key legend and a JSON export',
     !!d.querySelector('.rw-editor') &&
     /undo/i.test(d.querySelector('.rw-ed-legend').textContent) &&

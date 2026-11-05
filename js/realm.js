@@ -15,7 +15,7 @@
    the truth. In edit mode: click along the walkable path from
    left to right to drop waypoints (the line draws as you go),
    press N (or the Markers button) to switch to dropping node
-   markers, Z undoes, C clears. "Save preview" stores the trace in
+   markers, Z undoes, Shift+C clears a layer, Cmd+C copies the JSON. "Save preview" stores the trace in
    localStorage so removing &edit=1 walks it immediately; "Copy
    JSON" yields the snippet to commit into REALMS below.
 
@@ -1956,6 +1956,17 @@
     drawTrace(); syncEditorBar();
   }
   function editorKey(e) {
+    /* Cmd/Ctrl chords are the browser's, not the editor's: Cmd+C copies the
+       JSON (it used to hit the plain-C "clear" below and wipe the markers
+       right before an export), Cmd+Z stays the editor's undo. */
+    if (e.metaKey || e.ctrlKey) {
+      if (e.key === 'c' || e.key === 'C') {
+        var copyBtn = edBar && edBar.querySelector('#rw-ed-copy');
+        if (copyBtn && !(window.getSelection && String(window.getSelection()))) { e.preventDefault(); copyBtn.click(); }
+        return;
+      }
+      if (!(e.key === 'z' || e.key === 'Z')) return;
+    }
     if (e.key === 'z' || e.key === 'Z') {
       e.preventDefault();
       popUndo();
@@ -2032,7 +2043,7 @@
       }
     }
     if (e.key === 'Escape') { edSel = null; edHov = null; drawTrace(); }
-    if (e.key === 'c' || e.key === 'C') {
+    if ((e.key === 'c' || e.key === 'C') && e.shiftKey) {   // Shift+C: clear this tool's layer (plain C does nothing)
       pushUndo();
       if (edMode === 'graph') edG = { nodes: [], edges: [], stairs: [] };
       else if (edMode === 'marks') edMk = [];
@@ -2175,7 +2186,7 @@
         '<span><b>S</b> stairs on path</span>' +
         '<span><b>[ ]</b> effect size</span>' +
         '<span><b>del</b> remove</span>' +
-        '<span><b>Z</b> undo \u00B7 <b>esc</b> deselect</span>' +
+        '<span><b>Z</b> undo \u00B7 <b>esc</b> deselect \u00B7 <b>shift+C</b> clear layer \u00B7 <b>\u2318C</b> copy JSON</span>' +
         '<span><b>\u2190\u2192</b> pan</span>' +
       '</div>' +
       '<textarea id="rw-ed-json" class="type-utility" readonly rows="2"></textarea>' +

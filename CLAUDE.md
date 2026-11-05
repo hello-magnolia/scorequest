@@ -142,6 +142,8 @@ re-run it on any existing project. verify_auth guards all of this.
   play (el.hidden), shown in the editor. Tripwires __SQ_OVERLAY, __SQ_QUIZ {rank, practice,
   mode, round}. sq_last_realm records where he wandered. Editor: select-first,
   tools 1 graph / 2 markers / 3 start / 4 boss, S stairs, Z undo, Copy JSON exports.
+  Cmd/Ctrl chords never reach editor keys (Cmd+C = copy JSON); clearing a layer is Shift+C.
+  (Plain C used to clear, so Cmd+C wiped markers before every export: Nov 2026 bug.)
 - Grading: SQQuestions.grade(q, resp, {ms, session_id, record}) everywhere (practice, clash,
   overlay). Signed in -> SQAuth.checkAnswer -> Supabase RPC check_answer (keys never reach the
   browser; it writes attempts); else local check + SQAttempts.record. SQQuestions.ready
