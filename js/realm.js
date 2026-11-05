@@ -1587,6 +1587,8 @@
   var edDrag = false, edDragMoved = false, edPendingSnap = null;
   var edDragCand = null;            // armed by mousedown; selection stays untouched
   var edDownX = 0, edDownY = 0;     // real mice jitter: a drag needs >4px
+  var edHoverMove = null;           // {i, was}: a marker's bubble riding the mouse after H
+  var edLastMouse = null;           // last world point under the mouse, for H
 
   function edSnapshot() {
     return JSON.stringify({ g: edG, mk: edMk, st: edStart, bo: edBossA, fx: edFx });
@@ -1829,6 +1831,12 @@
   stage.addEventListener('mousemove', function (e) {
     if (!editing || !edG) return;
     var w = worldPoint(e);
+    edLastMouse = w;
+    if (edHoverMove) {                           // the bubble rides the mouse
+      var hmk = edMk[edHoverMove.i];
+      edMk[edHoverMove.i] = [hmk[0], hmk[1], w.x / worldW, w.y / worldH];
+      drawTrace(); return;
+    }
     if (edDrag) {
       if (!edDragMoved && Math.hypot(w.x - edDownX, w.y - edDownY) <= 4) return;
       if (edPendingSnap) { pushUndo(edPendingSnap); edPendingSnap = null; }
@@ -1882,6 +1890,12 @@
 
   function editorClick(w) {
     if (edDragMoved) { edDragMoved = false; return; }   // that was a drag
+    if (edHoverMove) {                           // the click sets the riding bubble down
+      var hi = edHoverMove.i; edHoverMove = null;
+      edMk[hi] = [edMk[hi][0], edMk[hi][1], w.x / worldW, w.y / worldH];
+      edSel = { kind: 'markv', i: hi };
+      afterEdit(); return;
+    }
     var h = hitTest(w);
     if (edMode === 'graph') {
       if (h && h.kind === 'gnode') {
@@ -1949,9 +1963,22 @@
       e.preventDefault();
       pushUndo();
       var hm = edMk[edSel.i];
-      if (hm.length > 3) { edMk[edSel.i] = hm.slice(0, 2); edSel = { kind: 'mark', i: edSel.i }; }
-      else { edMk[edSel.i] = [hm[0], hm[1], hm[0], hm[1] - 90 / worldH]; edSel = { kind: 'markv', i: edSel.i }; }
+      /* the bubble follows the mouse from here until a click sets it down;
+         Escape puts it back where it was. Shift+H sends it home. */
+      if (e.shiftKey) { edMk[edSel.i] = hm.slice(0, 2); edSel = { kind: 'mark', i: edSel.i }; edHoverMove = null; }
+      else {
+        var at = edLastMouse || { x: hm[0] * worldW, y: hm[1] * worldH - 90 };
+        edHoverMove = { i: edSel.i, was: hm.slice() };
+        edMk[edSel.i] = [hm[0], hm[1], at.x / worldW, at.y / worldH];
+        edSel = { kind: 'markv', i: edSel.i };
+      }
       drawTrace(); syncEditorBar();
+    }
+    if (e.key === 'Escape' && edHoverMove) {
+      e.preventDefault();
+      edMk[edHoverMove.i] = edHoverMove.was;
+      edSel = { kind: edHoverMove.was.length > 3 ? 'markv' : 'mark', i: edHoverMove.i };
+      edHoverMove = null; drawTrace(); syncEditorBar();
     }
     /* [ and ] resize the selected effect in chunky quarter steps */
     if (e.key === '[' || e.key === ']' || e.key === '-' || e.key === '=' || e.key === '+') {
@@ -2089,7 +2116,7 @@
           '<span id="rw-ed-size">\u2014</span>' +
           '<button class="rw-ed-step" id="rw-ed-size-up" type="button" title="Bigger ]">+</button>' +
         '</div>' +
-        '<p class="rw-ed-hint type-utility">click the map to place \u00B7 drag to move \u00B7 del removes \u00B7 H lets a marker hover elsewhere</p>' +
+        '<p class="rw-ed-hint type-utility">click the map to place \u00B7 drag to move \u00B7 del removes \u00B7 H: bubble follows the mouse, click to set, Shift+H home</p>' +
       '</div>' +
       '<p class="rw-ed-countline type-utility" id="rw-ed-count"></p>' +
       '<div class="rw-ed-legend type-utility">' +
