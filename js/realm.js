@@ -1694,8 +1694,27 @@
     drawTrace(); syncEditorBar();
   }
 
+  /* while editing, the real markers (bubble, stars, pool) follow edMk live,
+     so the stars move to the hover point the moment it is placed */
+  function edSyncNodes() {
+    if (!editing || !edMk) return;
+    edMk.forEach(function (n, i) {
+      var el = nodeEls[i];
+      if (!el) return;
+      el.hidden = false;
+      el.style.left = Math.round(n[0] * worldW) + 'px';
+      el.style.top = Math.round(n[1] * worldH) + 'px';
+      var hx = n.length > 3 ? Math.round((n[2] - n[0]) * worldW) : 0;
+      var hy = n.length > 3 ? Math.round((n[3] - n[1]) * worldH) : 0;
+      el.style.setProperty('--hx', hx + 'px');
+      el.style.setProperty('--hy', hy + 'px');
+      el.classList.toggle('is-hovering', !!(hx || hy));
+    });
+    for (var k = edMk.length; k < nodeEls.length; k++) nodeEls[k].hidden = true;   // removed in the editor
+  }
   function drawTrace() {
     if (!trace) return;
+    edSyncNodes();
     trace.width = worldW;
     trace.height = worldH;
     var tc = null;
