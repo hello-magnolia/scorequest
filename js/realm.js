@@ -2099,6 +2099,16 @@
       }).join(' \u00B7 ') + ' \u00B7 ';
     }
     var need = WPS.length - edMk.length;
+    /* the one number she needs while placing: markers placed vs the realm's
+       waypoint rows, big and colored, with the next row to place named */
+    var mkLine = edBar.querySelector('#rw-ed-markers');
+    if (mkLine) {
+      var nextWp = need > 0 ? WPS[edMk.length] : null;
+      mkLine.textContent = 'Markers ' + edMk.length + ' / ' + WPS.length +
+        (need > 0 ? ' \u00B7 add ' + need + (nextWp ? ' \u00B7 next: ' + (nextWp.title || nextWp.skill) + (nextWp.mode === 'lesson' ? ' (lesson)' : nextWp.tier ? ' (' + ['I', 'II', 'III'][nextWp.tier - 1] + ')' : '') : '')
+          : need < 0 ? ' \u00B7 remove ' + (-need) + ' (only ' + WPS.length + ' waypoints exist)' : ' \u00B7 all placed');
+      mkLine.className = 'rw-ed-markers type-utility ' + (need === 0 ? 'is-ok' : need > 0 ? 'is-short' : 'is-over');
+    }
     edBar.querySelector('#rw-ed-count').textContent =
       edG.nodes.length + ' nodes \u00B7 ' + edG.edges.length + ' paths \u00B7 ' +
       edG.stairs.length + ' stairs \u00B7 ' + edMk.length + ' trials' +
@@ -2134,6 +2144,7 @@
     edBar.innerHTML =
       '<p class="rw-ed-head type-utility">EDITOR' +
       '<button class="rw-ed-min type-utility" id="rw-ed-min" type="button" title="Minimize">\u2013</button></p>' +
+      '<p class="rw-ed-markers type-utility" id="rw-ed-markers"></p>' +
       '<p class="rw-ed-status type-utility" id="rw-ed-mode"></p>' +
       '<div class="rw-ed-tools">' +
         ED_MODES.map(function (m, i) {

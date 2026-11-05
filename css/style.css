@@ -1453,6 +1453,10 @@ a { color: inherit; }
 }
 .rw-ed-step:hover { border-color: var(--gold); }
 .rw-ed-hint { margin: 0; color: var(--parchment-dim); font-size: 11px; letter-spacing: 0.04em; }
+.rw-ed-markers { margin: 0 0 6px; padding: 6px 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.03em; color: #2b2118; background: #f3e6c4; }
+.rw-ed-markers.is-ok { background: #cfe3c2; }
+.rw-ed-markers.is-short { background: #f8c53a; }
+.rw-ed-markers.is-over { background: #f0997b; }
 .rw-ed-countline { margin: 0 0 8px; color: var(--parchment-dim); font-size: 11px;
   letter-spacing: 0.04em; line-height: 1.5; }
 .rw-ed-legend { display: flex; flex-direction: column; gap: 2px; margin: 0 0 10px;
@@ -2034,6 +2038,7 @@ a { color: inherit; }
 .rw-editor.is-min .rw-ed-status,
 .rw-editor.is-min .rw-ed-tools,
 .rw-editor.is-min .rw-ed-fx,
+.rw-editor.is-min .rw-ed-markers,
 .rw-editor.is-min .rw-ed-countline,
 .rw-editor.is-min textarea,
 .rw-editor.is-min .rw-ed-row { display: none; }
