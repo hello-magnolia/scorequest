@@ -1333,6 +1333,10 @@ a { color: inherit; }
 }
 .rw-popup-text { font-family: var(--font-utility); font-size: 1.3rem; line-height: 1.6; margin: 0 0 16px; }
 .rw-popup-row { display: flex; gap: 14px; flex-wrap: wrap; }
+/* the lair gate: the guardian's door stays shut until the trail's clashes are cleared */
+#rw-fight.is-sealed { opacity: 0.6; filter: saturate(0.4); cursor: not-allowed; }
+#rw-fight.is-nudge { animation: rw-nudge 0.35s ease; }
+@keyframes rw-nudge { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-4px); } 70% { transform: translateX(4px); } }
 
 /* map hub: realm walkabout preview strip */
 .realm-preview { max-width: 900px; margin: 40px auto 0; text-align: center; padding: 0 20px; }
@@ -1732,6 +1736,18 @@ a { color: inherit; }
 }
 .bf-choice:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
 .bf-choice:disabled { opacity: 0.55; cursor: default; }
+.bf-choice-letter { opacity: 0.7; margin-right: 4px; }
+.bf-choice .katex { font-size: 1em; }
+.bf-question .bf-passage { font-size: 1.05rem; line-height: 1.6; margin: 0 0 14px; padding: 12px 14px; background: rgba(0, 0, 0, 0.25); border-radius: 10px; max-height: 38vh; overflow: auto; }
+.bf-question .bf-passage p { margin: 0 0 0.6em; }
+.bf-question .bf-passage p:last-child { margin-bottom: 0; }
+.bf-question .qsrc { display: inline-block; font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: middle; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); color: var(--parchment); opacity: 0.8; }
+.bf-question .qsrc.official { background: rgba(255, 196, 90, 0.22); }
+.bf-question svg, .bf-question table { display: block; margin: 10px auto 0; max-width: 100%; }
+.bf-question table { border-collapse: collapse; font-size: 0.95rem; }
+.bf-question td, .bf-question th { border: 1px solid rgba(255, 255, 255, 0.25); padding: 4px 10px; }
+.bf-feedback .bf-why { display: block; font-size: 0.9em; opacity: 0.85; margin-top: 6px; }
+.bf-locked { text-align: center; }
 .bf-feedback { font-family: var(--font-utility); font-size: 1.15rem; min-height: 1.4em; margin: 12px 0 0; }
 .bf-feedback.is-hit { color: #7FE3C0; }
 .bf-feedback.is-miss { color: #E2695A; }

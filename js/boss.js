@@ -57,24 +57,6 @@
         [0.445, 0.430, 4], [0.555, 0.430, 4], [0.249, 0.813, 5], [0.744, 0.814, 5]
       ] },
       next: { id: 'storyforge', name: 'Story Forge' },
-      questions: [
-        { q: 'The lanterns of Lorewood are lit every evening, though no keeper has been seen in ten years. Which question does the passage most directly raise?',
-          choices: ['Who is lighting the lanterns?', 'Why are lanterns expensive?', 'When was Lorewood founded?', 'How bright are the lanterns?'], a: 0 },
-        { q: '"The shrine\u2019s records are complete," the Archivist insists, "except the years I have eaten." Which word most weakens the Archivist\u2019s claim?',
-          choices: ['records', 'complete', 'except', 'shrine\u2019s'], a: 2 },
-        { q: 'A wish-paper reads: "Return what was taken, and the forest will speak plainly again." The wish implies the forest currently speaks how?',
-          choices: ['Loudly', 'In riddles or falsehoods', 'Only at night', 'In an old dialect'], a: 1 },
-        { q: 'Which sentence best supports the claim that the torii gates are maintained by someone?',
-          choices: ['The gates are older than the trees.', 'The gates are painted the color of maples.', 'Fresh rope and new paper charms hang from every gate.', 'Travelers admire the gates.'], a: 2 },
-        { q: 'The passage states the shrine doors "open only for the truth." Based on this, the doors are best described as a test of the visitor\u2019s\u2026',
-          choices: ['strength', 'patience', 'honesty', 'speed'], a: 2 },
-        { q: '"Few travelers finish the path; fewer still notice the fox-prints beside their own." The second clause mainly adds a sense of\u2026',
-          choices: ['being secretly accompanied', 'the path\u2019s great length', 'the weather\u2019s harshness', 'the travelers\u2019 fatigue'], a: 0 },
-        { q: 'The Archivist rewrites one word in every tale so each hero "gives up at the end." The detail suggests the Archivist\u2019s goal is to\u2026',
-          choices: ['improve the stories', 'discourage those who read them', 'shorten the archive', 'honor the heroes'], a: 1 },
-        { q: 'Which of these is an OPINION rather than a fact from the passage about Lorewood?',
-          choices: ['The path passes under three torii gates.', 'Autumn is the most beautiful season here.', 'The shrine stands at the path\u2019s end.', 'Paper wishes hang from the branches.'], a: 1 }
-      ]
     },
     storyforge: {
       name: 'The Boilerback Weaver',
@@ -116,24 +98,6 @@
         formMs: 280, flyMs: 480, hitMs: 340, formW: 56, flyW: 118, hitW: 152,
         ox: 0.10, oy: 0.64 },
       next: { id: 'inkreef', name: 'Ink Reef' },
-      questions: [
-        { q: 'The Weaver\u2019s manual opens with a warning, then lists parts, then assembly steps. Its structure is best described as\u2026',
-          choices: ['Alphabetical order', 'A safety-first sequence', 'Cause and effect', 'A comparison of models'], a: 1 },
-        { q: 'In \u201Cthe forge hissed, sighed, and finally slept,\u201D the word choice makes the forge seem\u2026',
-          choices: ['dangerous', 'brand new', 'alive', 'broken'], a: 2 },
-        { q: 'A paragraph about iron ends: \u201CSteel, however, tells a different story.\u201D The sentence mainly serves to\u2026',
-          choices: ['define steel', 'summarize the passage', 'signal a shift to a new subject', 'correct an earlier error'], a: 2 },
-        { q: 'The web is described as \u201Cmeasured, load-bearing, and exactly as long as needed.\u201D The description mainly presents the Weaver as\u2026',
-          choices: ['fragile and hesitant', 'hurried and careless', 'decorative and vain', 'a careful engineer'], a: 3 },
-        { q: '\u201CThe bellows failed. ___, the fires cooled.\u201D Which transition fits the logic?',
-          choices: ['Meanwhile', 'Therefore', 'Although', 'For example'], a: 1 },
-        { q: 'A set of tempering instructions is interrupted by a memory of the smith\u2019s old teacher. The interruption mainly adds\u2026',
-          choices: ['a personal dimension', 'technical detail', 'a counterargument', 'statistics'], a: 0 },
-        { q: 'The phrase \u201Cevery joint riveted twice\u201D most strongly conveys\u2026',
-          choices: ['caution and thoroughness', 'haste', 'decoration', 'weakness'], a: 0 },
-        { q: 'The passage compares stories to bridges three separate times. The repetition mainly helps the reader\u2026',
-          choices: ['memorize dates', 'see structure as something built and crossed', 'learn bridge engineering', 'doubt the narrator'], a: 1 }
-      ]
     },
     inkreef: {
       name: 'Aristotle the Axolotl',
@@ -191,24 +155,6 @@
         'Nonsense!', 'Unwise!'
       ] },
       next: { id: 'syntaxcitadel', name: 'Syntax Citadel' },
-      questions: [
-        { q: 'Which revision of \u201CDue to the fact that the tide was high, we waited\u201D is most concise?',
-          choices: ['Due to the fact the tide was high, we waited.', 'Because the tide was high, we waited.', 'In light of the fact that the tide was high, we waited.', 'The tide being high in nature, we waited.'], a: 1 },
-        { q: 'A formal report should replace \u201Cthe results were pretty great\u201D with\u2026',
-          choices: ['the results were favorable', 'the results rocked', 'the results were kind of good', 'the results were the best ever'], a: 0 },
-        { q: '\u201CThe current was strong. ___, the divers pressed on.\u201D Which transition fits?',
-          choices: ['Therefore', 'For instance', 'Nevertheless', 'Similarly'], a: 2 },
-        { q: 'Which word most precisely describes water you can see through?',
-          choices: ['clear', 'nice', 'wet', 'watery'], a: 0 },
-        { q: 'Which combination of \u201CThe reef glows. The glow comes from tiny creatures.\u201D reads best?',
-          choices: ['The reef glows, the glow comes from tiny creatures.', 'The reef glows and glowing comes from creatures that are tiny.', 'The reef glows because of tiny creatures.', 'Tiny creatures, the reef glows from them.'], a: 2 },
-        { q: 'In \u201CThe final outcome was a small little victory,\u201D which pair is redundant?',
-          choices: ['final outcome', 'small little', 'a victory', 'was a'], a: 1 },
-        { q: 'Writing for young students, which opening fits the audience best?',
-          choices: ['Per the aforementioned crustacean data\u2026', 'Crabs have a secret superpower.', 'It is incumbent upon us to examine crabs.', 'Crustacean locomotion warrants rigorous analysis.'], a: 1 },
-        { q: 'The paragraph states a rule, then continues: \u201C___ example, the anglerfish\u2026\u201D',
-          choices: ['In', 'As', 'For', 'By'], a: 2 }
-      ]
     },
     syntaxcitadel: {
       name: 'The Parapet Pedant',
@@ -249,24 +195,6 @@
       beam: { delay: 800, chargeMs: 260, fireMs: 220, holdMs: 320, fadeMs: 240,
         ox: 0.318, oy: 0.306 },
       next: { id: 'mirrormines', name: 'Mirror Mines' },
-      questions: [
-        { q: 'Which sentence is punctuated correctly?',
-          choices: ['The gate was locked, the keys were gone.', 'The gate was locked; the keys were gone.', 'The gate was locked the keys were gone.', 'The gate was locked, and, the keys were gone.'], a: 1 },
-        { q: '\u201CThe flock of gargoyles ___ at dusk.\u201D Which verb agrees?',
-          choices: ['stir', 'stirs', 'are stirring', 'have stirred'], a: 1 },
-        { q: '\u201CThe citadel opens ___ gates at dawn.\u201D Which word completes it?',
-          choices: ['it\u2019s', 'its', 'their', 'there'], a: 1 },
-        { q: 'Which revision fixes \u201CPerched on the tower, the city looked small\u201D?',
-          choices: ['Perched on the tower, small was the city.', 'Perched on the tower, the sentinel found the city small.', 'The city, perched on the tower, looked small.', 'Perched on the tower the city looked small.'], a: 1 },
-        { q: '\u201CNeither the sentries nor the mason ___ the missing stone.\u201D',
-          choices: ['notice', 'notices', 'are noticing', 'were noticing'], a: 1 },
-        { q: 'Which sentence uses the colon correctly?',
-          choices: ['The vault holds: gold, maps, and ink.', 'The vault holds three things: gold, maps, and ink.', 'The vault: holds gold, maps, and ink.', 'The vault holds three things, gold: maps and ink.'], a: 1 },
-        { q: '\u201CBy the time the bell rang, the drawbridge ___.\u201D',
-          choices: ['already rose', 'had already risen', 'has already risen', 'already been rising'], a: 1 },
-        { q: 'Which choice fixes the run-on \u201CThe torches guttered we climbed anyway\u201D?',
-          choices: ['The torches guttered, we climbed anyway.', 'The torches guttered. We climbed anyway.', 'The torches guttered we, climbed anyway.', 'The torches, guttered we climbed anyway.'], a: 1 }
-      ]
     },
     mirrormines: {
       name: 'The Twin Signs',
@@ -323,24 +251,6 @@
          on the third frame */
       strike: { delay: 900 },
       next: { id: 'infinityisles', name: 'Infinity Isles' },
-      questions: [
-        { q: 'Solve for x: x + 7 = 12',
-          choices: ['4', '19', '5', '7'], a: 2 },
-        { q: '\u201CWhatever is done to one side must be done to the other.\u201D To solve x \u2212 5 = 9, both sides need\u2026',
-          choices: ['minus 5', 'plus 5', 'divide by 5', 'plus 9'], a: 1 },
-        { q: 'If 3x = 21, then x = ?',
-          choices: ['18', '63', '6', '7'], a: 3 },
-        { q: '2x + 3 = 11. What is x?',
-          choices: ['4', '7', '3', '5'], a: 0 },
-        { q: 'Which move keeps the equation balanced?',
-          choices: ['x + 2 = 5 becomes x = 7', 'x + 2 = 5 becomes x = 3', 'x + 2 = 5 becomes x = 10', 'x + 2 = 5 becomes 2x = 5'], a: 1 },
-        { q: 'If x / 4 = 6, then x = ?',
-          choices: ['24', '10', '2', '1.5'], a: 0 },
-        { q: '5x \u2212 2 = 3x + 8. What is x?',
-          choices: ['3', '10', '5', '4'], a: 2 },
-        { q: 'Simplify: 4(x + 2) \u2212 3x',
-          choices: ['7x + 8', 'x + 2', 'x + 8', 'x + 6'], a: 2 }
-      ]
     },
 
     infinityisles: {
@@ -384,24 +294,6 @@
       beam: { delay: 620, chargeMs: 260, fireMs: 200, holdMs: 380, fadeMs: 260,
         ox: 0.5, oy: 0.55 },
       next: { id: 'datadocks', name: 'Data Docks' },
-      questions: [
-        { q: 'Solve: x\u00B2 \u2212 9 = 0',
-          choices: ['x = 3 only', 'x = \u00B13', 'x = 9', 'x = 81'], a: 1 },
-        { q: 'If f(x) = x\u00B2 + 1, what is f(3)?',
-          choices: ['7', '9', '10', '16'], a: 2 },
-        { q: 'The vertex of y = (x \u2212 2)\u00B2 + 5 is\u2026',
-          choices: ['(\u22122, 5)', '(2, \u22125)', '(5, 2)', '(2, 5)'], a: 3 },
-        { q: 'One hare doubles every blink: 2, 4, 8, \u2026 How many after the 5th blink?',
-          choices: ['16', '25', '32', '64'], a: 2 },
-        { q: 'If \u221Ax = 6, then x = ?',
-          choices: ['3', '12', '36', '6'], a: 2 },
-        { q: 'Factor: x\u00B2 + 5x + 6',
-          choices: ['(x + 1)(x + 6)', '(x + 2)(x + 3)', '(x \u2212 2)(x \u2212 3)', '(x + 5)(x + 6)'], a: 1 },
-        { q: 'If f(x) = 2x \u2212 1 and g(x) = x\u00B2, what is g(f(2))?',
-          choices: ['9', '7', '3', '25'], a: 0 },
-        { q: 'x\u00B2 = 2x + 3. The positive solution is\u2026',
-          choices: ['1', '3', '\u22121', '2'], a: 1 }
-      ]
     },
 
     datadocks: {
@@ -425,24 +317,6 @@
       /* no faint art yet: defeat is a slide back beneath the waves */
       strike: { delay: 900 },
       next: { id: 'prismpeaks', name: 'Prism Peaks' },
-      questions: [
-        { q: 'What is the mean of 4, 8, 9, and 3?',
-          choices: ['5', '6', '7', '8'], a: 1 },
-        { q: 'What is the median of 3, 7, 8, 12, 30?',
-          choices: ['8', '7', '12', '10'], a: 0 },
-        { q: 'A shirt costs $20 after a 20% discount. What was the original price?',
-          choices: ['$24', '$28', '$25', '$40'], a: 2 },
-        { q: 'Marbles split in a 3:5 ratio, 24 in total. How many in the smaller share?',
-          choices: ['8', '9', '15', '12'], a: 1 },
-        { q: 'A bag holds 3 red and 5 blue marbles. P(red)?',
-          choices: ['3/5', '1/3', '5/8', '3/8'], a: 3 },
-        { q: 'What is 15% of 80?',
-          choices: ['12', '15', '8', '20'], a: 0 },
-        { q: '150 miles in 2.5 hours is a speed of\u2026',
-          choices: ['50 mph', '65 mph', '60 mph', '75 mph'], a: 2 },
-        { q: 'The mean of five numbers is 10. Their sum is\u2026',
-          choices: ['10', '15', '2', '50'], a: 3 }
-      ]
     },
 
     prismpeaks: {
@@ -495,24 +369,6 @@
       faintSeq: [['hurt1', 200], ['hurt2', 220], ['hurt3', 280],
         ['faint1', 300], ['faint2', 320], ['faint3', 340], ['faint4', 380], ['faint5', 600]],
       /* the summit is the last stand: no next realm */
-      questions: [
-        { q: 'A right triangle has legs 3 and 4. The hypotenuse is\u2026',
-          choices: ['5', '6', '7', '25'], a: 0 },
-        { q: 'The angles of any triangle sum to\u2026',
-          choices: ['90\u00B0', '360\u00B0', '180\u00B0', '270\u00B0'], a: 2 },
-        { q: 'sin(30\u00B0) = ?',
-          choices: ['1/2', '\u221A3/2', '1', '\u221A2/2'], a: 0 },
-        { q: 'The area of a circle with radius 3 is\u2026',
-          choices: ['6\u03C0', '3\u03C0', '12\u03C0', '9\u03C0'], a: 3 },
-        { q: 'The complement of a 35\u00B0 angle is\u2026',
-          choices: ['55\u00B0', '65\u00B0', '145\u00B0', '45\u00B0'], a: 0 },
-        { q: 'tan(\u03B8) equals\u2026',
-          choices: ['adjacent / opposite', 'opposite / adjacent', 'opposite / hypotenuse', 'hypotenuse / adjacent'], a: 1 },
-        { q: 'A circle with diameter 10 has circumference\u2026',
-          choices: ['5\u03C0', '20\u03C0', '10\u03C0', '100\u03C0'], a: 2 },
-        { q: 'Each angle of an equilateral triangle measures\u2026',
-          choices: ['45\u00B0', '90\u00B0', '30\u00B0', '60\u00B0'], a: 3 }
-      ]
     }
   };
 
@@ -1012,55 +868,132 @@
   var qEl = document.getElementById('bf-question');
   var choicesEl = document.getElementById('bf-choices');
   var feedEl = document.getElementById('bf-feedback');
+  var C = window.SQCard;
+
+  /* ---------- the lair draws on the shared bank ----------
+     Every boss asks its realm's SAT domain (the same bank the trail's clashes
+     use, originals plus any official items the server serves), four-choice
+     questions only so the arena keeps its A/B/C/D plates. The deck prefers
+     questions this player has not cleared yet, hardest tiers first: the
+     guardian is the realm's capstone. */
+  var REALM_DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Structure', inkreef: 'Expression of Ideas', syntaxcitadel: 'Standard English Conventions',
+    mirrormines: 'Algebra', infinityisles: 'Advanced Math', datadocks: 'Problem-Solving and Data Analysis', prismpeaks: 'Geometry and Trigonometry' };
+  var deck = [], dealt = 0;
+  function buildDeck() {
+    var Q = window.SQQuestions;
+    if (!Q) return [];
+    var four = function (q) { return q.type === 'mcq' && q.choices && q.choices.length === 4; };
+    var pool = Q.filter({ domains: [REALM_DOMAIN[realmId] || ''] }).filter(four);
+    if (!pool.length) pool = Q.all().filter(four);
+    var seen = {};
+    try { (window.SQAttempts ? window.SQAttempts.list() : []).forEach(function (a) { if (a.correct) seen[a.question_id] = true; }); } catch (e) {}
+    pool.sort(function (a, b) { return (seen[a.id] ? 1 : 0) - (seen[b.id] ? 1 : 0) || (b.difficulty - a.difficulty) || Math.random() - 0.5; });
+    /* keep the hard ones in but shuffle within the unseen run so two fights differ */
+    var head = pool.filter(function (q) { return !seen[q.id]; }), tail = pool.filter(function (q) { return seen[q.id]; });
+    var mix = function (arr) { for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; } return arr; };
+    return mix(head).concat(mix(tail));
+  }
+  function draw() {
+    if (!deck.length || dealt >= deck.length) { deck = buildDeck(); dealt = 0; }
+    return deck[dealt++] || null;
+  }
+  if (window.SQQuestions && window.SQQuestions.onBankChange) window.SQQuestions.onBankChange(function () { deck = []; });
 
   function ask() {
     if (state.over) return;
-    var item = B.questions[state.qi % B.questions.length];
-    state.correctIndex = item.a;
-    qEl.textContent = item.q;
+    var q = draw();
+    if (!q) { qEl.textContent = 'The guardian has no riddles tonight. Come back once the bank has loaded.'; choicesEl.innerHTML = ''; return; }
+    state.q = q;
+    state.correctIndex = null;
+    q.choices.forEach(function (c, i) { if (c.correct) state.correctIndex = i; });   /* null for official items: the server holds the key */
+    state.askedAt = Date.now();
+    var h = '';
+    if (C) {
+      if (q.passage) h += '<div class="bf-passage">' + C.passageHTML(q) + '</div>';
+      h += '<span class="bf-stem">' + C.rich(q.stem) + '</span>';
+      if (q.figure) h += C.figure(q.figure);
+      if (q.table) h += C.table(q.table);
+      h += ' ' + C.sourceChip(q);
+      qEl.innerHTML = h;
+      C.math(qEl);
+    } else {
+      qEl.textContent = q.stem;
+    }
     feedEl.textContent = '';
     feedEl.className = 'bf-feedback';
     choicesEl.innerHTML = '';
-    item.choices.forEach(function (c, i) {
+    q.choices.forEach(function (c, i) {
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'bf-choice';
-      b.textContent = String.fromCharCode(65 + i) + '.  ' + c;
-      b.addEventListener('click', function () { answer(i, item); });
+      b.dataset.key = c.key;
+      b.innerHTML = '<span class="bf-choice-letter">' + (c.key || String.fromCharCode(65 + i)) + '.</span> ' + (C ? C.rich(c.text) : c.text);
+      if (C) C.math(b);
+      b.addEventListener('click', function () { answer(i, q); });
       choicesEl.appendChild(b);
     });
-    /* TEMP-SKIP (testing): counts as a quiet hit so fights stay finishable */
-    var sk = document.createElement('button');
-    sk.type = 'button';
-    sk.className = 'sq-skip-test';
-    sk.textContent = 'Skip (testing)';
-    sk.addEventListener('click', function () {
-      if (state.over) return;
-      lockChoices();
-      state.qi += 1;
-      state.bossHp = Math.max(0, state.bossHp - 1);
-      syncTails(state.bossHp);
-      renderHp();
-      feedEl.textContent = 'Skipped.';
-      feedEl.className = 'bf-feedback';
-      if (state.bossHp === 0) { win(); return; }
-      setTimeout(ask, 500);
-    });
-    choicesEl.appendChild(sk);
+    /* tester's shortcut (?unlock=1 only): a quiet hit so a fight can be walked end to end */
+    if (params.get('unlock') === '1') {
+      var sk = document.createElement('button');
+      sk.type = 'button';
+      sk.className = 'sq-skip-test';
+      sk.textContent = 'Skip (testing)';
+      sk.addEventListener('click', function () {
+        if (state.over || state.q !== q) return;
+        lockChoices();
+        state.qi += 1;
+        state.bossHp = Math.max(0, state.bossHp - 1);
+        syncTails(state.bossHp);
+        renderHp();
+        feedEl.textContent = 'Skipped.';
+        feedEl.className = 'bf-feedback';
+        if (state.bossHp === 0) { win(); return; }
+        setTimeout(ask, 500);
+      });
+      choicesEl.appendChild(sk);
+    }
   }
 
   function lockChoices() {
     choicesEl.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
   }
+  function unlockChoices() {
+    choicesEl.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+  }
 
-  function answer(i, item) {
-    if (state.over) return;
+  var HIT_LINE = { lorewood: 'The Archivist loses a tail.', storyforge: 'A thread of the Weaver snaps.', inkreef: 'The Sophist loses a page.',
+    syntaxcitadel: 'A stone falls from the Pedant’s parapet.', mirrormines: 'One of the Twin Signs cracks.', infinityisles: 'The Hare halves.',
+    datadocks: 'The Kraken loses its grip.', prismpeaks: 'The Talon sheds a feather.' };
+
+  function answer(i, q) {
+    if (state.over || state.q !== q) return;
     lockChoices();
-    state.qi += 1;
+    var picked = q.choices[i];
+    var ms = Date.now() - (state.askedAt || Date.now());
+    var Q = window.SQQuestions;
+    var verdict = Q && Q.grade ? Q.grade(q, picked.key, { ms: ms, session_id: 'boss:' + realmId })
+      : Promise.resolve({ correct: !!picked.correct, status: 'checked', key: (q.choices.filter(function (c) { return c.correct; })[0] || {}).key });
+    verdict.then(function (r) {
+      if (state.over || state.q !== q) return;
+      if (!r || r.status !== 'checked') {
+        feedEl.textContent = (r && r.message) || 'Could not reach the grader. Try again.';
+        feedEl.className = 'bf-feedback is-miss';
+        unlockChoices();
+        return;
+      }
+      state.qi += 1;
+      var keyIdx = -1;
+      q.choices.forEach(function (c, k) { if (c.key === r.key) keyIdx = k; });
+      if (keyIdx >= 0) state.correctIndex = keyIdx;
+      land(r.correct, q, keyIdx, r);
+    });
+  }
+
+  function land(hit, q, keyIdx, r) {
     var side = 0;
     if (TW) { state.atkSide = state.atkSide ? 0 : 1; side = state.atkSide; }
-    if (i === item.a) {
-      feedEl.textContent = 'Pomelo strikes! The Archivist loses a tail.';
+    if (hit) {
+      feedEl.textContent = 'Pomelo strikes! ' + (HIT_LINE[realmId] || 'The guardian flinches.');
       feedEl.className = 'bf-feedback is-hit';
       /* some voices need a head start: hurtSfxLead fires the cry that many
          ms before the orange lands (1120ms of wind-up and flight) */
@@ -1082,8 +1015,11 @@
       playBody(B.attackSeq, false, side);
       sfxCue(B.atkSfx);
       playYell();
-      feedEl.textContent = 'The guardian strikes back. The answer was ' +
-        String.fromCharCode(65 + item.a) + ': ' + item.choices[item.a];
+      var keyC = keyIdx >= 0 ? q.choices[keyIdx] : null;
+      var why = (r && r.explanation) || q.explanation || '';
+      feedEl.innerHTML = 'The guardian strikes back.' + (keyC ? ' The answer was ' + (keyC.key || String.fromCharCode(65 + keyIdx)) + ': ' + (C ? C.rich(keyC.text) : keyC.text) + '.' : '') +
+        (why ? ' <span class="bf-why">' + (C ? C.rich(why) : why) + '</span>' : '');
+      if (C) C.math(feedEl);
       feedEl.className = 'bf-feedback is-miss';
       var strike = B.flight ? function (fn, delay) { launchFlight(fn, delay, side); }
         : B.strike ? function (fn, delay) { launchStrike(fn, delay, side); }
@@ -1098,8 +1034,8 @@
         : (B.beam ? B.beam.delay : B.projectile.delay));   // timed to the fangs, wings, maw, mouth, or spinneret
     }
     renderHp();
-    setTimeout(ask, i === item.a ? 2000
-      : (B.flight ? Math.max(2400, B.flight.totalMs + 250) : 2400));   // a full flight outlasts the usual beat
+    setTimeout(ask, hit ? 2000
+      : (B.flight ? Math.max(2400, B.flight.totalMs + 250) : 3200));   // a miss lingers so the explanation can be read; a full flight outlasts the usual beat
   }
 
   function flash(el) {
@@ -1107,6 +1043,17 @@
     void el.offsetWidth;               // restart the flash
     el.classList.add('is-flash');
   }
+
+  var VICTORY = {
+    lorewood: 'The Archivist bows and returns every twisted word. The way forward is clear.',
+    storyforge: 'The Weaver unpicks its last knot and the bridges stand as they were built.',
+    inkreef: 'The Sophist runs out of ink. The reef’s currents read true again.',
+    syntaxcitadel: 'The Parapet Pedant lowers the drawbridge. Every sentence may pass.',
+    mirrormines: 'The Twin Signs agree at last, and the mines show one true answer.',
+    infinityisles: 'The Doubling Hare stops at one. The isles hold still.',
+    datadocks: 'The Mean Kraken lets go of the harbour chain. The numbers settle.',
+    prismpeaks: 'The Tangent Talon lands and folds its wings. The summit is yours.'
+  };
 
   function win() {
     state.over = true;
@@ -1130,24 +1077,25 @@
       if (TW) sideElL.classList.add('is-retreating');
     }
     var p = document.getElementById('bf-victory');
+    var vt = p.querySelector('.bf-panel-text');
+    if (vt && VICTORY[realmId]) vt.textContent = VICTORY[realmId];
     if (B.next) {
       var onward = document.getElementById('bf-onward');
       onward.href = 'realm.html?realm=' + B.next.id;
-      onward.textContent = 'Onward to ' + B.next.name + ' \u2192';
+      onward.textContent = 'Onward to ' + B.next.name + ' →';
     } else {
       document.getElementById('bf-onward').hidden = true;   // the summit is the last stand
     }
     setTimeout(function () { p.hidden = false; }, 1200);
     if (window.SQSfx && window.SQSfx.correct) window.SQSfx.correct();
   }
+  /* Pomelo at zero is a rest, never a loss: he refills, the guardian keeps every crack */
   function lose() {
     state.over = true;
     document.getElementById('bf-defeat').hidden = false;
   }
   document.getElementById('bf-retry').addEventListener('click', function () {
-    state.bossHp = state.bossMax;
-    state.pomeloHp = state.pomeloMax;
-    state.qi = 0;
+    state.pomeloHp = state.pomeloMax;     /* the guardian keeps its cracks */
     state.over = false;
     document.getElementById('bf-defeat').hidden = true;
     projTimers.forEach(clearTimeout);
@@ -1172,12 +1120,34 @@
     busy = false;
     setBody(B.base);
     if (TW) setBody(B.base, 1);
-    buildTails(state.bossMax);
+    buildTails(state.bossHp);             /* the tails he already took stay taken */
     renderHp();
     ask();
   });
 
   buildTails(state.bossMax);
   renderHp();
-  ask();
+
+  /* ---------- the lair gate ----------
+     realm.js keeps sq_lair_<realm> at 'open' once every clash on the trail is
+     cleared. Sealed, the door shows a note and the way back; a cleared boss
+     stays open for sparring, and ?unlock=1 lets Magnolia test any lair. */
+  var sealed = false;
+  try {
+    sealed = window.localStorage.getItem('sq_lair_' + realmId) !== 'open' &&
+      window.localStorage.getItem('sq_boss_' + realmId) !== 'cleared' && params.get('unlock') !== '1';
+  } catch (e) {}
+  state.sealed = sealed;
+  var dback = document.getElementById('bf-defeat-back');
+  if (dback) dback.href = 'realm.html?realm=' + realmId;
+  var lockedEl = document.getElementById('bf-locked');
+  if (sealed && lockedEl) {
+    state.over = true;
+    lockedEl.hidden = false;
+    var lb = lockedEl.querySelector('a');
+    if (lb) lb.href = 'realm.html?realm=' + realmId;
+    qEl.textContent = 'The door is sealed. Clear the trail\u2019s trials and come back.';
+  } else {
+    ask();
+  }
 })();

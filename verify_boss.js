@@ -21,8 +21,16 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
   .dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 
 (async () => {
+  /* the lair gate: without the trail cleared the door stays shut */
   let w = await load('boss.html?realm=lorewood');
   let d = w.document;
+  check('Sealed lair: the door shows a note, no choices, and the way back to the trail',
+    d.getElementById('bf-locked').hidden === false && w.__SQ_BOSS.sealed === true &&
+    d.querySelectorAll('.bf-choice').length === 0 &&
+    d.getElementById('bf-locked-back').getAttribute('href') === 'realm.html?realm=lorewood');
+
+  w = await load('boss.html?realm=lorewood&unlock=1');
+  d = w.document;
   const S = w.__SQ_BOSS;
 
   /* the intro reel: pixel volume toggle, then the dark splits open */
@@ -61,6 +69,10 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
 
   /* right answer: Pomelo strikes */
   clickChoice(w, S.correctIndex);
+  check('The lair asks the shared bank: a labelled Information and Ideas question with four keyed choices',
+    S.q && S.q.domain === 'Information and Ideas' && S.q.choices.length === 4 &&
+    !!d.querySelector('#bf-question .qsrc') && d.querySelector('.bf-choice').dataset.key === 'A' &&
+    d.getElementById('bf-choices').querySelector('.sq-skip-test') !== null);
   check('Right answer: the orange flies and a tail vanishes on contact',
     await until(() => S.bossHp === 8, 2000) &&
     Math.abs(parseFloat(d.querySelector('#bf-boss-hp .bf-hp-fill').style.width) - 88.89) < 0.5 &&
@@ -96,7 +108,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     /Onward to Story Forge/.test(d.getElementById('bf-onward').textContent));
 
   /* the lose path + gentle retry */
-  w = await load('boss.html?realm=lorewood');
+  w = await load('boss.html?realm=lorewood&unlock=1');
   d = w.document;
   const S2 = w.__SQ_BOSS;
   for (let k = 0; k < 3; k++) {
@@ -108,19 +120,44 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => d.getElementById('bf-defeat').hidden === false, 3000) &&
     /snack break/.test(d.getElementById('bf-defeat').textContent));
   d.getElementById('bf-retry').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  check('Retry resets both sides and asks again',
+  check('Retry refills Pomelo, the guardian keeps its cracks, and the next question comes',
     S2.bossHp === 9 && S2.pomeloHp === 3 && !S2.over &&
-    d.querySelectorAll('.bf-choice').length === 4);
+    d.querySelectorAll('.bf-choice').length === 4 &&
+    /The answer was [A-D]:/.test(d.getElementById('bf-feedback').textContent) === false);
+
+  /* a hit survives a snack break: take one tail, fall, retry */
+  w = await load('boss.html?realm=lorewood&unlock=1');
+  d = w.document;
+  const S2b = w.__SQ_BOSS;
+  clickChoice(w, S2b.correctIndex);
+  await until(() => S2b.bossHp === 8, 2500);
+  for (let k = 0; k < 3; k++) {
+    await until(() => !d.querySelector('.bf-choice').disabled && !S2b.over, 4000);
+    clickChoice(w, (S2b.correctIndex + 1) % 4);
+    await until(() => d.querySelector('.bf-choice').disabled || S2b.over, 500);
+  }
+  await until(() => d.getElementById('bf-defeat').hidden === false, 4000);
+  d.getElementById('bf-retry').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  check('After the break the Archivist is still down a tail',
+    S2b.bossHp === 8 && S2b.pomeloHp === 3 &&
+    d.querySelectorAll('.bf-tail:not(.is-gone)').length === 8);
 
   /* the realm's sealed door leads here */
   w = await load('realm.html?realm=lorewood');
   d = w.document;
-  check('Lorewood\u2019s sealed-door popup offers the fight',
+  check('Lorewood\u2019s popup holds the fight button, sealed until the trail\u2019s trials are cleared',
     !!d.querySelector('#rw-fight[href="boss.html?realm=lorewood"]') &&
+    d.getElementById('rw-fight').classList.contains('is-sealed') &&
+    /\d+ trials? left before the guardian/.test(d.getElementById('rw-fight').textContent) &&
+    w.localStorage.getItem('sq_lair_lorewood') === 'sealed' && w.__SQ_LAIR_LEFT > 0);
+  w = await load('realm.html?realm=lorewood&edit=1');
+  d = w.document;
+  check('In the editor the door stands open: Face the guardian',
+    !d.getElementById('rw-fight').classList.contains('is-sealed') &&
     /Face the guardian/.test(d.getElementById('rw-fight').textContent));
 
   /* the second guardian: the Boilerback Weaver of Story Forge */
-  w = await load('boss.html?realm=storyforge');
+  w = await load('boss.html?realm=storyforge&unlock=1');
   d = w.document;
   check('Story Forge: the Boilerback Weaver waits, breathing, no tails, seven HP',
     /Boilerback Weaver/.test(d.getElementById('bf-boss-name').textContent) &&
@@ -135,7 +172,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => S3.pomeloHp === 2, 3200));
 
   /* the third guardian: Aristotle the Axolotl of Ink Reef */
-  w = await load('boss.html?realm=inkreef');
+  w = await load('boss.html?realm=inkreef&unlock=1');
   d = w.document;
   check('Ink Reef: Aristotle the Axolotl breathes over his scroll, eight HP, no tails',
     /Aristotle the Axolotl/.test(d.getElementById('bf-boss-name').textContent) &&
@@ -166,7 +203,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => S4.pomeloHp === 2, 4400));
 
   /* the fourth guardian: the Parapet Pedant of Syntax Citadel */
-  w = await load('boss.html?realm=syntaxcitadel');
+  w = await load('boss.html?realm=syntaxcitadel&unlock=1');
   d = w.document;
   check('Syntax Citadel: the Parapet Pedant stands in stone, nine HP, no tails',
     /Parapet Pedant/.test(d.getElementById('bf-boss-name').textContent) &&
@@ -184,7 +221,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => S5.fireball === null && beam.hidden, 2200));
 
   /* the fifth fight: the Twin Signs flank Pomelo from both tunnels */
-  w = await load('boss.html?realm=mirrormines');
+  w = await load('boss.html?realm=mirrormines&unlock=1');
   d = w.document;
   const S6 = w.__SQ_BOSS;
   check('Mirror Mines: the Twin Signs stand on BOTH sides, ten HP',
@@ -223,7 +260,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => d.getElementById('bf-victory').hidden === false, 3500));
 
   /* the sixth guardian: the Doubling Hare of Infinity Isles */
-  w = await load('boss.html?realm=infinityisles');
+  w = await load('boss.html?realm=infinityisles&unlock=1');
   d = w.document;
   const S7 = w.__SQ_BOSS;
   check('Infinity Isles: the Doubling Hare waits alone, twelve HP, already facing him',
@@ -253,7 +290,7 @@ const clickChoice = (w, i) => w.document.querySelectorAll('.bf-choice')[i]
     await until(() => d.getElementById('bf-victory').hidden === false, 3500));
 
   /* the eighth guardian: the Tangent Talon itself, the bird at the nest */
-  w = await load('boss.html?realm=prismpeaks');
+  w = await load('boss.html?realm=prismpeaks&unlock=1');
   d = w.document;
   const S8 = w.__SQ_BOSS;
   const bossImg8 = () => d.getElementById('bf-boss-img').src;

@@ -7,7 +7,8 @@
 <meta name="theme-color" content="#16112b" />
 <title>Boss fight, ScoreQuest</title>
 <meta name="description" content="The guardian at the end of the realm. Answer true, strike true." />
-<link rel="stylesheet" href="css/style.css?v=b20261105b" />
+<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261105c" />
+<link rel="stylesheet" href="css/style.css?v=b20261105c" />
 <link rel="icon" type="image/png" href="assets/logo.png" />
 </head>
 <body class="page-boss">
@@ -67,12 +68,20 @@
     </div>
   </div>
 
+  <div class="bf-panel pixel-frame bf-locked" id="bf-locked" hidden>
+    <h2 class="bf-panel-title">The guardian is not ready for you yet.</h2>
+    <p class="bf-panel-text">Clear every trial on the trail first. The door opens on its own after the last one.</p>
+    <div class="bf-panel-row">
+      <a class="btn btn-gold" id="bf-locked-back" href="realm.html">Back to the trail</a>
+    </div>
+  </div>
+
   <div class="bf-panel pixel-frame" id="bf-defeat" hidden>
     <h2 class="bf-panel-title">Pomelo needs a snack break.</h2>
     <p class="bf-panel-text">No harm done. The guardian will wait, and the questions will be the same kind. Ready when u are.</p>
     <div class="bf-panel-row">
       <button class="btn btn-gold" id="bf-retry" type="button">Try again</button>
-      <a class="btn btn-outline" href="realm.html?realm=lorewood">Back to the realm</a>
+      <a class="btn btn-outline" id="bf-defeat-back" href="realm.html">Back to the realm</a>
     </div>
   </div>
 </div>
@@ -109,10 +118,16 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js?v=b20261105b"></script>
-<script src="js/auth.js?v=b20261105b"></script>
-<script src="js/sfx.js?v=b20261105b"></script>
-<script src="js/companion.js?v=b20261105b"></script>
-<script src="js/boss.js?v=b20261105b"></script>
+<script src="js/config.js?v=b20261105c"></script>
+<script src="js/auth.js?v=b20261105c"></script>
+<script src="js/sfx.js?v=b20261105c"></script>
+<script src="js/companion.js?v=b20261105c"></script>
+<script src="assets/katex/katex.min.js?v=b20261105c"></script>
+<script src="assets/katex/auto-render.min.js?v=b20261105c"></script>
+<script src="data/questions.js?v=b20261105c"></script>
+<script src="js/figures.js?v=b20261105c"></script>
+<script src="js/questions.js?v=b20261105c"></script>
+<script src="js/qcard.js?v=b20261105c"></script>
+<script src="js/boss.js?v=b20261105c"></script>
 </body>
 </html>

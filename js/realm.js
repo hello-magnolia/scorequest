@@ -298,6 +298,9 @@
     fightBtn.id = 'rw-fight';
     fightBtn.href = 'boss.html?realm=' + realm.id;
     fightBtn.textContent = '\u2694 Face the guardian';
+    fightBtn.addEventListener('click', function (e) {
+      if (fightBtn.classList.contains('is-sealed')) { e.preventDefault(); fightBtn.classList.remove('is-nudge'); void fightBtn.offsetWidth; fightBtn.classList.add('is-nudge'); }
+    });
     var row = popup.querySelector('.rw-popup-row');
     row.insertBefore(fightBtn, row.firstChild);
     popupNext.classList.remove('btn-gold');
@@ -741,6 +744,28 @@
       paintNode(i);
     });
     window.__SQ_REALM_PROG = passedCount();
+    syncLair();
+  }
+  /* ---------- the lair gate ----------
+     The guardian waits until every clash on the trail is cleared (lessons are
+     optional reading). The verdict is kept in sq_lair_<realm> so boss.html can
+     check it without the manifests; the editor and &unlock=1 skip it. */
+  function trialsLeft() {
+    var left = 0;
+    (realm.nodes || []).forEach(function (_, i) { if (waypointAt(i).mode === 'clash' && !passed[i]) left++; });
+    return left;
+  }
+  function syncLair() {
+    var left = trialsLeft();
+    try { window.localStorage.setItem('sq_lair_' + realm.id, left ? 'sealed' : 'open'); } catch (e) {}
+    window.__SQ_LAIR_LEFT = left;
+    var fb = document.getElementById('rw-fight');
+    if (!fb) return;
+    var open = !left || editing;
+    fb.classList.toggle('is-sealed', !open);
+    fb.setAttribute('aria-disabled', open ? 'false' : 'true');
+    fb.textContent = open ? '\u2694 Face the guardian'
+      : '\uD83D\uDD12 ' + left + (left === 1 ? ' trial left' : ' trials left') + ' before the guardian';
   }
   function onNodeClick(i) {
     if (editing || quizOpen) return;
