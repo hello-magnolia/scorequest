@@ -1372,7 +1372,7 @@ a { color: inherit; }
   transform: translate(-50%, -50%); background: rgba(43, 33, 24, 0.35); border-radius: 50%;
 }
 .rw-node-float {                   /* the speech bubble: parchment, ink frame, tail down */
-  position: absolute; left: 0; bottom: 22px; transform: translateX(-50%);
+  position: absolute; left: var(--hx, 0px); bottom: calc(22px - var(--hy, 0px)); transform: translateX(-50%);
   display: flex; flex-direction: column; align-items: center; gap: 5px;
   padding: 6px 7px 5px; background: #f3e6c4;
   box-shadow:
@@ -1398,6 +1398,8 @@ a { color: inherit; }
 .rw-node-pips span.is-done { background: #4f7a55; }
 .rw-node.is-passed { --pool: rgba(155, 183, 156, 0.55); }
 .rw-node.is-passed .rw-node-pool { background: radial-gradient(closest-side, var(--pool), rgba(155, 183, 156, 0.15) 55%, transparent); animation: none; }
+.rw-node.is-hovering .rw-node-pool { width: 44px; height: 20px; }   /* a smaller pool on the path: the spot, not the bubble's shadow */
+.rw-node.is-hovering .rw-node-pool::after { width: 18px; height: 6px; }
 .rw-node.is-passed .rw-node-float { animation: none; background: #e7eee2; }
 .rw-node.is-passed .rw-node-icon { position: relative; }
 .rw-node.is-passed .rw-node-icon::after {   /* cleared: a moss check pinned to the gem */

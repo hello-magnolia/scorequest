@@ -46,7 +46,11 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   closePrompt shrinks back, 320ms fallback). The card is moved INTO #rw-world on open
   (anchorPrompt, world px, --ax/--ay) so it pans with its marker instead of floating fixed.
   Compact: 32px icon, 0.95rem title, small buttons. Cleared adds .is-cleared (suites check that, not
-  title text). Magnolia hovers markers over scenery herself in the editor. Locked is a look only.
+  title text). HOVER POINT: a realm.nodes row may be [x, y, hx, hy]: x,y = where he arrives (path,
+  light pool, proximity), hx,hy = where the bubble floats (over a lantern or shrine; --hx/--hy on
+  .rw-node, .is-hovering; the prompt grows there). Editor tool 2: select a marker, H adds a
+  diamond handle on a dotted tether, drag it; H again or Delete on the diamond removes it;
+  dragging the anchor carries the bubble along. Locked is a look only.
 - PROPS (pieces of the painting that react to Pomelo): realm manifest fx.props rows, x/y/w/h as
   fractions of the art, laid exactly over the spot they were cut from (so at rest nothing shows).
   RULE (Magnolia): EVERY reaction HANGS after he leaves, never stops dead: 3 to 4.5s of afterglow

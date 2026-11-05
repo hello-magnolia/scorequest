@@ -730,6 +730,14 @@
       if (!el) return;
       el.style.left = Math.round(n[0] * worldW) + 'px';
       el.style.top = Math.round(n[1] * worldH) + 'px';
+      /* a marker may hover somewhere else than it is reached: n[2], n[3] is
+         where the bubble floats (over a lantern, a shrine), n[0], n[1] stays
+         the spot on the path where Pomelo arrives and the light pool sits */
+      var hx = n.length > 3 ? Math.round((n[2] - n[0]) * worldW) : 0;
+      var hy = n.length > 3 ? Math.round((n[3] - n[1]) * worldH) : 0;
+      el.style.setProperty('--hx', hx + 'px');
+      el.style.setProperty('--hy', hy + 'px');
+      el.classList.toggle('is-hovering', !!(hx || hy));
     });
   }
   function syncNodeStates() {
@@ -869,8 +877,9 @@
     if (!n || !worldW) { promptEl.classList.remove('is-anchored'); return; }
     if (promptEl.parentNode !== world) world.appendChild(promptEl);
     var w = Math.min(promptEl.offsetWidth || 220, worldW);
-    var x = Math.min(Math.max(n[0] * worldW, w / 2 + 8), worldW - w / 2 - 8);
-    var y = Math.max(n[1] * worldH - 96, 70);
+    var bx = n.length > 3 ? n[2] : n[0], by = n.length > 3 ? n[3] : n[1];
+    var x = Math.min(Math.max(bx * worldW, w / 2 + 8), worldW - w / 2 - 8);
+    var y = Math.max(by * worldH - 96, 70);
     promptEl.style.setProperty('--ax', Math.round(x) + 'px');
     promptEl.style.setProperty('--ay', Math.round(y) + 'px');
     promptEl.classList.add('is-anchored');
@@ -1713,6 +1722,15 @@
       tc.beginPath();
       tc.arc(p[0] * worldW, p[1] * worldH, 8, 0, Math.PI * 2);
       tc.fill();
+      if (p.length > 3) {                        // the bubble's hover point: a diamond on a tether
+        var vsel = edSel && edSel.kind === 'markv' && edSel.i === i;
+        var vx = p[2] * worldW, vy = p[3] * worldH;
+        tc.strokeStyle = 'rgba(127,227,192,0.7)'; tc.lineWidth = 2; tc.setLineDash([4, 4]);
+        tc.beginPath(); tc.moveTo(p[0] * worldW, p[1] * worldH); tc.lineTo(vx, vy); tc.stroke(); tc.setLineDash([]);
+        tc.fillStyle = vsel ? SELRED : '#f3e6c4'; tc.strokeStyle = vsel ? SELRED : '#2b2118';
+        tc.beginPath(); tc.moveTo(vx, vy - 9); tc.lineTo(vx + 9, vy); tc.lineTo(vx, vy + 9); tc.lineTo(vx - 9, vy); tc.closePath();
+        tc.fill(); tc.stroke();
+      }
     });
     if (edBossA.length) {
       tc.lineWidth = 3;
@@ -1784,6 +1802,8 @@
       return null;
     }
     if (edMode === 'marks') {
+      var mv = edPointAt(edMk.map(function (p) { return p.length > 3 ? [p[2], p[3]] : [-9, -9]; }), w);
+      if (mv > -1) return { kind: 'markv', i: mv };
       var m = edPointAt(edMk, w);
       return m > -1 ? { kind: 'mark', i: m } : null;
     }
@@ -1817,7 +1837,12 @@
       if (edSel.kind === 'gnode') {
         edG.nodes[edSel.i] = [w.x / worldW, w.y / worldH];
       } else if (edSel.kind === 'mark') {
-        edMk[edSel.i] = edSnapToGraph(w);
+        var old = edMk[edSel.i], np = edSnapToGraph(w);
+        if (old.length > 3) np = np.concat([old[2] + (np[0] - old[0]), old[3] + (np[1] - old[1])]);
+        edMk[edSel.i] = np;
+      } else if (edSel.kind === 'markv') {
+        var mk = edMk[edSel.i];
+        edMk[edSel.i] = [mk[0], mk[1], w.x / worldW, w.y / worldH];
       } else if (edSel.kind === 'start') {
         edStart = edSnapToGraph(w);
       } else if (edSel.kind === 'fx') {
@@ -1910,10 +1935,22 @@
       if (edSel.kind === 'gnode') edDeleteNode(edSel.i);
       else if (edSel.kind === 'gedge') edDeleteEdge(edSel.i);
       else if (edSel.kind === 'mark') edMk.splice(edSel.i, 1);
+      else if (edSel.kind === 'markv') edMk[edSel.i] = edMk[edSel.i].slice(0, 2);
       else if (edSel.kind === 'start') edStart = null;
       else if (edSel.kind === 'fx') { fxArr(edSel.type).splice(edSel.i, 1); edDressFx(); }
       else if (edSel.kind === 'boss') edBossA.splice(edSel.i, 1);
       edSel = null;
+      drawTrace(); syncEditorBar();
+    }
+    /* H: let the selected marker hover somewhere else than it is reached
+       (a diamond handle appears a little above it; drag it over the lantern
+       or shrine the trial belongs to). H again puts the bubble back home. */
+    if ((e.key === 'h' || e.key === 'H') && edSel && (edSel.kind === 'mark' || edSel.kind === 'markv')) {
+      e.preventDefault();
+      pushUndo();
+      var hm = edMk[edSel.i];
+      if (hm.length > 3) { edMk[edSel.i] = hm.slice(0, 2); edSel = { kind: 'mark', i: edSel.i }; }
+      else { edMk[edSel.i] = [hm[0], hm[1], hm[0], hm[1] - 90 / worldH]; edSel = { kind: 'markv', i: edSel.i }; }
       drawTrace(); syncEditorBar();
     }
     /* [ and ] resize the selected effect in chunky quarter steps */
@@ -1964,7 +2001,7 @@
     var out = {
       realm: realm.id,
       path: { nodes: edG.nodes.map(r3), edges: edG.edges, stairs: edG.stairs },
-      nodes: edMk.map(r3),
+      nodes: edMk.map(function (p) { return p.length > 3 ? r3(p).concat(r3([p[2], p[3]])) : r3(p); }),
       start: edStart ? r3(edStart) : null,
       bossArea: edBossA.map(r3)
     };
@@ -2052,7 +2089,7 @@
           '<span id="rw-ed-size">\u2014</span>' +
           '<button class="rw-ed-step" id="rw-ed-size-up" type="button" title="Bigger ]">+</button>' +
         '</div>' +
-        '<p class="rw-ed-hint type-utility">click the map to place \u00B7 drag to move \u00B7 del removes</p>' +
+        '<p class="rw-ed-hint type-utility">click the map to place \u00B7 drag to move \u00B7 del removes \u00B7 H lets a marker hover elsewhere</p>' +
       '</div>' +
       '<p class="rw-ed-countline type-utility" id="rw-ed-count"></p>' +
       '<div class="rw-ed-legend type-utility">' +
