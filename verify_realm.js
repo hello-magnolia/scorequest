@@ -26,6 +26,10 @@ const load = async (path) => {
     d.getElementById('rw-title').textContent === 'Lorewood' &&
     /Realm 1 of 8/.test(d.getElementById('rw-meta').textContent) &&
     /Information & Ideas/.test(d.getElementById('rw-meta').textContent));
+  check('One ask at a time: only the first uncleared marker carries stars, the five past it sit quiet as an ellipsis (a look only)',
+    d.querySelectorAll('.rw-node.is-ahead').length === 5 && !d.querySelectorAll('.rw-node')[0].classList.contains('is-ahead') &&
+    d.querySelectorAll('.rw-node')[0].classList.contains('is-wide') && !d.querySelectorAll('.rw-node')[1].classList.contains('is-wide') &&
+    d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key') === 'ahead');
   check('Lorewood carries the hand-traced path with six clash markers on it, each hovering over scenery',
     d.querySelectorAll('.rw-node').length === 6 && d.querySelectorAll('.rw-node.is-hovering').length === 6 &&
     !!d.getElementById('rw-trace'));
@@ -101,6 +105,7 @@ const load = async (path) => {
   check('Clearing the round clears the leg: progress one, node marked, overlay gone',
     await until(() => w.__SQ_REALM_PROG === 1, 1500) &&
     d.querySelectorAll('.rw-node.is-passed').length === 1 &&
+    d.querySelectorAll('.rw-node.is-ahead').length === 4 && d.querySelectorAll('.rw-node')[1].classList.contains('is-wide') &&   // the stars move on to the next ask
     !d.querySelector('#sq-overlay').classList.contains('is-open') &&
     !d.body.classList.contains('sq-overlay-open'));
   // he finishes his walk to the marker on his own time; wait for him to settle

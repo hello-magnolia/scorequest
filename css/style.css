@@ -1361,36 +1361,36 @@ a { color: inherit; }
   --pool: rgba(255, 214, 130, 0.7);
 }
 .rw-node-pool {
-  position: absolute; left: 0; top: 0; width: 72px; height: 34px;
+  position: absolute; left: 0; top: 0; width: 60px; height: 28px;
   transform: translate(-50%, -50%);
   background: radial-gradient(closest-side, var(--pool), rgba(255, 214, 130, 0.2) 55%, transparent);
   pointer-events: none;
   animation: rw-pool-breathe 2.6s ease-in-out infinite;
 }
 .rw-node-pool::after {             /* the ground shadow under the hovering icon */
-  content: ""; position: absolute; left: 50%; top: 50%; width: 30px; height: 10px;
+  content: ""; position: absolute; left: 50%; top: 50%; width: 26px; height: 8px;
   transform: translate(-50%, -50%); background: rgba(43, 33, 24, 0.35); border-radius: 50%;
 }
 .rw-node-float {                   /* the speech bubble: parchment, ink frame, tail down */
-  position: absolute; left: var(--hx, 0px); bottom: calc(22px - var(--hy, 0px)); transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  padding: 6px 7px 5px; background: #f3e6c4;
+  position: absolute; left: var(--hx, 0px); bottom: calc(20px - var(--hy, 0px)); transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 5px 6px 4px; background: #f3e6c4;
   box-shadow:
     0 -3px 0 0 #2b2118, 0 3px 0 0 #2b2118, -3px 0 0 0 #2b2118, 3px 0 0 0 #2b2118,
     4px 7px 0 0 rgba(43, 33, 24, 0.35);
   animation: rw-tag-bob 2.4s ease-in-out infinite;
 }
 .rw-node-float::before {           /* tail: ink, then parchment inset */
-  content: ""; position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%);
-  width: 24px; height: 15px; background: #2b2118; clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: ""; position: absolute; left: 50%; bottom: -13px; transform: translateX(-50%);
+  width: 20px; height: 13px; background: #2b2118; clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 .rw-node-float::after {
-  content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%);
-  width: 12px; height: 8px; background: #f3e6c4; clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: ""; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%);
+  width: 10px; height: 7px; background: #f3e6c4; clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
-.rw-node-icon { display: block; width: 40px; height: 40px; }
-.rw-node.is-wide .rw-node-icon { width: 85px; height: 27.5px; }   /* three 10px stars at 2.5px, two gaps */
-.rw-prompt-icon.is-wide { width: 68px; height: 22px; }
+.rw-node-icon { display: block; width: 32px; height: 32px; }
+.rw-node.is-wide .rw-node-icon { width: 68px; height: 22px; }   /* three 10px stars at 2px, two gaps */
+.rw-prompt-icon.is-wide { width: 68px; height: 22px; }           /* same size as on the marker: the card grows around it */
 .rw-node-icon svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
 .rw-node-pips { display: flex; gap: 4px; }
 .rw-node-pips span { width: 7px; height: 7px; background: #f3e6c4; box-shadow: 0 0 0 2px #2b2118; }
@@ -1398,8 +1398,8 @@ a { color: inherit; }
 .rw-node-pips span.is-done { background: #4f7a55; }
 .rw-node.is-passed { --pool: rgba(155, 183, 156, 0.55); }
 .rw-node.is-passed .rw-node-pool { background: radial-gradient(closest-side, var(--pool), rgba(155, 183, 156, 0.15) 55%, transparent); animation: none; }
-.rw-node.is-hovering .rw-node-pool { width: 44px; height: 20px; }   /* a smaller pool on the path: the spot, not the bubble's shadow */
-.rw-node.is-hovering .rw-node-pool::after { width: 18px; height: 6px; }
+.rw-node.is-hovering .rw-node-pool { width: 40px; height: 18px; }   /* a smaller pool on the path: the spot, not the bubble's shadow */
+.rw-node.is-hovering .rw-node-pool::after { width: 16px; height: 5px; }
 .rw-node.is-passed .rw-node-float { animation: none; background: #e7eee2; }
 .rw-node.is-passed .rw-node-icon { position: relative; }
 .rw-node.is-passed .rw-node-icon::after {   /* cleared: a moss check pinned to the gem */
@@ -2056,39 +2056,44 @@ a { color: inherit; }
 .rw-prompt {                         /* lives in the world layer: it stays with its marker as the camera pans */
   position: absolute; z-index: 30; left: 50%; top: 40%;
   transform: translate(-50%, -100%);
-  width: max-content; min-width: 150px; max-width: min(300px, 92vw); background: #f3e6c4; color: #2b2118;
+  width: max-content; min-width: 140px; max-width: min(250px, 92vw); background: #f3e6c4; color: #2b2118;
   --frame: #2b2118; --pix: 3px;
   box-shadow:
     0 calc(var(--pix) * -1) 0 0 var(--frame), 0 var(--pix) 0 0 var(--frame),
     calc(var(--pix) * -1) 0 0 0 var(--frame), var(--pix) 0 0 0 var(--frame),
     4px 5px 0 0 rgba(43, 33, 24, 0.22);
-  padding: 9px 11px 8px; text-align: center;
+  padding: 8px 10px 7px; text-align: center;
 }
 .rw-prompt.is-anchored { left: var(--ax, 50%); top: var(--ay, 40%); }
 /* grow from the marker's bubble: the card starts scaled to the bubble's box
    (--grow, set by growPrompt) and eases to full size; text fades in behind
    the icon, which stays the same size throughout. The marker's own bubble
    hides while the card speaks for it. */
-.rw-prompt { display: flex; align-items: center; gap: 10px; text-align: left; transform-origin: 50% 100%;
+/* the title runs the full width over the stars; the stars and the two buttons
+   share the row beneath, so the card is as narrow as its longest line */
+.rw-prompt { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "title title" "icon row";
+  align-items: center; column-gap: 10px; row-gap: 6px; text-align: left; transform-origin: 50% 100%;
   transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .rw-prompt:not(.is-open) { transform: translate(-50%, -100%) var(--grow, scale(0.6)); }
 .rw-prompt.is-open { transform: translate(-50%, -100%); }
-.rw-prompt.is-measuring, .rw-prompt.is-measuring .rw-prompt-body { transition: none; }
-.rw-prompt-icon { display: block; width: 32px; height: 32px; flex: none; }
+.rw-prompt.is-measuring, .rw-prompt.is-measuring .rw-prompt-title, .rw-prompt.is-measuring .rw-prompt-row { transition: none; }
+.rw-prompt-icon { grid-area: icon; display: block; width: 32px; height: 32px; }
 .rw-prompt-icon svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
-.rw-prompt-body { display: flex; flex-direction: column; gap: 6px; opacity: 0; transition: opacity 0.18s ease 0.1s; }
-.rw-prompt.is-open .rw-prompt-body { opacity: 1; }
+.rw-prompt-title { grid-area: title; }
+.rw-prompt-row { grid-area: row; }
+.rw-prompt-title, .rw-prompt-row { opacity: 0; transition: opacity 0.18s ease 0.1s; }   /* the words fade in; the icon is there from the first frame */
+.rw-prompt.is-open .rw-prompt-title, .rw-prompt.is-open .rw-prompt-row { opacity: 1; }
 .rw-node.is-speaking .rw-node-float { visibility: hidden; }
-@media (prefers-reduced-motion: reduce) { .rw-prompt, .rw-prompt-body { transition: none; } .rw-prompt:not(.is-open) { transform: translate(-50%, -100%); } .rw-prompt-body { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .rw-prompt, .rw-prompt-title, .rw-prompt-row { transition: none; } .rw-prompt:not(.is-open) { transform: translate(-50%, -100%); } .rw-prompt-title, .rw-prompt-row { opacity: 1; } }
 .rw-prompt::after {                /* pointer tail toward the marker below */
   content: ""; position: absolute; left: 50%; bottom: -17px; transform: translateX(-50%);
   width: 22px; height: 14px; background: #2b2118;
   clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
-.rw-prompt-title { margin: 0; color: #2b2118; letter-spacing: 0.02em; font-size: 0.95rem; line-height: 1.3; }
+.rw-prompt-title { margin: 0; color: #2b2118; letter-spacing: 0.02em; font-size: 0.9rem; line-height: 1.3; }
 .rw-prompt.is-cleared .rw-prompt-title::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; background: #4f7a55; box-shadow: 0 0 0 2px #2b2118; vertical-align: -1px; }
 .rw-prompt-row .btn-outline { font-size: 0.85rem; }
-.rw-prompt-row { display: flex; gap: 8px; justify-content: flex-start; align-items: center; }
+.rw-prompt-row { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
 .rw-prompt-row .btn { min-width: 120px; }
 .rw-prompt-row .btn-gold { background: #4f7a55; color: #fffdf7; --frame: #2b2118; }
 .rw-prompt-row .btn { min-width: 0; padding: 6px 13px; font-size: 0.9rem; --pix: 2px; }
@@ -2116,6 +2121,12 @@ a { color: inherit; }
 /* node progression states: is-next and is-locked are kept as hooks for the
    suites; the look lives on the pool and tag above */
 .rw-node.is-locked { opacity: 0.85; --pool: rgba(190, 180, 160, 0.35); }
+/* further up the trail than the next ask: a small quiet bubble with an ink
+   ellipsis, no breathing pool, so only one marker at a time carries stars */
+.rw-node.is-ahead .rw-node-icon { width: 24px; height: 24px; }
+.rw-node.is-ahead .rw-node-float { animation: none; background: #e9dfc6; padding: 3px 4px 2px; }
+.rw-node.is-ahead .rw-node-float::after { background: #e9dfc6; }
+.rw-node.is-ahead .rw-node-pool { animation: none; --pool: rgba(255, 214, 130, 0.35); }
 .rw-node.is-locked .rw-node-float { background: #ddd3bb; }
 .rw-node.is-locked .rw-node-float::after { background: #ddd3bb; }
 .rw-node.is-locked .rw-node-pool, .rw-node.is-locked .rw-node-float { animation: none; }

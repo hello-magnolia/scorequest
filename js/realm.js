@@ -422,7 +422,7 @@
      hysteresis: a capybara loitering exactly on the edge of the circle must
      not make the banner strobe. Both scale with the stage so the reach looks
      the same on a laptop and a phone. */
-  function nearIn() { return Math.max(110, stageH * 0.26); }
+  function nearIn() { return Math.max(84, stageH * 0.19); }   // Nov 2026: tighter, he comes closer before the ask
   /* fold-away reach: just enough past NEAR_IN that loitering on the edge
      cannot strobe the banner, and no farther — a prompt that lingers half
      a screen behind him reads as stuck, not as an offer */
@@ -657,6 +657,21 @@
       '................',
       '................',
       '................'], { k: '#2b2118', p: '#fff7e0', b: '#9a6232' }),
+    /* a trial further up the trail than the next one: a quiet ink ellipsis in
+       a small bubble, so only the one he is heading for carries its stars */
+    ahead: px([
+      '............',
+      '............',
+      '............',
+      '............',
+      '............',
+      '.kk..kk..kk.',
+      '.kk..kk..kk.',
+      '............',
+      '............',
+      '............',
+      '............',
+      '............'], { k: '#6f6252' }),
     lessonLocked: px([
       '................',
       '................',
@@ -716,13 +731,14 @@
     var el = nodeEls[i], wp = waypointAt(i);
     if (!el) return;
     var locked = el.classList.contains('is-locked');
-    var key = wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
+    var ahead = el.classList.contains('is-ahead');
+    var key = ahead ? 'ahead' : wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
       : 'stars-' + realm.id + '-' + (wp.tier || 1) + (locked ? '-locked' : '');
     var icon = el.querySelector('.rw-node-icon');
     if (icon && icon.getAttribute('data-key') !== key) {
       icon.innerHTML = ICONS[key] || starRow(realm.id, wp.tier, locked);
       icon.setAttribute('data-key', key);
-      el.classList.toggle('is-wide', wp.mode === 'clash');
+      el.classList.toggle('is-wide', wp.mode === 'clash' && !ahead);
     }
   }
   function layoutNodes() {
@@ -744,12 +760,20 @@
     });
   }
   function syncNodeStates() {
+    /* the trail reads one ask at a time: the first uncleared trial carries its
+       stars, the ones past it sit quiet (.is-ahead, an ellipsis) until he gets
+       there. A look only: every trial stays approachable (Nov 2026, Magnolia) */
+    var firstOpen = -1;
+    (realm.nodes || []).forEach(function (_, i) {
+      if (firstOpen < 0 && !passed[i] && !wpHidden(i) && waypointAt(i).mode !== 'empty') firstOpen = i;
+    });
     (realm.nodes || []).forEach(function (_, i) {
       var el = nodeEls[i];
       if (!el) return;
       el.classList.toggle('is-passed', !!passed[i]);
       el.classList.toggle('is-next', !passed[i]);
       el.classList.toggle('is-empty', waypointAt(i).mode === 'empty');
+      el.classList.toggle('is-ahead', !passed[i] && !editing && firstOpen > -1 && i > firstOpen && waypointAt(i).mode !== 'empty');
       el.hidden = wpHidden(i);
       el.classList.remove('is-locked');   // order-free: every trial approachable
       paintNode(i);
@@ -847,9 +871,12 @@
   var promptBubbleIdx = -1;
   function growPrompt(i) {
     var el = nodeEls[i], bub = el && el.querySelector('.rw-node-float');
-    var icon = el && el.querySelector('.rw-node-icon');
-    document.getElementById('rw-prompt-icon').innerHTML = icon ? icon.innerHTML : '';
-    document.getElementById('rw-prompt-icon').classList.toggle('is-wide', !!(el && el.classList.contains('is-wide')));
+    /* the card always shows the trial's own icon (stars by tier, or the book),
+       even when the marker itself is sitting quiet as an ellipsis (.is-ahead) */
+    var wp = waypointAt(i);
+    var pIcon = document.getElementById('rw-prompt-icon');
+    pIcon.innerHTML = wp.mode === 'lesson' ? ICONS.lesson : wp.mode === 'empty' ? ICONS.empty : starRow(realm.id, wp.tier, false);
+    pIcon.classList.toggle('is-wide', wp.mode === 'clash');
     if (promptBubbleIdx > -1 && promptBubbleIdx !== i && nodeEls[promptBubbleIdx]) nodeEls[promptBubbleIdx].classList.remove('is-speaking');
     promptBubbleIdx = i;
     promptEl.hidden = false;
@@ -886,7 +913,10 @@
        marker hovering near the top of the painting, like Lorewood's first
        lantern, must not push the card under the realm title band */
     var h = promptEl.offsetHeight || 72;
-    var y = Math.max(by * worldH - 96, h + 84);
+    /* in place: the card's bottom edge is the bubble's bottom edge (the bubble
+       hangs 20px above its hover point), so opening grows the bubble into the
+       card where it floats instead of lifting it up the painting */
+    var y = Math.max(by * worldH - 20, h + 84);
     promptEl.style.setProperty('--ax', Math.round(x) + 'px');
     promptEl.style.setProperty('--ay', Math.round(y) + 'px');
     promptEl.classList.add('is-anchored');
