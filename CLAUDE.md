@@ -73,6 +73,11 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   assets/fx/props/<realm>/. Lorewood: all 4 stone lanterns on his path (a, b, c, d) + 17 paper
   tags (branch, rope by the first torii, rope past the first stairs, the big torii's shide).
   Rule from Magnolia: only lanterns and torii ON HIS PATH react; off-path ones stay still.
+  Lorewood markers (Nov 2026): 6, placed by Magnolia, every one hovering over a lantern or torii;
+  the first sits within hail range of the entry, so its prompt is up on load (verify_realm allows
+  that). anchorPrompt keeps the card below the title band (bottom edge >= card height + 84px).
+  Editor: a marker placed in tool 2 renders its bubble + stars at once (edSyncNodes rebuilds the
+  layer when edMk outgrows nodeEls).
 - Prefer verified single str_replace edits; for bulk Python .replace() assert every anchor
   before writing (atomic), order overlapping anchors, beware short anchors appearing twice.
 - Sprite uploads (zip, not inline) arrive on a baked ground: checkerboard OR flat color.

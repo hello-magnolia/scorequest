@@ -16,7 +16,7 @@
            empty    placed in the editor, hidden in play
    The boss (lair) is not a waypoint: clearing every clash waypoint unlocks it. */
 window.SQ_WAYPOINTS = [
-  /* Lorewood: Information and Ideas (4 markers today), 6 rows */
+  /* Lorewood: Information and Ideas (6 markers today), 6 rows */
   { id: 'lorewood-1', realm: 'lorewood', position: 1, mode: 'clash', skill: 'Central Ideas and Details', tier: 1, title: 'Central Ideas and Details I' },
   { id: 'lorewood-2', realm: 'lorewood', position: 2, mode: 'clash', skill: 'Central Ideas and Details', tier: 2, title: 'Central Ideas and Details II' },
   { id: 'lorewood-3', realm: 'lorewood', position: 3, mode: 'clash', skill: 'Command of Evidence', tier: 1, title: 'Command of Evidence I' },

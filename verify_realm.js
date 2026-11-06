@@ -26,8 +26,8 @@ const load = async (path) => {
     d.getElementById('rw-title').textContent === 'Lorewood' &&
     /Realm 1 of 8/.test(d.getElementById('rw-meta').textContent) &&
     /Information & Ideas/.test(d.getElementById('rw-meta').textContent));
-  check('Lorewood carries the hand-traced path with four node markers on it',
-    d.querySelectorAll('.rw-node').length === 4 &&
+  check('Lorewood carries the hand-traced path with six clash markers on it, each hovering over scenery',
+    d.querySelectorAll('.rw-node').length === 6 && d.querySelectorAll('.rw-node.is-hovering').length === 6 &&
     !!d.getElementById('rw-trace'));
   check('The entering-veil walks in on capybara paw prints (reusable loader)',
     d.querySelectorAll('#rw-veil .paw-loader .paw').length === 6 &&
@@ -51,8 +51,11 @@ const load = async (path) => {
      the approach rather than gating the path; Start opens the Critter Clash
      overlay; cleared nodes reopen as sparring */
   const clickEl = (el) => el.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-  d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
-  check('Space walks Pomelo toward the first waypoint: a clash (never a lesson), offering Start',
+  // the first marker sits within hailing range of where he enters, so the hail
+  // is usually already up; Space (head for the nearest open trial) covers the
+  // case where it is not
+  if (d.getElementById('rw-prompt').hidden) d.dispatchEvent(new w.KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+  check('The first waypoint hails him on the way in: a clash (never a lesson), offering Start',
     await until(() => d.getElementById('rw-prompt').hidden === false, 9000) &&
     /^Central Ideas and Details I$/.test(d.getElementById('rw-prompt-title').textContent) &&
     d.getElementById('rw-prompt-go').textContent === 'Start');
@@ -102,6 +105,14 @@ const load = async (path) => {
     !d.body.classList.contains('sq-overlay-open'));
   // he finishes his walk to the marker on his own time; wait for him to settle
   const settled = async () => { let last = null, still = 0; await until(() => { const xy = String(w.__SQ_REALM_XY); still = xy === last ? still + 1 : 0; last = xy; return still >= 6; }, 9000); };
+  await settled();
+  // he was hailed from the approach, so walk him onto the cleared marker first
+  // (a click on a marker he is not standing on routes him there and hails again)
+  clickEl(d.querySelector('.rw-node.is-passed'));
+  await until(() => d.getElementById('rw-prompt').hidden === false, 9000);
+  await settled();
+  clickEl(d.getElementById('rw-prompt-skip'));
+  await until(() => d.getElementById('rw-prompt').hidden === true, 2000);
   await settled();
   const leftBefore = d.getElementById('rw-capy').style.left;
   clickEl(d.querySelector('.rw-node.is-passed'));
@@ -179,11 +190,11 @@ const load = async (path) => {
     (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '2', bubbles: true })),
      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'c', metaKey: true, bubbles: true })),
      d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'c', bubbles: true })),
-     JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 4) &&
+     JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 6) &&
     (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'C', shiftKey: true, bubbles: true })),
      JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 0) &&
     (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'z', bubbles: true })),
-     JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 4) &&
+     JSON.parse(d.getElementById('rw-ed-json').value).nodes.length === 6) &&
     (d.dispatchEvent(new w.KeyboardEvent('keydown', { key: '1', bubbles: true })), true),   // back to the graph tool
     d.getElementById('rw-ed-json').value.slice(0, 80));
   check('Path editor mode opens with a key legend and a JSON export',
@@ -208,6 +219,11 @@ const load = async (path) => {
     /Trial markers/.test(d.getElementById('rw-ed-mode').textContent) &&
     parseInt((d.getElementById('rw-ed-count').textContent.match(/(\d+) trials/) || [0, 0])[1]) === markersBefore + 1,
     d.getElementById('rw-ed-count').textContent);
+  check('A marker placed in the editor shows its bubble and stars at once (no reload)',
+    d.querySelectorAll('.rw-node').length === markersBefore + 1 &&
+    [...d.querySelectorAll('.rw-node')].every(n => !n.hidden) &&
+    !!d.querySelectorAll('.rw-node')[markersBefore].querySelector('.rw-node-icon svg, .rw-node-icon canvas, .rw-node-icon *'),
+    d.querySelectorAll('.rw-node').length + ' nodes');
   // the effects tool, on Story Forge: opens blank, side panel, registry
   // types, live preview of the real animated elements
   w = await load('realm.html?realm=storyforge&edit=1');

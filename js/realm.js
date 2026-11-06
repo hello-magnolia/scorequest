@@ -81,7 +81,10 @@
         { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag16.png', patch: 'assets/fx/props/lorewood/tag16-patch.png', x: 0.60432, y: 0.47963, w: 0.00943, h: 0.04722, pivot: [0.104, 0.118], base: 0.527, delay: 0.28 },
         { kind: 'sway', sprite: 'assets/fx/props/lorewood/tag17.png', patch: 'assets/fx/props/lorewood/tag17-patch.png', x: 0.61847, y: 0.48519, w: 0.00904, h: 0.04167, pivot: [0.652, 0.0], base: 0.527, delay: 0.0 }
       ] },
-      nodes: [[0.363, 0.503], [0.501, 0.663], [0.613, 0.666], [0.817, 0.534]] },
+      /* six clash markers (Magnolia, Nov 2026), in walking order; each hovers
+         its bubble over the lantern or shrine above its spot on the path */
+      nodes: [[0.201, 0.347, 0.208, 0.158], [0.328, 0.5, 0.332, 0.312], [0.397, 0.505, 0.399, 0.388],
+              [0.504, 0.663, 0.511, 0.464], [0.613, 0.666, 0.614, 0.385], [0.759, 0.565, 0.75, 0.326]] },
     { id: 'storyforge', name: 'Story Forge', domain: 'Craft & Structure', fight: true, ground: 0.80,
       boss: 'The forge-hall doors are barred. Inside, something is bolting itself together in the wrong order.',
       img: ['assets/realms/storyforge.png', CDN + '/hf_20260711_230052_cd161907-7401-47e7-a33c-42b70abe3904.png'],
@@ -879,7 +882,11 @@
     var w = Math.min(promptEl.offsetWidth || 220, worldW);
     var bx = n.length > 3 ? n[2] : n[0], by = n.length > 3 ? n[3] : n[1];
     var x = Math.min(Math.max(bx * worldW, w / 2 + 8), worldW - w / 2 - 8);
-    var y = Math.max(by * worldH - 96, 70);
+    /* --ay is the card's bottom edge (it hangs upward from the bubble), so a
+       marker hovering near the top of the painting, like Lorewood's first
+       lantern, must not push the card under the realm title band */
+    var h = promptEl.offsetHeight || 72;
+    var y = Math.max(by * worldH - 96, h + 84);
     promptEl.style.setProperty('--ax', Math.round(x) + 'px');
     promptEl.style.setProperty('--ay', Math.round(y) + 'px');
     promptEl.classList.add('is-anchored');
@@ -1698,6 +1705,15 @@
      so the stars move to the hover point the moment it is placed */
   function edSyncNodes() {
     if (!editing || !edMk) return;
+    /* a marker placed in the editor gets its bubble and stars at once: the
+       live layer is rebuilt from the editor's list whenever it has grown
+       (renderNodes reads realm.nodes; paintNode picks the icon from the row) */
+    if (edMk.length > nodeEls.length) {
+      realm.nodes = edMk.map(function (p) { return p.slice(); });
+      renderNodes();
+      syncNodeStates();
+      nodeEls.forEach(function (el) { el.hidden = false; });
+    }
     edMk.forEach(function (n, i) {
       var el = nodeEls[i];
       if (!el) return;
