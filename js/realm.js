@@ -789,7 +789,7 @@
     if (flop === 'flat') { flopUp(function () { routeTo(target); }); return; }
     if (flop || !target) return;
     route = dijkstra({ e: cur.e, t: cur.t }, { e: target.e, t: target.t });
-    hint.classList.add('is-gone');
+    if (hint) hint.classList.add('is-gone');
   }
   function advance() {                 // space: head for the nearest open trial
     var best = null, bd = Infinity;
@@ -1157,7 +1157,7 @@
       if (quizOpen) return;
       if (flop) { if (flop === 'flat') flopUp(); return; }   // a step wakes him first
       held[dir] = true;
-      hint.classList.add('is-gone');
+      if (hint) hint.classList.add('is-gone');
     }
   });
   document.addEventListener('keyup', function (e) {
