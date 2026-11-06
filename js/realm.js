@@ -613,15 +613,15 @@
      read as a set (Central Ideas I and II share a hue, Command of Evidence is
      the next hue). Three or four muted hues per biome, picked from its painting,
      assigned to skills in the order they first appear on the trail. */
-  var STAR = {
-    lorewood:      ['#d8894a', '#b9564c', '#6f8f5a', '#8f7bb0'],   /* sunset amber, maple, moss, dusk */
-    storyforge:    ['#c9603c', '#c9a24a', '#6b7f9e', '#8a6a5a'],   /* ember, brass, slate, smoke */
-    inkreef:       ['#d98aa6', '#5fa8a0', '#7d9b5e', '#c6a15e'],   /* coral, sea, kelp, sand */
-    syntaxcitadel: ['#7d93b8', '#a85a5a', '#b89a5a', '#6f9a86'],   /* battlement, banner, stone gold, ivy */
-    mirrormines:   ['#6fbccb', '#9b83c6', '#d49ab0', '#c0a66a'],   /* crystal, amethyst, rose quartz, ore */
-    infinityisles: ['#9b83c6', '#6fa3cf', '#6fbf9c', '#d8a05a'],   /* loop violet, sky, lagoon, sun */
-    datadocks:     ['#5f9ac4', '#c2a06a', '#c8655a', '#6fa28a'],   /* harbor, rope, buoy, net */
-    prismpeaks:    ['#9cb6d6', '#d4a0c7', '#8fc7b5', '#e0b26a']    /* ice, prism pink, mint, alpenglow */
+  var STAR = {   /* four hues per biome, spread around the wheel so neighbours never blend */
+    lorewood:      ['#e0953f', '#b4454a', '#4f8f74', '#7f6bb5'],   /* sunset amber, maple crimson, pine, dusk violet */
+    storyforge:    ['#d9612f', '#d8b03c', '#4f7fa6', '#8a5aa6'],   /* ember, brass, cold steel, smoke violet */
+    inkreef:       ['#e07a9a', '#3f9fa0', '#86a83f', '#d8a63a'],   /* coral, sea teal, kelp, sand gold */
+    syntaxcitadel: ['#5f7fb8', '#b84a4a', '#c99a3a', '#4f9a7a'],   /* battlement blue, banner red, gold, ivy */
+    mirrormines:   ['#3fb0c8', '#9a6ecb', '#e07aa0', '#c9a63a'],   /* crystal, amethyst, rose quartz, ore */
+    infinityisles: ['#8a6cd0', '#3f9ad8', '#3fb88a', '#e0953f'],   /* loop violet, sky, lagoon, sun */
+    datadocks:     ['#3f8fc8', '#d8a03a', '#d05a4a', '#4fa07a'],   /* harbor, rope, buoy, net */
+    prismpeaks:    ['#5fa0d8', '#d87ab8', '#3fb8a0', '#e0a03f']    /* ice, prism pink, mint, alpenglow */
   };
   function skillHue(realmId, skill) {
     var seen = [];

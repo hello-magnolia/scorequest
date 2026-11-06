@@ -2124,8 +2124,8 @@ a { color: inherit; }
 /* further up the trail than the next ask: a smaller, stiller bubble holding an
    EMPTY star outlined in the skill's hue, so the set reads but does not shout */
 .rw-node.is-ahead .rw-node-icon, .rw-node.is-ahead.is-star .rw-node-icon { width: 24px; height: 26px; }
-.rw-node.is-ahead .rw-node-float { animation: none; background: #ece2c8; background: color-mix(in srgb, var(--hue, #d8894a) 26%, #f3e6c4); padding: 4px 5px 3px; }
-.rw-node.is-ahead .rw-node-float::after { background: #ece2c8; background: color-mix(in srgb, var(--hue, #d8894a) 26%, #f3e6c4); }
+.rw-node.is-ahead .rw-node-float { animation: none; background: #ece2c8; background: color-mix(in srgb, var(--hue, #e0953f) 40%, #f3e6c4); padding: 4px 5px 3px; }
+.rw-node.is-ahead .rw-node-float::after { background: #ece2c8; background: color-mix(in srgb, var(--hue, #e0953f) 40%, #f3e6c4); }
 .rw-node.is-ahead .rw-node-pool { animation: none; --pool: rgba(255, 214, 130, 0.35); }
 .rw-node.is-locked .rw-node-float { background: #ddd3bb; }
 .rw-node.is-locked .rw-node-float::after { background: #ddd3bb; }

@@ -37,10 +37,10 @@ const load = async (path) => {
       const svg0 = nodes[0].querySelector('.rw-node-icon').innerHTML; // Central Ideas I, the ask: ink outline, not solid amber
       const svg1 = nodes[1].querySelector('.rw-node-icon').innerHTML; // Central Ideas II, ahead: amber outline
       const svg2 = nodes[2].querySelector('.rw-node-icon').innerHTML; // Command of Evidence I: the next hue
-      return /fill="#2b2118"/.test(svg0) && !/fill="#d8894a"/.test(svg0) &&
-        /fill="#d8894a"/.test(svg1) && !/fill="#2b2118"/.test(svg1) &&
-        !/fill="#d8894a"/.test(svg2) && /fill="#b9564c"/.test(svg2) &&
-        nodes[1].style.getPropertyValue('--hue') === '#d8894a' && nodes[2].style.getPropertyValue('--hue') === '#b9564c' &&
+      return /fill="#2b2118"/.test(svg0) && !/fill="#e0953f"/.test(svg0) &&
+        /fill="#e0953f"/.test(svg1) && !/fill="#2b2118"/.test(svg1) &&
+        !/fill="#e0953f"/.test(svg2) && /fill="#b4454a"/.test(svg2) &&
+        nodes[1].style.getPropertyValue('--hue') === '#e0953f' && nodes[2].style.getPropertyValue('--hue') === '#b4454a' &&
         nodes[0].querySelector('.rw-node-icon svg').getAttribute('viewBox') === '0 0 10 11';
     })());
   check('Lorewood carries the hand-traced path with six clash markers on it, each hovering over scenery',
@@ -120,7 +120,7 @@ const load = async (path) => {
     d.querySelectorAll('.rw-node.is-passed').length === 1 &&
     d.querySelectorAll('.rw-node.is-ahead').length === 4 && /-open$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')) &&   // the ask moves on
     /-done$/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').getAttribute('data-key')) &&                                                            // and the cleared star fills solid
-    /fill="#d8894a"/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').innerHTML) &&
+    /fill="#e0953f"/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').innerHTML) &&
     !d.querySelector('#sq-overlay').classList.contains('is-open') &&
     !d.body.classList.contains('sq-overlay-open'));
   // he finishes his walk to the marker on his own time; wait for him to settle
@@ -149,7 +149,7 @@ const load = async (path) => {
     d.getElementById('rw-prompt-title').textContent + ' / ' + d.getElementById('rw-prompt-go').textContent);
   clickEl(d.getElementById('rw-prompt-go'));
   check('The cleared trial\'s card shows a solid star (fill = completion), where the ask showed an empty one',
-    /fill="#d8894a"/.test(d.getElementById('rw-prompt-icon').innerHTML) && d.getElementById('rw-prompt-icon').classList.contains('is-star'));
+    /fill="#e0953f"/.test(d.getElementById('rw-prompt-icon').innerHTML) && d.getElementById('rw-prompt-icon').classList.contains('is-star'));
   check('Spar again reopens the round as sparring',
     await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true && w.__SQ_OVERLAY && w.__SQ_OVERLAY.open, 2500));
   clickEl(d.getElementById('ov-close'));

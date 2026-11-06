@@ -43,7 +43,7 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   appearance on the trail, so Central Ideas I and II share a hue. FILL = COMPLETION (Magnolia):
   cleared = solid hue star ('done'); the first uncleared marker = EMPTY star, ink outline, plain
   bubble ('open'); every uncleared marker past it is .is-ahead = smaller still bubble TINTED with
-  the hue (--hue on .rw-node, color-mix 26%) holding an empty star outlined in the hue (a look
+  the hue (--hue on .rw-node, color-mix 40%; hues spread round the wheel per biome) holding an empty star outlined in the hue (a look
   only, still approachable). The card's star shows the same state as its marker (done/open).
   Tier is no longer drawn on the marker (Nov 2026: the multi-star count read as unrelated). lesson = open book; is-locked = gray + dim bubble;
   is-passed = moss bubble + check badge; empties dashed, editor only. paintNode(i) swaps icons.
