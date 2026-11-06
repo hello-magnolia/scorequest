@@ -2160,6 +2160,19 @@ a { color: inherit; }
 .rw-prop-patch, .rw-prop-sprite { position: absolute; inset: 0; background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; }
 .rw-prop-sway.is-near .rw-prop-sprite { animation: rw-prop-sway 0.9s ease-in-out infinite; }
 .rw-prop-sway.is-gusting .rw-prop-sprite { animation: rw-prop-gust 3.2s ease-out forwards; }
+/* bubble streams (Ink Reef): the cut-out stream is stacked twice and scrolls up
+   by half its height, so the loop never shows a seam; the box fades at both
+   ends so bubbles are born low and pop near the top. Near Pomelo a second,
+   quicker copy surfaces; when he leaves it keeps rising and fades over ~4s. */
+.rw-prop-bubbles { overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 86%, transparent 100%); }
+.rw-prop-bubbles .rw-prop-sprite { inset: 0 0 auto 0; height: 200%; background-size: 100% 50%; background-repeat: repeat-y;
+  animation: rw-bubbles-rise 13s linear infinite; }
+.rw-prop-bubbles .rw-prop-burst { opacity: 0; animation-duration: 6.5s; transition: opacity 1.2s ease; }
+.rw-prop-bubbles.is-near .rw-prop-burst { opacity: 0.9; }
+.rw-prop-bubbles.is-leaving .rw-prop-burst { opacity: 0; transition: opacity 3.8s ease-in; }
+@keyframes rw-bubbles-rise { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 @keyframes rw-prop-sway { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(11deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-9deg); } }
 /* the wind he leaves behind: three swings that shrink to nothing */
 @keyframes rw-prop-gust {
@@ -2266,6 +2279,8 @@ a { color: inherit; }
   .rw-prop-frames.is-always, .rw-prop-frames.is-always.is-near, .rw-prop-frames.is-always.is-leaving { animation: none; background-position: 0 0; }
   .rw-prop-frames.is-leaving, .rw-prop-sway .rw-prop-sprite { animation: none; }
   .rw-prop-sway.is-gusting .rw-prop-sprite { animation: none; }
+  .rw-prop-bubbles .rw-prop-sprite { animation: none; }
+  .rw-prop-bubbles .rw-prop-burst { display: none; }
   .rw-weather, .rw-flame, .rw-smoke, .rw-bubble { display: none; }
 }
 

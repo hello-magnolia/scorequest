@@ -126,7 +126,11 @@
       start: [0.086,0.652],
       /* the reef breathes: pixel bubbles drift up through the water,
          behind Pomelo and the path */
-      fx: { bubbles: 22 },
+      fx: { bubbles: 22, props: [
+        /* the three bubble streams painted into the reef, cut out so they rise (tools/make_bubbles.py) */
+        { kind: 'bubbles', sprite: 'assets/fx/props/inkreef/bubbles-a-sprite.png', patch: 'assets/fx/props/inkreef/bubbles-a-patch.png', x: 0.11788, y: 0.13889, w: 0.03929, h: 0.15278, base: 0 },
+        { kind: 'bubbles', sprite: 'assets/fx/props/inkreef/bubbles-b-sprite.png', patch: 'assets/fx/props/inkreef/bubbles-b-patch.png', x: 0.36542, y: 0.20833, w: 0.03143, h: 0.12500, base: 0, delay: -3.7 },
+        { kind: 'bubbles', sprite: 'assets/fx/props/inkreef/bubbles-c-sprite.png', patch: 'assets/fx/props/inkreef/bubbles-c-patch.png', x: 0.52456, y: 0.57870, w: 0.02947, h: 0.12963, base: 0, delay: -7.1 } ] },
       bossArea: [[0.878,0.557],[0.876,0.451],[0.909,0.382],[0.922,0.438],[0.934,0.438],[0.94,0.425],[0.952,0.548],[0.942,0.592]] },
     { id: 'syntaxcitadel', name: 'Syntax Citadel', domain: 'Conventions', fight: true, ground: 0.80,
       boss: 'The keep gate opens only for a complete sentence. The one on the throne is in pieces.',
@@ -1283,7 +1287,10 @@
        frames  a strip of N repainted frames (frame 0 = the painting, so at
                rest it is invisible); near -> steps up, leaving -> steps down
        sway    sprite (the object, alpha) over patch (the painting with the
-               object removed); near -> swings from its pivot for a moment */
+               object removed); near -> swings from its pivot for a moment
+       bubbles sprite (a painted bubble stream, alpha) over patch (open water):
+               the stream tiles and rises forever; near -> a second, quicker
+               stream joins it and lingers after he leaves (tools/make_bubbles.py) */
   var propEls = [];
   var propsBuiltFor = null;
   function buildProps(cfg) {
@@ -1319,6 +1326,14 @@
         sp.style.transformOrigin = (pv[0] * 100) + '% ' + (pv[1] * 100) + '%';
         if (P.delay) sp.style.animationDelay = P.delay + 's';
         el.appendChild(patch); el.appendChild(sp);
+        if (P.kind === 'bubbles') {
+          /* a second, faster copy of the same stream surfaces when he is close
+             and keeps rising a while after he goes (the hang, in CSS) */
+          var burst = document.createElement('span'); burst.className = 'rw-prop-sprite rw-prop-burst';
+          burst.style.backgroundImage = 'url(' + P.sprite + ')';
+          burst.style.animationDelay = (-Math.abs(P.delay || 0) - 2.3) + 's';
+          el.appendChild(burst);
+        }
       }
       world.appendChild(el);
       propEls.push({ el: el, cx: P.x + P.w / 2, cy: P.y + P.h / 2, base: P.base !== undefined ? P.base : P.y + P.h, near: false, reach: P.reach || 0 });
