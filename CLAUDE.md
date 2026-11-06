@@ -38,17 +38,20 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
 ## Edits and sprites
 - Realm waypoint markers (.rw-node): a parchment speech bubble (tail down) bobbing over a warm
   light pool + ground shadow, holding one pixel icon (px() in realm.js).
-  Clash = THREE STARS (starRow: filled left to right by wp.tier, filled color STAR[realm],
-  muted per biome; bubble .is-wide) ONLY on the first uncleared marker; every uncleared marker
-  past it is .is-ahead = small quiet bubble with an ink ellipsis (ICONS.ahead), a look only,
-  still approachable (the card still shows its stars). lesson = open book; is-locked = gray + dim bubble;
+  Clash = ONE STAR (starIcon, 10x11 STAR_CELLS at 3px, .is-star), its COLOR = the skill:
+  STAR[realm] is 3-4 muted biome hues, skillHue() assigns them to skills in order of first
+  appearance on the trail, so Central Ideas I and II share a hue. The first uncleared marker
+  shows it FILLED (ink outline); every uncleared marker past it is .is-ahead = smaller still
+  bubble with an EMPTY star outlined in the skill hue (a look only, still approachable; the
+  card shows the filled star). Tier is no longer drawn on the marker (Nov 2026, Magnolia:
+  the multi-star count read as unrelated markers). lesson = open book; is-locked = gray + dim bubble;
   is-passed = moss bubble + check badge; empties dashed, editor only. paintNode(i) swaps icons.
   Arrival prompt (.rw-prompt) = grid: topic across the top, stars + Start/Skip on the row below
   (max 250px), parchment, and it GROWS IN PLACE OUT OF THE MARKER'S BUBBLE (growPrompt FLIP via
   --grow, .is-open; marker .is-speaking hides its bubble; closePrompt shrinks back, 320ms
   fallback; --ay = bubble bottom = hover point - 20px, clamped under the title band). The card
   is moved INTO #rw-world on open (anchorPrompt, world px, --ax/--ay) so it pans with its marker.
-  Hail range nearIn = max(84, 19% stage) (Nov 2026: tighter). Marker sizes: stars 68x22 (2px/art px),
+  Hail range nearIn = max(84, 19% stage) (Nov 2026: tighter). Marker sizes: star 30x33 (ahead 24x26),
   book 32px, pool 60x28. Cleared adds .is-cleared (suites check that, not
   title text). HOVER POINT: a realm.nodes row may be [x, y, hx, hy]: x,y = where he arrives (path,
   light pool, proximity), hx,hy = where the bubble floats (over a lantern or shrine; --hx/--hy on

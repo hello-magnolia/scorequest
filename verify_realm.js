@@ -28,8 +28,20 @@ const load = async (path) => {
     /Information & Ideas/.test(d.getElementById('rw-meta').textContent));
   check('One ask at a time: only the first uncleared marker carries stars, the five past it sit quiet as an ellipsis (a look only)',
     d.querySelectorAll('.rw-node.is-ahead').length === 5 && !d.querySelectorAll('.rw-node')[0].classList.contains('is-ahead') &&
-    d.querySelectorAll('.rw-node')[0].classList.contains('is-wide') && !d.querySelectorAll('.rw-node')[1].classList.contains('is-wide') &&
-    d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key') === 'ahead');
+    d.querySelectorAll('.rw-node')[0].classList.contains('is-star') && d.querySelectorAll('.rw-node')[1].classList.contains('is-star') &&
+    /-open$/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').getAttribute('data-key')) &&
+    /-ahead$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')));
+  check('One star per marker, colored by skill: I and II of a skill share a hue, the next skill takes the next hue; ahead stars are empty with the hue on the outline',
+    (() => {
+      const fill = (n) => (n.querySelector('.rw-node-icon rect[fill]:not([fill="#2b2118"])') || {}).getAttribute?.('fill');
+      const nodes = [...d.querySelectorAll('.rw-node')];
+      const f0 = fill(nodes[0]);                                   // Central Ideas I, filled amber
+      const svg1 = nodes[1].querySelector('.rw-node-icon').innerHTML; // Central Ideas II, ahead: amber outline, parchment fill
+      const svg2 = nodes[2].querySelector('.rw-node-icon').innerHTML; // Command of Evidence I: a different hue
+      return f0 === '#d8894a' && /fill="#d8894a"/.test(svg1) && /fill="#f3e6c4"/.test(svg1) && !/fill="#2b2118"/.test(svg1) &&
+        !/fill="#d8894a"/.test(svg2) && /fill="#b9564c"/.test(svg2) &&
+        nodes[0].querySelector('.rw-node-icon svg').getAttribute('viewBox') === '0 0 10 11';
+    })());
   check('Lorewood carries the hand-traced path with six clash markers on it, each hovering over scenery',
     d.querySelectorAll('.rw-node').length === 6 && d.querySelectorAll('.rw-node.is-hovering').length === 6 &&
     !!d.getElementById('rw-trace'));
@@ -105,7 +117,7 @@ const load = async (path) => {
   check('Clearing the round clears the leg: progress one, node marked, overlay gone',
     await until(() => w.__SQ_REALM_PROG === 1, 1500) &&
     d.querySelectorAll('.rw-node.is-passed').length === 1 &&
-    d.querySelectorAll('.rw-node.is-ahead').length === 4 && d.querySelectorAll('.rw-node')[1].classList.contains('is-wide') &&   // the stars move on to the next ask
+    d.querySelectorAll('.rw-node.is-ahead').length === 4 && /-open$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')) &&   // the star fills in on the next ask
     !d.querySelector('#sq-overlay').classList.contains('is-open') &&
     !d.body.classList.contains('sq-overlay-open'));
   // he finishes his walk to the marker on his own time; wait for him to settle

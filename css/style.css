@@ -1389,8 +1389,8 @@ a { color: inherit; }
   width: 10px; height: 7px; background: #f3e6c4; clip-path: polygon(0 0, 100% 0, 50% 100%);
 }
 .rw-node-icon { display: block; width: 32px; height: 32px; }
-.rw-node.is-wide .rw-node-icon { width: 68px; height: 22px; }   /* three 10px stars at 2px, two gaps */
-.rw-prompt-icon.is-wide { width: 68px; height: 22px; }           /* same size as on the marker: the card grows around it */
+.rw-node.is-star .rw-node-icon { width: 30px; height: 33px; }    /* one 10x11 star at 3px */
+.rw-prompt-icon.is-star { width: 30px; height: 33px; }           /* same size as on the marker: the card grows around it */
 .rw-node-icon svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }
 .rw-node-pips { display: flex; gap: 4px; }
 .rw-node-pips span { width: 7px; height: 7px; background: #f3e6c4; box-shadow: 0 0 0 2px #2b2118; }
@@ -2121,11 +2121,11 @@ a { color: inherit; }
 /* node progression states: is-next and is-locked are kept as hooks for the
    suites; the look lives on the pool and tag above */
 .rw-node.is-locked { opacity: 0.85; --pool: rgba(190, 180, 160, 0.35); }
-/* further up the trail than the next ask: a small quiet bubble with an ink
-   ellipsis, no breathing pool, so only one marker at a time carries stars */
-.rw-node.is-ahead .rw-node-icon { width: 24px; height: 24px; }
-.rw-node.is-ahead .rw-node-float { animation: none; background: #e9dfc6; padding: 3px 4px 2px; }
-.rw-node.is-ahead .rw-node-float::after { background: #e9dfc6; }
+/* further up the trail than the next ask: a smaller, stiller bubble holding an
+   EMPTY star outlined in the skill's hue, so the set reads but does not shout */
+.rw-node.is-ahead .rw-node-icon, .rw-node.is-ahead.is-star .rw-node-icon { width: 24px; height: 26px; }
+.rw-node.is-ahead .rw-node-float { animation: none; background: #ece2c8; padding: 4px 5px 3px; }
+.rw-node.is-ahead .rw-node-float::after { background: #ece2c8; }
 .rw-node.is-ahead .rw-node-pool { animation: none; --pool: rgba(255, 214, 130, 0.35); }
 .rw-node.is-locked .rw-node-float { background: #ddd3bb; }
 .rw-node.is-locked .rw-node-float::after { background: #ddd3bb; }

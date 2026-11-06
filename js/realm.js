@@ -605,16 +605,27 @@
      right by tier (one easy, two medium, three hard). The filled star takes
      the realm's color, muted so it sits in the painting; empty stars are
      parchment with the ink outline. Locked markers go gray. */
+  /* one star per marker; its COLOR is the skill, so the trials of one skill
+     read as a set (Central Ideas I and II share a hue, Command of Evidence is
+     the next hue). Three or four muted hues per biome, picked from its painting,
+     assigned to skills in the order they first appear on the trail. */
   var STAR = {
-    lorewood:      '#d8894a',   /* muted sunset amber */
-    storyforge:    '#c9603c',   /* ember */
-    inkreef:       '#d98aa6',   /* coral */
-    syntaxcitadel: '#7d93b8',   /* battlement blue */
-    mirrormines:   '#6fbccb',   /* crystal teal */
-    infinityisles: '#9b83c6',   /* loop violet */
-    datadocks:     '#5f9ac4',   /* harbor blue */
-    prismpeaks:    '#9cb6d6'    /* ice */
+    lorewood:      ['#d8894a', '#b9564c', '#6f8f5a', '#8f7bb0'],   /* sunset amber, maple, moss, dusk */
+    storyforge:    ['#c9603c', '#c9a24a', '#6b7f9e', '#8a6a5a'],   /* ember, brass, slate, smoke */
+    inkreef:       ['#d98aa6', '#5fa8a0', '#7d9b5e', '#c6a15e'],   /* coral, sea, kelp, sand */
+    syntaxcitadel: ['#7d93b8', '#a85a5a', '#b89a5a', '#6f9a86'],   /* battlement, banner, stone gold, ivy */
+    mirrormines:   ['#6fbccb', '#9b83c6', '#d49ab0', '#c0a66a'],   /* crystal, amethyst, rose quartz, ore */
+    infinityisles: ['#9b83c6', '#6fa3cf', '#6fbf9c', '#d8a05a'],   /* loop violet, sky, lagoon, sun */
+    datadocks:     ['#5f9ac4', '#c2a06a', '#c8655a', '#6fa28a'],   /* harbor, rope, buoy, net */
+    prismpeaks:    ['#9cb6d6', '#d4a0c7', '#8fc7b5', '#e0b26a']    /* ice, prism pink, mint, alpenglow */
   };
+  function skillHue(realmId, skill) {
+    var seen = [];
+    WPS.forEach(function (r) { if (r.skill && seen.indexOf(r.skill) < 0) seen.push(r.skill); });
+    var hues = STAR[realmId] || STAR.lorewood;
+    var at = seen.indexOf(skill);
+    return hues[(at < 0 ? 0 : at) % hues.length];
+  }
   var STAR_CELLS = [
     '....kk....',
     '...kffk...',
@@ -627,17 +638,16 @@
     '.kffkkffk.',
     'kffk..kffk',
     'kkk....kkk'];
-  function starRow(realmId, tier, locked) {
-    var fill = locked ? '#8f8674' : (STAR[realmId] || STAR.lorewood);
-    var rows = [], y;
-    for (y = 0; y < STAR_CELLS.length; y++) rows.push('');
-    for (var n = 0; n < 3; n++) {
-      var on = n < Math.min(3, tier || 1);
-      for (y = 0; y < STAR_CELLS.length; y++) {
-        rows[y] += (n ? '..' : '') + STAR_CELLS[y].replace(/f/g, on ? 'f' : (locked ? 'e' : 'p'));
-      }
-    }
-    return px(rows, { k: '#2b2118', f: fill, p: '#fbf3dc', e: '#ddd3bb' });
+  /* the one star: filled in the skill's hue with an ink outline when it is the
+     ask (or cleared); further up the trail it is an EMPTY star whose outline
+     carries the skill's hue, so you can see which markers belong together
+     before you reach them. Locked (unused look) goes gray. */
+  function starIcon(realmId, skill, state) {
+    var hue = skillHue(realmId, skill);
+    var pal = state === 'ahead' ? { k: hue, f: '#f3e6c4' }
+      : state === 'locked' ? { k: '#8f8674', f: '#ddd3bb' }
+      : { k: '#2b2118', f: hue };
+    return px(STAR_CELLS, pal);
   }
   var ICONS = {
     lesson: px([
@@ -657,21 +667,6 @@
       '................',
       '................',
       '................'], { k: '#2b2118', p: '#fff7e0', b: '#9a6232' }),
-    /* a trial further up the trail than the next one: a quiet ink ellipsis in
-       a small bubble, so only the one he is heading for carries its stars */
-    ahead: px([
-      '............',
-      '............',
-      '............',
-      '............',
-      '............',
-      '.kk..kk..kk.',
-      '.kk..kk..kk.',
-      '............',
-      '............',
-      '............',
-      '............',
-      '............'], { k: '#6f6252' }),
     lessonLocked: px([
       '................',
       '................',
@@ -732,13 +727,14 @@
     if (!el) return;
     var locked = el.classList.contains('is-locked');
     var ahead = el.classList.contains('is-ahead');
-    var key = ahead ? 'ahead' : wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
-      : 'stars-' + realm.id + '-' + (wp.tier || 1) + (locked ? '-locked' : '');
+    var state = ahead ? 'ahead' : locked ? 'locked' : 'open';
+    var key = wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
+      : 'star-' + realm.id + '-' + (wp.skill || '') + '-' + state;
     var icon = el.querySelector('.rw-node-icon');
     if (icon && icon.getAttribute('data-key') !== key) {
-      icon.innerHTML = ICONS[key] || starRow(realm.id, wp.tier, locked);
+      icon.innerHTML = ICONS[key] || starIcon(realm.id, wp.skill, state);
       icon.setAttribute('data-key', key);
-      el.classList.toggle('is-wide', wp.mode === 'clash' && !ahead);
+      el.classList.toggle('is-star', wp.mode === 'clash');
     }
   }
   function layoutNodes() {
@@ -875,8 +871,8 @@
        even when the marker itself is sitting quiet as an ellipsis (.is-ahead) */
     var wp = waypointAt(i);
     var pIcon = document.getElementById('rw-prompt-icon');
-    pIcon.innerHTML = wp.mode === 'lesson' ? ICONS.lesson : wp.mode === 'empty' ? ICONS.empty : starRow(realm.id, wp.tier, false);
-    pIcon.classList.toggle('is-wide', wp.mode === 'clash');
+    pIcon.innerHTML = wp.mode === 'lesson' ? ICONS.lesson : wp.mode === 'empty' ? ICONS.empty : starIcon(realm.id, wp.skill, 'open');
+    pIcon.classList.toggle('is-star', wp.mode === 'clash');
     if (promptBubbleIdx > -1 && promptBubbleIdx !== i && nodeEls[promptBubbleIdx]) nodeEls[promptBubbleIdx].classList.remove('is-speaking');
     promptBubbleIdx = i;
     promptEl.hidden = false;
