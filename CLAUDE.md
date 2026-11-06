@@ -69,11 +69,11 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   leaving = two more flicker cycles then a 1.4s dim; tools/make_lantern.py). kind 'sway' =
   sprite (object, alpha) over patch (painting with the object inpainted away): swings 11deg
   while .is-near, leaving = one 3.2s dying gust (tools/make_prop.py, paper-colored objects;
-  tune its color test for others). kind 'bubbles' (Ink Reef, 3 painted streams a/b/c) = sprite
-  tiled twice + scrolls up by half (seamless loop, box masked top/bottom); near = a second quicker
-  copy (.rw-prop-burst) surfaces, leaving = it fades over 3.8s; tools/make_bubbles.py cuts a
-  stream by color (pale ring + cream gleam, halo in water hues) and inpaints the patch from its
-  neighbours. Any new prop kind gets a hang of its own. FIRES = frames
+  tune its color test for others). kind 'bubbles' (sprite tiled twice + scrolls up by half,
+  .rw-prop-burst near, 3.8s fade) exists but is UNUSED: Ink Reef's painted bubble streams were
+  inpainted out of assets/realms/inkreef.png (Nov 2026, Magnolia: risers looked odd; only the
+  ambient fx.bubbles drift remains). tools/make_bubbles.py cuts/inpaints a stream by color.
+  Any new prop kind gets a hang of its own. FIRES = frames
   props with always: true (.is-always loops all 4 frames at 0.9s, 0.5s near, 0.7s hang);
   tools/make_fire.py licks the flame pixels up/down per column + brightens ('gentle' for
   windows and lanterns: brightness only). Story Forge: 11 fires (hearth, smithy door, east

@@ -126,11 +126,9 @@
       start: [0.086,0.652],
       /* the reef breathes: pixel bubbles drift up through the water,
          behind Pomelo and the path */
-      fx: { bubbles: 22, props: [
-        /* the three bubble streams painted into the reef, cut out so they rise (tools/make_bubbles.py) */
-        { kind: 'bubbles', sprite: 'assets/fx/props/inkreef/bubbles-a-sprite.png', patch: 'assets/fx/props/inkreef/bubbles-a-patch.png', x: 0.11788, y: 0.13889, w: 0.03929, h: 0.15278, base: 0 },
-        { kind: 'bubbles', sprite: 'assets/fx/props/inkreef/bubbles-b-sprite.png', patch: 'assets/fx/props/inkreef/bubbles-b-patch.png', x: 0.36542, y: 0.20833, w: 0.03143, h: 0.12500, base: 0, delay: -3.7 },
-        { kind: 'bubbles', sprite: 'assets/fx/props/inkreef/bubbles-c-sprite.png', patch: 'assets/fx/props/inkreef/bubbles-c-patch.png', x: 0.52456, y: 0.57870, w: 0.02947, h: 0.12963, base: 0, delay: -7.1 } ] },
+      fx: { bubbles: 22 },
+      /* the painting's own bubble streams were inpainted out (Nov 2026, Magnolia: the
+         cut-out risers looked odd); the ambient drift above is the only bubble now */
       bossArea: [[0.878,0.557],[0.876,0.451],[0.909,0.382],[0.922,0.438],[0.934,0.438],[0.94,0.425],[0.952,0.548],[0.942,0.592]] },
     { id: 'syntaxcitadel', name: 'Syntax Citadel', domain: 'Conventions', fight: true, ground: 0.80,
       boss: 'The keep gate opens only for a complete sentence. The one on the throne is in pieces.',
