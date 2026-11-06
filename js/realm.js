@@ -248,6 +248,21 @@
   var WPS = (window.SQ_WAYPOINTS || []).filter(function (w) { return w.realm === realm.id; }).sort(function (a, b) { return a.position - b.position; });
   function waypointAt(i) { return WPS[i] || { id: realm.id + '-' + (i + 1), realm: realm.id, position: i + 1, mode: 'clash', rounds: 1 }; }
   function wpHidden(i) { return !editing && waypointAt(i).mode === 'empty'; }
+  /* GATING (Magnolia, Nov 2026): part II of a skill waits for part I, part III
+     for part II. lockedBy(i) is the index of the marker that must be cleared
+     first, or -1 when the trial is open. Only clash tiers gate; the first tier
+     of every skill is always open, so the trail never dead-ends. */
+  function lockedBy(i) {
+    if (editing) return -1;
+    var wp = waypointAt(i);
+    if (wp.mode !== 'clash' || !(wp.tier > 1)) return -1;
+    for (var j = 0; j < (realm.nodes || []).length; j++) {
+      var o = waypointAt(j);
+      if (j !== i && o.mode === 'clash' && o.skill === wp.skill && o.tier === wp.tier - 1) return passed[j] ? -1 : j;
+    }
+    return -1;
+  }
+  function isLocked(i) { return lockedBy(i) > -1; }
   var ROUNDS_KEY = 'sq_realm_rounds_' + realm.id;
   var roundsDone = {};
   try { roundsDone = JSON.parse(window.localStorage.getItem(ROUNDS_KEY) || '{}') || {}; } catch (e) {}
@@ -432,7 +447,7 @@
   function nearestMark(p, radius, unpassedOnly) {
     var best = -1, bd = radius;
     marks.forEach(function (m, i) {
-      if (unpassedOnly && passed[i]) return;
+      if (unpassedOnly && (passed[i] || isLocked(i))) return;   // a locked trial has nothing to offer yet
       var d = Math.hypot(m.x - p.x, m.y - p.y);
       if (d < bd) { bd = d; best = i; }
     });
@@ -654,9 +669,8 @@
   function starIcon(realmId, skill, state) {
     var hue = skillHue(realmId, skill);
     var pal = state === 'done' ? { k: '#2b2118', f: hue }
-      : state === 'ahead' ? { k: hue, f: mixHex(hue, '#f3e6c4', 0.82) }
-      : state === 'locked' ? { k: '#8f8674', f: '#ddd3bb' }
-      : { k: '#2b2118', f: mixHex(hue, '#f3e6c4', 0.72) };     // open: the ask, still empty
+      : state === 'locked' ? { k: mixHex(hue, '#8f8674', 0.45), f: mixHex(hue, '#e4dac2', 0.86) }   // the hue, greyed: still part of its set
+      : { k: hue, f: mixHex(hue, '#f3e6c4', 0.82) };            // open or ahead: empty, the hue on the outline (one look for every uncleared trial)
     return px(STAR_CELLS, pal);
   }
   var ICONS = {
@@ -677,6 +691,15 @@
       '................',
       '................',
       '................'], { k: '#2b2118', p: '#fff7e0', b: '#9a6232' }),
+    lock: px([        /* a small ink padlock for gated trials */
+      '..kkkk..',
+      '.kk..kk.',
+      '.kk..kk.',
+      'kkkkkkkk',
+      'kkkkkkkk',
+      'kkkppkkk',
+      'kkkkkkkk',
+      'kkkkkkkk'], { k: '#2b2118', p: '#f3e6c4' }),
     lessonLocked: px([
       '................',
       '................',
@@ -737,12 +760,13 @@
     if (!el) return;
     var locked = el.classList.contains('is-locked');
     var ahead = el.classList.contains('is-ahead');
-    var state = passed[i] ? 'done' : ahead ? 'ahead' : locked ? 'locked' : 'open';
+    var state = passed[i] ? 'done' : locked ? 'locked' : ahead ? 'ahead' : 'open';
     var key = wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
       : 'star-' + realm.id + '-' + (wp.skill || '') + '-' + state;
     var icon = el.querySelector('.rw-node-icon');
     if (icon && icon.getAttribute('data-key') !== key) {
-      icon.innerHTML = ICONS[key] || starIcon(realm.id, wp.skill, state);
+      icon.innerHTML = (ICONS[key] || starIcon(realm.id, wp.skill, state)) +
+        (locked ? '<span class="rw-node-lock" aria-label="Locked">' + ICONS.lock + '</span>' : '');
       icon.setAttribute('data-key', key);
       el.classList.toggle('is-star', wp.mode === 'clash');
       el.style.setProperty('--hue', skillHue(realm.id, wp.skill));   // the ahead bubble tints with it
@@ -782,7 +806,7 @@
       el.classList.toggle('is-empty', waypointAt(i).mode === 'empty');
       el.classList.toggle('is-ahead', !passed[i] && !editing && firstOpen > -1 && i > firstOpen && waypointAt(i).mode !== 'empty');
       el.hidden = wpHidden(i);
-      el.classList.remove('is-locked');   // order-free: every trial approachable
+      el.classList.toggle('is-locked', isLocked(i));   // part II waits for part I
       paintNode(i);
     });
     window.__SQ_REALM_PROG = passedCount();
@@ -829,7 +853,7 @@
     var best = null, bd = Infinity;
     var p = posXY();
     marks.forEach(function (m, i) {
-      if (passed[i] || wpHidden(i)) return;
+      if (passed[i] || wpHidden(i) || isLocked(i)) return;
       var d = Math.hypot(m.x - p.x, m.y - p.y);   // crow-flies triage
       if (d < bd) { bd = d; best = m; }
     });
@@ -866,7 +890,12 @@
        on the marker (book or gem cluster) and in the overlay's header */
     document.getElementById('rw-prompt-title').textContent = wp.title || wp.skill || (wp.mode === 'lesson' ? 'Lesson' : 'Waypoint');
     promptEl.classList.toggle('is-cleared', !!passed[i]);
-    promptGoBtn.textContent = passed[i] ? (wp.mode === 'lesson' ? 'Read again' : 'Spar again') : (rd ? 'Continue' : 'Start');
+    var gate = lockedBy(i);
+    promptEl.classList.toggle('is-locked', gate > -1);
+    /* a gated trial's card offers the way in, not the trial: one press walks
+       him to the part that opens it (low-anxiety: a door, never a wall) */
+    promptGoBtn.textContent = gate > -1 ? 'Clear part ' + ['I', 'II', 'III'][(wp.tier || 2) - 2] + ' first'
+      : passed[i] ? (wp.mode === 'lesson' ? 'Read again' : 'Spar again') : (rd ? 'Continue' : 'Start');
     paintPromptArm();
     anchorPrompt(i);
     growPrompt(i);
@@ -882,7 +911,7 @@
        even when the marker itself is sitting quiet as an ellipsis (.is-ahead) */
     var wp = waypointAt(i);
     var pIcon = document.getElementById('rw-prompt-icon');
-    pIcon.innerHTML = wp.mode === 'lesson' ? ICONS.lesson : wp.mode === 'empty' ? ICONS.empty : starIcon(realm.id, wp.skill, passed[i] ? 'done' : 'open');
+    pIcon.innerHTML = wp.mode === 'lesson' ? ICONS.lesson : wp.mode === 'empty' ? ICONS.empty : starIcon(realm.id, wp.skill, passed[i] ? 'done' : isLocked(i) ? 'locked' : 'open');
     pIcon.classList.toggle('is-star', wp.mode === 'clash');
     if (promptBubbleIdx > -1 && promptBubbleIdx !== i && nodeEls[promptBubbleIdx]) nodeEls[promptBubbleIdx].classList.remove('is-speaking');
     promptBubbleIdx = i;
@@ -950,8 +979,9 @@
     setTimeout(finish, 320);
   }
   function promptGo() {
-    var i = promptIdx;
-    closePrompt();
+    var i = promptIdx, gate = lockedBy(i);
+    closePrompt(true);
+    if (gate > -1) { routeTo(marks[gate]); return; }   // locked: head for the part that opens it
     openWaypoint(i, !!passed[i]);      // a cleared trial reopens as sparring
   }
   promptGoBtn.addEventListener('click', function (e) { e.stopPropagation(); promptGo(); });
@@ -988,6 +1018,7 @@
   var REALM_DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Structure', inkreef: 'Expression of Ideas', syntaxcitadel: 'Standard English Conventions',
     mirrormines: 'Algebra', infinityisles: 'Advanced Math', datadocks: 'Problem-Solving and Data Analysis', prismpeaks: 'Geometry and Trigonometry' };
   function openWaypoint(i, sparring) {
+    if (isLocked(i)) return;            // gated: part I first
     var wp = waypointAt(i);
     if (!window.SQClashOverlay) return;
     quizOpen = true;

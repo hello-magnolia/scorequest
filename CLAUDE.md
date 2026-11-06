@@ -40,12 +40,15 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   light pool + ground shadow, holding one pixel icon (px() in realm.js).
   Clash = ONE STAR (starIcon, 10x11 STAR_CELLS at 3px, .is-star), its COLOR = the skill:
   STAR[realm] is 3-4 muted biome hues, skillHue() assigns them to skills in order of first
-  appearance on the trail, so Central Ideas I and II share a hue. FILL = COMPLETION (Magnolia):
-  cleared = solid hue star ('done'); the first uncleared marker = EMPTY star, ink outline, plain
-  bubble ('open'); every uncleared marker past it is .is-ahead = smaller still bubble TINTED with
-  the hue (--hue on .rw-node, color-mix 40%; hues spread round the wheel per biome) holding an empty star outlined in the hue (a look
-  only, still approachable). The card's star shows the same state as its marker (done/open).
-  Tier is no longer drawn on the marker (Nov 2026: the multi-star count read as unrelated). lesson = open book; is-locked = gray + dim bubble;
+  appearance on the trail, so Central Ideas I and II share a hue (hues spread round the wheel
+  per biome). FILL = COMPLETION (Magnolia): cleared = solid hue star ('done'); EVERY uncleared
+  marker looks the same (she vetoed a bigger "ask" marker): 26x29 empty star outlined in the
+  hue inside a bubble TINTED with it (--hue on .rw-node, color-mix 40%). .is-ahead is only a
+  hook (pool still). GATING (Nov 2026): lockedBy(i) = part II waits for part I of the same
+  skill (clash tiers only; tier 1 always open). Locked = .is-locked: greyed hue, bubble 22%
+  tint, padlock badge (.rw-node-lock, ICONS.lock); never hailed, Space skips it, openWaypoint
+  refuses; its card's Go button reads "Clear part I first" and ROUTES him to that marker
+  (.rw-prompt.is-locked, grey button). Tier is not drawn on the marker. lesson = open book; is-locked = gray + dim bubble;
   is-passed = moss bubble + check badge; empties dashed, editor only. paintNode(i) swaps icons.
   Arrival prompt (.rw-prompt) = grid: topic across the top, stars + Start/Skip on the row below
   (max 250px), parchment, and it GROWS IN PLACE OUT OF THE MARKER'S BUBBLE (growPrompt FLIP via

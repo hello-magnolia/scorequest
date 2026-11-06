@@ -30,15 +30,19 @@ const load = async (path) => {
     d.querySelectorAll('.rw-node.is-ahead').length === 5 && !d.querySelectorAll('.rw-node')[0].classList.contains('is-ahead') &&
     d.querySelectorAll('.rw-node')[0].classList.contains('is-star') && d.querySelectorAll('.rw-node')[1].classList.contains('is-star') &&
     /-open$/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').getAttribute('data-key')) &&
-    /-ahead$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')));
+    /-locked$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')) &&
+    /-ahead$/.test(d.querySelectorAll('.rw-node')[2].querySelector('.rw-node-icon').getAttribute('data-key')));
+  check('Gating: part II of every skill is locked until part I is cleared; part I is always open; locked trials are never hailed by Space',
+    [...d.querySelectorAll('.rw-node')].map(n => n.classList.contains('is-locked') ? 'L' : 'o').join('') === 'oLoLoL' &&
+    d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').offsetWidth === d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').offsetWidth);
   check('One star per marker, colored by skill, fill = completion: the ask is an empty star with an ink outline; ahead stars are empty with the hue on the outline and the bubble tinted with it; I and II share a hue',
     (() => {
       const nodes = [...d.querySelectorAll('.rw-node')];
       const svg0 = nodes[0].querySelector('.rw-node-icon').innerHTML; // Central Ideas I, the ask: ink outline, not solid amber
       const svg1 = nodes[1].querySelector('.rw-node-icon').innerHTML; // Central Ideas II, ahead: amber outline
       const svg2 = nodes[2].querySelector('.rw-node-icon').innerHTML; // Command of Evidence I: the next hue
-      return /fill="#2b2118"/.test(svg0) && !/fill="#e0953f"/.test(svg0) &&
-        /fill="#e0953f"/.test(svg1) && !/fill="#2b2118"/.test(svg1) &&
+      return /fill="#e0953f"/.test(svg0) && !/fill="#2b2118"/.test(svg0) &&   // uncleared: the hue on the outline, no ink, same as every other uncleared marker
+        /rw-node-lock/.test(svg1) && !/fill="#e0953f"/.test(svg1) &&           // part II: greyed hue + padlock badge until part I is cleared
         !/fill="#e0953f"/.test(svg2) && /fill="#b4454a"/.test(svg2) &&
         nodes[1].style.getPropertyValue('--hue') === '#e0953f' && nodes[2].style.getPropertyValue('--hue') === '#b4454a' &&
         nodes[0].querySelector('.rw-node-icon svg').getAttribute('viewBox') === '0 0 10 11';
@@ -120,6 +124,7 @@ const load = async (path) => {
     d.querySelectorAll('.rw-node.is-passed').length === 1 &&
     d.querySelectorAll('.rw-node.is-ahead').length === 4 && /-open$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')) &&   // the ask moves on
     /-done$/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').getAttribute('data-key')) &&                                                            // and the cleared star fills solid
+    !d.querySelectorAll('.rw-node')[1].classList.contains('is-locked') && d.querySelectorAll('.rw-node')[3].classList.contains('is-locked') &&                              // part II of this skill unlocks, the others stay gated
     /fill="#e0953f"/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').innerHTML) &&
     !d.querySelector('#sq-overlay').classList.contains('is-open') &&
     !d.body.classList.contains('sq-overlay-open'));
