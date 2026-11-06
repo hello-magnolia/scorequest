@@ -40,11 +40,12 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   light pool + ground shadow, holding one pixel icon (px() in realm.js).
   Clash = ONE STAR (starIcon, 10x11 STAR_CELLS at 3px, .is-star), its COLOR = the skill:
   STAR[realm] is 3-4 muted biome hues, skillHue() assigns them to skills in order of first
-  appearance on the trail, so Central Ideas I and II share a hue. The first uncleared marker
-  shows it FILLED (ink outline); every uncleared marker past it is .is-ahead = smaller still
-  bubble with an EMPTY star outlined in the skill hue (a look only, still approachable; the
-  card shows the filled star). Tier is no longer drawn on the marker (Nov 2026, Magnolia:
-  the multi-star count read as unrelated markers). lesson = open book; is-locked = gray + dim bubble;
+  appearance on the trail, so Central Ideas I and II share a hue. FILL = COMPLETION (Magnolia):
+  cleared = solid hue star ('done'); the first uncleared marker = EMPTY star, ink outline, plain
+  bubble ('open'); every uncleared marker past it is .is-ahead = smaller still bubble TINTED with
+  the hue (--hue on .rw-node, color-mix 26%) holding an empty star outlined in the hue (a look
+  only, still approachable). The card's star shows the same state as its marker (done/open).
+  Tier is no longer drawn on the marker (Nov 2026: the multi-star count read as unrelated). lesson = open book; is-locked = gray + dim bubble;
   is-passed = moss bubble + check badge; empties dashed, editor only. paintNode(i) swaps icons.
   Arrival prompt (.rw-prompt) = grid: topic across the top, stars + Start/Skip on the row below
   (max 250px), parchment, and it GROWS IN PLACE OUT OF THE MARKER'S BUBBLE (growPrompt FLIP via

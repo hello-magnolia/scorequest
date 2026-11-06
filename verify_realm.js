@@ -31,15 +31,16 @@ const load = async (path) => {
     d.querySelectorAll('.rw-node')[0].classList.contains('is-star') && d.querySelectorAll('.rw-node')[1].classList.contains('is-star') &&
     /-open$/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').getAttribute('data-key')) &&
     /-ahead$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')));
-  check('One star per marker, colored by skill: I and II of a skill share a hue, the next skill takes the next hue; ahead stars are empty with the hue on the outline',
+  check('One star per marker, colored by skill, fill = completion: the ask is an empty star with an ink outline; ahead stars are empty with the hue on the outline and the bubble tinted with it; I and II share a hue',
     (() => {
-      const fill = (n) => (n.querySelector('.rw-node-icon rect[fill]:not([fill="#2b2118"])') || {}).getAttribute?.('fill');
       const nodes = [...d.querySelectorAll('.rw-node')];
-      const f0 = fill(nodes[0]);                                   // Central Ideas I, filled amber
-      const svg1 = nodes[1].querySelector('.rw-node-icon').innerHTML; // Central Ideas II, ahead: amber outline, parchment fill
-      const svg2 = nodes[2].querySelector('.rw-node-icon').innerHTML; // Command of Evidence I: a different hue
-      return f0 === '#d8894a' && /fill="#d8894a"/.test(svg1) && /fill="#f3e6c4"/.test(svg1) && !/fill="#2b2118"/.test(svg1) &&
+      const svg0 = nodes[0].querySelector('.rw-node-icon').innerHTML; // Central Ideas I, the ask: ink outline, not solid amber
+      const svg1 = nodes[1].querySelector('.rw-node-icon').innerHTML; // Central Ideas II, ahead: amber outline
+      const svg2 = nodes[2].querySelector('.rw-node-icon').innerHTML; // Command of Evidence I: the next hue
+      return /fill="#2b2118"/.test(svg0) && !/fill="#d8894a"/.test(svg0) &&
+        /fill="#d8894a"/.test(svg1) && !/fill="#2b2118"/.test(svg1) &&
         !/fill="#d8894a"/.test(svg2) && /fill="#b9564c"/.test(svg2) &&
+        nodes[1].style.getPropertyValue('--hue') === '#d8894a' && nodes[2].style.getPropertyValue('--hue') === '#b9564c' &&
         nodes[0].querySelector('.rw-node-icon svg').getAttribute('viewBox') === '0 0 10 11';
     })());
   check('Lorewood carries the hand-traced path with six clash markers on it, each hovering over scenery',
@@ -117,7 +118,9 @@ const load = async (path) => {
   check('Clearing the round clears the leg: progress one, node marked, overlay gone',
     await until(() => w.__SQ_REALM_PROG === 1, 1500) &&
     d.querySelectorAll('.rw-node.is-passed').length === 1 &&
-    d.querySelectorAll('.rw-node.is-ahead').length === 4 && /-open$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')) &&   // the star fills in on the next ask
+    d.querySelectorAll('.rw-node.is-ahead').length === 4 && /-open$/.test(d.querySelectorAll('.rw-node')[1].querySelector('.rw-node-icon').getAttribute('data-key')) &&   // the ask moves on
+    /-done$/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').getAttribute('data-key')) &&                                                            // and the cleared star fills solid
+    /fill="#d8894a"/.test(d.querySelectorAll('.rw-node')[0].querySelector('.rw-node-icon').innerHTML) &&
     !d.querySelector('#sq-overlay').classList.contains('is-open') &&
     !d.body.classList.contains('sq-overlay-open'));
   // he finishes his walk to the marker on his own time; wait for him to settle
@@ -145,6 +148,8 @@ const load = async (path) => {
     d.getElementById('rw-capy').style.left === leftBefore,
     d.getElementById('rw-prompt-title').textContent + ' / ' + d.getElementById('rw-prompt-go').textContent);
   clickEl(d.getElementById('rw-prompt-go'));
+  check('The cleared trial\'s card shows a solid star (fill = completion), where the ask showed an empty one',
+    /fill="#d8894a"/.test(d.getElementById('rw-prompt-icon').innerHTML) && d.getElementById('rw-prompt-icon').classList.contains('is-star'));
   check('Spar again reopens the round as sparring',
     await until(() => w.__SQ_QUIZ && w.__SQ_QUIZ.practice === true && w.__SQ_OVERLAY && w.__SQ_OVERLAY.open, 2500));
   clickEl(d.getElementById('ov-close'));

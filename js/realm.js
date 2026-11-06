@@ -638,15 +638,23 @@
     '.kffkkffk.',
     'kffk..kffk',
     'kkk....kkk'];
-  /* the one star: filled in the skill's hue with an ink outline when it is the
-     ask (or cleared); further up the trail it is an EMPTY star whose outline
-     carries the skill's hue, so you can see which markers belong together
-     before you reach them. Locked (unused look) goes gray. */
+  /* the one star. FILL = COMPLETION (Magnolia): a cleared trial's star is solid
+     in the skill's hue; an uncleared one is empty. The ask (next uncleared) is
+     empty with an ink outline on plain parchment; further up the trail it is
+     empty with the hue on the outline, in a bubble tinted with that hue, so
+     the set reads before you reach it. The card shows the same state as the
+     marker it grew from. Locked (unused look) goes gray. */
+  function mixHex(a, b, t) {
+    var A = a.match(/\w\w/g).map(function (h) { return parseInt(h, 16); });
+    var B = b.match(/\w\w/g).map(function (h) { return parseInt(h, 16); });
+    return '#' + A.map(function (v, i) { return ('0' + Math.round(v + (B[i] - v) * t).toString(16)).slice(-2); }).join('');
+  }
   function starIcon(realmId, skill, state) {
     var hue = skillHue(realmId, skill);
-    var pal = state === 'ahead' ? { k: hue, f: '#f3e6c4' }
+    var pal = state === 'done' ? { k: '#2b2118', f: hue }
+      : state === 'ahead' ? { k: hue, f: mixHex(hue, '#f3e6c4', 0.82) }
       : state === 'locked' ? { k: '#8f8674', f: '#ddd3bb' }
-      : { k: '#2b2118', f: hue };
+      : { k: '#2b2118', f: mixHex(hue, '#f3e6c4', 0.72) };     // open: the ask, still empty
     return px(STAR_CELLS, pal);
   }
   var ICONS = {
@@ -727,7 +735,7 @@
     if (!el) return;
     var locked = el.classList.contains('is-locked');
     var ahead = el.classList.contains('is-ahead');
-    var state = ahead ? 'ahead' : locked ? 'locked' : 'open';
+    var state = passed[i] ? 'done' : ahead ? 'ahead' : locked ? 'locked' : 'open';
     var key = wp.mode === 'lesson' ? (locked ? 'lessonLocked' : 'lesson') : wp.mode === 'empty' ? 'empty'
       : 'star-' + realm.id + '-' + (wp.skill || '') + '-' + state;
     var icon = el.querySelector('.rw-node-icon');
@@ -735,6 +743,7 @@
       icon.innerHTML = ICONS[key] || starIcon(realm.id, wp.skill, state);
       icon.setAttribute('data-key', key);
       el.classList.toggle('is-star', wp.mode === 'clash');
+      el.style.setProperty('--hue', skillHue(realm.id, wp.skill));   // the ahead bubble tints with it
     }
   }
   function layoutNodes() {
@@ -871,7 +880,7 @@
        even when the marker itself is sitting quiet as an ellipsis (.is-ahead) */
     var wp = waypointAt(i);
     var pIcon = document.getElementById('rw-prompt-icon');
-    pIcon.innerHTML = wp.mode === 'lesson' ? ICONS.lesson : wp.mode === 'empty' ? ICONS.empty : starIcon(realm.id, wp.skill, 'open');
+    pIcon.innerHTML = wp.mode === 'lesson' ? ICONS.lesson : wp.mode === 'empty' ? ICONS.empty : starIcon(realm.id, wp.skill, passed[i] ? 'done' : 'open');
     pIcon.classList.toggle('is-star', wp.mode === 'clash');
     if (promptBubbleIdx > -1 && promptBubbleIdx !== i && nodeEls[promptBubbleIdx]) nodeEls[promptBubbleIdx].classList.remove('is-speaking');
     promptBubbleIdx = i;
