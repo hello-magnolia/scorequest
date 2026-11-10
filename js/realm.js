@@ -165,7 +165,18 @@
         { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g19.png', frames: 8, reach: 0.05, x: 0.67898, y: 0.69259, w: 0.04086, h: 0.07315, base: 0.693 },
         { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g20.png', frames: 8, reach: 0.05, x: 0.82436, y: 0.45648, w: 0.06051, h: 0.10093, base: 0.456 },
         { kind: 'sway', sprite: 'assets/fx/props/syntaxcitadel/quill1.png', patch: 'assets/fx/props/syntaxcitadel/quill1-patch.png', x: 0.59136, y: 0.72222, w: 0.01965, h: 0.09722, pivot: [0.364, 0.705], amp: 6, base: 0.819 },
-        { kind: 'sway', sprite: 'assets/fx/props/syntaxcitadel/quill2.png', patch: 'assets/fx/props/syntaxcitadel/quill2-patch.png', x: 0.63851, y: 0.81019, w: 0.01965, h: 0.09259, pivot: [0.33, 0.68], amp: 6, base: 0.903 }
+        { kind: 'sway', sprite: 'assets/fx/props/syntaxcitadel/quill2.png', patch: 'assets/fx/props/syntaxcitadel/quill2-patch.png', x: 0.63851, y: 0.81019, w: 0.01965, h: 0.09259, pivot: [0.33, 0.68], amp: 6, base: 0.903 },
+        /* the keep gate wakes as he comes up to it (reach 0.42 of the stage): the
+           blue runes round the arch and down both jambs glow, the gold emblem
+           flares, and the two statues' scrolls unroll a hand's width
+           (tools/make_scroll.py), rolling back up after he leaves */
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/archL.png', frames: 8, reach: 0.42, x: 0.80472, y: 0.00463, w: 0.08605, h: 0.24444, base: 0.243 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/archR.png', frames: 8, reach: 0.42, x: 0.88527, y: 0.00463, w: 0.06051, h: 0.24444, base: 0.243 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/emblem.png', frames: 8, reach: 0.42, x: 0.86012, y: 0.0713, w: 0.04322, h: 0.09815, base: 0.163 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/colL.png', frames: 8, reach: 0.32, x: 0.82554, y: 0.20648, w: 0.022, h: 0.21852, base: 0.419 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/colR.png', frames: 8, reach: 0.32, x: 0.91081, y: 0.25741, w: 0.01925, h: 0.16759, base: 0.419 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/scroll1.png', frames: 8, reach: 0.3, x: 0.78743, y: 0.26667, w: 0.02279, h: 0.08889, base: 0.356 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/scroll2.png', frames: 8, reach: 0.22, x: 0.90766, y: 0.38704, w: 0.02122, h: 0.1, base: 0.487 }
       ] },
       start: [0.138,0.467],
       bossArea: [[0.851,0.438],[0.851,0.241],[0.882,0.172],[0.91,0.273],[0.911,0.511]] },

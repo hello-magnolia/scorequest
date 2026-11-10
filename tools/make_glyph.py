@@ -13,6 +13,8 @@ from PIL import Image, ImageFilter
 from scipy import ndimage
 args = [x for x in sys.argv[1:] if not x.startswith('--')]
 CRYSTAL = '--crystal' in sys.argv     # any saturated, non-green object (crystals, lit lantern glass, mushroom caps)
+ONLY_BLUE = '--blue' in sys.argv      # ignore gold in the box (a gold door frame beside blue wall runes)
+NEAR = '--near' in sys.argv           # a wall rune: glows as he passes (default reach), not only underfoot
 src = args[0]; x0, y0, x1, y1 = map(int, args[1:5]); out = args[5]
 PAD = 7
 bg = Image.open(src).convert('RGBA')
@@ -24,9 +26,15 @@ inner = np.zeros(GOLD.shape, bool); inner[PAD:-PAD, PAD:-PAD] = True
 sat = a[..., :3].max(-1) - a[..., :3].min(-1); gray = a[..., :3].mean(-1)
 GREEN = (g > r + 12) & (g > b + 12)
 small = (x1 - x0) * (y1 - y0) < 6000                   # a lantern's glass: a tight box, a softer color test
-m = ((sat > (60 if small else 88)) & ~GREEN & (gray > 105) & inner) if CRYSTAL else ((GOLD | BLUE) & inner)   # crystal: bright AND vivid; the cave rock is dull purple
+m = ((sat > (60 if small else 88)) & ~GREEN & (gray > 105) & inner) if CRYSTAL else (((BLUE if ONLY_BLUE else (GOLD | BLUE))) & inner)   # crystal: bright AND vivid; the cave rock is dull purple
 lab, n = ndimage.label(m, np.ones((3, 3))); sizes = ndimage.sum(m, lab, range(1, n + 1))
-m = np.isin(lab, [i + 1 for i, s in enumerate(sizes) if s > (6 if not CRYSTAL else 10 if small else 40)])
+keep = [i + 1 for i, s in enumerate(sizes) if s > (6 if not CRYSTAL else 10 if small else 40)]
+# a piece of a NEIGHBOURING rune caught by the box edge would light with this one
+# (the bleed Magnolia saw): drop any piece that touches the box edge, unless that
+# leaves nothing (a big wall-rune box legitimately runs to its edges)
+edge = np.zeros(m.shape, bool); edge[PAD, :] = edge[-PAD - 1, :] = edge[:, PAD] = edge[:, -PAD - 1] = True
+inside = [k for k in keep if not (edge & (lab == k)).any()]
+m = np.isin(lab, inside if inside else keep)
 if not m.any(): sys.exit('no glyph pixels found in that box')
 gold = GOLD[m].sum() >= BLUE[m].sum()
 glow = np.array([255, 200, 90]) if gold else np.array([110, 185, 255])
@@ -64,9 +72,9 @@ sheet = Image.new('RGBA', (crop.width * len(LEVELS), crop.height))
 for i, fr in enumerate(frames): sheet.paste(fr, (i * crop.width, 0))
 sheet.save(out)
 row = {'kind': 'frames', 'mode': 'rune', 'sheet': out, 'frames': len(LEVELS)}
-if not CRYSTAL: row['reach'] = 0.05                   # a floor rune: he has to stand on it; a crystal glows as he passes
+if not CRYSTAL and not NEAR: row['reach'] = 0.05      # a floor rune: he has to stand on it; a crystal or wall rune glows as he passes
 row.update({
        'x': round((x0 - PAD) / bg.width, 5), 'y': round((y0 - PAD) / bg.height, 5),
        'w': round(crop.width / bg.width, 5), 'h': round(crop.height / bg.height, 5),
-       'base': round(((y0 - PAD) if not CRYSTAL else y1) / bg.height, 3)})     # floor: always behind him; a standing thing sorts by its foot
+       'base': round(((y0 - PAD) if not (CRYSTAL or NEAR) else y1) / bg.height, 3)})     # floor: always behind him; a standing thing sorts by its foot
 print(json.dumps(row))
