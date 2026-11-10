@@ -170,11 +170,11 @@
            blue runes round the arch and down both jambs glow, the gold emblem
            flares, and the two statues' scrolls unroll a hand's width
            (tools/make_scroll.py), rolling back up after he leaves */
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/archL.png', frames: 8, reach: 0.42, x: 0.80472, y: 0.00463, w: 0.08605, h: 0.24444, base: 0.243 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/archR.png', frames: 8, reach: 0.42, x: 0.88527, y: 0.00463, w: 0.06051, h: 0.24444, base: 0.243 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/archL.png', frames: 8, reach: 0.42, x: 0.82043, y: 0.00278, w: 0.06444, h: 0.14259, base: 0.139 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/archR.png', frames: 8, reach: 0.42, x: 0.87976, y: 0.00278, w: 0.05815, h: 0.25185, base: 0.248 },
         { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/emblem.png', frames: 8, reach: 0.42, x: 0.86012, y: 0.0713, w: 0.04322, h: 0.09815, base: 0.163 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/colL.png', frames: 8, reach: 0.32, x: 0.82554, y: 0.20648, w: 0.022, h: 0.21852, base: 0.419 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/colR.png', frames: 8, reach: 0.32, x: 0.91081, y: 0.25741, w: 0.01925, h: 0.16759, base: 0.419 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/colL.png', frames: 8, reach: 0.32, x: 0.82633, y: 0.21204, w: 0.01807, h: 0.22407, base: 0.43 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/colR.png', frames: 8, reach: 0.32, x: 0.90963, y: 0.29722, w: 0.01493, h: 0.1, base: 0.391 },
         { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/scroll1.png', frames: 8, reach: 0.3, x: 0.78743, y: 0.26667, w: 0.02279, h: 0.08889, base: 0.356 },
         { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/scroll2.png', frames: 8, reach: 0.22, x: 0.90766, y: 0.38704, w: 0.02122, h: 0.1, base: 0.487 }
       ] },

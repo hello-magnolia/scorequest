@@ -98,11 +98,14 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   amp: 6 (sway props take P.amp degrees -> --amp scales rw-prop-sway/gust; tags stay 11),
   patch = copy along the stair diagonal 2:1, since diffusion inpaints ghosted the feather). g14 (the ? at the bottom edge)
   had no clean pixels and was skipped. make_glyph drops any rune piece touching the box edge
-  (a neighbour's sliver used to light with it: the bleed). KEEP GATE (reach 0.42 / 0.32): archL,
-  archR (split at x 2260, a gap between runes), colL, colR = --blue --near wall runes; emblem =
-  gold --near; scroll1/scroll2 = tools/make_scroll.py (8 baked frames: paper strip above the
-  bottom roll tiled down by up to 32px, roll pasted lower, --ink edge where a hand hides it;
-  mode 'rune' so they unroll in 0.55s, breathe, roll back after he leaves).
+  (a neighbour's sliver used to light with it: the bleed); --near / --crystal boxes keep every
+  piece instead, so DRAW THOSE BOXES TO CONTAIN WHOLE RUNE STRINGS (a string cut by a box edge
+  lit half-way: Magnolia's "not lighting fully"). KEEP GATE (reach 0.42 / 0.32): archL (2095,10,
+  2245,150), archR (2246,10,2380,268), colL (2110,236,2142,464), colR (2322,328,2346,422) =
+  --blue --near wall runes, boxes from the BLUE component bboxes; emblem = gold --near;
+  scroll1/scroll2 = tools/make_scroll.py (8 baked frames: a 14px paper strip above the bottom
+  roll tiled down by up to 14px, roll pasted lower, --ink edge where a hand hides it; 32px read as
+  a stiff ribbon; mode 'rune' so they unroll in 0.55s, breathe, roll back after he leaves).
   Mirror Mines (Nov 2026): 4 hanging lanterns on his way + 11 crystal clusters + 2 glowing-mushroom
   patches within reach of his path light up as he passes (tools/make_glyph.py --crystal: mask = vivid
   non-green px (sat>88, gray>105; tight boxes <6000px2 use sat>60 for lantern glass), facets brightened

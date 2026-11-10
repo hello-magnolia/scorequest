@@ -34,7 +34,7 @@ keep = [i + 1 for i, s in enumerate(sizes) if s > (6 if not CRYSTAL else 10 if s
 # leaves nothing (a big wall-rune box legitimately runs to its edges)
 edge = np.zeros(m.shape, bool); edge[PAD, :] = edge[-PAD - 1, :] = edge[:, PAD] = edge[:, -PAD - 1] = True
 inside = [k for k in keep if not (edge & (lab == k)).any()]
-m = np.isin(lab, inside if inside else keep)
+m = np.isin(lab, keep if (NEAR or CRYSTAL) else (inside if inside else keep))   # wall runes and crystals keep everything: their boxes are drawn to contain whole strings
 if not m.any(): sys.exit('no glyph pixels found in that box')
 gold = GOLD[m].sum() >= BLUE[m].sum()
 glow = np.array([255, 200, 90]) if gold else np.array([110, 185, 255])
