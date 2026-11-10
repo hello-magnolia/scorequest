@@ -2188,11 +2188,12 @@ a { color: inherit; }
 .rw-prop-bubbles.is-near .rw-prop-burst { opacity: 0.9; }
 .rw-prop-bubbles.is-leaving .rw-prop-burst { opacity: 0; transition: opacity 3.8s ease-in; }
 @keyframes rw-bubbles-rise { from { transform: translateY(0); } to { transform: translateY(-50%); } }
-@keyframes rw-prop-sway { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(11deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-9deg); } }
+/* --amp scales the swing: 1 = a paper tag's 11deg, 0.55 = a quill's quiver (P.amp degrees / 11) */
+@keyframes rw-prop-sway { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(calc(11deg * var(--amp, 1))); } 50% { transform: rotate(0deg); } 75% { transform: rotate(calc(-9deg * var(--amp, 1))); } }
 /* the wind he leaves behind: three swings that shrink to nothing */
 @keyframes rw-prop-gust {
-  0% { transform: rotate(0deg); } 12% { transform: rotate(10deg); } 28% { transform: rotate(-8deg); } 44% { transform: rotate(6deg); }
-  60% { transform: rotate(-4deg); } 76% { transform: rotate(2deg); } 90% { transform: rotate(-1deg); } 100% { transform: rotate(0deg); } }
+  0% { transform: rotate(0deg); } 12% { transform: rotate(calc(10deg * var(--amp, 1))); } 28% { transform: rotate(calc(-8deg * var(--amp, 1))); } 44% { transform: rotate(calc(6deg * var(--amp, 1))); }
+  60% { transform: rotate(calc(-4deg * var(--amp, 1))); } 76% { transform: rotate(calc(2deg * var(--amp, 1))); } 90% { transform: rotate(calc(-1deg * var(--amp, 1))); } 100% { transform: rotate(0deg); } }
 .rw-glow {
   position: absolute; transform: translate(-50%, -50%);
   border-radius: 50%; aspect-ratio: 1;

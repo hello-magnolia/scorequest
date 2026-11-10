@@ -2,7 +2,7 @@
 painting as a sway prop that pivots at its FOOT (the pot), the opposite of a hanging
 tag: sprite (the feather, alpha) plus patch (the painting with the feather inpainted
 away). Usage:
-  python3 tools/make_quill.py assets/realms/syntaxcitadel.png X0 Y0 X1 Y1 outdir name
+  python3 tools/make_quill.py assets/realms/syntaxcitadel.png X0 Y0 X1 Y1 outdir name [POT_Y]
 X0..Y1 = a box around the feather down to where it meets the pot. Prints the props
 row to paste. No em dashes anywhere."""
 import sys, json, numpy as np
@@ -12,31 +12,41 @@ src = sys.argv[1]; x0, y0, x1, y1 = map(int, sys.argv[2:6]); outdir, name = sys.
 bg = Image.open(src).convert('RGB'); A = np.array(bg).astype(int)
 a = A[y0:y1, x0:x1]; r, g, b = a[..., 0], a[..., 1], a[..., 2]; gray = a.mean(-1)
 sat = a.max(-1) - a.min(-1)
-pale = (gray > 100) & (gray < 222) & (b >= r - 10) & (sat < 36)   # the feather: cool grey; the stone around it is warm
-lab, n = ndimage.label(pale, np.ones((3, 3))); sizes = ndimage.sum(pale, lab, range(1, n + 1))
-pale = lab == (int(np.argmax(sizes)) + 1)                           # the feather is the one big pale piece; the pot's rim stays put
-hull = ndimage.binary_fill_holes(ndimage.binary_closing(pale, np.ones((3, 3)), iterations=2))
+POT_Y = int(sys.argv[8]) if len(sys.argv) > 8 else int((y1 - y0) * 0.7)   # box row where the pot's rim starts: nothing below it is feather
+# the feather: cool grey, neither warm stone nor pale highlight stone; closed and
+# hole-filled so the dark barb lines ride along, then the one big piece
+warm = (r > b + 10) | (gray > 226)
+cand = (~warm) & (gray > 112) & (sat < 60)
+cand[POT_Y:] = False
+cand = ndimage.binary_fill_holes(ndimage.binary_closing(cand, np.ones((3, 3)), iterations=3))
+lab, n = ndimage.label(cand, np.ones((3, 3))); sizes = ndimage.sum(cand, lab, range(1, n + 1))
+if n == 0: sys.exit('no feather found in that box')
+hull = ndimage.binary_dilation(lab == (int(np.argmax(sizes)) + 1), np.ones((3, 3)), iterations=1)
 ring = ndimage.binary_dilation(hull, np.ones((3, 3)), iterations=2) & ~hull
-m = hull | (ring & (gray < 100))                                   # plus the ink outline
+m = hull | (ring & (gray < 95) & ~warm)                            # plus the ink outline
 rgba = np.zeros(a.shape[:2] + (4,), np.uint8); rgba[..., :3] = a; rgba[..., 3] = m * 255
 Image.fromarray(rgba).save(f'{outdir}/{name}.png')
-# the patch: fill the feather's hole with a normalized blur of the painting
-# around it (a soft wash of the stone or shadow behind), which never ghosts the
-# feather and has no streaks; only a sliver of it ever shows as the quill tilts
-hole = ndimage.binary_dilation(m, iterations=3)
-keep = (~hole).astype(float)
-patch = a.astype(float).copy()
-for sigma in (3, 6, 12):
-    num = np.stack([ndimage.gaussian_filter(a[..., c] * keep, sigma) for c in range(3)], -1)
-    den = ndimage.gaussian_filter(keep, sigma)[..., None]
-    fill = num / np.maximum(den, 1e-3)
-    ok = (den[..., 0] > 0.05) & hole
-    patch[ok] = fill[ok]; keep[ok] = 1; a = np.where(hole[..., None], patch, a).astype(int) if False else a
+# the patch: fill the feather's hole by copying along the stair diagonal (2 px
+# across per 1 px down), so the courses behind it run straight on; a diffusion
+# inpaint smeared and a horizontal fill zig-zagged
+SLOPE = (2, 1)
+hole = ndimage.binary_dilation(m, iterations=2)
+patch = a.copy()
+H, W = a.shape[:2]
+for y in range(H):
+    for x in np.where(hole[y])[0]:
+        done = False
+        for k in range(1, max(H, W)):
+            for sx in (1, -1):
+                xx, yy = x + sx * k * SLOPE[0], y + sx * k * SLOPE[1]
+                if 0 <= xx < W and 0 <= yy < H and not hole[yy, xx]: patch[y, x] = a[yy, xx]; done = True; break
+            if done: break
 patch = patch.clip(0, 255).astype(np.uint8)
 Image.fromarray(patch).save(f'{outdir}/{name}-patch.png')
 ys, xs = np.where(m)
 row = {'kind': 'sway', 'sprite': f'{outdir}/{name}.png', 'patch': f'{outdir}/{name}-patch.png',
        'x': round(x0 / bg.width, 5), 'y': round(y0 / bg.height, 5), 'w': round((x1 - x0) / bg.width, 5), 'h': round((y1 - y0) / bg.height, 5),
-       'pivot': [round(float(xs[ys == ys.max()].mean()) / (x1 - x0), 3), 1.0],   # swings from the pot
+       'pivot': [round(float(xs[ys == ys.max()].mean()) / (x1 - x0), 3), round(float(ys.max()) / (y1 - y0), 3)],   # swings from where it meets the pot
+       'amp': 6,                                                         # a quiver, not a tag's swing (degrees)
        'base': round(y1 / bg.height, 3)}
 print(json.dumps(row))

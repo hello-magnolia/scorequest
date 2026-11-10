@@ -145,27 +145,27 @@
          floor, so base = top edge and always behind him), and the two quills on the bridge posts tilt in his wake (tools/make_quill.py,
          pivot at the inkpot). Off his path nothing moves (Magnolia's rule). */
       fx: { props: [
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g01.png', frames: 8, reach: 0.05, x: 0.13713, y: 0.45741, w: 0.03222, h: 0.0713, base: 0.457 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g02.png', frames: 8, reach: 0.05, x: 0.2, y: 0.58704, w: 0.03418, h: 0.06667, base: 0.587 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g03.png', frames: 8, reach: 0.05, x: 0.29823, y: 0.81389, w: 0.03615, h: 0.07593, base: 0.814 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g04.png', frames: 8, reach: 0.05, x: 0.34538, y: 0.75833, w: 0.04008, h: 0.11296, base: 0.758 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g05.png', frames: 8, reach: 0.05, x: 0.38664, y: 0.72593, w: 0.03222, h: 0.05741, base: 0.726 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g06.png', frames: 8, reach: 0.05, x: 0.41807, y: 0.67037, w: 0.03615, h: 0.06204, base: 0.67 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g07.png', frames: 8, reach: 0.05, x: 0.47898, y: 0.58241, w: 0.03222, h: 0.06204, base: 0.582 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g08.png', frames: 8, reach: 0.05, x: 0.51041, y: 0.54074, w: 0.03222, h: 0.05741, base: 0.541 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g09.png', frames: 8, reach: 0.05, x: 0.46916, y: 0.72593, w: 0.03222, h: 0.05741, base: 0.726 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g10.png', frames: 8, reach: 0.05, x: 0.50452, y: 0.76759, w: 0.03418, h: 0.06204, base: 0.768 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g11.png', frames: 8, reach: 0.05, x: 0.54578, y: 0.81852, w: 0.03026, h: 0.05278, base: 0.819 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g12.png', frames: 8, reach: 0.05, x: 0.58507, y: 0.86481, w: 0.03418, h: 0.06667, base: 0.865 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g13.png', frames: 8, reach: 0.05, x: 0.54185, y: 0.90648, w: 0.03615, h: 0.07593, base: 0.906 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g15.png', frames: 8, reach: 0.05, x: 0.57917, y: 0.46204, w: 0.03811, h: 0.06204, base: 0.462 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g16.png', frames: 8, reach: 0.05, x: 0.63615, y: 0.54074, w: 0.03615, h: 0.05741, base: 0.541 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g17.png', frames: 8, reach: 0.05, x: 0.66955, y: 0.57778, w: 0.03811, h: 0.06204, base: 0.578 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g18.png', frames: 8, reach: 0.05, x: 0.72259, y: 0.63796, w: 0.03418, h: 0.06204, base: 0.638 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g19.png', frames: 8, reach: 0.05, x: 0.67937, y: 0.69352, w: 0.04008, h: 0.0713, base: 0.694 },
-        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g20.png', frames: 8, reach: 0.05, x: 0.82475, y: 0.45741, w: 0.05972, h: 0.09907, base: 0.457 },
-        { kind: 'sway', sprite: 'assets/fx/props/syntaxcitadel/quill1.png', patch: 'assets/fx/props/syntaxcitadel/quill1-patch.png', x: 0.59136, y: 0.72222, w: 0.01965, h: 0.09722, pivot: [0.37, 1.0], base: 0.819 },
-        { kind: 'sway', sprite: 'assets/fx/props/syntaxcitadel/quill2.png', patch: 'assets/fx/props/syntaxcitadel/quill2-patch.png', x: 0.63851, y: 0.81019, w: 0.01965, h: 0.09259, pivot: [0.3, 1.0], base: 0.903 }
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g01.png', frames: 8, reach: 0.05, x: 0.13674, y: 0.45648, w: 0.03301, h: 0.07315, base: 0.456 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g02.png', frames: 8, reach: 0.05, x: 0.19961, y: 0.58611, w: 0.03497, h: 0.06852, base: 0.586 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g03.png', frames: 8, reach: 0.05, x: 0.29784, y: 0.81296, w: 0.03694, h: 0.07778, base: 0.813 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g04.png', frames: 8, reach: 0.05, x: 0.34499, y: 0.75741, w: 0.04086, h: 0.11481, base: 0.757 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g05.png', frames: 8, reach: 0.05, x: 0.38625, y: 0.725, w: 0.03301, h: 0.05926, base: 0.725 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g06.png', frames: 8, reach: 0.05, x: 0.41768, y: 0.66944, w: 0.03694, h: 0.06389, base: 0.669 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g07.png', frames: 8, reach: 0.05, x: 0.47859, y: 0.58148, w: 0.03301, h: 0.06389, base: 0.581 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g08.png', frames: 8, reach: 0.05, x: 0.51002, y: 0.53981, w: 0.03301, h: 0.05926, base: 0.54 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g09.png', frames: 8, reach: 0.05, x: 0.46876, y: 0.725, w: 0.03301, h: 0.05926, base: 0.725 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g10.png', frames: 8, reach: 0.05, x: 0.50413, y: 0.76667, w: 0.03497, h: 0.06389, base: 0.767 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g11.png', frames: 8, reach: 0.05, x: 0.54538, y: 0.81759, w: 0.03104, h: 0.05463, base: 0.818 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g12.png', frames: 8, reach: 0.05, x: 0.58468, y: 0.86389, w: 0.03497, h: 0.06852, base: 0.864 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g13.png', frames: 8, reach: 0.05, x: 0.54145, y: 0.90556, w: 0.03694, h: 0.07778, base: 0.906 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g15.png', frames: 8, reach: 0.05, x: 0.57878, y: 0.46111, w: 0.0389, h: 0.06389, base: 0.461 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g16.png', frames: 8, reach: 0.05, x: 0.63576, y: 0.53981, w: 0.03694, h: 0.05926, base: 0.54 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g17.png', frames: 8, reach: 0.05, x: 0.66916, y: 0.57685, w: 0.0389, h: 0.06389, base: 0.577 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g18.png', frames: 8, reach: 0.05, x: 0.7222, y: 0.63704, w: 0.03497, h: 0.06389, base: 0.637 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g19.png', frames: 8, reach: 0.05, x: 0.67898, y: 0.69259, w: 0.04086, h: 0.07315, base: 0.693 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/syntaxcitadel/g20.png', frames: 8, reach: 0.05, x: 0.82436, y: 0.45648, w: 0.06051, h: 0.10093, base: 0.456 },
+        { kind: 'sway', sprite: 'assets/fx/props/syntaxcitadel/quill1.png', patch: 'assets/fx/props/syntaxcitadel/quill1-patch.png', x: 0.59136, y: 0.72222, w: 0.01965, h: 0.09722, pivot: [0.364, 0.705], amp: 6, base: 0.819 },
+        { kind: 'sway', sprite: 'assets/fx/props/syntaxcitadel/quill2.png', patch: 'assets/fx/props/syntaxcitadel/quill2-patch.png', x: 0.63851, y: 0.81019, w: 0.01965, h: 0.09259, pivot: [0.33, 0.68], amp: 6, base: 0.903 }
       ] },
       start: [0.138,0.467],
       bossArea: [[0.851,0.438],[0.851,0.241],[0.882,0.172],[0.91,0.273],[0.911,0.511]] },
@@ -1406,6 +1406,7 @@
         sp.style.backgroundImage = 'url(' + P.sprite + ')';
         var pv = P.pivot || [0.5, 0];
         sp.style.transformOrigin = (pv[0] * 100) + '% ' + (pv[1] * 100) + '%';
+        if (P.amp) sp.style.setProperty('--amp', String(P.amp / 11));   // swing size in degrees (tags 11, quills 6)
         if (P.delay) sp.style.animationDelay = P.delay + 's';
         el.appendChild(patch); el.appendChild(sp);
         if (P.kind === 'bubbles') {

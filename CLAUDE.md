@@ -90,10 +90,13 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   Rule from Magnolia: only lanterns and torii ON HIS PATH react; off-path ones stay still.
   Syntax Citadel (Nov 2026): 19 floor RUNES along his path light up ONLY under his feet
   (tools/make_glyph.py: frames kind, mode 'rune' -> .is-rune, 8 CRISP frames, no blur: rune shifted
-  toward a saturated light of its own color + 1px/2px hard rims; reach 0.05 of the stage; CSS
+  toward a saturated light of its own color (k 0.95) + hard rims 1px 90% / 2px 55% / 3px 25%,
+  Magnolia asked for OBVIOUS; reach 0.05 of the stage; CSS
   rw-rune-up 0.55s, rw-rune-breathe 2.4s, leaving = one breath then 1.1s ramp down; base = box top
-  so it is always under him; Magnolia: blurred halos read grey and messy, 4 frames read glitchy) + 2 QUILLS on the bridge posts tilt from the inkpot (tools/make_quill.py:
-  sway with pivot [x, 1.0], cool-grey mask, normalized-blur patch). g14 (the ? at the bottom edge)
+  so it is always under him; Magnolia: blurred halos read grey and messy, 4 frames read glitchy) + 2 QUILLS on the bridge posts quiver from the inkpot (tools/make_quill.py ... POT_Y:
+  mask = not-warm & gray>112 closed + hole-filled above the pot rim, pivot at the mask's foot,
+  amp: 6 (sway props take P.amp degrees -> --amp scales rw-prop-sway/gust; tags stay 11),
+  patch = copy along the stair diagonal 2:1, since diffusion inpaints ghosted the feather). g14 (the ? at the bottom edge)
   had no clean pixels and was skipped.
   Mirror Mines (Nov 2026): 4 hanging lanterns on his way + 11 crystal clusters + 2 glowing-mushroom
   patches within reach of his path light up as he passes (tools/make_glyph.py --crystal: mask = vivid

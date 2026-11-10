@@ -14,7 +14,7 @@ from scipy import ndimage
 args = [x for x in sys.argv[1:] if not x.startswith('--')]
 CRYSTAL = '--crystal' in sys.argv     # any saturated, non-green object (crystals, lit lantern glass, mushroom caps)
 src = args[0]; x0, y0, x1, y1 = map(int, args[1:5]); out = args[5]
-PAD = 6
+PAD = 7
 bg = Image.open(src).convert('RGBA')
 crop = bg.crop((x0 - PAD, y0 - PAD, x1 + PAD, y1 + PAD))
 a = np.array(crop).astype(int); r, g, b = a[..., 0], a[..., 1], a[..., 2]
@@ -33,7 +33,7 @@ glow = np.array([255, 200, 90]) if gold else np.array([110, 185, 255])
 if CRYSTAL:
     mean = a[m][:, :3].mean(0)                         # the object's own color, lightened
     glow = (mean + (255 - mean) * 0.45)
-hot = np.array([255, 226, 120]) if gold else np.array([150, 212, 255])      # a brighter, still saturated, version of the rune's own color
+hot = np.array([255, 236, 150]) if gold else np.array([175, 225, 255])      # a brighter, still saturated, version of the rune's own color
 # eight crisp frames (no blur: pixel art stays pixel art): off, five steps up to full
 # light, then a slightly dimmer one the CSS pulses against. The rune itself shifts
 # toward a saturated light of its own color; a 1px rim and a fainter 2px rim glow
@@ -41,6 +41,7 @@ hot = np.array([255, 226, 120]) if gold else np.array([150, 212, 255])      # a 
 LEVELS = (0, 0.15, 0.3, 0.5, 0.7, 0.85, 1.0, 0.88)
 rim1 = ndimage.binary_dilation(m, iterations=1) & ~m
 rim2 = ndimage.binary_dilation(m, iterations=2) & ~m & ~rim1
+rim3 = ndimage.binary_dilation(m, iterations=3) & ~m & ~rim1 & ~rim2
 frames = []
 for t in LEVELS:
     fa = np.array(crop).astype(float)
@@ -53,10 +54,11 @@ for t in LEVELS:
             mean = lit.mean(-1, keepdims=True)
             fa[m, :3] = mean + (lit - mean) * (1 + 0.45 * t)
         else:
-            k = 0.78 * t
+            k = 0.95 * t
             fa[m, :3] = fa[m, :3] * (1 - k) + hot * k
-        fa[rim1, :3] = fa[rim1, :3] * (1 - 0.6 * t) + glow * 0.6 * t
-        fa[rim2, :3] = fa[rim2, :3] * (1 - 0.25 * t) + glow * 0.25 * t
+        fa[rim1, :3] = fa[rim1, :3] * (1 - 0.9 * t) + glow * 0.9 * t
+        fa[rim2, :3] = fa[rim2, :3] * (1 - 0.55 * t) + glow * 0.55 * t
+        fa[rim3, :3] = fa[rim3, :3] * (1 - 0.25 * t) + glow * 0.25 * t
     frames.append(Image.fromarray(fa.clip(0, 255).astype(np.uint8)))
 sheet = Image.new('RGBA', (crop.width * len(LEVELS), crop.height))
 for i, fr in enumerate(frames): sheet.paste(fr, (i * crop.width, 0))
