@@ -88,6 +88,11 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   assets/fx/props/<realm>/. Lorewood: all 4 stone lanterns on his path (a, b, c, d) + 17 paper
   tags (branch, rope by the first torii, rope past the first stairs, the big torii's shide).
   Rule from Magnolia: only lanterns and torii ON HIS PATH react; off-path ones stay still.
+  Syntax Citadel (Nov 2026): 19 floor RUNES along his path light up underfoot (tools/make_glyph.py:
+  frames kind, rune brightened toward a saturated light of its own color + halo, base = box top so
+  it is always under him) + 2 QUILLS on the bridge posts tilt from the inkpot (tools/make_quill.py:
+  sway with pivot [x, 1.0], cool-grey mask, normalized-blur patch). g14 (the ? at the bottom edge)
+  had no clean pixels and was skipped.
   Lorewood markers (Nov 2026): 6, placed by Magnolia, every one hovering over a lantern or torii;
   the first sits within hail range of the entry, so its prompt is up on load (verify_realm allows
   that). anchorPrompt keeps the card below the title band (bottom edge >= card height + 84px).
