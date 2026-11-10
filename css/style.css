@@ -2158,6 +2158,14 @@ a { color: inherit; }
 @keyframes rw-lantern-flicker { 0%, 100% { background-position: 66.667% 0; } 38% { background-position: 100% 0; } 52% { background-position: 66.667% 0; } 74% { background-position: 100% 0; } 86% { background-position: 66.667% 0; } }
 /* always-on frames (fires): cycle all four frames forever; nearer, the
    fire quickens; after he leaves it eases back over the hang (is-leaving) */
+/* floor runes (Syntax Citadel): 8 frames, off then six steps of light and a
+   dimmer seventh to pulse against. He has to stand ON one (reach 0.05): it ramps
+   up in half a second, breathes slowly while he is there, breathes twice more
+   after he steps off and then ramps down (the hang). */
+.rw-prop-frames.is-rune.is-near { animation: rw-rune-up 0.55s steps(1, end) forwards, rw-rune-breathe 2.4s steps(1, end) 0.55s infinite; }
+.rw-prop-frames.is-rune.is-leaving { animation: rw-rune-breathe 2.4s steps(1, end) 1, rw-rune-up 1.1s steps(1, end) 2.4s reverse forwards; }
+@keyframes rw-rune-up { 0% { background-position: 0 0; } 17% { background-position: 14.2857% 0; } 34% { background-position: 28.5714% 0; } 50% { background-position: 42.8571% 0; } 67% { background-position: 57.1429% 0; } 84% { background-position: 71.4286% 0; } 100% { background-position: 85.7143% 0; } }
+@keyframes rw-rune-breathe { 0%, 100% { background-position: 85.7143% 0; } 30% { background-position: 100% 0; } 50% { background-position: 71.4286% 0; } 70% { background-position: 100% 0; } }
 .rw-prop-frames.is-always { animation: rw-fire 0.9s steps(1, end) infinite; }
 .rw-prop-frames.is-always.is-near { animation: rw-fire 0.5s steps(1, end) infinite; }
 .rw-prop-frames.is-always.is-leaving { animation: rw-fire 0.7s steps(1, end) infinite; }
@@ -2283,6 +2291,7 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .rw-glow { animation: none; }
   .rw-prop-frames.is-near { animation: none; background-position: 100% 0; }
+  .rw-prop-frames.is-rune.is-near { background-position: 85.7143% 0; }
   .rw-prop-frames.is-always, .rw-prop-frames.is-always.is-near, .rw-prop-frames.is-always.is-leaving { animation: none; background-position: 0 0; }
   .rw-prop-frames.is-leaving, .rw-prop-sway .rw-prop-sprite { animation: none; }
   .rw-prop-sway.is-gusting .rw-prop-sprite { animation: none; }

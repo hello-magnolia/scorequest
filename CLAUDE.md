@@ -88,9 +88,11 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   assets/fx/props/<realm>/. Lorewood: all 4 stone lanterns on his path (a, b, c, d) + 17 paper
   tags (branch, rope by the first torii, rope past the first stairs, the big torii's shide).
   Rule from Magnolia: only lanterns and torii ON HIS PATH react; off-path ones stay still.
-  Syntax Citadel (Nov 2026): 19 floor RUNES along his path light up underfoot (tools/make_glyph.py:
-  frames kind, rune brightened toward a saturated light of its own color + halo, base = box top so
-  it is always under him) + 2 QUILLS on the bridge posts tilt from the inkpot (tools/make_quill.py:
+  Syntax Citadel (Nov 2026): 19 floor RUNES along his path light up ONLY under his feet
+  (tools/make_glyph.py: frames kind, mode 'rune' -> .is-rune, 8 CRISP frames, no blur: rune shifted
+  toward a saturated light of its own color + 1px/2px hard rims; reach 0.05 of the stage; CSS
+  rw-rune-up 0.55s, rw-rune-breathe 2.4s, leaving = one breath then 1.1s ramp down; base = box top
+  so it is always under him; Magnolia: blurred halos read grey and messy, 4 frames read glitchy) + 2 QUILLS on the bridge posts tilt from the inkpot (tools/make_quill.py:
   sway with pivot [x, 1.0], cool-grey mask, normalized-blur patch). g14 (the ? at the bottom edge)
   had no clean pixels and was skipped.
   Lorewood markers (Nov 2026): 6, placed by Magnolia, every one hovering over a lantern or torii;
