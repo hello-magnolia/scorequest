@@ -179,6 +179,30 @@
         edges: [[0,1],[1,2],[2,3],[3,4],[5,6],[6,7],[9,10],[10,11],[12,13],[13,14],[14,15],[15,16],[17,18],[19,20],[20,21],[21,22],[12,3],[4,23],[9,23],[24,25],[16,19],[16,26],[26,17],[24,23],[25,5],[8,25]],
         stairs: [13,14] },
       nodes: [[0.122,0.234],[0.3,0.21],[0.471,0.276],[0.534,0.89],[0.862,0.784]],
+      /* props: the cave answers him with light. The four hanging lanterns on his way
+         brighten, and every crystal cluster and glowing mushroom patch within reach
+         of his path lights up as he passes (tools/make_glyph.py --crystal: 8 crisp
+         frames, facets brightened in their own hue, rim glow, default reach, the
+         rune ramp/breathe/dim timing). Off his path nothing moves. */
+      fx: { props: [
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/lamp1.png', frames: 8, x: 0.19018, y: 0.54074, w: 0.01572, h: 0.03704, base: 0.572 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/lamp2.png', frames: 8, x: 0.42515, y: 0.47593, w: 0.01493, h: 0.03704, base: 0.507 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/lamp3.png', frames: 8, x: 0.50688, y: 0.71667, w: 0.01532, h: 0.03704, base: 0.748 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/lamp4.png', frames: 8, x: 0.24715, y: 0.11759, w: 0.01572, h: 0.03704, base: 0.149 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr01.png', frames: 8, x: 0.38861, y: 0.22593, w: 0.04794, h: 0.14074, base: 0.361 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr02.png', frames: 8, x: 0.30609, y: 0.35093, w: 0.05187, h: 0.1037, base: 0.449 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr03.png', frames: 8, x: 0.43969, y: 0.6287, w: 0.04794, h: 0.19167, base: 0.815 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr04.png', frames: 8, x: 0.53006, y: 0.69352, w: 0.04794, h: 0.12685, base: 0.815 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr05.png', frames: 8, x: 0.64597, y: 0.42963, w: 0.05972, h: 0.19167, base: 0.616 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr06.png', frames: 8, x: 0.74813, y: 0.58704, w: 0.04204, h: 0.11759, base: 0.699 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr07.png', frames: 8, x: 0.14381, y: 0.09444, w: 0.06365, h: 0.15, base: 0.239 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/mu01.png', frames: 8, x: 0.17839, y: 0.36944, w: 0.06365, h: 0.10833, base: 0.472 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr08.png', frames: 8, x: 0.41022, y: 0.85556, w: 0.0499, h: 0.15, base: 1.0 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr09.png', frames: 8, x: 0.56935, y: 0.85093, w: 0.05776, h: 0.14537, base: 0.991 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/mu03.png', frames: 8, x: 0.7776, y: 0.65185, w: 0.06955, h: 0.09907, base: 0.745 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr10.png', frames: 8, x: 0.84833, y: 0.61481, w: 0.04126, h: 0.08981, base: 0.699 },
+        { kind: 'frames', mode: 'rune', sheet: 'assets/fx/props/mirrormines/cr11.png', frames: 8, x: 0.69902, y: 0.28148, w: 0.04401, h: 0.13611, base: 0.412 }
+      ] },
       start: [0.092,0.557],
       bossArea: [[0.844,0.333],[0.842,0.178],[0.858,0.137],[0.879,0.158],[0.892,0.225],[0.89,0.387]] },
     { id: 'infinityisles', name: 'Infinity Isles', domain: 'Advanced Math', fight: true, ground: 0.78,

@@ -95,6 +95,11 @@ index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
   so it is always under him; Magnolia: blurred halos read grey and messy, 4 frames read glitchy) + 2 QUILLS on the bridge posts tilt from the inkpot (tools/make_quill.py:
   sway with pivot [x, 1.0], cool-grey mask, normalized-blur patch). g14 (the ? at the bottom edge)
   had no clean pixels and was skipped.
+  Mirror Mines (Nov 2026): 4 hanging lanterns on his way + 11 crystal clusters + 2 glowing-mushroom
+  patches within reach of his path light up as he passes (tools/make_glyph.py --crystal: mask = vivid
+  non-green px (sat>88, gray>105; tight boxes <6000px2 use sat>60 for lantern glass), facets brightened
+  in their own hue with chroma pulled back up, same 8-frame rune ramp/breathe/dim, DEFAULT reach,
+  base = box bottom). Pink mushrooms are not vivid enough to pass and stay still.
   Lorewood markers (Nov 2026): 6, placed by Magnolia, every one hovering over a lantern or torii;
   the first sits within hail range of the entry, so its prompt is up on load (verify_realm allows
   that). anchorPrompt keeps the card below the title band (bottom edge >= card height + 84px).
