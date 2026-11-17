@@ -210,6 +210,7 @@
       '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
     $('#whybox').hidden = false;
     math($('#why'));
+    setTimeout(function () { try { $('#whybox').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }, 700);
     $('#bCheck').hidden = true;
     $('#bNext').hidden = false;
     $('#bRetry').hidden = won;

@@ -113,6 +113,33 @@ figure { margin: 0 0 18px; }
 .empty { padding: 40px; text-align: center; color: var(--muted); }
 
 
+/* ---------- the stage layout (overlay + clash.html) ----------
+   The fight runs edge to edge across the top of the window: the critters hold the middle
+   and the biome backdrop is painted out to both sides (the arena sizes itself from the
+   box's height, data-wide). The question sits centred beneath it, answers in a 2x2 grid,
+   explanation under that; a passage of ordinary length fits a laptop window unscrolled. */
+.lay.stage { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: start; padding: 0 0 20px; }
+.lay.stage .screen.wide { aspect-ratio: auto; height: clamp(190px, 30vh, 292px); border-left: 0; border-right: 0; border-radius: 0; box-shadow: none; }
+.lay.stage .screen.wide canvas { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; }
+.lay.stage .plate { width: min(230px, calc(50% - 18px)); top: 10px; }
+.lay.stage .plate.me { left: max(10px, calc(50% - 236px)); }
+.lay.stage .plate.boss { right: max(10px, calc(50% - 236px)); }
+.lay.stage .log { text-align: center; margin: 0; padding: 0 16px; }
+.lay.stage .card, .lay.stage .whybox, .lay.stage .mini { width: min(840px, calc(100% - 32px)); margin: 0 auto; }
+.lay.stage .card { padding: 16px 24px 18px; }
+.lay.stage .passage { font-size: 16px; line-height: 1.55; }
+.lay.stage .passage p { margin: 0 0 10px; }
+.lay.stage .passage + .qbox { margin-top: 14px; padding-top: 12px; }
+.lay.stage .stem { font-size: 17px; line-height: 1.5; margin-bottom: 12px; }
+.lay.stage .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lay.stage .choices button { height: 100%; padding: 10px 12px; font-size: 15px; line-height: 1.4; }
+.lay.stage .acts { margin-top: 10px; }
+@media (max-width: 720px) {
+  .lay.stage .choices { grid-template-columns: 1fr; }
+  .lay.stage .screen.wide { height: clamp(150px, 26vh, 220px); }
+  .lay.stage .card { padding: 16px; }
+}
+
 /* ---------- the waypoint overlay on realm.html ---------- */
 .sq-overlay { position: fixed; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; display: none; }
 .sq-overlay.is-open { display: block; }
@@ -152,11 +179,12 @@ figure { margin: 0 0 18px; }
 .sq-overlay .check button { text-align: left; font: 15px/1.4 var(--serif); padding: 8px 12px; border: 2px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); cursor: pointer; }
 .sq-overlay .check button.correct { border-color: var(--good-line); background: var(--good-soft); }
 .sq-overlay .check button.wrong { border-color: var(--warn-line); background: var(--warn-soft); }
+.sq-overlay .lay.stage { grid-template-columns: 1fr; padding: 0 0 36px; gap: 10px; }
 @media (max-width: 860px) {
-  .sq-overlay .lay { grid-template-columns: 1fr; padding: 12px 16px 32px; }
+  .sq-overlay .lay:not(.stage) { grid-template-columns: 1fr; padding: 12px 16px 32px; }
   .sq-overlay .left { order: 2; }
-  .sq-overlay .card { order: 1; }
-  .sq-overlay .screen { max-width: 440px; width: 100%; margin: 0 auto; }
+  .sq-overlay .lay:not(.stage) .card { order: 1; }
+  .sq-overlay .lay:not(.stage) .screen { max-width: 440px; width: 100%; margin: 0 auto; }
 }
 /* the host page (realm.html) styles buttons globally; the card's own rules win inside the overlay */
 .sq-overlay .choices button, .sq-overlay .choices button span { color: var(--ink); text-shadow: none; letter-spacing: 0; text-transform: none; }

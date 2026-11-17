@@ -12,8 +12,10 @@ Pomelo the capybara is the companion. Live at hello-magnolia.github.io/scoreques
 2. Clone to `/home/claude/repo`. Deps: `npm i --legacy-peer-deps jsdom canvas@npm:@napi-rs/canvas`
    (the ALIAS is load-bearing: jsdom require()s literal `canvas`; without it getContext()
    is null and timing checks fail while static ones pass, misreading as flakiness).
-   Oct 2026: @napi-rs/canvas 1.x breaks jsdom's getContext (read-only ctx.canvas); install
-   `canvas@npm:@napi-rs/canvas@0.1.73` and every suite goes green.
+   Oct 2026: @napi-rs/canvas 1.x breaks jsdom's getContext (read-only ctx.canvas). Nov 2026:
+   jsdom 31 decodes <img> through Image.decode(), which 0.1.73 lacks (data-URI sprites never
+   load, SQArena.ready hangs, clash/realm suites "no summary"): install BOTH
+   `@napi-rs/canvas@0.1` and `canvas@npm:@napi-rs/canvas@0.1` (0.1.100 works) and every suite goes green.
 3. Parallel Claude session may push: fetch + rebase before EVERY push. Conflicts:
    take Magnolia's side on HTML, re-add Claude's script tags. Never commit `assets/companion/`.
 
@@ -155,9 +157,16 @@ re-run it on any existing project. verify_auth guards all of this.
   caption below, gray fog until visited), realm.html (walkabout; editor at &edit=1),
   boss.html, checkout, success, parents, profile, settings, bookmarks.
 - clash.html (Critter Clash practice, linked under index #world), per biome (?realm=).
-  Layout: trail across the top (position only: number / check / flag, lantern marks current,
-  lair icon at the end, NO health on it); left = 4:3 battle screen with Pokemon-style plates
-  (Pomelo HP 5, boss WARD) + explanation panel; right = passage, stem, answers, Check.
+  Layout (STAGE, Nov 17 2026, Magnolia; shared with the realm overlay, .lay.stage in css/clash.css):
+  trail across the top (position only: number / check / flag, lantern marks current,
+  lair icon at the end, NO health on it); then the battle screen EDGE TO EDGE (.screen.wide,
+  data-wide, height clamp(190px, 30vh, 292px); clash-arena sizes S = round(boxH/96) whole
+  pixels, canvas sits on the box floor, VW view px wide with the 128px fight centred at OX,
+  backdrop painted across the whole view, box background = sky[0] for any band above);
+  Pokemon-style plates (Pomelo HP 5, boss WARD) flank the centre; log line centred; the question
+  card centred below (max 840px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
+  Check; the explanation panel under the card, scrollIntoView 700ms after the verdict. An
+  ordinary passage fits a 1440x860 window unscrolled.
   ONE boss per biome (BIOMES in clash.js), ward = ceil(60% of biome qs) clamped 3..10, one pip
   per correct answer, misses never heal it. Focus (F, sq_clash_focus) swaps the screen for two
   quiet bars. Motion full/calm/off = localStorage sq_motion, also on settings.html (#st-motion),

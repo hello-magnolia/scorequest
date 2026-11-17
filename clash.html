@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261110f" />
-<link rel="stylesheet" href="css/clash.css?v=b20261110f" />
+<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261117a" />
+<link rel="stylesheet" href="css/clash.css?v=b20261117a" />
 <style>
 :root {
   --bg: #efe9da; --card: #fffdf7; --ink: #2b2118; --muted: #6f6252; --line: #d9cfba;
@@ -84,6 +84,8 @@ body.focus .screen, body.focus .log { display: none; }
 body.focus .mini { display: grid; }
 body.focus .trail .here { display: none; }
 
+/* the stage layout lives in css/clash.css (.lay.stage): fight across the top, question centred below */
+.lay.stage { padding: 0 0 20px; }
 @media (max-width: 860px) {
   .lay { grid-template-columns: 1fr; padding: 4px 16px 32px; }
   .top, .trail { padding-left: 16px; padding-right: 16px; }
@@ -111,36 +113,34 @@ body.focus .trail .here { display: none; }
   <button class="tbtn" id="bReset" type="button" title="Clear this biome's answers and start the boss over">Start over</button>
 </div>
 <nav class="trail" id="trail" aria-label="Question trail"></nav>
-<main class="lay">
-  <div class="left">
-    <div class="screen" id="screen">
-      <canvas id="cx-cv" aria-hidden="true"></canvas>
-      <div class="plate me"><div class="nm" id="me-name"><span>Pomelo</span></div>
-        <div class="row"><span class="lbl hpl">HP</span><span class="bar hp" id="me-hp" role="img"></span></div></div>
-      <div class="plate boss"><div class="nm"><span id="cx-boss"></span></div>
-        <div class="row"><span class="lbl">WARD</span><span class="bar ward" id="cx-ward" role="img"></span></div></div>
-    </div>
-    <p class="log" id="cx-log" aria-live="polite"></p>
-    <div class="mini" id="mini" aria-hidden="true">
-      <div class="row"><span>Pomelo</span><span class="bar hp" id="mini-hp"></span></div>
-      <div class="row"><span id="mini-boss"></span><span class="bar ward" id="mini-ward"></span></div>
-    </div>
-    <section class="whybox" id="whybox" aria-live="polite" hidden><h3>Explanation</h3><div id="why"></div></section>
+<main class="lay stage">
+  <div class="screen wide" id="screen" data-wide>
+    <canvas id="cx-cv" aria-hidden="true"></canvas>
+    <div class="plate me"><div class="nm" id="me-name"><span>Pomelo</span></div>
+      <div class="row"><span class="lbl hpl">HP</span><span class="bar hp" id="me-hp" role="img"></span></div></div>
+    <div class="plate boss"><div class="nm"><span id="cx-boss"></span></div>
+      <div class="row"><span class="lbl">WARD</span><span class="bar ward" id="cx-ward" role="img"></span></div></div>
+  </div>
+  <p class="log" id="cx-log" aria-live="polite"></p>
+  <div class="mini" id="mini" aria-hidden="true">
+    <div class="row"><span>Pomelo</span><span class="bar hp" id="mini-hp"></span></div>
+    <div class="row"><span id="mini-boss"></span><span class="bar ward" id="mini-ward"></span></div>
   </div>
   <article class="card" id="read"><div class="empty">Loading the biome&hellip;</div></article>
+  <section class="whybox" id="whybox" aria-live="polite" hidden><h3>Explanation</h3><div id="why"></div></section>
 </main>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="assets/katex/katex.min.js?v=b20261110f"></script>
-<script defer src="assets/katex/auto-render.min.js?v=b20261110f"></script>
-<script defer src="js/config.js?v=b20261110f"></script>
-<script defer src="js/auth.js?v=b20261110f"></script>
-<script defer src="data/questions.js?v=b20261110f"></script>
-<script defer src="js/figures.js?v=b20261110f"></script>
-<script defer src="js/questions.js?v=b20261110f"></script>
-<script defer src="js/qcard.js?v=b20261110f"></script>
-<script defer src="js/clash-arena.js?v=b20261110f"></script>
-<script defer src="js/clash-ambient.js?v=b20261110f"></script>
-<script defer src="js/clash.js?v=b20261110f"></script>
+<script defer src="assets/katex/katex.min.js?v=b20261117a"></script>
+<script defer src="assets/katex/auto-render.min.js?v=b20261117a"></script>
+<script defer src="js/config.js?v=b20261117a"></script>
+<script defer src="js/auth.js?v=b20261117a"></script>
+<script defer src="data/questions.js?v=b20261117a"></script>
+<script defer src="js/figures.js?v=b20261117a"></script>
+<script defer src="js/questions.js?v=b20261117a"></script>
+<script defer src="js/qcard.js?v=b20261117a"></script>
+<script defer src="js/clash-arena.js?v=b20261117a"></script>
+<script defer src="js/clash-ambient.js?v=b20261117a"></script>
+<script defer src="js/clash.js?v=b20261117a"></script>
 </body>
 </html>

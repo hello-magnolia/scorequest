@@ -47,13 +47,16 @@
     return el;
   }
   function clashHTML() {
-    return '<div class="lay"><div class="left">' +
-      '<div class="screen" id="screen"><canvas id="cx-cv" aria-hidden="true"></canvas>' +
+    /* the stage: the fight runs edge to edge across the top (critters centred, the biome
+       painted out to both sides), the question sits centred beneath it with its answers in a
+       2x2 grid, and the explanation unfolds under that */
+    return '<div class="lay stage">' +
+      '<div class="screen wide" id="screen" data-wide><canvas id="cx-cv" aria-hidden="true"></canvas>' +
       '<div class="plate me"><div class="nm" id="me-name"><span>Pomelo</span></div><div class="row"><span class="lbl hpl">HP</span><span class="bar hp" id="me-hp" role="img"></span></div></div>' +
       '<div class="plate boss"><div class="nm"><span id="cx-boss"></span></div><div class="row"><span class="lbl">WARD</span><span class="bar ward" id="cx-ward" role="img"></span></div></div></div>' +
       '<p class="log" id="cx-log" aria-live="polite"></p>' +
-      '<section class="whybox" id="whybox" aria-live="polite" hidden><h3>Explanation</h3><div id="why"></div></section></div>' +
-      '<article class="card" id="read"></article></div>';
+      '<article class="card" id="read"></article>' +
+      '<section class="whybox" id="whybox" aria-live="polite" hidden><h3>Explanation</h3><div id="why"></div></section></div>';
   }
   function segs(n, on) { var h = ''; for (var i = 0; i < n; i++) h += '<i class="' + (i < on ? 'on' : '') + '"></i>'; return h; }
   function bars() {
@@ -131,6 +134,8 @@
         (r.trap && !r.correct ? '<p class="slip">Common slip: ' + C.esc(String(r.trap).replace(/-/g, ' ')) + '.</p>' : '') +
         '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + C.rich(x) + '</p>'; }).join('') + '</div>';
       $('#whybox', el).hidden = false; C.math($('#why', el));
+      /* the explanation unfolds under the card: bring it up after the verdict lands */
+      setTimeout(function () { try { $('#whybox', el).scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }, 700);
       $('#bCheck', el).hidden = true; $('#bNext', el).hidden = false;
       try { $('#bNext', el).focus({ preventScroll: true }); } catch (e) {}
       dots();

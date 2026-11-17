@@ -39,11 +39,15 @@ const ROSTER = {
 
 // ---------- setup ----------
 const W=128,H=96,GROUND=77,A_X=36,B_X=94;
+/* the view can be wider than the 128px scene: VW = view width in scene px, OX = where the
+   scene (fighters, platforms, fx) sits inside it. A screen with data-wide fills its box,
+   sized from the box's HEIGHT, and the biome backdrop paints edge to edge around the fight */
+let VW=W, OX=0, bgId=null;
 /* the canvas: #cx-cv on the page at load, or whatever bind(root) points at later (the realm overlay) */
 let root=document, cv=document.getElementById("cx-cv")||document.createElement("canvas"), ctx=cv.getContext("2d");
 function bind(r){root=r||document;const c=root.querySelector?root.querySelector("#cx-cv"):null;if(c&&c!==cv){cv=c;ctx=cv.getContext("2d");resize()}}
 const $id=(id)=>(root.querySelector?root.querySelector("#"+id):null)||document.getElementById(id);
-const low=document.createElement("canvas"); low.width=W; low.height=H;
+const low=document.createElement("canvas"); low.width=VW; low.height=H;
 const lx=low.getContext("2d"); lx.imageSmoothingEnabled=false;
 const reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
 let S=4, speed=1;
@@ -58,9 +62,19 @@ function loadAll(){
   })));
 }
 function resize(){
-  if(!cv.parentElement)return;
-  const w=cv.parentElement.clientWidth*(window.devicePixelRatio||1);
-  S=Math.max(2,Math.ceil(w/W)); cv.width=W*S; cv.height=H*S; ctx.imageSmoothingEnabled=false;
+  const box=cv.parentElement; if(!box)return;
+  const dpr=window.devicePixelRatio||1, w=box.clientWidth*dpr, h=box.clientHeight*dpr;
+  let vw=W, ox=0;
+  if(box.dataset.wide!=null&&h>0){
+    /* whole pixels only: round to the nearest scale, sit the canvas on the box's floor, and
+       let the sky run over the top (cropped) or short (the box is painted sky colour) */
+    S=Math.max(2,Math.round(h/H)); vw=Math.max(W,Math.ceil(w/S)); ox=Math.floor((vw-W)/2);
+    cv.style.width=(vw*S/dpr)+"px"; cv.style.height=(H*S/dpr)+"px"; cv.style.left=(-Math.round((vw*S/dpr-box.clientWidth)/2))+"px";
+  } else { S=Math.max(2,Math.ceil(w/W)); }
+  const changed=vw!==VW||ox!==OX;
+  VW=vw; OX=ox; low.width=VW; low.height=H; lx.imageSmoothingEnabled=false;
+  cv.width=VW*S; cv.height=H*S; ctx.imageSmoothingEnabled=false;
+  if(changed||bg.width!==VW){bg.width=VW;bg.height=H;if(bgId)paintBg(bgId)}
 }
 addEventListener("resize",resize);
 
@@ -135,18 +149,20 @@ function drawFighter(f,t){
   if(f.dizzy){for(let i=0;i<3;i++){const a=t/180+i*2.1;px(f.cx+f.ox+Math.cos(a)*7,GROUND+f.oy-f.h-3+Math.sin(a)*2,"#ffd36a",2,2)}}
 }
 function render(t){
-  lx.clearRect(0,0,W,H); lx.drawImage(bg,0,0);
+  lx.clearRect(0,0,VW,H); lx.drawImage(bg,0,0);
+  lx.save(); lx.translate(OX,0);                 /* the fight sits centred in the wider view */
   fxs.filter(e=>e.behind).forEach(e=>e.draw(e.age/e.life));
   if(A&&B){const order=[A,B].sort((p,q)=>(p.busy?1:0)-(q.busy?1:0));order.forEach(f=>drawFighter(f,t))}
   fxs.filter(e=>!e.behind).forEach(e=>e.draw(e.age/e.life));
   parts.forEach(p=>{lx.globalAlpha=Math.min(1,p.life/10);px(p.x,p.y,p.c,p.s,p.s)});lx.globalAlpha=1;
+  lx.restore();
   let sx=0,sy=0; if(shake>0&&!reduceMotion){sx=(Math.random()*2-1)*shake*S;sy=(Math.random()*2-1)*shake*S}
   ctx.fillStyle="#000";ctx.fillRect(0,0,cv.width,cv.height);
-  ctx.drawImage(low,0,0,W,H,Math.round(sx),Math.round(sy),W*S,H*S);
+  ctx.drawImage(low,0,0,VW,H,Math.round(sx),Math.round(sy),VW*S,H*S);
   ctx.textAlign="center";ctx.textBaseline="middle";
   floats.forEach(f=>{ctx.globalAlpha=Math.min(1,f.life/18);
     ctx.font=`700 ${Math.round((f.big?9:f.small?5:7)*S)}px "Pixelify Sans",monospace`;
-    ctx.lineWidth=Math.max(2,S*1.1);ctx.strokeStyle="#2b2118";ctx.strokeText(f.text,f.x*S,f.y*S);ctx.fillStyle=f.c;ctx.fillText(f.text,f.x*S,f.y*S)});
+    ctx.lineWidth=Math.max(2,S*1.1);ctx.strokeStyle="#2b2118";ctx.strokeText(f.text,(f.x+OX)*S,f.y*S);ctx.fillStyle=f.c;ctx.fillText(f.text,(f.x+OX)*S,f.y*S)});
   ctx.globalAlpha=1;
   if(banner){ctx.globalAlpha=Math.min(1,banner.t);const y=H*S*.42;ctx.fillStyle="rgba(43,33,24,.82)";ctx.fillRect(0,y-11*S,cv.width,22*S);
     ctx.font=`700 ${Math.round(12*S)}px "Pixelify Sans",monospace`;ctx.fillStyle="#ffd36a";ctx.fillText(banner.text,cv.width/2,y+S*.5);ctx.globalAlpha=1}
@@ -430,10 +446,12 @@ const BIOME_BG = {
   datadocks:     { sky:["#36506b","#466480","#587a95","#6d90aa","#86a8bf"], far:"#3a5266", near:"#2c4152", grass:"#7a6a55", tuft:"#665846", path:"#a08a6a", dot:"#ffd36a" },
   prismpeaks:    { sky:["#18233f","#22305a","#2d3f73","#3c538c","#5470a6"], far:"#c8d6ee", near:"#9fb2d6", grass:"#e8eef7", tuft:"#c9d4e8", path:"#d7deea", dot:"#8fe3ff" }
 };
-const bg=document.createElement("canvas"); bg.width=W; bg.height=H;
+const bg=document.createElement("canvas"); bg.width=VW; bg.height=H;
 function paintBg(id){
   /* squarer battle screen: big sky, layered hills, grass, an oval platform under each fighter */
-  const p=BIOME_BG[id]||BIOME_BG.inkreef, b=bg.getContext("2d");
+  const p=BIOME_BG[id]||BIOME_BG.inkreef, b=bg.getContext("2d"), W=VW;   /* paint the whole view */
+  bgId=id;
+  if(cv.parentElement&&cv.parentElement.dataset.wide!=null)cv.parentElement.style.background=p.sky[0];   /* the band above a short canvas */
   b.clearRect(0,0,W,H);
   const skyH=Math.round(H*.55), band=Math.ceil(skyH/p.sky.length);
   p.sky.forEach((c,i)=>{b.fillStyle=c;b.fillRect(0,i*band,W,band+1)});
@@ -447,7 +465,7 @@ function paintBg(id){
   b.fillStyle=p.grass; b.fillRect(0,gy,W,H-gy);
   b.fillStyle=p.tuft; for(let y=gy+3;y<H;y+=4)for(let x=(y%8);x<W;x+=8)b.fillRect(x,y,1,1);
   /* the two battle platforms */
-  [[A_X,GROUND+2,22],[B_X,GROUND+2,20]].forEach(([cx,cy,rx])=>{
+  [[A_X+OX,GROUND+2,22],[B_X+OX,GROUND+2,20]].forEach(([cx,cy,rx])=>{
     const ry=Math.round(rx*.28);
     for(let y=-ry;y<=ry;y++){const w=Math.round(rx*Math.sqrt(1-(y*y)/(ry*ry)));b.fillStyle=y<0?p.path:"rgba(0,0,0,.18)";b.fillRect(cx-w,cy+y,w*2,1)}
     b.fillStyle="rgba(255,255,255,.18)";b.fillRect(cx-Math.round(rx*.6),cy-ry+1,Math.round(rx*1.2),1);
