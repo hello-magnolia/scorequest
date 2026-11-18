@@ -161,12 +161,13 @@ re-run it on any existing project. verify_auth guards all of this.
   trail across the top (position only: number / check / flag, lantern marks current,
   lair icon at the end, NO health on it); then the battle screen in a wide rounded frame
   (.screen.wide, data-wide, SAME WIDTH AS THE CARD min(1040px, 100% - 32px), height
-  clamp(200px, 27vh, 250px); clash-arena sizes S = ceil(boxH/96 + 1) whole pixels, leaning BIG
-  (Nov 18, Magnolia: bigger critters in a short strip): the canvas overshoots the box, sits 5
-  scene px below its floor and loses only sky off the top; VW view px wide with the 128px fight
-  centred at OX, backdrop painted across the whole view; the arena sets --sx = CSS px per scene
-  px on the box); Pokemon-style plates (Pomelo HP 5, boss WARD) float just above each critter's
-  head (top 10px, left = 50% +- n * --sx; Magnolia likes them there); log line centred; the question
+  clamp(200px, 27vh, 250px), SQUARE corners (Magnolia: no rounded frame); clash-arena scales in
+  CSS px first (sCss = ceil(boxH/96) + 2, S = sCss * dpr) so retina and plain screens match,
+  leaning BIG (Nov 18, Magnolia, twice): the canvas overshoots the box, sits 8 scene px below its
+  floor and loses sky off the top; VW view px wide with the 128px fight centred at OX, backdrop
+  painted across the whole view; --sx = sCss px on the box); Pokemon-style plates (Pomelo HP 5,
+  boss WARD) sit in the TOP CORNERS, Pomelo's left and the boss's right (Magnolia: over-the-head
+  plates collided on retina); log line centred; the question
   card centred below (max 1040px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
   Check; the explanation panel under the card, scrollIntoView 700ms after the verdict. An
   ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
