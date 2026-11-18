@@ -162,7 +162,9 @@ figure { margin: 0 0 18px; }
 .card.is-entering .choices li:nth-child(3) { animation-delay: calc(var(--a-at) + .25s); }
 .card.is-entering .choices li:nth-child(4) { animation-delay: calc(var(--a-at) + .35s); }
 .card.is-entering .spr, .card.is-entering .acts { animation: sq-fade .4s ease-out calc(var(--a-at) + .4s) both; }
-.is-typing::after { content: ''; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.15em; border-left: 2px solid var(--ink); animation: sq-caret .7s steps(1) infinite; }
+/* the RPG block cursor */
+.is-typing::after { content: ''; display: inline-block; width: .5em; height: .95em; margin-left: 3px; vertical-align: -0.12em; background: var(--ink); animation: sq-cursor .5s steps(1) infinite; }
+@keyframes sq-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 .stem.is-wipe { animation: sq-wipe .6s steps(24, end) var(--q-at) both; }
 /* the reveal: the recap drops in, the explanation follows */
 .card.is-reviewed .recap { animation: sq-rise .35s ease-out both; }

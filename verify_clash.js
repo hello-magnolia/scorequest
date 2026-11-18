@@ -30,6 +30,7 @@ async function answer(w, good) {
   else { const inp = d.querySelector('#spr-in'); inp.value = good ? q.accepted[0] : '9999'; inp.dispatchEvent(new w.Event('input', { bubbles: true })); }
   click(w, d.querySelector('#bCheck'));
   await w.SQArena.idle();
+  await until(() => !d.querySelector('#whybox').hidden, 3000);   /* the marked grid holds ~1.3s before the recap folds in */
   await new Promise(r => setTimeout(r, 30));
 }
 const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Structure', inkreef: 'Expression of Ideas', syntaxcitadel: 'Standard English Conventions',

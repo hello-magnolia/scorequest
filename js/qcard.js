@@ -180,10 +180,18 @@
         '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
       math(why);
     }
-    if (box) box.hidden = false;
     recap.classList.add(r.correct ? 'won' : 'missed');
-    card.classList.remove('is-entering');
-    card.classList.add('is-reviewed'); card.classList.remove('show-choices');
+    recap.hidden = true;
+    card.classList.remove('is-entering'); card.classList.remove('show-choices');
+    /* the marked grid holds while the fight plays out (the hit or the strike), then folds */
+    var fold = function () {
+      if (!recap.isConnected) return;
+      recap.hidden = false;
+      if (box) box.hidden = false;
+      card.classList.add('is-reviewed');
+    };
+    var wait = motionOff() ? 0 : (opts.delay != null ? opts.delay : reveal.DELAY);
+    if (wait) setTimeout(fold, wait); else fold();
   }
   /* enter(root): the arrival of a freshly rendered card, in order: the passage types out
      (fast, all paragraphs as one stream, capped ~1s), then the stem types (capped ~0.9s),
@@ -199,29 +207,34 @@
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
   function plain(el) { return !!el && !el.querySelector('*') && el.textContent.trim().length > 0; }
-  /* type the blocks (elements holding plain text) in sequence over dur ms; returns cancel() */
+  /* type the blocks (elements holding plain text) in sequence over about dur ms, old
+     RPG style: the text advances on a fixed TICK (not per frame), a block cursor sits at the
+     end, and a soft blip sounds on every other tick (SQSfx.textBlip). Returns cancel(). */
+  var TICK = 30;
   function typeBlocks(blocks, dur, after, onDone) {
     var texts = blocks.map(function (b) { return b.textContent; }), total = texts.join('').length || 1;
+    var ticks = Math.max(1, Math.round(dur / TICK)), per = Math.max(1, Math.ceil(total / ticks));
     blocks.forEach(function (b) { b.style.minHeight = b.getBoundingClientRect().height + 'px'; b.textContent = ''; });
-    var t0 = null, raf = 0, timer = 0, done = false;
+    var timer = 0, done = false, n = 0, tick = 0;
     var finish = function () {
-      if (done) return; done = true;
+      if (done) return; done = true; clearTimeout(timer);
       blocks.forEach(function (b, i) { b.textContent = texts[i]; b.style.minHeight = ''; b.classList.remove('is-typing'); });
       if (onDone) onDone();
     };
-    var step = function (t) {
-      if (t0 === null) t0 = t;
-      var n = Math.ceil(total * Math.min(1, (t - t0) / dur)), left = n, typingSet = false;
+    var step = function () {
+      n = Math.min(total, n + per); tick++;
+      var left = n, typingSet = false, grew = false;
       blocks.forEach(function (b, i) {
         var take = Math.max(0, Math.min(texts[i].length, left)); left -= take;
-        if (take !== b.textContent.length) b.textContent = texts[i].slice(0, take);
+        if (take !== b.textContent.length) { b.textContent = texts[i].slice(0, take); grew = true; }
         var active = !typingSet && take < texts[i].length; if (active) typingSet = true;
         b.classList.toggle('is-typing', active);
       });
-      if (n < total) raf = requestAnimationFrame(step); else finish();
+      if (grew && tick % 2 === 0 && window.SQSfx && window.SQSfx.textBlip) { try { window.SQSfx.textBlip(); } catch (e) {} }
+      if (n < total) timer = setTimeout(step, TICK); else finish();
     };
-    timer = setTimeout(function () { raf = requestAnimationFrame(step); }, after || 0);
-    return function () { clearTimeout(timer); cancelAnimationFrame(raf); finish(); };
+    timer = setTimeout(step, after || 0);
+    return function () { finish(); };
   }
   function enter(root) {
     if (!root) return;
@@ -242,6 +255,7 @@
     if (plain(stem)) cancels.push(typeBlocks([stem], stemDur, qAt));
     running = function () { cancels.forEach(function (c) { c(); }); };
   }
+  reveal.DELAY = 1300;   /* ms the marked grid holds before the recap and explanation take over */
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
     px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip,
     sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal, enter: enter };

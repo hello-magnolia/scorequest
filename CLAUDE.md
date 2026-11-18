@@ -174,13 +174,16 @@ re-run it on any existing project. verify_auth guards all of this.
   toggle = .card.show-choices) and the explanation (#whybox, rendered INSIDE the card by
   SQCard.whyboxHTML, .card.is-reviewed) takes the grid's place; there is no standalone
   whybox any more, and NO verdict line or "Explanation" heading (Magnolia: the recap already
-  says it); the panel is slip + body only; the recap drops in and the panel fades after it.
+  says it); the panel is slip + body only. The marked grid HOLDS for reveal.DELAY (1300ms,
+  0 when motion is off) while the hit or strike plays, then the recap drops in and the panel
+  fades after it (Magnolia: focus on the animation first).
   ARRIVAL (Nov 18): .lay.stage > strip/log/card rise in on load (CSS); SQCard.enter(read) on
   every render runs IN ORDER: the passage TYPES (plain paragraphs as one stream, 2.2ms/char
   capped 1s; markup paragraphs fade), then the stem types (8ms/char capped .9s; math stems
   wipe), then the answers rise one by one, then Check; JS hands --q-at / --a-at (ms) to the
-  CSS; heights reserved so nothing jumps; typeBlocks() on rAF; transform/opacity only; off
-  under reduced motion or sq_motion off. The question card has NO hover lift (style.css
+  CSS; heights reserved so nothing jumps; typeBlocks() is RPG-style: a fixed 30ms TICK (not
+  per frame), a blinking BLOCK cursor (.is-typing::after), SQSfx.textBlip every other tick;
+  transform/opacity only; off under reduced motion or sq_motion off. The question card has NO hover lift (style.css
   .card:hover is overridden; Magnolia: it shook). An ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
   .sideVisuals(read) moves tables/figures (passage or qbox; a table inside a figure moves with
   it) into .read-grid > .read-text + .read-vis (42% column, 1 col under 960px), answers span
