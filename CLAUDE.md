@@ -160,21 +160,21 @@ re-run it on any existing project. verify_auth guards all of this.
   Layout (STAGE, Nov 17 2026, Magnolia; shared with the realm overlay, .lay.stage in css/clash.css):
   trail across the top (position only: number / check / flag, lantern marks current,
   lair icon at the end, NO health on it); then the battle screen in a wide rounded frame
-  (.screen.wide, data-wide, width min(1120px, 100% - 32px), height clamp(220px, 33vh, 330px);
-  clash-arena sizes S = ceil(boxH/96 + 0.6) whole pixels, leaning BIG (Nov 18, Magnolia: bigger
-  critters): the canvas overshoots the box, sits 5 scene px below its floor and loses only sky
-  off the top; VW view px wide with the 128px fight centred at OX, backdrop painted across the
-  whole view, box background = sky[0] if a band shows above);
-  Pokemon-style plates (Pomelo HP 5, boss WARD) flank the centre; log line centred; the question
+  (.screen.wide, data-wide, SAME WIDTH AS THE CARD min(1040px, 100% - 32px), height
+  clamp(200px, 27vh, 250px); clash-arena sizes S = ceil(boxH/96 + 1) whole pixels, leaning BIG
+  (Nov 18, Magnolia: bigger critters in a short strip): the canvas overshoots the box, sits 5
+  scene px below its floor and loses only sky off the top; VW view px wide with the 128px fight
+  centred at OX, backdrop painted across the whole view; the arena sets --sx = CSS px per scene
+  px on the box); Pokemon-style plates (Pomelo HP 5, boss WARD) float just above each critter's
+  head (top 10px, left = 50% +- n * --sx; Magnolia likes them there); log line centred; the question
   card centred below (max 1040px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
   Check; the explanation panel under the card, scrollIntoView 700ms after the verdict. An
   ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
   .sideVisuals(read) moves tables/figures (passage or qbox; a table inside a figure moves with
   it) into .read-grid > .read-text + .read-vis (42% column, 1 col under 960px), answers span
   below; (2) the strip is position: sticky with top = --bar + --slim - --strip (NEGATIVE), so
-  scrolling parks its bottom 150px (ground, critters, plates, which sit at bottom: 14px, out at
-  50% +- 500px) under the top bar while the card scrolls beneath; no layout height change, no
-  jump. --bar = 52px (overlay .ov-top, z 5 above the strip's 3); clash.js measures .top into
+  scrolling parks its bottom 150px (ground and critters; the plates scroll out with the sky)
+  under the top bar while the card scrolls beneath; no layout height change, no jump. --bar = 52px (overlay .ov-top, z 5 above the strip's 3); clash.js measures .top into
   --bar since it wraps. No internal scroll boxes (Magnolia).
   ONE boss per biome (BIOMES in clash.js), ward = ceil(60% of biome qs) clamped 3..10, one pip
   per correct answer, misses never heal it. Focus (F, sq_clash_focus) swaps the screen for two

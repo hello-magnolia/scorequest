@@ -68,7 +68,8 @@ function resize(){
   if(box.dataset.wide!=null&&h>0){
     /* whole pixels only: round to the nearest scale, sit the canvas on the box's floor, and
        let the sky run over the top (cropped) or short (the box is painted sky colour) */
-    S=Math.max(2,Math.ceil(h/H+0.6)); vw=Math.max(W,Math.ceil(w/S)); ox=Math.floor((vw-W)/2);   /* lean big (Magnolia: bigger critters): the canvas overshoots the box and only sky is lost off the top */
+    S=Math.max(2,Math.ceil(h/H+1)); vw=Math.max(W,Math.ceil(w/S)); ox=Math.floor((vw-W)/2);   /* lean big (Magnolia: bigger critters in a short strip): the canvas overshoots the box and only sky is lost off the top */
+    box.style.setProperty("--sx",(S/dpr)+"px");   /* the plates sit over the critters' heads */
     cv.style.width=(vw*S/dpr)+"px"; cv.style.height=(H*S/dpr)+"px"; cv.style.left=(-Math.round((vw*S/dpr-box.clientWidth)/2))+"px";
     cv.style.bottom=(-Math.round(5*S/dpr))+"px";   /* tuck 5 scene px of bare ground under the frame so the fight sits higher */
   } else { S=Math.max(2,Math.ceil(w/W)); }

@@ -119,16 +119,19 @@ figure { margin: 0 0 18px; }
    box's height, data-wide). The question sits centred beneath it, answers in a 2x2 grid,
    explanation under that; a passage of ordinary length fits a laptop window unscrolled. */
 .lay.stage { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: start; padding: 0 0 20px; }
-.lay.stage { --strip: clamp(220px, 33vh, 330px); --slim: 150px; --bar: 52px; }
+.lay.stage { --strip: clamp(200px, 27vh, 250px); --slim: 150px; --bar: 52px; --sx: 4px; }
 /* the strip is sticky with a NEGATIVE top: scrolling slides most of it under the top bar
    and parks the bottom --slim px (ground, critters, plates) in view while the question
    scrolls beneath; no layout height changes, so the reading position never jumps */
-.lay.stage .screen.wide { aspect-ratio: auto; height: var(--strip); width: min(1120px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 14px;
+.lay.stage .screen.wide { aspect-ratio: auto; height: var(--strip); width: min(1040px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 14px;
   position: sticky; top: calc(var(--bar) + var(--slim) - var(--strip)); z-index: 3; }
 .lay.stage .screen.wide canvas { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; }
-.lay.stage .plate { width: min(230px, calc(50% - 18px)); top: auto; bottom: 14px; }   /* low, so they stay in view when the strip parks slim */
-.lay.stage .plate.me { left: max(12px, calc(50% - 500px)); }
-.lay.stage .plate.boss { right: max(12px, calc(50% - 500px)); }
+/* plates float just above each critter's head: --sx is CSS px per scene px (set by the
+   arena), Pomelo stands at scene x 36 and the boss at 94 in a 128px scene centred at 50% */
+.lay.stage .plate { width: 210px; top: 10px; }
+.lay.stage .plate.me { left: calc(50% - 28 * var(--sx) - 105px); }
+.lay.stage .plate.boss { right: auto; left: calc(50% + 30 * var(--sx) - 105px); }
+@media (max-width: 620px) { .lay.stage .plate { width: 150px; } .lay.stage .plate.me { left: calc(50% - 28 * var(--sx) - 75px); } .lay.stage .plate.boss { left: calc(50% + 30 * var(--sx) - 75px); } }
 .lay.stage .log { text-align: center; margin: 0; padding: 0 16px; }
 .lay.stage .card, .lay.stage .whybox, .lay.stage .mini { width: min(1040px, calc(100% - 32px)); margin: 0 auto; }
 .lay.stage .card { padding: 16px 24px 18px; }
