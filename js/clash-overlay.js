@@ -55,8 +55,7 @@
       '<div class="plate me"><div class="nm" id="me-name"><span>Pomelo</span></div><div class="row"><span class="lbl hpl">HP</span><span class="bar hp" id="me-hp" role="img"></span></div></div>' +
       '<div class="plate boss"><div class="nm"><span id="cx-boss"></span></div><div class="row"><span class="lbl">WARD</span><span class="bar ward" id="cx-ward" role="img"></span></div></div></div>' +
       '<p class="log" id="cx-log" aria-live="polite"></p>' +
-      '<article class="card" id="read"></article>' +
-      '<section class="whybox" id="whybox" aria-live="polite" hidden><h3>Explanation</h3><div id="why"></div></section></div>';
+      '<article class="card" id="read"></article></div>';
   }
   function segs(n, on) { var h = ''; for (var i = 0; i < n; i++) h += '<i class="' + (i < on ? 'on' : '') + '"></i>'; return h; }
   function bars() {
@@ -92,10 +91,10 @@
     state.picked = null; state.shownAt = Date.now(); state.busy = false;
     dots();
     var read = $('#read', el);
-    read.innerHTML = C.passageHTML(q) + C.questionHTML(q, state.i + 1, state.total) +
+    read.className = 'card';
+    read.innerHTML = C.passageHTML(q) + C.questionHTML(q, state.i + 1, state.total) + C.whyboxHTML() +
       '<p class="msg" id="msg" role="status"></p><div class="acts"><button class="btn main" id="bCheck" type="button" disabled>Check</button>' +
       '<button class="btn" id="bNext" type="button" hidden>' + (state.i + 1 < state.total ? 'Next ▶' : 'Finish ▶') + '</button></div></div>';
-    $('#why', el).innerHTML = ''; $('#whybox', el).hidden = true;
     C.sideVisuals(read);
     C.math(read);
     Array.prototype.forEach.call(read.querySelectorAll('.choices button'), function (b) {
@@ -130,13 +129,8 @@
           if (k === r.key) b.classList.add('correct'); else if (k === resp) b.classList.add('wrong');
         });
       } else { var inp = $('#spr-in', el); inp.disabled = true; }
-      $('#why', el).innerHTML = '<p class="verdict ' + (r.correct ? 'won' : 'missed') + '">' +
-        (r.correct ? 'Correct! A hit.' : 'Not this time. The answer is ' + C.esc(r.key) + '.') + '</p>' +
-        (r.trap && !r.correct ? '<p class="slip">Common slip: ' + C.esc(String(r.trap).replace(/-/g, ' ')) + '.</p>' : '') +
-        '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + C.rich(x) + '</p>'; }).join('') + '</div>';
-      $('#whybox', el).hidden = false; C.math($('#why', el));
-      /* the explanation unfolds under the card: bring it up after the verdict lands */
-      setTimeout(function () { try { $('#whybox', el).scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }, 700);
+      /* the grid folds into a recap and the explanation takes its place, inside the card */
+      C.reveal(read, q, resp, r, { slip: r.trap && !r.correct ? 'Common slip: ' + String(r.trap).replace(/-/g, ' ') + '.' : '' });
       $('#bCheck', el).hidden = true; $('#bNext', el).hidden = false;
       try { $('#bNext', el).focus({ preventScroll: true }); } catch (e) {}
       dots();

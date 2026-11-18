@@ -141,11 +141,11 @@
       h += '<div class="spr"><label for="spr-in">Your answer</label><input id="spr-in" inputmode="decimal" autocomplete="off" maxlength="6" spellcheck="false">' +
         '<p class="hint">A number, decimal or fraction, like 12, 0.75 or 3/4.</p></div>';
     }
-    h += '<p class="msg" id="msg" role="status"></p><div class="acts"><button class="btn main" id="bCheck" type="button" disabled>Check</button>' +
+    h += C.whyboxHTML() + '<p class="msg" id="msg" role="status"></p><div class="acts"><button class="btn main" id="bCheck" type="button" disabled>Check</button>' +
       '<button class="btn" id="bRetry" type="button" hidden>Try again</button>' +
       '<button class="btn" id="bNext" type="button" hidden>' + (cur + 1 < qs.length ? 'Next ▶' : 'Back to 1 ▶') + '</button></div></div>';
+    $('#read').className = 'card';
     $('#read').innerHTML = h;
-    $('#why').innerHTML = ''; $('#whybox').hidden = true;
     if (C.sideVisuals) C.sideVisuals($('#read'));
     math($('#read'));
     wire(q);
@@ -205,13 +205,7 @@
     } else {
       var inp = $('#spr-in'); inp.value = resp; inp.disabled = true;
     }
-    $('#why').innerHTML = '<p class="verdict ' + (won ? 'won' : 'missed') + '">' +
-      (won ? 'Correct! A hit on the ' + esc(biome.bossName) + '.' : 'Not this time. The answer is ' + esc(r.key) + '.') + '</p>' +
-      (slip ? '<p class="slip">' + esc(slip) + '</p>' : '') +
-      '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
-    $('#whybox').hidden = false;
-    math($('#why'));
-    setTimeout(function () { try { $('#whybox').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {} }, 700);
+    C.reveal($('#read'), q, resp, r, { slip: slip, verdict: won ? 'Correct! A hit on the ' + esc(biome.bossName) + '.' : 'Not this time. The answer is ' + esc(r.key) + '.' });
     $('#bCheck').hidden = true;
     $('#bNext').hidden = false;
     $('#bRetry').hidden = won;

@@ -169,8 +169,11 @@ re-run it on any existing project. verify_auth guards all of this.
   boss WARD) sit in the TOP CORNERS, Pomelo's left and the boss's right (Magnolia: over-the-head
   plates collided on retina); log line centred; the question
   card centred below (max 1040px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
-  Check; the explanation panel under the card, scrollIntoView 700ms after the verdict. An
-  ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
+  Check. AFTER CHECK (Nov 18, Magnolia: no scrolling for the explanation): SQCard.reveal()
+  folds the grid into a one-line .recap (You chose B / Answer C, key text, "Show choices"
+  toggle = .card.show-choices) and the explanation (#whybox, rendered INSIDE the card by
+  SQCard.whyboxHTML, .card.is-reviewed) takes the grid's place; there is no standalone
+  whybox any more. An ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
   .sideVisuals(read) moves tables/figures (passage or qbox; a table inside a figure moves with
   it) into .read-grid > .read-text + .read-vis (42% column, 1 col under 960px), answers span
   below; (2) the strip is position: sticky with top = --bar + --slim - --strip (NEGATIVE), so

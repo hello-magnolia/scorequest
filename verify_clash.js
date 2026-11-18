@@ -83,6 +83,10 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
   let S = w.__SQ_CLASH.state;
   check('Correct answer cracks one ward pip', S.ward === wardMax - 1 && d.querySelectorAll('#cx-ward i.on').length === wardMax - 1);
   check('Explanation shown after Check', d.querySelector('#whybox').hidden === false && /Correct/.test(d.querySelector('#why .verdict').textContent) && d.querySelector('#why .body').textContent.length > 40);
+  check('The explanation sits inside the card where the grid was: choices folded into a recap, Show choices brings them back',
+    d.querySelector('#read.card.is-reviewed #whybox') && d.querySelector('#read .recap .pick.good .k') &&
+    w.getComputedStyle(d.querySelector('#read .choices')).display === 'none' &&
+    (click(w, d.querySelector('.recap [data-toggle-choices]')), w.getComputedStyle(d.querySelector('#read .choices')).display !== 'none'));
   check('Trail marks the question correct', d.querySelector('#trail .node.won') !== null);
   check('Completion bar advances', /[1-9]\d*%/.test(d.querySelector('#donePct').textContent), d.querySelector('#donePct').textContent);
   const att = w.SQAttempts.list();

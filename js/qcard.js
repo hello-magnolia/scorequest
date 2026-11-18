@@ -142,6 +142,48 @@
     root.classList.add('has-vis');
     return true;
   }
+  /* whyboxHTML: the explanation panel lives INSIDE the card, right where the answers were,
+     so it never lands under the fold (Magnolia, Nov 18). reveal(root, q, resp, r) collapses
+     the choice grid into a one-line recap (your pick, the answer, a "Show choices" toggle)
+     and fills the panel. */
+  function whyboxHTML() {
+    return '<section class="whybox" id="whybox" aria-live="polite" hidden><h3>Explanation</h3><div id="why"></div></section>';
+  }
+  function reveal(root, q, resp, r, opts) {
+    opts = opts || {};
+    var card = root.closest ? (root.closest('.card') || root) : root;
+    var choices = root.querySelector('.choices'), spr = root.querySelector('.spr');
+    var old = root.querySelector('.recap'); if (old) old.remove();
+    var recap = document.createElement('div'); recap.className = 'recap';
+    var keyText = '';
+    if (q.type === 'mcq') {
+      var kc = (q.choices || []).filter(function (c) { return c.key === r.key; })[0];
+      keyText = kc && !kc.figure ? rich(kc.text) : '';
+      recap.innerHTML = '<span class="pick ' + (r.correct ? 'good' : 'bad') + '"><span class="lbl">You chose</span><span class="k">' + esc(resp) + '</span></span>' +
+        (r.correct ? '' : '<span class="pick good"><span class="lbl">Answer</span><span class="k">' + esc(r.key) + '</span></span>') +
+        (keyText ? '<span class="keytext">' + keyText + '</span>' : '') +
+        '<button type="button" class="linkish" data-toggle-choices>Show choices</button>';
+    } else {
+      recap.innerHTML = '<span class="pick ' + (r.correct ? 'good' : 'bad') + '"><span class="lbl">You answered</span><span class="k wide">' + esc(resp) + '</span></span>' +
+        (r.correct ? '' : '<span class="pick good"><span class="lbl">Answer</span><span class="k wide">' + esc(r.key) + '</span></span>');
+    }
+    var anchor = choices || spr;
+    if (anchor) anchor.parentNode.insertBefore(recap, anchor);
+    var tog = recap.querySelector('[data-toggle-choices]');
+    if (tog) tog.addEventListener('click', function () {
+      var on = card.classList.toggle('show-choices'); tog.textContent = on ? 'Hide choices' : 'Show choices';
+    });
+    var why = root.querySelector('#why'), box = root.querySelector('#whybox');
+    if (why) {
+      why.innerHTML = '<p class="verdict ' + (r.correct ? 'won' : 'missed') + '">' + (opts.verdict || (r.correct ? 'Correct! A hit.' : 'Not this time. The answer is ' + esc(r.key) + '.')) + '</p>' +
+        (opts.slip ? '<p class="slip">' + esc(opts.slip) + '</p>' : '') +
+        '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
+      math(why);
+    }
+    if (box) box.hidden = false;
+    card.classList.add('is-reviewed'); card.classList.remove('show-choices');
+  }
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
-    px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip, sideVisuals: sideVisuals };
+    px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip,
+    sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal };
 })();
