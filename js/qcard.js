@@ -183,7 +183,40 @@
     if (box) box.hidden = false;
     card.classList.add('is-reviewed'); card.classList.remove('show-choices');
   }
+  /* enter(root): a light arrival for a freshly rendered card. The passage, question box and
+     answers fade and rise in (CSS, transform + opacity only, staggered), and the stem is
+     typed out: plain-text stems letter by letter on requestAnimationFrame (height reserved
+     first, so nothing below jumps), stems holding math or markup get a left-to-right wipe
+     instead. Skipped under reduced motion or sq_motion 'off'. Cancels any typing in flight. */
+  var typing = null;
+  function motionOff() {
+    var m = null; try { m = window.localStorage.getItem('sq_motion'); } catch (e) {}
+    if (m === 'off') return true;
+    if (m === 'full' || m === 'calm') return false;
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  function enter(root) {
+    if (!root) return;
+    if (typing) { typing.cancel(); typing = null; }
+    if (motionOff()) return;
+    root.classList.remove('is-entering'); void root.offsetWidth; root.classList.add('is-entering');
+    var stem = root.querySelector('.stem');
+    if (!stem) return;
+    if (stem.querySelector('*') || !stem.textContent.trim()) { stem.classList.add('is-wipe'); return; }
+    var full = stem.textContent, h = stem.getBoundingClientRect().height;
+    var dur = Math.min(1100, 120 + full.length * 9), t0 = null, raf = 0;
+    stem.style.minHeight = h + 'px'; stem.classList.add('is-typing'); stem.textContent = '';
+    var finish = function () { stem.textContent = full; stem.style.minHeight = ''; stem.classList.remove('is-typing'); typing = null; };
+    var step = function (t) {
+      if (t0 === null) t0 = t;
+      var k = Math.min(1, (t - t0) / dur);
+      stem.textContent = full.slice(0, Math.ceil(full.length * k));
+      if (k < 1) raf = requestAnimationFrame(step); else finish();
+    };
+    raf = requestAnimationFrame(step);
+    typing = { cancel: function () { cancelAnimationFrame(raf); finish(); } };
+  }
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
     px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip,
-    sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal };
+    sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal, enter: enter };
 })();

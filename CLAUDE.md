@@ -173,7 +173,12 @@ re-run it on any existing project. verify_auth guards all of this.
   folds the grid into a one-line .recap (You chose B / Answer C, key text, "Show choices"
   toggle = .card.show-choices) and the explanation (#whybox, rendered INSIDE the card by
   SQCard.whyboxHTML, .card.is-reviewed) takes the grid's place; there is no standalone
-  whybox any more. An ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
+  whybox any more. ARRIVAL (Nov 18): .lay.stage > strip/log/card rise in on load (CSS);
+  SQCard.enter(read) on every render: passage/meta fade, choices rise staggered .45-.75s, the
+  STEM TYPES OUT (plain-text stems letter by letter on rAF, ~9ms/char capped 1.1s, height
+  reserved; stems with math/markup get a 24-step clip-path wipe); transform/opacity only; off
+  under reduced motion or sq_motion off. The question card has NO hover lift (style.css
+  .card:hover is overridden; Magnolia: it shook). An ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
   .sideVisuals(read) moves tables/figures (passage or qbox; a table inside a figure moves with
   it) into .read-grid > .read-text + .read-vis (42% column, 1 col under 960px), answers span
   below; (2) the strip is position: sticky with top = --bar + --slim - --strip (NEGATIVE), so

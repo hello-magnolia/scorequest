@@ -148,6 +148,7 @@
     $('#read').innerHTML = h;
     if (C.sideVisuals) C.sideVisuals($('#read'));
     math($('#read'));
+    if (C.enter) C.enter($('#read'));
     wire(q);
     if (prev) showResult(q, prev.response, prev.result === 'won', false);
     trail();

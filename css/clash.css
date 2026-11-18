@@ -140,6 +140,34 @@ figure { margin: 0 0 18px; }
 .lay.stage .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .lay.stage .choices button { height: 100%; padding: 10px 12px; font-size: 15px; line-height: 1.4; }
 .lay.stage .acts { margin-top: 10px; }
+/* the question card never moves under the mouse (style.css gives index cards a hover lift) */
+.lay.stage .card, .lay.stage .card:hover { transform: none; transition: none; }
+
+/* arrival: the stage rises in on load, and a fresh card fades its parts in with a small
+   stagger while the stem types out (SQCard.enter). transform + opacity only, so the page
+   stays light; all of it is off under reduced motion / sq_motion off */
+@keyframes sq-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes sq-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sq-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes sq-caret { 0%, 100% { border-color: transparent; } 50% { border-color: var(--ink); } }
+.lay.stage > .screen.wide { animation: sq-rise .45s ease-out both; }
+.lay.stage > .log { animation: sq-fade .5s ease-out .15s both; }
+.lay.stage > .card { animation: sq-rise .45s ease-out .1s both; }
+.card.is-entering .passage, .card.is-entering .read-vis { animation: sq-fade .5s ease-out both; }
+.card.is-entering .qmeta { animation: sq-fade .4s ease-out .15s both; }
+.card.is-entering .choices li { animation: sq-rise .4s ease-out both; }
+.card.is-entering .choices li:nth-child(1) { animation-delay: .45s; }
+.card.is-entering .choices li:nth-child(2) { animation-delay: .55s; }
+.card.is-entering .choices li:nth-child(3) { animation-delay: .65s; }
+.card.is-entering .choices li:nth-child(4) { animation-delay: .75s; }
+.card.is-entering .spr, .card.is-entering .acts { animation: sq-fade .4s ease-out .6s both; }
+.stem.is-typing::after { content: ''; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.15em; border-left: 2px solid var(--ink); animation: sq-caret .7s steps(1) infinite; }
+.stem.is-wipe { animation: sq-wipe .7s steps(24, end) both; }
+@media (prefers-reduced-motion: reduce) {
+  .lay.stage > .screen.wide, .lay.stage > .log, .lay.stage > .card, .card.is-entering .passage, .card.is-entering .read-vis, .card.is-entering .qmeta,
+  .card.is-entering .choices li, .card.is-entering .spr, .card.is-entering .acts, .stem.is-wipe { animation: none; }
+}
+
 /* after Check the grid folds into a one-line recap and the explanation takes its place */
 .card.is-reviewed .choices, .card.is-reviewed .spr { display: none; }
 .card.is-reviewed.show-choices .choices { display: grid; margin-top: 10px; }
