@@ -147,7 +147,7 @@
      the choice grid into a one-line recap (your pick, the answer, a "Show choices" toggle)
      and fills the panel. */
   function whyboxHTML() {
-    return '<section class="whybox" id="whybox" aria-live="polite" hidden><h3>Explanation</h3><div id="why"></div></section>';
+    return '<section class="whybox" id="whybox" aria-live="polite" hidden><div id="why"></div></section>';
   }
   function reveal(root, q, resp, r, opts) {
     opts = opts || {};
@@ -174,47 +174,73 @@
       var on = card.classList.toggle('show-choices'); tog.textContent = on ? 'Hide choices' : 'Show choices';
     });
     var why = root.querySelector('#why'), box = root.querySelector('#whybox');
+    /* the recap already says hit or miss and names the answer, so the panel is just the why */
     if (why) {
-      why.innerHTML = '<p class="verdict ' + (r.correct ? 'won' : 'missed') + '">' + (opts.verdict || (r.correct ? 'Correct! A hit.' : 'Not this time. The answer is ' + esc(r.key) + '.')) + '</p>' +
-        (opts.slip ? '<p class="slip">' + esc(opts.slip) + '</p>' : '') +
+      why.innerHTML = (opts.slip ? '<p class="slip">' + esc(opts.slip) + '</p>' : '') +
         '<div class="body">' + String(r.explanation || '').split(/\n+/).map(function (x) { return '<p>' + rich(x) + '</p>'; }).join('') + '</div>';
       math(why);
     }
     if (box) box.hidden = false;
+    recap.classList.add(r.correct ? 'won' : 'missed');
+    card.classList.remove('is-entering');
     card.classList.add('is-reviewed'); card.classList.remove('show-choices');
   }
-  /* enter(root): a light arrival for a freshly rendered card. The passage, question box and
-     answers fade and rise in (CSS, transform + opacity only, staggered), and the stem is
-     typed out: plain-text stems letter by letter on requestAnimationFrame (height reserved
-     first, so nothing below jumps), stems holding math or markup get a left-to-right wipe
-     instead. Skipped under reduced motion or sq_motion 'off'. Cancels any typing in flight. */
-  var typing = null;
+  /* enter(root): the arrival of a freshly rendered card, in order: the passage types out
+     (fast, all paragraphs as one stream, capped ~1s), then the stem types (capped ~0.9s),
+     then the answers rise in one by one, then Check. Plain text types letter by letter on
+     requestAnimationFrame with heights reserved first so nothing below jumps; text holding
+     math or markup fades in instead. The timings are handed to the CSS as --q-at / --a-at.
+     Skipped under reduced motion or sq_motion 'off'. Cancels any arrival in flight. */
+  var running = null;
   function motionOff() {
     var m = null; try { m = window.localStorage.getItem('sq_motion'); } catch (e) {}
     if (m === 'off') return true;
     if (m === 'full' || m === 'calm') return false;
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
-  function enter(root) {
-    if (!root) return;
-    if (typing) { typing.cancel(); typing = null; }
-    if (motionOff()) return;
-    root.classList.remove('is-entering'); void root.offsetWidth; root.classList.add('is-entering');
-    var stem = root.querySelector('.stem');
-    if (!stem) return;
-    if (stem.querySelector('*') || !stem.textContent.trim()) { stem.classList.add('is-wipe'); return; }
-    var full = stem.textContent, h = stem.getBoundingClientRect().height;
-    var dur = Math.min(1100, 120 + full.length * 9), t0 = null, raf = 0;
-    stem.style.minHeight = h + 'px'; stem.classList.add('is-typing'); stem.textContent = '';
-    var finish = function () { stem.textContent = full; stem.style.minHeight = ''; stem.classList.remove('is-typing'); typing = null; };
+  function plain(el) { return !!el && !el.querySelector('*') && el.textContent.trim().length > 0; }
+  /* type the blocks (elements holding plain text) in sequence over dur ms; returns cancel() */
+  function typeBlocks(blocks, dur, after, onDone) {
+    var texts = blocks.map(function (b) { return b.textContent; }), total = texts.join('').length || 1;
+    blocks.forEach(function (b) { b.style.minHeight = b.getBoundingClientRect().height + 'px'; b.textContent = ''; });
+    var t0 = null, raf = 0, timer = 0, done = false;
+    var finish = function () {
+      if (done) return; done = true;
+      blocks.forEach(function (b, i) { b.textContent = texts[i]; b.style.minHeight = ''; b.classList.remove('is-typing'); });
+      if (onDone) onDone();
+    };
     var step = function (t) {
       if (t0 === null) t0 = t;
-      var k = Math.min(1, (t - t0) / dur);
-      stem.textContent = full.slice(0, Math.ceil(full.length * k));
-      if (k < 1) raf = requestAnimationFrame(step); else finish();
+      var n = Math.ceil(total * Math.min(1, (t - t0) / dur)), left = n, typingSet = false;
+      blocks.forEach(function (b, i) {
+        var take = Math.max(0, Math.min(texts[i].length, left)); left -= take;
+        if (take !== b.textContent.length) b.textContent = texts[i].slice(0, take);
+        var active = !typingSet && take < texts[i].length; if (active) typingSet = true;
+        b.classList.toggle('is-typing', active);
+      });
+      if (n < total) raf = requestAnimationFrame(step); else finish();
     };
-    raf = requestAnimationFrame(step);
-    typing = { cancel: function () { cancelAnimationFrame(raf); finish(); } };
+    timer = setTimeout(function () { raf = requestAnimationFrame(step); }, after || 0);
+    return function () { clearTimeout(timer); cancelAnimationFrame(raf); finish(); };
+  }
+  function enter(root) {
+    if (!root) return;
+    if (running) { running(); running = null; }
+    if (motionOff()) return;
+    var card = root.closest ? (root.closest('.card') || root) : root;
+    card.classList.remove('is-entering'); void card.offsetWidth; card.classList.add('is-entering');
+    var paras = Array.prototype.slice.call(root.querySelectorAll('.passage p, .passage li')).filter(plain);
+    var stem = root.querySelector('.stem');
+    var qAt = 0, stemDur = 0, cancels = [];
+    if (paras.length) qAt = Math.min(1000, 150 + paras.reduce(function (a, b) { return a + b.textContent.length; }, 0) * 2.2);
+    else if (root.querySelector('.passage')) qAt = 450;
+    if (plain(stem)) stemDur = Math.min(900, 100 + stem.textContent.length * 8);
+    else if (stem) { stemDur = 500; stem.classList.add('is-wipe'); }
+    card.style.setProperty('--q-at', qAt + 'ms');
+    card.style.setProperty('--a-at', (qAt + stemDur) + 'ms');
+    if (paras.length) cancels.push(typeBlocks(paras, qAt, 0));
+    if (plain(stem)) cancels.push(typeBlocks([stem], stemDur, qAt));
+    running = function () { cancels.forEach(function (c) { c(); }); };
   }
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
     px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip,

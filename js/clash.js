@@ -193,7 +193,7 @@
   }
   function showResult(q, resp, won, fresh) {
     var p = progress[q.id] || {}, slip = '';
-    var r = { key: p.key != null ? p.key : check(q, resp).key, explanation: p.explanation || q.explanation };
+    var r = { correct: !!won, key: p.key != null ? p.key : check(q, resp).key, explanation: p.explanation || q.explanation };
     if (q.type === 'mcq') {
       Array.prototype.forEach.call(document.querySelectorAll('.choices button'), function (b) {
         var k = b.getAttribute('data-k');
@@ -206,7 +206,7 @@
     } else {
       var inp = $('#spr-in'); inp.value = resp; inp.disabled = true;
     }
-    C.reveal($('#read'), q, resp, r, { slip: slip, verdict: won ? 'Correct! A hit on the ' + esc(biome.bossName) + '.' : 'Not this time. The answer is ' + esc(r.key) + '.' });
+    C.reveal($('#read'), q, resp, r, { slip: slip });
     $('#bCheck').hidden = true;
     $('#bNext').hidden = false;
     $('#bRetry').hidden = won;

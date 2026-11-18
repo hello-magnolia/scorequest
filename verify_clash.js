@@ -82,7 +82,8 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
   await answer(w, true);
   let S = w.__SQ_CLASH.state;
   check('Correct answer cracks one ward pip', S.ward === wardMax - 1 && d.querySelectorAll('#cx-ward i.on').length === wardMax - 1);
-  check('Explanation shown after Check', d.querySelector('#whybox').hidden === false && /Correct/.test(d.querySelector('#why .verdict').textContent) && d.querySelector('#why .body').textContent.length > 40);
+  check('Explanation shown after Check, with no verdict line (the recap carries hit or miss)', d.querySelector('#whybox').hidden === false && !d.querySelector('#why .verdict') && !!d.querySelector('.recap.won') && d.querySelector('#why .body').textContent.length > 40,
+    'hidden=' + d.querySelector('#whybox').hidden + ' recap=' + (d.querySelector('.recap') || {}).className + ' body=' + ((d.querySelector('#why .body') || {}).textContent || '').length);
   check('The explanation sits inside the card where the grid was: choices folded into a recap, Show choices brings them back',
     d.querySelector('#read.card.is-reviewed #whybox') && d.querySelector('#read .recap .pick.good .k') &&
     w.getComputedStyle(d.querySelector('#read .choices')).display === 'none' &&
@@ -99,7 +100,7 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
   S = w.__SQ_CLASH.state;
   check('Miss leaves the ward alone', S.ward === wardMax - 1);
   check('Miss drains one Pomelo HP segment', S.pomHp === 4 && d.querySelectorAll('#me-hp i.on').length === 4);
-  check('Miss shows the answer, a slip hint and a retry', /answer is [A-D]/.test(d.querySelector('#why .verdict').textContent) && !d.querySelector('#bRetry').hidden);
+  check('Miss shows the answer in the recap, a slip hint and a retry', d.querySelector('.recap.missed .pick.good .k') && /^[A-D]$/.test(d.querySelector('.recap .pick.good .k').textContent) && !d.querySelector('#bRetry').hidden);
   check('Trail flags the miss', d.querySelector('#trail .node.missed') !== null);
   check('Retry clears the answer', (click(w, d.querySelector('#bRetry')), !d.querySelector('#trail .node.missed') && d.querySelector('#whybox').hidden));
 

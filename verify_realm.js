@@ -106,7 +106,7 @@ const load = async (path) => {
   const miss = await answer(false);
   check('A miss teaches: explanation shows, the key is lit, progress holds at zero',
     miss === false && !!d.querySelector('#sq-overlay .choices button.correct') &&
-    /Not this time/.test(d.getElementById('why').textContent) &&
+    !!d.querySelector('#sq-overlay .recap.missed .pick.good') && d.getElementById('why').textContent.length > 40 &&
     (w.__SQ_REALM_PROG || 0) === 0);
   check('The miss dispels one of Pomelo\'s HP pips (never below empty, never a loss)',
     await until(() => w.SQClashOverlay.state.hp === 4, 6000), 'hp ' + w.SQClashOverlay.state.hp);

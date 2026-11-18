@@ -153,26 +153,31 @@ figure { margin: 0 0 18px; }
 .lay.stage > .screen.wide { animation: sq-rise .45s ease-out both; }
 .lay.stage > .log { animation: sq-fade .5s ease-out .15s both; }
 .lay.stage > .card { animation: sq-rise .45s ease-out .1s both; }
+.card { --q-at: 0ms; --a-at: 600ms; }
 .card.is-entering .passage, .card.is-entering .read-vis { animation: sq-fade .5s ease-out both; }
-.card.is-entering .qmeta { animation: sq-fade .4s ease-out .15s both; }
+.card.is-entering .qbox { animation: sq-fade .3s ease-out var(--q-at) both; }
 .card.is-entering .choices li { animation: sq-rise .4s ease-out both; }
-.card.is-entering .choices li:nth-child(1) { animation-delay: .45s; }
-.card.is-entering .choices li:nth-child(2) { animation-delay: .55s; }
-.card.is-entering .choices li:nth-child(3) { animation-delay: .65s; }
-.card.is-entering .choices li:nth-child(4) { animation-delay: .75s; }
-.card.is-entering .spr, .card.is-entering .acts { animation: sq-fade .4s ease-out .6s both; }
-.stem.is-typing::after { content: ''; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.15em; border-left: 2px solid var(--ink); animation: sq-caret .7s steps(1) infinite; }
-.stem.is-wipe { animation: sq-wipe .7s steps(24, end) both; }
+.card.is-entering .choices li:nth-child(1) { animation-delay: calc(var(--a-at) + .05s); }
+.card.is-entering .choices li:nth-child(2) { animation-delay: calc(var(--a-at) + .15s); }
+.card.is-entering .choices li:nth-child(3) { animation-delay: calc(var(--a-at) + .25s); }
+.card.is-entering .choices li:nth-child(4) { animation-delay: calc(var(--a-at) + .35s); }
+.card.is-entering .spr, .card.is-entering .acts { animation: sq-fade .4s ease-out calc(var(--a-at) + .4s) both; }
+.is-typing::after { content: ''; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.15em; border-left: 2px solid var(--ink); animation: sq-caret .7s steps(1) infinite; }
+.stem.is-wipe { animation: sq-wipe .6s steps(24, end) var(--q-at) both; }
+/* the reveal: the recap drops in, the explanation follows */
+.card.is-reviewed .recap { animation: sq-rise .35s ease-out both; }
+.card.is-reviewed .whybox { animation: sq-fade .5s ease-out .2s both; }
 @media (prefers-reduced-motion: reduce) {
   .lay.stage > .screen.wide, .lay.stage > .log, .lay.stage > .card, .card.is-entering .passage, .card.is-entering .read-vis, .card.is-entering .qmeta,
-  .card.is-entering .choices li, .card.is-entering .spr, .card.is-entering .acts, .stem.is-wipe { animation: none; }
+  .card.is-entering .choices li, .card.is-entering .spr, .card.is-entering .acts, .stem.is-wipe, .card.is-entering .qbox,
+  .card.is-reviewed .recap, .card.is-reviewed .whybox { animation: none; }
 }
 
 /* after Check the grid folds into a one-line recap and the explanation takes its place */
 .card.is-reviewed .choices, .card.is-reviewed .spr { display: none; }
 .card.is-reviewed.show-choices .choices { display: grid; margin-top: 10px; }
 .card .whybox { border: 0; box-shadow: none; background: transparent; padding: 0; margin-top: 12px; }
-.card .whybox h3 { margin-bottom: 6px; }
+.card .whybox .body { font: 16px/1.6 var(--serif); }
 .recap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 10px 14px; border: var(--edge); background: var(--bg); font: 15px/1.4 var(--serif); }
 .recap .pick { display: inline-flex; align-items: center; gap: 8px; }
 .recap .lbl { font: 700 11px var(--pixel); color: var(--muted); letter-spacing: .3px; text-transform: uppercase; }
