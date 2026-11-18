@@ -119,13 +119,13 @@ figure { margin: 0 0 18px; }
    box's height, data-wide). The question sits centred beneath it, answers in a 2x2 grid,
    explanation under that; a passage of ordinary length fits a laptop window unscrolled. */
 .lay.stage { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: start; padding: 0 0 20px; }
-.lay.stage .screen.wide { aspect-ratio: auto; height: clamp(190px, 30vh, 292px); border-left: 0; border-right: 0; border-radius: 0; box-shadow: none; }
+.lay.stage .screen.wide { aspect-ratio: auto; height: clamp(220px, 33vh, 330px); width: min(1120px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 14px; }
 .lay.stage .screen.wide canvas { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; }
 .lay.stage .plate { width: min(230px, calc(50% - 18px)); top: 10px; }
-.lay.stage .plate.me { left: max(10px, calc(50% - 236px)); }
-.lay.stage .plate.boss { right: max(10px, calc(50% - 236px)); }
+.lay.stage .plate.me { left: max(10px, calc(50% - 270px)); }
+.lay.stage .plate.boss { right: max(10px, calc(50% - 270px)); }
 .lay.stage .log { text-align: center; margin: 0; padding: 0 16px; }
-.lay.stage .card, .lay.stage .whybox, .lay.stage .mini { width: min(840px, calc(100% - 32px)); margin: 0 auto; }
+.lay.stage .card, .lay.stage .whybox, .lay.stage .mini { width: min(1040px, calc(100% - 32px)); margin: 0 auto; }
 .lay.stage .card { padding: 16px 24px 18px; }
 .lay.stage .passage { font-size: 16px; line-height: 1.55; }
 .lay.stage .passage p { margin: 0 0 10px; }
@@ -136,7 +136,7 @@ figure { margin: 0 0 18px; }
 .lay.stage .acts { margin-top: 10px; }
 @media (max-width: 720px) {
   .lay.stage .choices { grid-template-columns: 1fr; }
-  .lay.stage .screen.wide { height: clamp(150px, 26vh, 220px); }
+  .lay.stage .screen.wide { height: clamp(170px, 28vh, 240px); width: 100%; margin-top: 0; border-radius: 0; }
   .lay.stage .card { padding: 16px; }
 }
 

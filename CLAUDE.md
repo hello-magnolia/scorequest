@@ -159,12 +159,14 @@ re-run it on any existing project. verify_auth guards all of this.
 - clash.html (Critter Clash practice, linked under index #world), per biome (?realm=).
   Layout (STAGE, Nov 17 2026, Magnolia; shared with the realm overlay, .lay.stage in css/clash.css):
   trail across the top (position only: number / check / flag, lantern marks current,
-  lair icon at the end, NO health on it); then the battle screen EDGE TO EDGE (.screen.wide,
-  data-wide, height clamp(190px, 30vh, 292px); clash-arena sizes S = round(boxH/96) whole
-  pixels, canvas sits on the box floor, VW view px wide with the 128px fight centred at OX,
-  backdrop painted across the whole view, box background = sky[0] for any band above);
+  lair icon at the end, NO health on it); then the battle screen in a wide rounded frame
+  (.screen.wide, data-wide, width min(1120px, 100% - 32px), height clamp(220px, 33vh, 330px);
+  clash-arena sizes S = ceil(boxH/96 + 0.6) whole pixels, leaning BIG (Nov 18, Magnolia: bigger
+  critters): the canvas overshoots the box, sits 5 scene px below its floor and loses only sky
+  off the top; VW view px wide with the 128px fight centred at OX, backdrop painted across the
+  whole view, box background = sky[0] if a band shows above);
   Pokemon-style plates (Pomelo HP 5, boss WARD) flank the centre; log line centred; the question
-  card centred below (max 840px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
+  card centred below (max 1040px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
   Check; the explanation panel under the card, scrollIntoView 700ms after the verdict. An
   ordinary passage fits a 1440x860 window unscrolled.
   ONE boss per biome (BIOMES in clash.js), ward = ceil(60% of biome qs) clamped 3..10, one pip
