@@ -146,6 +146,7 @@
       '<button class="btn" id="bNext" type="button" hidden>' + (cur + 1 < qs.length ? 'Next ▶' : 'Back to 1 ▶') + '</button></div></div>';
     $('#read').innerHTML = h;
     $('#why').innerHTML = ''; $('#whybox').hidden = true;
+    if (C.sideVisuals) C.sideVisuals($('#read'));
     math($('#read'));
     wire(q);
     if (prev) showResult(q, prev.response, prev.result === 'won', false);
@@ -273,6 +274,9 @@
 
   /* KaTeX loads deferred; set math once it lands */
   window.addEventListener('load', function () { math($('#read')); math($('#why')); });
+  /* the strip parks under the top bar when the page scrolls: tell the CSS how tall the bar is (it wraps on narrow windows) */
+  function barHeight() { var t = document.querySelector('.top'), l = document.querySelector('.lay.stage'); if (t && l) l.style.setProperty('--bar', t.offsetHeight + 'px'); }
+  barHeight(); window.addEventListener('resize', barHeight);
 
   window.__SQ_CLASH = { get state() { return { biome: biome.id, cur: cur, count: qs.length, progress: progress, pomHp: pomHp, ward: wardLeft(), focus: document.body.classList.contains('focus'), motion: ARENA.motion }; }, open: open, arena: ARENA };
   history.replaceState(null, '', '?realm=' + biome.id);

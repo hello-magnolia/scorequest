@@ -44,6 +44,30 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
   check('Shared bank loaded (data/questions.js, originals only)', w.SQ_QUESTION_BANK && w.SQ_QUESTION_BANK.questions.length >= 150 && w.SQ_QUESTION_BANK.questions.every(q => /^SQ-/.test(q.id)));
   check('The question card names its source (ScoreQuest original on the static bank)', /ScoreQuest original/.test(d.querySelector('.qmeta .qsrc').textContent) && !d.querySelector('.qsrc.official'));
   check('Shared engine and figure renderer present', !!(w.SQQuestions && w.SQAttempts && w.SQFigures));
+  /* the stage layout: wide framed strip across the top, the card below with a 2x2 grid; the
+     strip is sticky with a negative top so it parks slim under the bar while a long question
+     scrolls; a table or figure moves into a side column next to the text (SQCard.sideVisuals) */
+  check('Stage layout: wide strip (data-wide) above a centred card, answers in a 2x2 grid',
+    d.querySelector('main.lay.stage > .screen.wide[data-wide]') && d.querySelector('main.lay.stage > .card') &&
+    d.querySelectorAll('.card .choices button').length === 4 && /sticky/.test(w.getComputedStyle(d.querySelector('.screen.wide')).position));
+  {
+    const probe = d.createElement('article'); probe.id = 'probe'; d.body.appendChild(probe);
+    const tq = w.SQQuestions.all().find(q => q.figure && q.type === 'mcq');
+    probe.innerHTML = w.SQCard.questionHTML(tq, 1, 1) + '</div>';
+    const built = w.SQCard.sideVisuals(probe);
+    check('A question with a figure gets a side column: text left, figure right, answers spanning below',
+      built && probe.querySelector('.read-grid > .read-text > .qbox') && probe.querySelector('.read-grid > .read-vis > .fig-built') &&
+      !probe.querySelector('.read-text .fig-built') && probe.querySelector('.read-grid + .answers') && w.SQCard.sideVisuals(probe) === false);
+    const pq = w.SQQuestions.all().find(q => q.passage && q.passage.figures && q.passage.figures.length);
+    probe.innerHTML = w.SQCard.passageHTML(pq) + w.SQCard.questionHTML(pq, 1, 1) + '</div>';
+    w.SQCard.sideVisuals(probe);
+    check('A passage figure moves whole (its table stays inside the figure)',
+      probe.querySelector('.read-vis > .fig-built') && !probe.querySelector('.read-vis > .fig-built:empty') && !probe.querySelector('.read-text .fig-built'));
+    const plain = w.SQQuestions.all().find(q => !q.table && !q.figure && !(q.passage && q.passage.figures && q.passage.figures.length));
+    probe.innerHTML = w.SQCard.passageHTML(plain) + w.SQCard.questionHTML(plain, 1, 1) + '</div>';
+    check('A plain question keeps a single column', w.SQCard.sideVisuals(probe) === false && !probe.querySelector('.read-grid'));
+    probe.remove();
+  }
   check('Lorewood opens on Information and Ideas', w.__SQ_CLASH.state.biome === 'lorewood' && /Information and Ideas/.test(d.querySelector('.qmeta').textContent) === false && d.querySelector('.passage'), 'passage shown');
   const n = sorted(w, 'Information and Ideas').length;
   check('Trail has one node per question plus the lair', d.querySelectorAll('#trail .node').length === n && !!d.querySelector('#trail .lair'));

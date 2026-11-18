@@ -168,7 +168,14 @@ re-run it on any existing project. verify_auth guards all of this.
   Pokemon-style plates (Pomelo HP 5, boss WARD) flank the centre; log line centred; the question
   card centred below (max 1040px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
   Check; the explanation panel under the card, scrollIntoView 700ms after the verdict. An
-  ordinary passage fits a 1440x860 window unscrolled.
+  ordinary passage fits a 1440x860 window unscrolled. LONG QUESTIONS (Nov 18): (1) SQCard
+  .sideVisuals(read) moves tables/figures (passage or qbox; a table inside a figure moves with
+  it) into .read-grid > .read-text + .read-vis (42% column, 1 col under 960px), answers span
+  below; (2) the strip is position: sticky with top = --bar + --slim - --strip (NEGATIVE), so
+  scrolling parks its bottom 150px (ground, critters, plates, which sit at bottom: 14px, out at
+  50% +- 500px) under the top bar while the card scrolls beneath; no layout height change, no
+  jump. --bar = 52px (overlay .ov-top, z 5 above the strip's 3); clash.js measures .top into
+  --bar since it wraps. No internal scroll boxes (Magnolia).
   ONE boss per biome (BIOMES in clash.js), ward = ceil(60% of biome qs) clamped 3..10, one pip
   per correct answer, misses never heal it. Focus (F, sq_clash_focus) swaps the screen for two
   quiet bars. Motion full/calm/off = localStorage sq_motion, also on settings.html (#st-motion),

@@ -120,6 +120,28 @@
     }
     return h;   /* caller closes .answers after its buttons */
   }
+  /* sideVisuals: once a card is rendered, move its tables and figures (from the passage or
+     the question box) into a side column next to the text, so a tall table no longer pushes
+     the answers off the screen. Returns true when it built the grid; the CSS (.read-grid)
+     folds it back to one column on narrow windows. */
+  function sideVisuals(root) {
+    if (!root || root.querySelector('.read-grid')) return false;
+    var vis = Array.prototype.filter.call(root.querySelectorAll('.passage .fig-built, .passage table.data, .qbox .fig-built, .qbox table.data'),
+      function (v) { return !(v.parentElement && v.parentElement.closest('.fig-built, table.data')); });   /* a table inside a figure moves with its figure */
+    var qbox = root.querySelector('.qbox');
+    if (!vis.length || !qbox) return false;
+    var passage = root.querySelector('.passage');
+    var grid = document.createElement('div'); grid.className = 'read-grid';
+    var text = document.createElement('div'); text.className = 'read-text';
+    var aside = document.createElement('aside'); aside.className = 'read-vis';
+    root.insertBefore(grid, passage || qbox);
+    if (passage) text.appendChild(passage);
+    text.appendChild(qbox);
+    grid.appendChild(text); grid.appendChild(aside);
+    Array.prototype.forEach.call(vis, function (v) { aside.appendChild(v); });
+    root.classList.add('has-vis');
+    return true;
+  }
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
-    px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip };
+    px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip, sideVisuals: sideVisuals };
 })();

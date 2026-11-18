@@ -96,6 +96,7 @@
       '<p class="msg" id="msg" role="status"></p><div class="acts"><button class="btn main" id="bCheck" type="button" disabled>Check</button>' +
       '<button class="btn" id="bNext" type="button" hidden>' + (state.i + 1 < state.total ? 'Next ▶' : 'Finish ▶') + '</button></div></div>';
     $('#why', el).innerHTML = ''; $('#whybox', el).hidden = true;
+    C.sideVisuals(read);
     C.math(read);
     Array.prototype.forEach.call(read.querySelectorAll('.choices button'), function (b) {
       b.addEventListener('click', function () { if (state.busy || state.results[state.i] != null) return; state.picked = b.getAttribute('data-k');

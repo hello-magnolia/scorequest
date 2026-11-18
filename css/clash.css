@@ -119,11 +119,16 @@ figure { margin: 0 0 18px; }
    box's height, data-wide). The question sits centred beneath it, answers in a 2x2 grid,
    explanation under that; a passage of ordinary length fits a laptop window unscrolled. */
 .lay.stage { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: start; padding: 0 0 20px; }
-.lay.stage .screen.wide { aspect-ratio: auto; height: clamp(220px, 33vh, 330px); width: min(1120px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 14px; }
+.lay.stage { --strip: clamp(220px, 33vh, 330px); --slim: 150px; --bar: 52px; }
+/* the strip is sticky with a NEGATIVE top: scrolling slides most of it under the top bar
+   and parks the bottom --slim px (ground, critters, plates) in view while the question
+   scrolls beneath; no layout height changes, so the reading position never jumps */
+.lay.stage .screen.wide { aspect-ratio: auto; height: var(--strip); width: min(1120px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 14px;
+  position: sticky; top: calc(var(--bar) + var(--slim) - var(--strip)); z-index: 3; }
 .lay.stage .screen.wide canvas { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; }
-.lay.stage .plate { width: min(230px, calc(50% - 18px)); top: 10px; }
-.lay.stage .plate.me { left: max(10px, calc(50% - 270px)); }
-.lay.stage .plate.boss { right: max(10px, calc(50% - 270px)); }
+.lay.stage .plate { width: min(230px, calc(50% - 18px)); top: auto; bottom: 14px; }   /* low, so they stay in view when the strip parks slim */
+.lay.stage .plate.me { left: max(12px, calc(50% - 500px)); }
+.lay.stage .plate.boss { right: max(12px, calc(50% - 500px)); }
 .lay.stage .log { text-align: center; margin: 0; padding: 0 16px; }
 .lay.stage .card, .lay.stage .whybox, .lay.stage .mini { width: min(1040px, calc(100% - 32px)); margin: 0 auto; }
 .lay.stage .card { padding: 16px 24px 18px; }
@@ -134,16 +139,27 @@ figure { margin: 0 0 18px; }
 .lay.stage .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .lay.stage .choices button { height: 100%; padding: 10px 12px; font-size: 15px; line-height: 1.4; }
 .lay.stage .acts { margin-top: 10px; }
+/* tables and figures beside the text (SQCard.sideVisuals), answers span below */
+.lay.stage .read-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 42%); gap: 12px 28px; align-items: start; }
+.lay.stage .read-vis { display: grid; gap: 12px; justify-items: center; padding-top: 4px; }
+.lay.stage .read-vis table.data { margin: 0; width: 100%; }
+.lay.stage .read-vis .fig-built { max-width: 100%; }
+.lay.stage table.data { font-size: 13.5px; }
+.lay.stage table.data th, .lay.stage table.data td { padding: 4px 8px; }
+@media (max-width: 960px) {
+  .lay.stage .read-grid { grid-template-columns: 1fr; }
+}
 @media (max-width: 720px) {
   .lay.stage .choices { grid-template-columns: 1fr; }
-  .lay.stage .screen.wide { height: clamp(170px, 28vh, 240px); width: 100%; margin-top: 0; border-radius: 0; }
+  .lay.stage { --strip: clamp(170px, 28vh, 240px); --slim: 110px; }
+  .lay.stage .screen.wide { width: 100%; margin-top: 0; border-radius: 0; }
   .lay.stage .card { padding: 16px; }
 }
 
 /* ---------- the waypoint overlay on realm.html ---------- */
 .sq-overlay { position: fixed; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; display: none; }
 .sq-overlay.is-open { display: block; }
-.sq-overlay .ov-top { display: flex; align-items: center; gap: 12px; padding: 10px 24px; border-bottom: var(--edge); background: var(--card); position: sticky; top: 0; z-index: 2; }
+.sq-overlay .ov-top { display: flex; align-items: center; gap: 12px; padding: 10px 24px; border-bottom: var(--edge); background: var(--card); position: sticky; top: 0; z-index: 5; }
 .sq-overlay .ov-top h2 { font: 700 18px/1 var(--pixel); margin: 0; }
 .sq-overlay .ov-top .sub { font: 600 13px var(--pixel); color: var(--muted); }
 .sq-overlay .ov-top .spacer { flex: 1; }
