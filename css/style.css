@@ -2505,6 +2505,34 @@ html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }
 .pf-jcard-domain { display: block; font-size: 0.75rem; opacity: 0.85; text-shadow: 1px 1px 0 #16112B; margin-bottom: 8px; }
 .pf-jbar { height: 10px; background: rgba(12, 9, 24, 0.75); border: 2px solid rgba(242, 182, 60, 0.5); }
 .pf-jbar-fill { height: 100%; background: linear-gradient(90deg, #f2b63c, #ffd76a); transition: width 300ms ease; }
+/* skills panel: one row per realm (domain), the skills folded inside; no red anywhere */
+.pf-h2-skills { margin-top: 26px; }
+.pf-sk-lead { color: rgba(245, 232, 200, 0.7); margin: -4px 0 12px; font-size: 0.78rem; }
+.pf-skills { display: grid; gap: 8px; }
+.pf-sk { border: 3px solid rgba(242, 182, 60, 0.3); background: rgba(12, 9, 24, 0.55); }
+.pf-sk.is-quiet { opacity: 0.6; }
+.pf-sk-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 44%); gap: 14px; align-items: center; padding: 10px 14px; cursor: pointer; list-style: none; }
+.pf-sk-head::-webkit-details-marker { display: none; }
+.pf-sk-head::before { content: '\25B8'; color: var(--gold); margin-right: 8px; font-size: 0.8rem; grid-row: 1; justify-self: start; display: none; }
+.pf-sk-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pf-sk-realm { font-family: var(--font-display); color: var(--parchment); font-size: 1rem; }
+.pf-sk-domain { color: rgba(245, 232, 200, 0.6); font-size: 0.7rem; }
+.pf-sk-meter { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+.pf-sk-bar { display: block; width: 100%; } .pf-sk-bar .pf-jbar-fill { display: block; }
+.pf-sk-pct { color: var(--gold); font-size: 0.75rem; min-width: 38px; text-align: right; }
+.pf-sk-n { color: rgba(245, 232, 200, 0.6); font-size: 0.7rem; min-width: 70px; text-align: right; }
+.pf-sk-list { list-style: none; margin: 0; padding: 4px 14px 12px; border-top: 2px solid rgba(242, 182, 60, 0.18); display: grid; gap: 6px; }
+.pf-sk-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 0.92rem; color: var(--parchment); padding-top: 6px; }
+.pf-sk-name { min-width: 0; }
+.pf-sk-right { display: flex; align-items: center; gap: 10px; flex: none; }
+.pf-sk-strip { display: inline-flex; gap: 3px; }
+.pf-sk-strip i { width: 7px; height: 10px; background: rgba(245, 232, 200, 0.18); border: 1px solid rgba(242, 182, 60, 0.3); }
+.pf-sk-strip i.is-hit { background: #f2b63c; border-color: #f2b63c; }
+.pf-sk-empty { color: rgba(245, 232, 200, 0.75); font-size: 0.95rem; margin: 0; padding: 14px; border: 3px dashed rgba(242, 182, 60, 0.3); }
+@media (max-width: 640px) {
+  .pf-sk-head { grid-template-columns: 1fr; gap: 8px; }
+  .pf-sk-n { display: none; }
+}
 .pf-jbadge {
   position: absolute; right: 10px; top: 10px; width: 52px; height: 52px;
   border-radius: 50%; border: 3px dashed rgba(242, 182, 60, 0.5);

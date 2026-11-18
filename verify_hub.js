@@ -186,6 +186,13 @@ const OPTS = {
       // demo harness has none, so seed a stand-in before any script runs
       w.localStorage.setItem('sb-moasnmwcikwybriwaoip-auth-token', '{"harness":true}');
       w.__SQ_NO_REDIRECT = true;
+      /* a few recorded answers for the skills panel */
+      w.localStorage.setItem('sq_attempts', JSON.stringify([
+        { question_id: 'a', correct: true, domain: 'Algebra', skill: 'Linear functions', created_at: '2026-11-18T10:00:00Z' },
+        { question_id: 'b', correct: false, domain: 'Algebra', skill: 'Linear functions', created_at: '2026-11-18T10:01:00Z' },
+        { question_id: 'c', correct: true, domain: 'Algebra', skill: 'Linear functions', created_at: '2026-11-18T10:02:00Z' },
+        { question_id: 'd', correct: true, domain: 'Algebra', skill: 'Linear functions', created_at: '2026-11-18T10:03:00Z' },
+        { question_id: 'e', correct: true, domain: 'Information and Ideas', skill: 'Inferences', created_at: '2026-11-18T10:04:00Z' }]));
     }
   });
   const pdom = await JSDOM.fromURL('http://localhost:8000/profile.html', POPTS);
@@ -195,6 +202,16 @@ const OPTS = {
   // the profile renders only for a signed-in player; demo login stands in
   pw.SQAuth.signInWithEmail('rowan@demo.test', 'pw');
   await until(() => pd.querySelector('.pf-banner-edit'), 2500);
+
+  /* skills panel: one row per realm from the recorded attempts (seeded in beforeParse), skills folded inside */
+  await until(() => pd.querySelectorAll('#pf-skills .pf-sk').length === 8, 2500);
+  const mm = [...pd.querySelectorAll('#pf-skills .pf-sk')].find(r => /Mirror Mines/.test(r.textContent));
+  check('Skills panel: eight realm rows, Mirror Mines at 75% of 4 with Linear functions folded inside, Lorewood "Just started"',
+    pd.querySelectorAll('#pf-skills .pf-sk').length === 8 && !!mm && /75%/.test(mm.querySelector('.pf-sk-head').textContent) && /4 answers/.test(mm.textContent) &&
+    /Linear functions/.test(mm.querySelector('.pf-sk-list').textContent) && mm.querySelectorAll('.pf-sk-strip i.is-hit').length === 3 &&
+    /Just started/.test([...pd.querySelectorAll('#pf-skills .pf-sk')].find(r => /Lorewood/.test(r.textContent)).textContent) &&
+    /Not yet/.test([...pd.querySelectorAll('#pf-skills .pf-sk')].find(r => /Ink Reef/.test(r.textContent)).textContent) &&
+    !/weak|fail|wrong/i.test(pd.getElementById('pf-skills').textContent));
 
   check('Avatar coin is positioned above the banner',
     /\.pf-avatar\s*\{[^}]*position:\s*relative[^}]*z-index:\s*3/s.test(cssTxt));

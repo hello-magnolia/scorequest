@@ -140,6 +140,101 @@
     });
   }
 
+  /* ---------- skills: accuracy per domain and skill from the attempts ----------
+     Every clash, practice and lair answer is recorded with its domain and skill
+     (locally in sq_attempts, and in the Supabase attempts table when signed in).
+     The panel folds them into one row per domain (realm) with the skills under it.
+     Low-anxiety by design: no red, no "weak"; a skill is "Just started" until it has
+     three answers, then it simply shows its hit rate and the last 10 as a strip. */
+  var DOMAIN_REALM = { 'Information and Ideas': 'lorewood', 'Craft and Structure': 'storyforge', 'Standard English Conventions': 'syntaxcitadel',
+    'Algebra': 'mirrormines', 'Expression of Ideas': 'inkreef', 'Problem-Solving and Data Analysis': 'datadocks',
+    'Advanced Math': 'infinityisles', 'Geometry and Trigonometry': 'prismpeaks' };
+  function localAttempts() {
+    try { return JSON.parse(window.localStorage.getItem('sq_attempts') || '[]'); } catch (e) { return []; }
+  }
+  /* remote rows win when they exist (they are the record of truth); local rows fill in
+     signed-out play. Both are merged by question_id + minute so a row recorded twice counts once. */
+  function mergeAttempts(remote, local) {
+    var seen = {}, out = [];
+    (remote || []).concat(local || []).forEach(function (a) {
+      if (!a || !a.domain) return;
+      var k = a.question_id + '|' + String(a.created_at || '').slice(0, 16);
+      if (seen[k]) return; seen[k] = true; out.push(a);
+    });
+    return out.sort(function (a, b) { return String(a.created_at).localeCompare(String(b.created_at)); });
+  }
+  function foldSkills(rows) {
+    var doms = {};
+    rows.forEach(function (a) {
+      var d = doms[a.domain] || (doms[a.domain] = { domain: a.domain, n: 0, right: 0, skills: {}, last: [] });
+      d.n++; if (a.correct) d.right++;
+      var sk = d.skills[a.skill || 'General'] || (d.skills[a.skill || 'General'] = { skill: a.skill || 'General', n: 0, right: 0, last: [] });
+      sk.n++; if (a.correct) sk.right++;
+      sk.last.push(!!a.correct); if (sk.last.length > 10) sk.last.shift();
+      d.last.push(!!a.correct); if (d.last.length > 10) d.last.shift();
+    });
+    return REALMS.map(function (r) {
+      var name = Object.keys(DOMAIN_REALM).filter(function (k) { return DOMAIN_REALM[k] === r[0]; })[0];
+      var d = doms[name];
+      return { realm: r[0], realmName: r[1], short: r[2], domain: name, n: d ? d.n : 0, right: d ? d.right : 0,
+        skills: d ? Object.keys(d.skills).map(function (k) { return d.skills[k]; }).sort(function (a, b) { return b.n - a.n; }) : [], last: d ? d.last : [] };
+    });
+  }
+  function pct(right, n) { return n ? Math.round(right / n * 100) : 0; }
+  function strip(last) {
+    var s = el('span', 'pf-sk-strip'); s.setAttribute('aria-hidden', 'true');
+    last.forEach(function (ok) { s.appendChild(el('i', ok ? 'is-hit' : '')); });
+    return s;
+  }
+  function renderSkills(rows) {
+    var host = document.getElementById('pf-skills');
+    if (!host) return;
+    host.innerHTML = '';
+    var folded = foldSkills(rows), total = rows.length;
+    if (!total) {
+      var empty = el('p', 'pf-sk-empty', 'Answer a few questions in any realm and your skills will show up here.');
+      host.appendChild(empty); return;
+    }
+    folded.forEach(function (d) {
+      var row = el('details', 'pf-sk' + (d.n ? '' : ' is-quiet'));
+      var sum = el('summary', 'pf-sk-head');
+      var id = el('span', 'pf-sk-id');
+      id.appendChild(el('span', 'pf-sk-realm', d.realmName));
+      id.appendChild(el('span', 'pf-sk-domain type-utility', d.short));
+      sum.appendChild(id);
+      var meter = el('span', 'pf-sk-meter');
+      var bar = el('span', 'pf-jbar pf-sk-bar'); var fill = el('span', 'pf-jbar-fill'); fill.style.width = pct(d.right, d.n) + '%'; bar.appendChild(fill);
+      meter.appendChild(bar);
+      meter.appendChild(el('span', 'pf-sk-pct type-utility', d.n ? pct(d.right, d.n) + '%' : 'Not yet'));
+      meter.appendChild(el('span', 'pf-sk-n type-utility', d.n ? d.n + (d.n === 1 ? ' answer' : ' answers') : ''));
+      sum.appendChild(meter);
+      row.appendChild(sum);
+      if (d.n) {
+        var list = el('ul', 'pf-sk-list');
+        d.skills.forEach(function (sk) {
+          var li = el('li', 'pf-sk-item');
+          li.appendChild(el('span', 'pf-sk-name', sk.skill));
+          var right = el('span', 'pf-sk-right');
+          right.appendChild(strip(sk.last));
+          right.appendChild(el('span', 'pf-sk-pct type-utility', sk.n < 3 ? 'Just started' : pct(sk.right, sk.n) + '% of ' + sk.n));
+          li.appendChild(right);
+          list.appendChild(li);
+        });
+        row.appendChild(list);
+        if (!host.querySelector('details[open]')) row.open = true;
+      }
+      host.appendChild(row);
+    });
+    window.__SQ_SKILLS = folded;
+  }
+  function loadSkills() {
+    var local = localAttempts();
+    renderSkills(mergeAttempts(null, local));
+    if (window.SQAuth.fetchAttempts) {
+      window.SQAuth.fetchAttempts().then(function (remote) { if (remote && remote.length) renderSkills(mergeAttempts(remote, local)); });
+    }
+  }
+
   /* ---------- profile ---------- */
   function renderProfile(user) {
     var name = heroName();
@@ -290,7 +385,7 @@
       if (!state || !state.user || rendered) return;
       rendered = true;
       var page = document.body.getAttribute('data-account-page');
-      if (page === 'profile') { renderProfile(state.user); setupBanner(); }
+      if (page === 'profile') { renderProfile(state.user); setupBanner(); loadSkills(); }
       if (page === 'settings') renderSettings(state.user);
     });
     setTimeout(function () {

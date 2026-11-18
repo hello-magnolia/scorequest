@@ -547,6 +547,15 @@
         .then(function (res) { return res.error || !res.data ? null : res.data; })
         .catch(function () { return null; });
     },
+    /* fetchAttempts(): this player's own answers (RLS: read own), newest first, for the
+       skills panel on the profile; null when Supabase is not available */
+    fetchAttempts: function (limit) {
+      if (!state.user || state.demo || !supabase) return Promise.resolve(null);
+      return supabase.from('attempts').select('question_id,correct,domain,skill,difficulty,session_id,created_at')
+        .order('created_at', { ascending: false }).limit(limit || 2000)
+        .then(function (res) { return res.error || !res.data ? null : res.data; })
+        .catch(function () { return null; });
+    },
     fetchWaypoints: function (realm) {
       if (!state.user || state.demo || !supabase) return Promise.resolve(null);
       var q = supabase.from('waypoints').select('*').order('position');

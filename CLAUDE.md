@@ -156,6 +156,11 @@ re-run it on any existing project. verify_auth guards all of this.
 - Pages: index (hero, parents demo w/ 4-lang i18n, pricing), map.html (world map + labels,
   caption below, gray fog until visited), realm.html (walkabout; editor at &edit=1),
   boss.html, checkout, success, parents, profile, settings, bookmarks.
+  profile.html SKILLS panel (Nov 18, account-pages.js loadSkills): one <details> row per realm
+  (DOMAIN_REALM maps domain -> realm) with hit rate + answer count, skills folded inside with a
+  last-10 strip; merges localStorage sq_attempts with SQAuth.fetchAttempts() (own rows, newest
+  2000) by question_id + minute; "Just started" under 3 answers, "Not yet" for an untouched
+  realm; no red, no "weak" (verify_hub checks the copy). __SQ_SKILLS tripwire.
 - clash.html (Critter Clash practice, linked under index #world), per biome (?realm=).
   Layout (STAGE, Nov 17 2026, Magnolia; shared with the realm overlay, .lay.stage in css/clash.css):
   trail across the top (position only: number / check / flag, lantern marks current,
