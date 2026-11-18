@@ -162,8 +162,8 @@ re-run it on any existing project. verify_auth guards all of this.
   lair icon at the end, NO health on it); then the battle screen in a wide rounded frame
   (.screen.wide, data-wide, SAME WIDTH AS THE CARD min(1040px, 100% - 32px), height
   clamp(200px, 27vh, 250px), SQUARE corners (Magnolia: no rounded frame); clash-arena scales in
-  CSS px first (sCss = ceil(boxH/96) + 2, S = sCss * dpr) so retina and plain screens match,
-  leaning BIG (Nov 18, Magnolia, twice): the canvas overshoots the box, sits 8 scene px below its
+  CSS px first (sCss = ceil(boxH/96) + 1, S = sCss * dpr) so retina and plain screens match,
+  leaning big (Nov 18, Magnolia: +2 was slightly too big): the canvas overshoots the box, sits 6 scene px below its
   floor and loses sky off the top; VW view px wide with the 128px fight centred at OX, backdrop
   painted across the whole view; --sx = sCss px on the box); Pokemon-style plates (Pomelo HP 5,
   boss WARD) sit in the TOP CORNERS, Pomelo's left and the boss's right (Magnolia: over-the-head
