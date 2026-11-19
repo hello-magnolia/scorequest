@@ -135,12 +135,12 @@ figure { margin: 0 0 18px; }
 /* the card keeps a set height: it fills what the window has left under the strip, so a
    short math question gets the same box as a passage question; the words sit at the top
    and Check rests on the floor (Magnolia: a short box looked wrong) */
-.lay.stage .card { padding: 20px 44px 12px; display: flex; flex-direction: column; justify-content: flex-start;
-  min-height: 360px; }   /* hugs the content past 360px, so Check/Next sit 12px above the bottom edge */
+.lay.stage .card { padding: 20px 44px 18px; display: flex; flex-direction: column; justify-content: flex-start;
+  min-height: max(360px, calc(100vh - var(--bar) - var(--strip) - var(--below, 96px))); }
 /* a short question floats in the middle of the box with generous air above and below;
    a long one fills it from the top as before (safe center falls back to flex-start) */
 .lay.stage .card > .answers { display: flex; flex-direction: column; flex: 0 0 auto; }
-.lay.stage .card > .answers > .acts { padding-top: 0; margin-top: 6px; }
+.lay.stage .card > .answers > .acts { padding-top: 0; margin-top: 12px; }   /* Magnolia: 12px from the choices to Check */
 .lay.stage .card .msg { margin: 4px 0 0; min-height: 0; }
 .lay.stage .card .msg:empty { display: none; }
 .lay.stage .card > .qbox:first-child, .lay.stage .card > .read-grid:first-child { margin-top: 0; }

@@ -175,12 +175,12 @@ re-run it on any existing project. verify_auth guards all of this.
   plates collided on retina); log line centred; the question
   card centred below (max 1120px; passage 17px, stem 18px, choices 16px): passage, stem, answers in a 2x2 GRID (1 col under 720px); the
   .qmeta row is ONLY the source chip + report flag (Nov 19, Magnolia: the "Question 1 of 10 ·
-  skill · Easy" label was excessive; the header already says it). The card has a MINIMUM
-  HEIGHT of 360px and hugs its content past that (Nov 19, Magnolia: a short math card looked
-  wrong; the viewport-fill height was dropped so Check/Next sit 12px above the bottom edge),
-  padding 20px 44px 12px (her numbers: 22px edge to first text line incl. leading), TOP-ALIGNED flex column (Nov 19, Magnolia: centring a short question read as too
-  much air above it; the box keeps its height, the words sit at the top, Check/Next 6px under
-  the content, empty .msg hidden). TIGHT (Nov 19, Magnolia: pull the air out before
+  skill · Easy" label was excessive; the header already says it). The card has a SET HEIGHT
+  (Nov 19, Magnolia: a short math card looked wrong): min-height = max(360px, 100vh - --bar -
+  --strip - --below) (--below 96px overlay, 150px clash.html with its trail), padding 20px
+  44px 18px (her numbers), TOP-ALIGNED flex column (Nov 19, Magnolia: centring a short question
+  read as too much air above it; the box keeps its height, the words sit at the top, Check/Next
+  12px under the choices (her number), empty .msg hidden). TIGHT (Nov 19, Magnolia: pull the air out before
   scrolling, strip UNTOUCHED): SQCard.fit(root), run on enter and after the reveal fold,
   measures on the next frame and puts .is-tight on .lay.stage when the scroller overflows:
   card padding 10px 32px, tighter line heights, gaps, buttons; cleared on every new question,
