@@ -123,7 +123,7 @@ figure { margin: 0 0 18px; }
 /* the strip is sticky with a NEGATIVE top: scrolling slides most of it under the top bar
    and parks the bottom --slim px (ground, critters, plates) in view while the question
    scrolls beneath; no layout height changes, so the reading position never jumps */
-.lay.stage .screen.wide { aspect-ratio: auto; height: var(--strip); width: min(1200px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 0;
+.lay.stage .screen.wide { aspect-ratio: auto; height: var(--strip); width: min(1120px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 0;
   position: sticky; top: calc(var(--bar) + var(--slim) - var(--strip)); z-index: 3; }
 .lay.stage .screen.wide canvas { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; }
 /* plates in the top corners, Pomelo's left and the boss's right, clear of the fight */
@@ -131,14 +131,14 @@ figure { margin: 0 0 18px; }
 .lay.stage .plate.me { left: 14px; }
 .lay.stage .plate.boss { right: 14px; left: auto; }
 .lay.stage .log { text-align: center; margin: 0; padding: 0 16px; }
-.lay.stage .card, .lay.stage .mini { width: min(1200px, calc(100% - 32px)); margin: 0 auto; }
+.lay.stage .card, .lay.stage .mini { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
 .lay.stage .card { padding: 14px 24px 14px; }
-.lay.stage .passage { font-size: 16px; line-height: 1.5; }
+.lay.stage .passage { font-size: 17px; line-height: 1.5; }
 .lay.stage .passage p { margin: 0 0 10px; }
 .lay.stage .passage + .qbox { margin-top: 10px; padding-top: 10px; }
-.lay.stage .stem { font-size: 17px; line-height: 1.45; margin-bottom: 10px; }
+.lay.stage .stem { font-size: 18px; line-height: 1.45; margin-bottom: 10px; }
 .lay.stage .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.lay.stage .choices button { height: 100%; padding: 8px 12px; font-size: 15px; line-height: 1.35; }
+.lay.stage .choices button { height: 100%; padding: 8px 12px; font-size: 16px; line-height: 1.35; }
 .lay.stage .acts { margin-top: 8px; }
 /* the question card never moves under the mouse (style.css gives index cards a hover lift) */
 .lay.stage .card, .lay.stage .card:hover { transform: none; transition: none; }
