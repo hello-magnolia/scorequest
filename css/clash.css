@@ -118,8 +118,8 @@ figure { margin: 0 0 18px; }
    and the biome backdrop is painted out to both sides (the arena sizes itself from the
    box's height, data-wide). The question sits centred beneath it, answers in a 2x2 grid,
    explanation under that; a passage of ordinary length fits a laptop window unscrolled. */
-.lay.stage { display: grid; grid-template-columns: 1fr; gap: 8px; align-items: start; padding: 0 0 20px; }
-.lay.stage { --strip: clamp(200px, 27vh, 250px); --slim: 150px; --bar: 52px; --sx: 4px; }
+.lay.stage { display: grid; grid-template-columns: 1fr; gap: 6px; align-items: start; padding: 0 0 16px; }
+.lay.stage { --strip: clamp(185px, 24vh, 225px); --slim: 140px; --bar: 52px; --sx: 4px; }
 /* the strip is sticky with a NEGATIVE top: scrolling slides most of it under the top bar
    and parks the bottom --slim px (ground, critters, plates) in view while the question
    scrolls beneath; no layout height changes, so the reading position never jumps */
@@ -132,14 +132,14 @@ figure { margin: 0 0 18px; }
 .lay.stage .plate.boss { right: 14px; left: auto; }
 .lay.stage .log { text-align: center; margin: 0; padding: 0 16px; }
 .lay.stage .card, .lay.stage .mini { width: min(1200px, calc(100% - 32px)); margin: 0 auto; }
-.lay.stage .card { padding: 16px 24px 18px; }
-.lay.stage .passage { font-size: 16px; line-height: 1.55; }
+.lay.stage .card { padding: 14px 24px 14px; }
+.lay.stage .passage { font-size: 16px; line-height: 1.5; }
 .lay.stage .passage p { margin: 0 0 10px; }
-.lay.stage .passage + .qbox { margin-top: 14px; padding-top: 12px; }
-.lay.stage .stem { font-size: 17px; line-height: 1.5; margin-bottom: 12px; }
+.lay.stage .passage + .qbox { margin-top: 10px; padding-top: 10px; }
+.lay.stage .stem { font-size: 17px; line-height: 1.45; margin-bottom: 10px; }
 .lay.stage .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.lay.stage .choices button { height: 100%; padding: 10px 12px; font-size: 15px; line-height: 1.4; }
-.lay.stage .acts { margin-top: 10px; }
+.lay.stage .choices button { height: 100%; padding: 8px 12px; font-size: 15px; line-height: 1.35; }
+.lay.stage .acts { margin-top: 8px; }
 /* the question card never moves under the mouse (style.css gives index cards a hover lift) */
 .lay.stage .card, .lay.stage .card:hover { transform: none; transition: none; }
 

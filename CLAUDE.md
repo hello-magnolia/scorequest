@@ -166,7 +166,7 @@ re-run it on any existing project. verify_auth guards all of this.
   trail across the top (position only: number / check / flag, lantern marks current,
   lair icon at the end, NO health on it); then the battle screen in a wide rounded frame
   (.screen.wide, data-wide, SAME WIDTH AS THE CARD min(1200px, 100% - 32px), height
-  clamp(200px, 27vh, 250px), SQUARE corners (Magnolia: no rounded frame); clash-arena scales in
+  clamp(185px, 24vh, 225px) (Nov 19: shorter), SQUARE corners (Magnolia: no rounded frame); clash-arena scales in
   CSS px first (sCss = ceil(boxH/96) + 1, S = sCss * dpr) so retina and plain screens match,
   leaning big (Nov 18, Magnolia: +2 was slightly too big): the canvas overshoots the box, sits 6 scene px below its
   floor and loses sky off the top; VW view px wide with the 128px fight centred at OX, backdrop
