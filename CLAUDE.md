@@ -165,7 +165,7 @@ re-run it on any existing project. verify_auth guards all of this.
   Layout (STAGE, Nov 17 2026, Magnolia; shared with the realm overlay, .lay.stage in css/clash.css):
   trail across the top (position only: number / check / flag, lantern marks current,
   lair icon at the end, NO health on it); then the battle screen in a wide rounded frame
-  (.screen.wide, data-wide, SAME WIDTH AS THE CARD min(1040px, 100% - 32px), height
+  (.screen.wide, data-wide, SAME WIDTH AS THE CARD min(1200px, 100% - 32px), height
   clamp(200px, 27vh, 250px), SQUARE corners (Magnolia: no rounded frame); clash-arena scales in
   CSS px first (sCss = ceil(boxH/96) + 1, S = sCss * dpr) so retina and plain screens match,
   leaning big (Nov 18, Magnolia: +2 was slightly too big): the canvas overshoots the box, sits 6 scene px below its
@@ -173,7 +173,9 @@ re-run it on any existing project. verify_auth guards all of this.
   painted across the whole view; --sx = sCss px on the box); Pokemon-style plates (Pomelo HP 5,
   boss WARD) sit in the TOP CORNERS, Pomelo's left and the boss's right (Magnolia: over-the-head
   plates collided on retina); log line centred; the question
-  card centred below (max 1040px): passage, stem, answers in a 2x2 GRID (1 col under 720px),
+  card centred below (max 1200px): passage, stem, answers in a 2x2 GRID (1 col under 720px); the
+  .qmeta row is ONLY the source chip + report flag (Nov 19, Magnolia: the "Question 1 of 10 ·
+  skill · Easy" label was excessive; the header already says it),
   Check. AFTER CHECK (Nov 18, Magnolia: no scrolling for the explanation): SQCard.reveal()
   folds the grid into a one-line .recap (You chose B / Answer C, key text, "Show choices"
   toggle = .card.show-choices) and the explanation (#whybox, rendered INSIDE the card by

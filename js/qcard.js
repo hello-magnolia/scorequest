@@ -108,7 +108,9 @@
     return '<span class="qsrc' + (official ? ' official' : '') + '" title="' + (official ? 'An official College Board question' : 'Written for ScoreQuest') + '">' + esc(label) + '</span>';
   }
   function questionHTML(q, n, total, meta) {
-    var h = '<div class="qbox"><div class="qmeta">' + (meta != null ? meta : 'Question ' + n + ' of ' + total + ' \u00b7 ' + esc(q.skill) + ' \u00b7 ' + LV[q.difficulty]) + sourceChip(q) + flagButton(q) + '</div>' +
+    /* the meta row carries only the source chip and the report flag: position, skill and
+       tier already sit in the page header (Magnolia: the long label was excessive) */
+    var h = '<div class="qbox"><div class="qmeta">' + (meta != null ? meta : '') + sourceChip(q) + flagButton(q) + '</div>' +
       '<div class="stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure) + '</div><div class="answers">';
     if (q.type === 'mcq') {
       h += '<ol class="choices" aria-label="Answer choices">' + q.choices.map(function (c) {

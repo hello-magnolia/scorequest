@@ -77,7 +77,7 @@
 
 .passage + .qbox { margin-top: 20px; padding-top: 18px; border-top: 2px dashed var(--line); }
 .qmeta { font: 600 12px var(--pixel); color: var(--muted); margin-bottom: 6px; letter-spacing: .3px; }
-.qsrc { display: inline-block; margin-left: 8px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 3px; font: 600 11px var(--pixel); color: var(--muted); background: var(--bg); vertical-align: middle; }
+.qsrc { display: inline-block; margin-left: 0; padding: 1px 7px; border: 1px solid var(--line); border-radius: 3px; font: 600 11px var(--pixel); color: var(--muted); background: var(--bg); vertical-align: middle; }
 .qsrc.official { border-color: var(--pick-line); background: var(--pick); color: var(--ink); }
 .stem { font: 18px/1.6 var(--serif); margin: 0 0 16px; }
 
@@ -123,7 +123,7 @@ figure { margin: 0 0 18px; }
 /* the strip is sticky with a NEGATIVE top: scrolling slides most of it under the top bar
    and parks the bottom --slim px (ground, critters, plates) in view while the question
    scrolls beneath; no layout height changes, so the reading position never jumps */
-.lay.stage .screen.wide { aspect-ratio: auto; height: var(--strip); width: min(1040px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 0;
+.lay.stage .screen.wide { aspect-ratio: auto; height: var(--strip); width: min(1200px, calc(100% - 32px)); margin: 10px auto 0; border-radius: 0;
   position: sticky; top: calc(var(--bar) + var(--slim) - var(--strip)); z-index: 3; }
 .lay.stage .screen.wide canvas { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; }
 /* plates in the top corners, Pomelo's left and the boss's right, clear of the fight */
@@ -131,7 +131,7 @@ figure { margin: 0 0 18px; }
 .lay.stage .plate.me { left: 14px; }
 .lay.stage .plate.boss { right: 14px; left: auto; }
 .lay.stage .log { text-align: center; margin: 0; padding: 0 16px; }
-.lay.stage .card, .lay.stage .mini { width: min(1040px, calc(100% - 32px)); margin: 0 auto; }
+.lay.stage .card, .lay.stage .mini { width: min(1200px, calc(100% - 32px)); margin: 0 auto; }
 .lay.stage .card { padding: 16px 24px 18px; }
 .lay.stage .passage { font-size: 16px; line-height: 1.55; }
 .lay.stage .passage p { margin: 0 0 10px; }

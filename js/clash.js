@@ -131,7 +131,7 @@
       (p.figures || []).forEach(function (f) { h += figure(f); });
       h += '</div>';
     }
-    h += '<div class="qbox"><div class="qmeta">Question ' + (cur + 1) + ' of ' + qs.length + ' · ' + esc(q.skill) + ' · ' + LV[q.difficulty] + C.sourceChip(q) + (C.flagButton ? C.flagButton(q) : '') + '</div>' +
+    h += '<div class="qbox"><div class="qmeta">' + C.sourceChip(q) + (C.flagButton ? C.flagButton(q) : '') + '</div>' +
       '<div class="stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure) + '</div><div class="answers">';
     if (q.type === 'mcq') {
       h += '<ol class="choices" aria-label="Answer choices">' + q.choices.map(function (c) {
