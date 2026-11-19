@@ -175,6 +175,20 @@ figure { margin: 0 0 18px; }
   .card.is-reviewed .recap, .card.is-reviewed .whybox { animation: none; }
 }
 
+/* report a problem (clash.html loads only this sheet; style.css carries the same for practice) */
+.qflag { margin-left: 8px; padding: 0 6px; border: 1px solid transparent; background: none; color: var(--muted); opacity: 0.6; font-size: 13px; line-height: 20px; cursor: pointer; vertical-align: middle; border-radius: 3px; }
+.qflag:hover, .qflag:focus-visible, .qflag.is-open { opacity: 1; border-color: var(--line); color: var(--ink); outline: none; }
+.qflag.is-sent { opacity: 1; color: var(--good); }
+.qreport { margin: 6px 0 12px; padding: 10px 12px; border: var(--edge); background: var(--bg); font: 14px/1.4 var(--serif); color: var(--ink); }
+.qreport-lead { margin: 0 0 8px; }
+.qreport-done { margin: 0; color: var(--good); font-weight: 700; }
+.qreport-reasons { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 8px; }
+.qreport-reasons label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.qreport-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.qreport-row input[type=text] { flex: 1 1 220px; min-width: 0; padding: 7px 9px; border: var(--edge); background: var(--card); color: var(--ink); font: inherit; }
+.qreport-row .btn { padding: 7px 14px; font-size: 13px; }
+.qreport-row .btn.ghost { background: none; box-shadow: none; }
+
 /* after Check the grid folds into a one-line recap and the explanation takes its place */
 .card.is-reviewed .choices, .card.is-reviewed .spr { display: none; }
 .card.is-reviewed.show-choices .choices { display: grid; margin-top: 10px; }

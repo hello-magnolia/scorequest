@@ -97,6 +97,7 @@
       '<button class="btn" id="bNext" type="button" hidden>' + (state.i + 1 < state.total ? 'Next ▶' : 'Finish ▶') + '</button></div></div>';
     C.sideVisuals(read);
     C.math(read);
+    C.bindReports(read, 'realm:' + state.o.realm);
     C.enter(read);
     Array.prototype.forEach.call(read.querySelectorAll('.choices button'), function (b) {
       b.addEventListener('click', function () { if (state.busy || state.results[state.i] != null) return; state.picked = b.getAttribute('data-k');

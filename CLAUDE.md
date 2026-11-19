@@ -225,6 +225,13 @@ re-run it on any existing project. verify_auth guards all of this.
   tools 1 graph / 2 markers / 3 start / 4 boss, S stairs, Z undo, Copy JSON exports.
   Cmd/Ctrl chords never reach editor keys (Cmd+C = copy JSON); clearing a layer is Shift+C.
   (Plain C used to clear, so Cmd+C wiped markers before every export: Nov 2026 bug.)
+- REPORT A PROBLEM (Nov 18): a flag (.qflag, SQCard.flagButton) beside the source chip on
+  every question (qcard questionHTML, clash.js meta, practice.js meta); SQCard.bindReports(root,
+  page) opens a one-line .qreport form (Typo / Answer seems wrong / Confusing / Something else +
+  note). fileReport keeps every report in localStorage sq_reports and sends it through
+  SQAuth.reportQuestion (question_reports table) when signed in; flushReports retries unsent
+  ones (3 tries) on the next signed-in page. Official items have no questions row, so their
+  reports stay local. Pages: clash:<biome>, realm:<id>, practice. verify_clash covers it.
 - Grading: SQQuestions.grade(q, resp, {ms, session_id, record}) everywhere (practice, clash,
   overlay). Signed in -> SQAuth.checkAnswer -> Supabase RPC check_answer (keys never reach the
   browser; it writes attempts); else local check + SQAttempts.record. SQQuestions.ready

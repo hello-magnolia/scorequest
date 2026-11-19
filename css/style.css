@@ -2506,6 +2506,19 @@ html.is-authed .nav-cta:not(.un-ready) { visibility: hidden; }
 .pf-jbar { height: 10px; background: rgba(12, 9, 24, 0.75); border: 2px solid rgba(242, 182, 60, 0.5); }
 .pf-jbar-fill { height: 100%; background: linear-gradient(90deg, #f2b63c, #ffd76a); transition: width 300ms ease; }
 /* skills panel: one row per realm (domain), the skills folded inside; no red anywhere */
+/* report a problem: a small flag beside the source chip on every question, a one-line form under the meta */
+.qflag { margin-left: 8px; padding: 0 6px; border: 1px solid transparent; background: none; color: inherit; opacity: 0.45; font-size: 13px; line-height: 20px; cursor: pointer; vertical-align: middle; border-radius: 3px; }
+.qflag:hover, .qflag:focus-visible, .qflag.is-open { opacity: 1; border-color: currentColor; outline: none; }
+.qflag.is-sent { opacity: 0.9; color: #4e9a62; }
+.qreport { margin: 6px 0 12px; padding: 10px 12px; border: 2px solid rgba(120, 100, 70, 0.35); background: rgba(120, 100, 70, 0.07); font-size: 14px; line-height: 1.4; }
+.qreport-lead { margin: 0 0 8px; }
+.qreport-done { margin: 0; color: #4e9a62; font-weight: 600; }
+.qreport-reasons { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 8px; }
+.qreport-reasons label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.qreport-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.qreport-row input[type=text] { flex: 1 1 220px; min-width: 0; padding: 7px 9px; border: 2px solid rgba(120, 100, 70, 0.4); background: #fff; color: #2a2419; font: inherit; }
+.qreport-row .btn { padding: 7px 14px; font-size: 13px; }
+.qreport-row .btn.ghost { background: none; border: 2px solid rgba(120, 100, 70, 0.4); color: inherit; box-shadow: none; }
 .pf-h2-skills { margin-top: 26px; }
 .pf-sk-lead { color: rgba(245, 232, 200, 0.7); margin: -4px 0 12px; font-size: 0.78rem; }
 .pf-skills { display: grid; gap: 8px; }

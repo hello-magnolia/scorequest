@@ -48,6 +48,19 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
   /* the stage layout: wide framed strip across the top, the card below with a 2x2 grid; the
      strip is sticky with a negative top so it parks slim under the bar while a long question
      scrolls; a table or figure moves into a side column next to the text (SQCard.sideVisuals) */
+  /* report a problem: a flag on the question opens a one-line form; the report is kept locally (and sent when signed in) */
+  {
+    const flag = d.querySelector('.qmeta .qflag[data-report]');
+    click(w, flag);
+    const form = d.querySelector('#read .qreport');
+    check('Report flag opens a form under the meta with four reasons and a note', !!form && form.querySelectorAll('input[name=reason]').length === 4 && !!form.querySelector('input[name=note]'));
+    form.querySelector('input[name=note]').value = 'stray period';
+    form.dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+    await until(() => d.querySelector('#read .qreport-done'), 2000);
+    const rep = JSON.parse(w.localStorage.getItem('sq_reports') || '[]');
+    check('Sending stores {question_id, page, note} locally and thanks the player', rep.length === 1 && rep[0].question_id === flag.getAttribute('data-report') &&
+      rep[0].page === 'clash:lorewood' && /Typo: stray period/.test(rep[0].note) && /Thanks, noted/.test(d.querySelector('#read .qreport-done').textContent) && flag.classList.contains('is-sent'));
+  }
   check('Stage layout: wide strip (data-wide) above a centred card, answers in a 2x2 grid',
     d.querySelector('main.lay.stage > .screen.wide[data-wide]') && d.querySelector('main.lay.stage > .card') &&
     d.querySelectorAll('.card .choices button').length === 4 && /sticky/.test(w.getComputedStyle(d.querySelector('.screen.wide')).position));

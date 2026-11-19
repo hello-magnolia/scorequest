@@ -128,7 +128,8 @@
 
     var src = window.SQQuestions.sourceLabel(q), official = window.SQQuestions.isOfficial(q);
     var meta = '<div class="pr-meta type-utility">' + esc(q.domain) + ' · ' + esc(q.skill) + ' · ' + esc(LV[q.difficulty] || '') +
-      '<span class="pr-src' + (official ? ' official' : '') + '">' + esc(src) + '</span></div>';
+      '<span class="pr-src' + (official ? ' official' : '') + '">' + esc(src) + '</span>' +
+      (window.SQCard && window.SQCard.flagButton ? window.SQCard.flagButton(q) : '') + '</div>';
     var body = meta + '<div class="pr-stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure);
     if (q.type === 'mcq') {
       body += '<ol class="pr-choices" role="listbox" aria-label="Answer choices">' + q.choices.map(function (c) {
@@ -145,6 +146,7 @@
       '<button class="btn btn-gold" id="pr-next" type="button" hidden>' + (run.i + 1 < run.questions.length ? 'Next question' : 'See results') + '</button></div>';
     var qe = $('#pr-q');
     qe.innerHTML = body;
+    if (window.SQCard && window.SQCard.bindReports) window.SQCard.bindReports(qe, 'practice');
     math(pane); math(qe);
     wire();
   }

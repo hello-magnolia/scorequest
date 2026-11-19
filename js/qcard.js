@@ -108,7 +108,7 @@
     return '<span class="qsrc' + (official ? ' official' : '') + '" title="' + (official ? 'An official College Board question' : 'Written for ScoreQuest') + '">' + esc(label) + '</span>';
   }
   function questionHTML(q, n, total, meta) {
-    var h = '<div class="qbox"><div class="qmeta">' + (meta != null ? meta : 'Question ' + n + ' of ' + total + ' \u00b7 ' + esc(q.skill) + ' \u00b7 ' + LV[q.difficulty]) + sourceChip(q) + '</div>' +
+    var h = '<div class="qbox"><div class="qmeta">' + (meta != null ? meta : 'Question ' + n + ' of ' + total + ' \u00b7 ' + esc(q.skill) + ' \u00b7 ' + LV[q.difficulty]) + sourceChip(q) + flagButton(q) + '</div>' +
       '<div class="stem">' + rich(q.stem) + '</div>' + table(q.table) + figure(q.figure) + '</div><div class="answers">';
     if (q.type === 'mcq') {
       h += '<ol class="choices" aria-label="Answer choices">' + q.choices.map(function (c) {
@@ -256,7 +256,75 @@
     running = function () { cancels.forEach(function (c) { c(); }); };
   }
   reveal.DELAY = 1300;   /* ms the marked grid holds before the recap and explanation take over */
+
+  /* ---------- report a problem ----------
+     A small flag on every question (clash, overlay, practice). It opens a one-line form
+     under the question: four quick reasons and an optional note. Reports go to the
+     Supabase question_reports table through SQAuth.reportQuestion when the player is signed
+     in; every report is also kept in localStorage sq_reports and the unsent ones are
+     flushed on the next page that calls bindReports while signed in (three tries each; an
+     official item has no row in questions, so its report stays local for the review pass). */
+  var REASONS = ['Typo', 'Answer seems wrong', 'Confusing', 'Something else'];
+  var RKEY = 'sq_reports';
+  function flagButton(q) {
+    return '<button type="button" class="qflag" data-report="' + esc(q.id) + '" aria-label="Report a problem with this question" title="Report a problem">\u2691</button>';
+  }
+  function reports() { try { return JSON.parse(window.localStorage.getItem(RKEY) || '[]'); } catch (e) { return []; } }
+  function saveReports(list) { try { window.localStorage.setItem(RKEY, JSON.stringify(list.slice(-200))); } catch (e) {} }
+  function send(rep) {
+    var A = window.SQAuth;
+    if (!A || !A.reportQuestion) return Promise.resolve(false);
+    return A.reportQuestion(rep.question_id, rep.page, rep.note).then(function (ok) { return !!ok; }, function () { return false; });
+  }
+  function flushReports() {
+    var list = reports(), pending = list.filter(function (r) { return !r.sent && (r.tries || 0) < 3; });
+    if (!pending.length) return Promise.resolve(0);
+    return Promise.all(pending.map(function (r) {
+      return send(r).then(function (ok) { r.tries = (r.tries || 0) + 1; if (ok) r.sent = true; return ok; });
+    })).then(function (oks) { saveReports(list); return oks.filter(Boolean).length; });
+  }
+  function fileReport(qid, page, reason, note) {
+    var rep = { question_id: qid, page: page, note: (reason + (note ? ': ' + note : '')).slice(0, 400), at: new Date().toISOString(), sent: false, tries: 0 };
+    var list = reports(); list.push(rep); saveReports(list);
+    return send(rep).then(function (ok) { rep.tries = 1; rep.sent = ok; saveReports(list); return ok; });
+  }
+  function openReport(btn, page) {
+    var meta = btn.closest('.qmeta, .pr-meta') || btn.parentNode;
+    var host = meta.parentNode;
+    var old = host.querySelector('.qreport'); if (old) { old.remove(); btn.classList.remove('is-open'); return; }
+    btn.classList.add('is-open');
+    var f = document.createElement('form'); f.className = 'qreport'; f.setAttribute('aria-label', 'Report a problem');
+    f.innerHTML = '<p class="qreport-lead">Something off with this question? Tell us and we will take a look.</p>' +
+      '<div class="qreport-reasons">' + REASONS.map(function (r, i) { return '<label><input type="radio" name="reason" value="' + esc(r) + '"' + (i === 0 ? ' checked' : '') + '><span>' + esc(r) + '</span></label>'; }).join('') + '</div>' +
+      '<div class="qreport-row"><input type="text" name="note" maxlength="200" placeholder="Anything else (optional)" aria-label="Details (optional)">' +
+      '<button type="submit" class="btn">Send</button><button type="button" class="btn ghost" data-cancel>Cancel</button></div>';
+    meta.insertAdjacentElement('afterend', f);
+    f.querySelector('[data-cancel]').addEventListener('click', function () { f.remove(); btn.classList.remove('is-open'); });
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var reason = (f.querySelector('input[name=reason]:checked') || {}).value || REASONS[0];
+      var note = f.querySelector('input[name=note]').value.trim();
+      f.querySelector('[type=submit]').disabled = true;
+      fileReport(btn.getAttribute('data-report'), page, reason, note).then(function () {
+        f.innerHTML = '<p class="qreport-lead qreport-done">Thanks, noted. Carry on!</p>';
+        btn.classList.remove('is-open'); btn.classList.add('is-sent'); btn.setAttribute('title', 'Reported, thanks');
+        setTimeout(function () { if (f.isConnected) f.remove(); }, 2200);
+      });
+    });
+    f.querySelector('input[name=note]').focus();
+  }
+  function bindReports(root, page) {
+    if (!root || root.__sqReports) return;
+    root.__sqReports = true;
+    root.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.qflag[data-report]');
+      if (!b || !root.contains(b)) return;
+      e.preventDefault(); openReport(b, page);
+    });
+    if (window.SQAuth && window.SQAuth.onChange) window.SQAuth.onChange(function (st) { if (st && st.user && !st.demo) flushReports(); });
+  }
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
     px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip,
-    sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal, enter: enter };
+    sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal, enter: enter,
+    flagButton: flagButton, bindReports: bindReports, fileReport: fileReport, flushReports: flushReports, reports: reports };
 })();
