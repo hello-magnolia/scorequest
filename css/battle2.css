@@ -1,25 +1,25 @@
 /* ScoreQuest: battle Engine 2 (js/battle2.js), the over-the-shoulder battle screen.
    Everything is sized in --u, one scene pixel, so the canvas, the plates and the frame
    scale together. The engine builds the canvas and the two plates inside .b2-scene. */
-.b2-scene { --u: 5px; --b2-ward: #a48fcb; --b2-hp: #8fb07c; --b2-low: #d2a96a;
-  position: relative; height: calc(var(--u) * 60); border: 3px solid var(--frame, #2b2118); overflow: hidden; background: #3a2a4f; }
-@media (max-width: 720px) { .b2-scene { --u: 4px; } }
-@media (max-width: 560px) { .b2-scene { --u: 2.75px; } }
-.b2-scene canvas { position: absolute; top: 0; left: 50%; height: 100%; max-width: none; image-rendering: pixelated; image-rendering: crisp-edges; }
+/* --u: 3px (Nov 19, Magnolia: at 5px the creatures and the frame read too big and tall). The frame is the
+   same height as Engine 1's strip; a bigger --u grows it to the 60 scene pixels the fight needs. */
+.b2-scene { --u: 3px; --b2-ward: #a48fcb; --b2-hp: #8fb07c; --b2-low: #d2a96a;
+  position: relative; height: max(clamp(185px, 24vh, 225px), calc(var(--u) * 60)); border: 3px solid var(--frame, #2b2118); overflow: hidden; background: #3a2a4f; }
+.b2-scene canvas { position: absolute; bottom: 0; left: 50%; max-width: none; image-rendering: pixelated; image-rendering: crisp-edges; }
 /* name plates sit diagonally opposite their fighters: the foe's top left, the player's bottom right */
-.b2-plate { position: absolute; left: 50%; width: calc(var(--u) * 50); min-width: 132px; background: #fbf6e9; color: #3a2e22;
-  border: 3px solid #2b2118; padding: 6px 10px 8px; font-family: var(--pixel, "Pixelify Sans", ui-monospace, monospace); line-height: 1.15; box-shadow: 0 3px 0 rgba(0, 0, 0, .28); }
-.b2-plate.p-foe { top: calc(var(--u) * 4); margin-left: calc(var(--u) * -70); animation: b2-plate-l .45s steps(6) .35s both; }
-.b2-plate.p-me { bottom: calc(var(--u) * 5); margin-left: calc(var(--u) * 16); animation: b2-plate-r .45s steps(6) .5s both; }
+.b2-plate { position: absolute; left: 50%; width: clamp(150px, calc(var(--u) * 46), 230px); background: #fbf6e9; color: #3a2e22;
+  border: 3px solid #2b2118; padding: 5px 9px 7px; font-family: var(--pixel, "Pixelify Sans", ui-monospace, monospace); line-height: 1.15; box-shadow: 0 3px 0 rgba(0, 0, 0, .28); }
+.b2-plate.p-foe { top: 10px; margin-left: calc(var(--u) * -72); animation: b2-plate-l .45s steps(6) .35s both; }
+.b2-plate.p-me { bottom: 12px; margin-left: calc(var(--u) * 18); animation: b2-plate-r .45s steps(6) .5s both; }
 .b2-plate.p-foe.jolt, .b2-plate.p-me.jolt { animation: b2-jolt .35s steps(5); }
 @keyframes b2-jolt { 20% { transform: translate(-3px, 1px); } 40% { transform: translate(3px, -1px); } 60% { transform: translate(-2px, 0); } 80% { transform: translate(2px, 0); } }
 @keyframes b2-plate-l { from { transform: translateX(-140%); } }
 @keyframes b2-plate-r { from { transform: translateX(140%); } }
-.b2-plate .nm { font-weight: 700; font-size: clamp(11px, calc(var(--u) * 3.4), 17px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b2-plate .nm { font-weight: 700; font-size: clamp(13px, calc(var(--u) * 3.4), 17px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .b2-plate .row { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
 .b2-plate .lbl { font-weight: 700; font-size: 10px; letter-spacing: .7px; color: #2b2118; background: #e6c56a; padding: 1px 4px; }
 .b2-plate.p-foe .lbl { background: #c9b8ea; }
-.b2-bar { flex: 1; display: flex; gap: 2px; height: clamp(8px, calc(var(--u) * 2), 11px); padding: 1px; background: #4a3f33; border: 1px solid #2b2118; }
+.b2-bar { flex: 1; display: flex; gap: 2px; height: clamp(9px, calc(var(--u) * 2), 11px); padding: 1px; background: #4a3f33; border: 1px solid #2b2118; }
 .b2-bar i { flex: 1; background: #d8cfbb; transition: background .3s steps(3); }
 .b2-bar.ward i.on { background: var(--b2-ward); } .b2-bar.hp i.on { background: var(--b2-hp); } .b2-bar.low i.on { background: var(--b2-low); }
 .b2-bar i.pop { animation: b2-pop .45s steps(4); }

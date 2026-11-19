@@ -12,6 +12,8 @@
 
    API: SQBattle2.mount(sceneEl, { near: id, far: id, say(text), onBusy(bool, actId), base, ver })
      -> { ready, acts, play(id), busy(), guides(on), fighter(side), setFighter(side, id), refresh(), stop() }
+   Size on screen: --u on the scene is one scene pixel (css/battle2.css, 3px). The frame is as tall as
+   Engine 1's strip, or 60 scene pixels if that is taller.
    ============================================================ */
 (function () {
 'use strict';
@@ -43,7 +45,7 @@ function mount(scene, opts) {
 
   var bgc = document.createElement('canvas');
   /* ----- battle engine: one low-res canvas, tweens, squash and stretch, particles, hit-stop ----- */
-  var ctx = fxc.getContext('2d'), W = 224, H = 60, cx = 112;
+  var ctx = fxc.getContext('2d'), W = 224, H = 60, cx = 112, T = 0;   /* the fight is laid out on H rows; T = extra rows of sky above it when the frame is taller */
   var parts = [], fxs = [], ghosts = [], shake = 0, frame = 0, ready = false, alive = true;
   var lerp = function (a, b, t) { return a + (b - a) * t; };
   var easeOut = function (t) { return 1 - Math.pow(1 - t, 3); }, easeIn = function (t) { return t * t * t; },
@@ -119,8 +121,8 @@ function mount(scene, opts) {
     frame++;
     if (ready && alive && !document.hidden) {
       var ox = 0, oy = 0; if (shake > 0) { ox = Math.round((Math.random() * 2 - 1) * shake); oy = Math.round((Math.random() * 2 - 1) * shake); shake = Math.max(0, shake - .14); }
-      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H); ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(bgc, 0, 0); ctx.translate(ox, oy);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H + T); ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(bgc, 0, 0); ctx.translate(ox, oy + T);
       if (frame % 230 === 200 || frame % 230 === 214) foe.useAlt = 7;
       [foe, me].forEach(function (f) { if (f.flash > 0) f.flash--; if (f.useAlt > 0) f.useAlt--; });
       fxs.forEach(function (o) { if (o.behind) o.draw(Math.min(1, o.age / o.life)); });
@@ -228,12 +230,12 @@ function mount(scene, opts) {
   var turnN = { me: 0, foe: 0 };
   function play(ok, hit) { var list = ok ? MY_MOVES : FOE_MOVES, k = ok ? 'me' : 'foe'; return list[turnN[k]++ % list.length](hit); }
   /* ----- extras for the big moments ----- */
-  function screenFlash() { addFx(10, function (p) { ctx.globalAlpha = (1 - p) * .75; ctx.fillStyle = '#fff'; ctx.fillRect(-6, -6, W + 12, H + 12); ctx.globalAlpha = 1; }); }
+  function screenFlash() { addFx(10, function (p) { ctx.globalAlpha = (1 - p) * .75; ctx.fillStyle = '#fff'; ctx.fillRect(-6, -T - 6, W + 12, H + T + 12); ctx.globalAlpha = 1; }); }
   function gather(x, y, life) { addFx(life, function (p) { for (var i = 0; i < 10; i++) { var a = i / 10 * 6.283 + p * 4, r = lerp(17, 1, easeIn(p)); px(x + Math.cos(a) * r, y + Math.sin(a) * r * .8, i % 2 ? '#ffe58a' : '#ffffff'); } }); }
   function dizzy(x, y, life) { addFx(life, function (p) { ctx.globalAlpha = p > .8 ? (1 - p) * 5 : 1; for (var i = 0; i < 3; i++) { var a = p * 11 + i * 2.094, sx = x + Math.cos(a) * 9, sy = y + Math.sin(a) * 2.5;
     px(sx, sy, '#ffe58a'); if (Math.sin(a) > 0) { px(sx - 1, sy, '#ffe58a'); px(sx + 1, sy, '#ffe58a'); px(sx, sy - 1, '#ffe58a'); px(sx, sy + 1, '#ffe58a'); } } ctx.globalAlpha = 1; }); }
   function confetti(life) { var cols = ['#ffe58a', '#ffb65e', '#b9e04a', '#d9c8ff', '#ffffff', '#ff9a7a'];
-    addFx(life, function () { if (frame % 2 === 0) parts.push({ x: (Math.random() * 2 - 1) * (W / 2), y: -2, vx: (Math.random() - .5) * .5, vy: .45 + Math.random() * .5, g: .004, life: 90, c: cols[(Math.random() * cols.length) | 0], s: Math.random() < .3 ? 2 : 1 }); }); }
+    addFx(life, function () { if (frame % 2 === 0) parts.push({ x: (Math.random() * 2 - 1) * (W / 2), y: -T - 2, vx: (Math.random() - .5) * .5, vy: .45 + Math.random() * .5, g: .004, life: 90, c: cols[(Math.random() * cols.length) | 0], s: Math.random() < .3 ? 2 : 1 }); }); }
   var ZED = ['1111', '0010', '0100', '1111'];
   function zed(x, y, s, a) { ctx.globalAlpha = a; ctx.fillStyle = '#f4ecff'; ZED.forEach(function (row, r) { for (var c = 0; c < 4; c++) if (row[c] === '1') ctx.fillRect(X(x) + c * s, Math.round(y) + r * s, s, s); }); ctx.globalAlpha = 1; }
   function snore(life) { addFx(life, function (p) { for (var k = 0; k < 3; k++) { var q = (p * 3.2 - k * .33) % 1; if (p * 3.2 - k * .33 < 0 || q < 0) continue; zed(MH.x + 14 + q * 16 + k * 2, MH.y - 6 - q * 22, q > .5 ? 2 : 1, q < .15 ? q / .15 : 1 - Math.max(0, (q - .7) / .3)); } }); }
@@ -307,10 +309,12 @@ function mount(scene, opts) {
   function paint() {
     var u = parseFloat(getComputedStyle(scene).getPropertyValue('--u')) || 5;
     W = 2 * Math.ceil(scene.clientWidth / u / 2) + 2; cx = W / 2;
-    fxc.width = W; fxc.style.width = (W * u) + 'px'; fxc.style.marginLeft = (-W * u / 2) + 'px';
-    bgc.width = W; bgc.height = H;
+    T = Math.max(0, Math.ceil(scene.clientHeight / u) - H);   /* the canvas sits on the frame's floor; a taller frame just shows more sky */
+    fxc.width = W; fxc.height = H + T; fxc.style.width = (W * u) + 'px'; fxc.style.height = ((H + T) * u) + 'px'; fxc.style.marginLeft = (-W * u / 2) + 'px';
+    bgc.width = W; bgc.height = H + T;
     var c = bgc.getContext('2d'), hy = 25;
-    ['#3a2a4f', '#553657', '#7a4660', '#a2566a', '#c8707a'].forEach(function (col, k) { c.fillStyle = col; c.fillRect(0, k * 5, W, 6); });
+    ['#3a2a4f', '#553657', '#7a4660', '#a2566a', '#c8707a'].forEach(function (col, k) { var bh = (hy + T) / 5; c.fillStyle = col; c.fillRect(0, Math.round(k * bh), W, Math.ceil(bh) + 1); });
+    c.translate(0, T);
     for (var x = 0; x < W; x++) {   /* two rows of treetops along the horizon */
       var a = 5 + Math.round(2.5 * Math.sin(x * .37) + 1.8 * Math.sin(x * .11 + 2));
       c.fillStyle = '#4a2f45'; c.fillRect(x, hy - a, 1, a);

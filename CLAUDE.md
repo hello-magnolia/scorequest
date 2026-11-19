@@ -241,6 +241,9 @@ re-run it on any existing project. verify_auth guards all of this.
   win, shrug} plays any single move; lab-only, the game never calls it) and ENGINE 2 = the
   over-the-shoulder view (js/battle2.js + css/battle2.css, SQBattle2.mount(sceneEl, opts)): player
   NEAR bottom left seen from behind, foe FAR top right, plates diagonal, Lorewood backdrop only so far.
+  SIZE (Nov 19, Magnolia: at 5px a scene pixel the creatures and frame read too big and tall): --u = 3px
+  on .b2-scene, frame height = Engine 1's strip (clamp 185..225px) or 60u if taller; the fight is laid
+  out on 60 rows from the floor and a taller frame only adds sky (T rows). Lab "Screen size" = 3/4/5px.
   Engine 2 is NOT in the game yet (clash.html and the realm overlay still run Engine 1).
   CREATURE PROFILES = data/creatures.js (SQ_CREATURES): size (world units, Pomelo 36, Lantern Rabbit
   28), art (px tall), feet, front (nose reach), mid, head, launch, spot near|far, farArt, breath

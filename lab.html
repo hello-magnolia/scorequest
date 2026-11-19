@@ -8,8 +8,8 @@
 <!-- A workshop page, not linked from the site: play every battle animation of every creature,
      in both engines, and tune a creature's size profile. Engine 1 = js/clash-arena.js (the live
      side-view fight). Engine 2 = js/battle2.js (over the shoulder), creatures from data/creatures.js. -->
-<link rel="stylesheet" href="css/clash.css?v=b20261119j" />
-<link rel="stylesheet" href="css/battle2.css?v=b20261119j" />
+<link rel="stylesheet" href="css/clash.css?v=b20261119k" />
+<link rel="stylesheet" href="css/battle2.css?v=b20261119k" />
 <style>
 @font-face { font-family: 'Pixelify Sans'; font-weight: 400; font-display: swap; src: url('assets/fonts/pixelify-sans-latin-400-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Pixelify Sans'; font-weight: 600; font-display: swap; src: url('assets/fonts/pixelify-sans-latin-600-normal.woff2') format('woff2'); }
@@ -90,7 +90,8 @@
     <div class="box dialog" aria-live="polite"><p class="say" id="say2">Pick an animation below.</p></div>
     <div class="pads" id="pads2">
       <div class="box round"><h2>Round</h2><span id="round2"></span>
-        <button class="an" type="button" id="guides" aria-pressed="false"><span class="cur">&#9654;</span>Size guides</button></div>
+        <button class="an" type="button" id="guides" aria-pressed="false"><span class="cur">&#9654;</span>Size guides</button>
+        <label for="zoom2">Screen size</label><select id="zoom2"><option value="3">Small</option><option value="4">Medium</option><option value="5">Large</option></select></div>
       <div class="box pad"><h2 id="nameNear">Pomelo</h2><div id="near2"></div></div>
       <div class="box pad right"><h2 id="nameFar">Lantern Rabbit</h2><div id="far2"></div></div>
       <details class="box tune" id="tune">
@@ -126,9 +127,9 @@
   </div>
 </div>
 
-<script src="js/clash-arena.js?v=b20261119j"></script>
-<script src="data/creatures.js?v=b20261119j"></script>
-<script src="js/battle2.js?v=b20261119j"></script>
+<script src="js/clash-arena.js?v=b20261119k"></script>
+<script src="data/creatures.js?v=b20261119k"></script>
+<script src="js/battle2.js?v=b20261119k"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -143,7 +144,7 @@
   }
   var C = window.SQ_CREATURES, ids = Object.keys(C), q = new URLSearchParams(location.search);
   var pick = function (spot, want) { return want && C[want] ? want : ids.filter(function (k) { return C[k].spot === spot; })[0]; };
-  var E2 = window.SQBattle2.mount($('scene2'), { near: pick('near', q.get('near')), far: pick('far', q.get('far')), say: say, onBusy: busy2, ver: '?v=b20261119j' });
+  var E2 = window.SQBattle2.mount($('scene2'), { near: pick('near', q.get('near')), far: pick('far', q.get('far')), say: say, onBusy: busy2, ver: '?v=b20261119k' });
   window.__SQ_LAB = { e2: E2 };
   var btns2 = [];
   function busy2(on, id) { btns2.forEach(function (b) { b.disabled = on; b.classList.toggle('on', on && b.dataset.a === id); }); }
@@ -153,6 +154,7 @@
   });
   $('round2').style.display = 'contents';
   busy2(E2.busy());
+  $('zoom2').onchange = function () { $('scene2').style.setProperty('--u', this.value + 'px'); E2.refresh(); };
   $('guides').onclick = function () { var on = this.getAttribute('aria-pressed') !== 'true'; E2.guides(on); this.classList.toggle('on', on); this.setAttribute('aria-pressed', on); };
 
   /* the profile readout and the tuning rows */
