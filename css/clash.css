@@ -135,11 +135,15 @@ figure { margin: 0 0 18px; }
 /* the card keeps a set height: it fills what the window has left under the strip, so a
    short math question gets the same box as a passage question; the words sit at the top
    and Check rests on the floor (Magnolia: a short box looked wrong) */
-.lay.stage .card { padding: 14px 24px 14px; display: flex; flex-direction: column;
+.lay.stage .card { padding: 30px 44px 28px; display: flex; flex-direction: column; justify-content: safe center;
   min-height: max(360px, calc(100vh - var(--bar) - var(--strip) - var(--below, 96px))); }
-.lay.stage .card > .answers { display: flex; flex-direction: column; flex: 1 1 auto; }
-.lay.stage .card > .answers > .msg { margin-top: auto; }
-.lay.stage .card > .answers > .acts { padding-top: 6px; }
+/* a short question floats in the middle of the box with generous air above and below;
+   a long one fills it from the top as before (safe center falls back to flex-start) */
+.lay.stage .card > .answers { display: flex; flex-direction: column; flex: 0 0 auto; }
+.lay.stage .card > .answers > .acts { padding-top: 10px; }
+.lay.stage .card > .qbox:first-child, .lay.stage .card > .read-grid:first-child { margin-top: 0; }
+.lay.stage .choices { margin-top: 6px; }
+@media (max-width: 720px) { .lay.stage .card { padding: 20px 18px; } }
 .lay.stage .passage { font-size: 17px; line-height: 1.5; }
 .lay.stage .passage p { margin: 0 0 10px; }
 .lay.stage .passage + .qbox { margin-top: 10px; padding-top: 10px; }
@@ -224,7 +228,6 @@ figure { margin: 0 0 18px; }
   .lay.stage .choices { grid-template-columns: 1fr; }
   .lay.stage { --strip: clamp(170px, 28vh, 240px); --slim: 110px; }
   .lay.stage .screen.wide { width: 100%; margin-top: 0; }
-  .lay.stage .card { padding: 16px; }
 }
 
 /* ---------- the waypoint overlay on realm.html ---------- */
