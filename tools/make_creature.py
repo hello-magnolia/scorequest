@@ -236,6 +236,17 @@ def pomelo_poses(src):
     P['cheer'] = shear_cols(ch, lambda x: -int(np.clip(round((x - X(12)) / 8), 0, 3)))
     P['sleep'] = shear_cols(hu, lambda x: int(np.clip(round((x - X(13)) / 7), 0, 4)))                 # slumped, eye shut, leaf drooped
     for i, f in enumerate(breath(c0, Y(33), (X(28), X(38), Y(8)), range(Y(18), Y(31)), X(8))): P['idle%d' % i] = f
+    # the orange he throws: cut off his head as its own little sprite (body centre at 3, 7), and a bare-headed
+    # Pomelo for while it is in the air. The orange sits at x 28..36, rows 0..9 of the drawing.
+    LINE = (20, 12, 12); RIND = tuple(int(v) for v in c0[Y(6), X(28), :3])
+    org = np.zeros((11, 9, 4), np.uint8); org[0:9] = c0[Y(0):Y(9), X(28):X(37)]
+    org[9, 0] = c0[Y(9), X(28)]; org[9, 1] = c0[Y(9), X(29)]; org[9, 2] = c0[Y(9), X(30)]; put(org, 3, 9, LINE)
+    put(org, 1, 10, RIND); put(org, 2, 10, RIND)                                                      # close the rind underneath
+    P['orange'] = org
+    bare = c0.copy(); bare[Y(0):Y(9), X(28):X(37)] = 0
+    put(bare, X(28), Y(9), LINE); put(bare, X(29), Y(9), LINE); bare[Y(9), X(30)] = 0; bare[Y(9), X(33)] = 0   # the top of his head where it sat
+    P['bare'] = bare
+    P['bare_rear'] = shear_cols(bare, lambda x: -int(np.clip(round((x - X(12)) / 8), 0, 3)))
     return P, {'feet': 5, 'far': ('idle', 'crouch', 'rear')}
 
 

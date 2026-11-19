@@ -255,7 +255,8 @@ re-run it on any existing project. verify_auth guards all of this.
   out assets/creatures/<id>/): cleans an upload to true pixels, builds 4 breathing frames (sink with
   ears / leaf a beat late, rump eases back) and, for near creatures, true small far_ frames; POSE
   frames (crouch rear hurt cheer sleep / windup leap hurt bow happy blink) are a hand recipe per
-  creature in RECIPES. Moves: near = zest spark, charge, stomp ripple; far = lantern lob, hop bump;
+  creature in RECIPES. Moves: near = orange toss (Pomelo flicks the orange off his head, it bonks the foe and
+  bounces home; needs carry + frames orange / bare / bare_rear, else a zest spark), charge, stomp ripple; far = lantern lob, hop bump;
   round = entrance, victory, defeat (Pomelo naps and refills: never a loss). KNOWN: at short strips
   Engine 1's "Dispelled!" banner clips off the top (canvas overshoots the box).
 - REPORT A PROBLEM (Nov 18): a flag (.qflag, SQCard.flagButton) beside the source chip on

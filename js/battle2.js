@@ -166,9 +166,29 @@ function mount(scene, opts) {
   }
   function wardGlow() { addFx(34, function (p) { ctx.globalAlpha = Math.sin(p * Math.PI) * (.55 + .45 * Math.sin(p * 18)); ellipse(FC.x, FC.y, 18, 17, '#d9c8ff', (frame >> 2) % 4 + 1); ellipse(FC.x, FC.y, 16, 15, '#a48fcb', (frame >> 2) % 4 + 3); ctx.globalAlpha = 1; }); }
 
+  /* ----- a thrown thing: a creature with an 'orange' frame and a carry point throws that instead of a spark ----- */
+  function prop(img, p) { ctx.save(); ctx.translate(X(p.x), Math.round(p.y)); if (p.q) ctx.rotate(p.q * Math.PI / 2); if (p.s !== 1) ctx.scale(p.s, p.s); ctx.drawImage(img, -3, -7); ctx.restore(); }
+  async function toss(hit) {   /* he flicks the orange off his head: it spins up the field, bonks the foe, and bounces home onto his head */
+    var img = me.fr.orange, home = at(me, me.P.carry), far = absScale(me, foe.spot) / me.s0;
+    me.pose = 'crouch'; await squash(me, 1.12, .88, 190); await sleep(60);
+    me.pose = 'bare_rear'; squash(me, .94, 1.08, 110);   /* the head snaps up and the orange leaves it */
+    var p = { x: home.x, y: home.y - 3, q: 0, s: 1 }, o = addFx(1e6, function () { prop(img, p); });
+    tween(130, function (t) { me.oy = -Math.round(5 * easeOut(t)); }).then(function () { return tween(170, function (t) { me.oy = -Math.round(5 * (1 - easeIn(t))); }); })
+      .then(function () { me.pose = 'bare'; me.sx = 1.08; me.sy = .93; return squash(me, 1, 1, 140); });
+    var x0 = p.x, y0 = p.y;
+    await tween(460, function (t) { var e = t * .5 + easeIn(t) * .5; p.x = lerp(x0, FC.x - 4, e); p.y = lerp(y0, FC.y, e) - Math.sin(t * Math.PI) * 11; p.s = lerp(1, far, e); p.q = Math.floor(t * 8) % 4;
+      if (frame % 3 === 0) sparkle(p.x, p.y, '#ffb65e'); });
+    burst(FC.x - 3, FC.y, ['#ffb65e', '#ffe58a', '#ff7c1c'], 8, 1.2, .07);   /* a squirt of juice */
+    var hitting = hitFoe(hit), x1 = p.x, y1 = p.y;
+    await tween(620, function (t) { var e = easeIO(t) * .4 + t * .6; p.x = lerp(x1, home.x, e); p.y = lerp(y1, home.y, e) - Math.sin(t * Math.PI) * 24; p.s = lerp(far, 1, e); p.q = (4 - Math.floor(t * 8) % 4) % 4; });
+    o.life = 0; me.pose = 'idle'; me.sx = 1.08; me.sy = .92;   /* plop: back where it lives */
+    for (var i = 0; i < 5; i++) sparkle(home.x - 4 + Math.random() * 8, home.y - 6 + Math.random() * 6, '#fff3b8');
+    await squash(me, 1, 1, 180); await hitting;
+  }
   /* ----- Pomelo's moves (a right answer) ----- */
   var MY_MOVES = [
     async function spark(hit) {   /* a zest spark, lobbed away from the viewer so it shrinks as it flies */
+      if (me.fr.orange && me.fr.bare && me.P.carry) return toss(hit);
       me.pose = 'crouch'; await squash(me, 1.12, .88, 190); await sleep(60);
       me.pose = 'rear'; squash(me, .94, 1.08, 110); await tween(130, function (t) { me.oy = -Math.round(5 * easeOut(t)); });
       var p = { x: ML.x, y: ML.y, s: 5 }, o = addFx(1e6, function () { orb(p, '#ffe58a', '#ffb65e'); }); star(ML.x, ML.y, '#fff3b8', 4, 8);
@@ -343,7 +363,7 @@ function mount(scene, opts) {
 
   /* ----- the actions a page can play ----- */
   var ACTS = {
-    spark:   { side: 'near', label: 'Zest spark',   line: function () { return nm(me, 1) + ' flicks a zest spark!'; }, run: function () { return MY_MOVES[0](loseWard); } },
+    spark:   { side: 'near', label: 'Zest spark',   line: function () { return nm(me, 1) + (me.P.carry ? ' tosses the orange!' : ' flicks a zest spark!'); }, run: function () { return MY_MOVES[0](loseWard); } },
     charge:  { side: 'near', label: 'Charge',       line: function () { return nm(me, 1) + ' charges!'; }, run: function () { return MY_MOVES[1](loseWard); } },
     stomp:   { side: 'near', label: 'Stomp ripple', line: function () { return nm(me, 1) + ' stomps. The ground ripples!'; }, run: function () { return MY_MOVES[2](loseWard); } },
     mehit:   { side: 'near', label: 'Takes a hit',  line: function () { return nm(me, 1) + ' takes the bump and shakes it off.'; }, run: function () { return hitMe(loseHp); } },
@@ -381,6 +401,7 @@ function mount(scene, opts) {
   if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(scene);
 
   me = fighter(CREATURES[opts.near || 'pomelo'], 'near'); foe = fighter(CREATURES[opts.far || 'lantern-rabbit'], 'far');
+  if (me.P.carry) ACTS.spark.label = 'Orange toss';
   points(); names(); paint(); status(); foe.ox = 120; me.ox = -110;
   var whenReady = Promise.all([me.loaded, foe.loaded]).then(function () {
     ready = true; busy = true; if (opts.onBusy) opts.onBusy(true, 'enter');

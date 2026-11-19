@@ -199,6 +199,10 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
   click(lw, ld.querySelector('#pads2 [data-a="charge"]'));
   await until(() => E2.busy(), 1000); await until(() => !E2.busy(), 9000);
   check('Engine 2 plays a move to the end: the foe loses a pip and both fighters are back home', pipsOn() === before - 1 && near.ox === 0 && near.oy === 0 && near.z === 1 && near.pose === 'idle' && far.pose === 'idle', before + ' -> ' + pipsOn());
+  const p2 = pipsOn(); let bareSeen = false;
+  click(lw, ld.querySelector('#pads2 [data-a="spark"]'));
+  await until(() => { if (near.pose === 'bare' || near.pose === 'bare_rear') bareSeen = true; return bareSeen && !E2.busy(); }, 9000);
+  check('Orange toss: Pomelo throws the orange off his head (bare-headed while it flies) and it comes home', /Orange toss/.test(ld.querySelector('#pads2 [data-a="spark"]').textContent) && bareSeen && near.pose === 'idle' && pipsOn() === p2 - 1 && /orange/.test(ld.querySelector('#say2').textContent));
   const sz = ld.querySelector('#tn-near-size'); sz.value = '45'; sz.dispatchEvent(new lw.Event('input', { bubbles: true }));
   check('Tuning a profile number changes the scale at once', Math.abs(E2.scaleAt('near', 'near') - 1.25) < .01 && /size 45/.test(ld.querySelector('#prof').textContent));
   sz.value = '36'; sz.dispatchEvent(new lw.Event('input', { bubbles: true }));

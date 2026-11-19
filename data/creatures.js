@@ -18,6 +18,8 @@
      mid     feet to the centre of the body (where hits land)
      head    { x forward of centre, y above the feet }: where bumps land and Zs rise from
      launch  { x, y }: where a thrown spark or light leaves from
+     carry   optional { x, y }: where the thing it throws sits on it (Pomelo's orange, the centre of the fruit).
+             With carry and the frames orange, bare, bare_rear, its first move throws that instead of a spark.
    And how it behaves:
      faces   1 if the drawing faces right, -1 if left
      article true if lines should read "The Lantern Rabbit ..." rather than "Pomelo ..."
@@ -31,9 +33,9 @@
 window.SQ_CREATURES = {
   'pomelo': {
     name: 'Pomelo', dir: 'assets/creatures/pomelo/', w: 45, h: 53, art: 45, feet: 5, size: 36, spot: 'near', farArt: 0.8,
-    front: 20.5, mid: 22, head: { x: 9, y: 30 }, launch: { x: 18, y: 47 },
+    front: 20.5, mid: 22, head: { x: 9, y: 30 }, launch: { x: 18, y: 47 }, carry: { x: 10, y: 38 },
     faces: 1, article: false, alt: null, tint: '#ffd9a0', breath: [52, 9, 46, 9, 25],
-    poses: ['idle', 'idle0', 'idle1', 'idle2', 'idle3', 'crouch', 'rear', 'hurt', 'cheer', 'sleep', 'far_idle', 'far_crouch', 'far_rear']
+    poses: ['idle', 'idle0', 'idle1', 'idle2', 'idle3', 'crouch', 'rear', 'hurt', 'cheer', 'sleep', 'far_idle', 'far_crouch', 'far_rear', 'orange', 'bare', 'bare_rear']
   },
   'lantern-rabbit': {
     name: 'Lantern Rabbit', dir: 'assets/creatures/lantern-rabbit/', w: 40, h: 30, art: 28, feet: 0, size: 28, spot: 'far',
