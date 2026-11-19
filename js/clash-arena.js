@@ -496,6 +496,8 @@ async function strike(att,def,move,{knock=4,shakeAmt=1,colors=["#fff"],hx}={}){
   return true;
 }
 function setLog(a,b=""){const l=$id("cx-log");if(l)l.textContent=a}
+/* the healing moves (zen, nap) end with this; the game only uses damage moves, the lab plays them all */
+async function heal(f){rise(f,["#b8ff9a","#ffffff"],8);await sleep(220)}
 
 async function doMove(att,def,move){
   att.busy=true;
@@ -587,6 +589,26 @@ window.SQArena={
     if(motion==="full")await victoryHop(B,1);
   })},
   idle(){return chain},
+  /* Creature Lab (lab.html) only: play any single move of this engine, outside a round.
+     The game itself never calls these. */
+  lab:{
+    roster:()=>Object.keys(ROSTER).map(k=>({key:k,name:ROSTER[k].name,moves:ROSTER[k].moves.map(m=>m.name)})),
+    set(biomeId,key){return window.SQArena.enter(biomeId,key,ROSTER[key].name,3,3)},
+    move(side,i){return queue(async()=>{
+      const att=side<0?A:B, def=side<0?B:A; if(!att||!def)return;
+      if(B.upside){Object.assign(B,{upside:false,dizzy:false,ox:0});banner=null;ward.hp=ward.max;pips()}
+      const m=ROSTER[att.key].moves[i]; if(!m)return;
+      setLog(`${att.name} used ${m.name}!`);
+      await doMove(att,def,m);
+      if(att.guard||att.dodge){await sleep(900);att.guard=false;att.dodge=false}   /* let the shield or dodge marks show, then clear */
+      def._said=false;
+    })},
+    win(){return queue(async()=>{
+      if(!B)return; if(B.upside){Object.assign(B,{upside:false,dizzy:false,ox:0});banner=null;await sleep(200)}
+      ward.hp=0;pips();await knockOver(B);banner={text:"Dispelled!",t:0};setLog(`${B.name} is dispelled! The biome is clear.`);await victoryHop(A,3);
+    })},
+    shrug(){return queue(async()=>{setLog(`Pomelo shakes it off.`);await zenShrug(A)})}
+  },
   setMotion(m){motion=m==="calm"||m==="off"?m:"full";if(motion!=="full"){shake=0}},
   get motion(){return motion},
   get ward(){return {hp:ward.hp,max:ward.max}}

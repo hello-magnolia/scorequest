@@ -172,6 +172,46 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
   check('Biome dropdown switches biome and boss', w.__SQ_CLASH.state.biome === 'prismpeaks' && /Summit Bear/.test(d.querySelector('#cx-boss').textContent) && /realm=prismpeaks/.test(w.location.search));
   check('No em dashes in rendered page text', !d.body.textContent.includes('—'));
 
+  /* ---- the Creature Lab (lab.html): both engines, creature profiles, never linked from the site ---- */
+  const fs = require('fs');
+  const lab = await JSDOM.fromURL('http://localhost:8000/lab.html', { resources: 'usable', virtualConsole: vc, runScripts: 'dangerously', pretendToBeVisual: true,
+    beforeParse(win) { win.matchMedia = win.matchMedia || (() => ({ matches: false, addListener() {}, removeListener() {} })); win.ResizeObserver = win.ResizeObserver || class { observe() {} disconnect() {} }; } });
+  const lw = lab.window, ld = lw.document;
+  await new Promise(r => lw.addEventListener('load', r));
+  await until(() => lw.__SQ_LAB && lw.__SQ_LAB.e2);
+  const E2 = lw.__SQ_LAB && lw.__SQ_LAB.e2, CR = lw.SQ_CREATURES || {};
+  check('Lab loads both engines and the creature profiles', !!E2 && !!lw.SQBattle2 && !!(lw.SQArena && lw.SQArena.lab) && Object.keys(CR).length >= 2);
+  const missing = [];
+  Object.keys(CR).forEach(id => { const P = CR[id]; P.poses.forEach(k => { if (!fs.existsSync(P.dir + k + '.png')) missing.push(id + '/' + k); });
+    ['name', 'dir', 'w', 'h', 'art', 'feet', 'size', 'spot', 'front', 'mid', 'head', 'launch', 'breath'].forEach(f => { if (P[f] == null) missing.push(id + '.' + f); });
+    if (!P.poses.includes('idle')) missing.push(id + ': no idle'); });
+  check('Every creature profile is complete and its pose frames exist', missing.length === 0, missing.slice(0, 4).join(', '));
+  await E2.ready;
+  const near = E2.fighter('near'), far = E2.fighter('far');
+  check('Sizes come from the profiles (drawn 1:1 at home, Pomelo still bigger than the rabbit up the field)',
+    Math.abs(E2.scaleAt('near', 'near') - 1) < .01 && Math.abs(E2.scaleAt('far', 'far') - 1) < .01 &&
+    near.P.art * E2.scaleAt('near', 'far') > far.P.art * E2.scaleAt('far', 'far') && Math.abs(E2.scaleAt('near', 'far') - near.P.farArt) < .01,
+    'near at far ' + E2.scaleAt('near', 'far').toFixed(2));
+  const acts = Object.keys(E2.acts);
+  check('Engine 2 lists moves for both sides plus entrance, victory and defeat', ['spark', 'charge', 'stomp', 'lob', 'hop', 'enter', 'victory', 'defeat'].every(k => acts.includes(k)) &&
+    ld.querySelectorAll('#near2 .an').length >= 3 && ld.querySelectorAll('#far2 .an').length >= 2);
+  const pipsOn = () => ld.querySelectorAll('#scene2 .ward i.on').length, before = pipsOn();
+  click(lw, ld.querySelector('#pads2 [data-a="charge"]'));
+  await until(() => E2.busy(), 1000); await until(() => !E2.busy(), 9000);
+  check('Engine 2 plays a move to the end: the foe loses a pip and both fighters are back home', pipsOn() === before - 1 && near.ox === 0 && near.oy === 0 && near.z === 1 && near.pose === 'idle' && far.pose === 'idle', before + ' -> ' + pipsOn());
+  const sz = ld.querySelector('#tn-near-size'); sz.value = '45'; sz.dispatchEvent(new lw.Event('input', { bubbles: true }));
+  check('Tuning a profile number changes the scale at once', Math.abs(E2.scaleAt('near', 'near') - 1.25) < .01 && /size 45/.test(ld.querySelector('#prof').textContent));
+  sz.value = '36'; sz.dispatchEvent(new lw.Event('input', { bubbles: true }));
+  click(lw, ld.querySelector('#eng1'));
+  await lw.SQArena.ready; await until(() => /Rabbit/.test(ld.querySelector('#cx-boss').textContent), 4000);
+  check('Engine 1 view: the original side-view arena with every critter move', !ld.querySelector('#view1').hidden && ld.querySelector('#view2').hidden &&
+    ld.querySelectorAll('#near1 .an').length === 3 && ld.querySelectorAll('#far1 .an').length === 3 && lw.SQArena.lab.roster().length >= 6);
+  click(lw, ld.querySelector('#far1 .an')); await lw.SQArena.idle();
+  check('Engine 1 plays a single move through the lab hook', /used/.test(ld.querySelector('#cx-log').textContent) && lw.SQArena.ward.hp === 3);
+  const linked = ['index', 'map', 'checkout', 'success', 'parents', 'realm', 'boss', 'bookmarks', 'profile', 'settings', 'clash', 'practice'].filter(n => /lab\.html/.test(fs.readFileSync(n + '.html', 'utf8')));
+  check('Lab is a workshop page: noindex, linked from no site page, no em dashes', /noindex/.test(ld.querySelector('meta[name="robots"]').content) && linked.length === 0 && !ld.body.textContent.includes('—'), linked.join(','));
+  E2.stop();
+
   const passed = results.filter(Boolean).length;
   console.log(`\n${passed}/${results.length} checks passed`);
   process.exit(passed === results.length ? 0 : 1);

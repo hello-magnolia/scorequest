@@ -24,7 +24,7 @@ Runner: `bash gate.sh [suite ...]` (no args = all eleven; serves + one line per 
 Scope by changed surface:
   realm.* -> verify_realm · boss.* -> verify_boss · map.*/profile.* -> verify_hub verify_map ·
   index hero/copy -> verify · practice.*/questions.js -> verify_practice · data/questions.js -> verify_bank
-  verify_practice verify_clash · clash.* -> verify_clash · auth/usernav -> verify_auth · checkout/pricing ->
+  verify_practice verify_clash · clash.* / lab.* / battle2.* / data/creatures.js -> verify_clash · auth/usernav -> verify_auth · checkout/pricing ->
   verify_payment verify · parents/i18n -> verify_parents.
 Shared surfaces (css/style.css, auth.js, game.js, main.js, sfx.js) or multi-page edits,
 or a rebase that pulled someone else's changes -> full `bash gate.sh`. Stamp-only bumps
@@ -33,8 +33,8 @@ Timing checks POLL (until-loops), never fixed sleeps. `__SQ_TICKS` (realm) and
 `__SQ_BOSS` state are the tripwires. Pages deploys lag pushes ~10 min (CDN caches HTML).
 
 ## Version discipline
-Every deploy: one sed bumps `?v=` in ALL TWELVE html files (index, map, checkout, success,
-parents, realm, boss, bookmarks, profile, settings, clash, practice). Lineage `b<YYYYMMDD><letter>`; check
+Every deploy: one sed bumps `?v=` in ALL THIRTEEN html files (index, map, checkout, success,
+parents, realm, boss, bookmarks, profile, settings, clash, practice, lab). Lineage `b<YYYYMMDD><letter>`; check
 index.html for current. Boss ART changes also bump ASSET_V in js/boss.js.
 
 ## Edits and sprites
@@ -235,6 +235,26 @@ re-run it on any existing project. verify_auth guards all of this.
   tools 1 graph / 2 markers / 3 start / 4 boss, S stairs, Z undo, Copy JSON exports.
   Cmd/Ctrl chords never reach editor keys (Cmd+C = copy JSON); clearing a layer is Shift+C.
   (Plain C used to clear, so Cmd+C wiped markers before every export: Nov 2026 bug.)
+- CREATURE LAB (Nov 19, Magnolia: keep the animation workshop for every future creature): lab.html,
+  a workshop page (noindex, linked from NO site page; verify_clash asserts both). A switch at the
+  top: ENGINE 1 = the live side-view arena (js/clash-arena.js, SQArena.lab.{roster, set, move(side, i),
+  win, shrug} plays any single move; lab-only, the game never calls it) and ENGINE 2 = the
+  over-the-shoulder view (js/battle2.js + css/battle2.css, SQBattle2.mount(sceneEl, opts)): player
+  NEAR bottom left seen from behind, foe FAR top right, plates diagonal, Lorewood backdrop only so far.
+  Engine 2 is NOT in the game yet (clash.html and the realm overlay still run Engine 1).
+  CREATURE PROFILES = data/creatures.js (SQ_CREATURES): size (world units, Pomelo 36, Lantern Rabbit
+  28), art (px tall), feet, front (nose reach), mid, head, launch, spot near|far, farArt, breath
+  timing, poses. draw scale = FIELD[spot] * size / art (FIELD near 1.25, far 1): Pomelo 80% up the
+  field, a rabbit 125% down it. meet(a, d) puts an attacker nose to nose from the two profiles; moves
+  aim at profile points, never literals. A pose a creature lacks falls back to idle. Lab: Size
+  guides (feet line, height, nose / centre / launch dots), Tune panel (live numbers), Copy profile
+  -> paste into data/creatures.js. Frames: tools/make_creature.py <id> (sources in sprites/creatures/,
+  out assets/creatures/<id>/): cleans an upload to true pixels, builds 4 breathing frames (sink with
+  ears / leaf a beat late, rump eases back) and, for near creatures, true small far_ frames; POSE
+  frames (crouch rear hurt cheer sleep / windup leap hurt bow happy blink) are a hand recipe per
+  creature in RECIPES. Moves: near = zest spark, charge, stomp ripple; far = lantern lob, hop bump;
+  round = entrance, victory, defeat (Pomelo naps and refills: never a loss). KNOWN: at short strips
+  Engine 1's "Dispelled!" banner clips off the top (canvas overshoots the box).
 - REPORT A PROBLEM (Nov 18): a flag (.qflag, SQCard.flagButton) beside the source chip on
   every question (qcard questionHTML, clash.js meta, practice.js meta); SQCard.bindReports(root,
   page) opens a one-line .qreport form (Typo / Answer seems wrong / Confusing / Something else +

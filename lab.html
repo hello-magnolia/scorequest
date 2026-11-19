@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Creature Lab · ScoreQuest</title>
+<!-- A workshop page, not linked from the site: play every battle animation of every creature,
+     in both engines, and tune a creature's size profile. Engine 1 = js/clash-arena.js (the live
+     side-view fight). Engine 2 = js/battle2.js (over the shoulder), creatures from data/creatures.js. -->
+<link rel="stylesheet" href="css/clash.css?v=b20261119j" />
+<link rel="stylesheet" href="css/battle2.css?v=b20261119j" />
+<style>
+@font-face { font-family: 'Pixelify Sans'; font-weight: 400; font-display: swap; src: url('assets/fonts/pixelify-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 600; font-display: swap; src: url('assets/fonts/pixelify-sans-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Pixelify Sans'; font-weight: 700; font-display: swap; src: url('assets/fonts/pixelify-sans-latin-700-normal.woff2') format('woff2'); }
+* { box-sizing: border-box; }
+.lab { --rim: #c9b98f; margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--serif); padding: 8px 16px 20px; }
+@media (prefers-color-scheme: dark) { .lab:not([data-theme="light"]) { --rim: #5a4f3c; } }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; }
+.head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-family: var(--pixel); }
+.head h1 { font: 700 18px var(--pixel); margin: 0; letter-spacing: .5px; }
+.head small { color: var(--muted); font-size: 12px; }
+.seg { display: flex; margin-left: auto; border: 2px solid var(--frame); }
+.seg button { font: 600 14px var(--pixel); padding: 5px 12px; background: var(--card); color: var(--ink); border: 0; cursor: pointer; }
+.seg button + button { border-left: 2px solid var(--frame); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+.view { display: flex; flex-direction: column; gap: 8px; }
+.view[hidden] { display: none; }
+/* the battle stays pinned to the top, so the creatures are always in view */
+.lab .b2-scene, .lab .lay.stage .screen.wide { position: sticky; top: 0; z-index: 3; }
+.lab .lay.stage { padding: 0; gap: 8px; }
+.lab .lay.stage .screen.wide { width: 100%; margin: 0; }
+.lab .lay.stage .plate.me .row { display: none; }
+
+/* the framed box: dark frame, a gap, an inner rim, pixel-notched corners */
+.box { position: relative; background: var(--card); border: 3px solid var(--frame);
+  box-shadow: inset 0 0 0 3px var(--card), inset 0 0 0 5px var(--rim);
+  clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px)); }
+.dialog { padding: 14px 22px 13px; }
+.dialog .say { font: 600 clamp(15px, 2vw, 21px)/1.4 var(--pixel); margin: 0; min-height: 1.4em; }
+.typing::after { content: ""; display: inline-block; width: .55em; height: 1em; margin-left: 3px; background: currentColor; vertical-align: -0.12em; animation: blink .5s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.pads { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 10px; }
+.round { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 8px 12px; }
+.round h2, .pad h2 { font: 700 14px var(--pixel); letter-spacing: .5px; margin: 0; color: var(--muted); }
+.round h2 { margin-right: 6px; }
+.round .an { width: auto; }
+.round select { font: 600 14px var(--pixel); padding: 3px 6px; background: var(--card); color: var(--ink); border: 2px solid var(--frame); margin-left: 4px; }
+.round label { font: 600 13px var(--pixel); color: var(--muted); margin-left: 8px; }
+.pad { padding: 9px 10px 8px; display: flex; flex-direction: column; gap: 1px; }
+.pad h2 { margin: 0 0 3px 6px; }
+.pad.right h2 { text-align: right; margin: 0 6px 3px 0; }
+.an { display: flex; align-items: center; gap: 5px; width: 100%; text-align: left; padding: 4px 8px 4px 4px; background: transparent; color: var(--ink);
+  border: 2px solid transparent; font: 600 15px/1.25 var(--pixel); cursor: pointer; }
+.an .cur { width: 11px; font-size: 12px; visibility: hidden; flex: none; }
+.an:hover:not(:disabled) .cur, .an:focus-visible .cur { visibility: visible; animation: blink .8s steps(2) infinite; }
+.an.on { background: var(--pick); border-color: var(--pick-line); } .an.on .cur { visibility: visible; animation: none; }
+.an:disabled { cursor: default; color: var(--muted); } .an.on:disabled { color: var(--ink); }
+.an:focus-visible, .seg button:focus-visible, .tune input:focus-visible, select:focus-visible { outline: 3px solid var(--pick-line); outline-offset: 2px; }
+.note { font: 400 12px/1.5 var(--pixel); color: var(--muted); margin: 2px 2px 0; }
+
+/* tuning: each creature's profile numbers, live */
+.tune { grid-column: 1 / -1; padding: 8px 12px 10px; font-family: var(--pixel); }
+.tune summary { font: 700 14px var(--pixel); color: var(--muted); letter-spacing: .5px; cursor: pointer; }
+.tune .rows { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 18px; margin-top: 8px; }
+.tune fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 5px 10px; }
+.tune legend { font: 700 14px var(--pixel); padding: 0; margin-bottom: 4px; }
+.tune label { font: 600 12px var(--pixel); color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.tune input { width: 58px; font: 600 14px var(--pixel); padding: 2px 4px; background: var(--card); color: var(--ink); border: 2px solid var(--line); }
+.tune .copy { font: 600 13px var(--pixel); padding: 3px 9px; background: var(--ink); color: var(--card); border: 0; cursor: pointer; }
+.tune textarea { width: 100%; grid-column: 1 / -1; font: 12px/1.4 ui-monospace, monospace; background: var(--card); color: var(--ink); border: 2px solid var(--line); padding: 6px; }
+@media (max-width: 760px) { .tune .rows { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .dialog { padding: 12px 14px; } .an { font-size: 14px; } .round { padding: 6px 8px; } }
+</style>
+</head>
+<body class="sq-clash lab">
+<div class="wrap">
+  <div class="head">
+    <h1>Creature Lab</h1><small>Workshop page. Players never see it.</small>
+    <div class="seg" role="group" aria-label="Battle engine">
+      <button type="button" id="eng1" aria-pressed="false">Engine 1 · side view</button>
+      <button type="button" id="eng2" aria-pressed="true">Engine 2 · over the shoulder</button>
+    </div>
+  </div>
+
+  <!-- ============ Engine 2: over the shoulder (js/battle2.js) ============ -->
+  <div class="view" id="view2">
+    <div id="scene2" aria-hidden="true"></div>
+    <div class="box dialog" aria-live="polite"><p class="say" id="say2">Pick an animation below.</p></div>
+    <div class="pads" id="pads2">
+      <div class="box round"><h2>Round</h2><span id="round2"></span>
+        <button class="an" type="button" id="guides" aria-pressed="false"><span class="cur">&#9654;</span>Size guides</button></div>
+      <div class="box pad"><h2 id="nameNear">Pomelo</h2><div id="near2"></div></div>
+      <div class="box pad right"><h2 id="nameFar">Lantern Rabbit</h2><div id="far2"></div></div>
+      <details class="box tune" id="tune">
+        <summary>Tune the profiles</summary>
+        <div class="rows" id="tuneRows"></div>
+      </details>
+    </div>
+    <p class="note" id="prof"></p>
+  </div>
+
+  <!-- ============ Engine 1: the live side-view fight (js/clash-arena.js) ============ -->
+  <div class="view" id="view1" hidden>
+    <div class="lay stage">
+      <div class="screen wide" id="screen" data-wide>
+        <canvas id="cx-cv" aria-hidden="true"></canvas>
+        <div class="plate me"><div class="nm"><span>Pomelo</span></div></div>
+        <div class="plate boss"><div class="nm"><span id="cx-boss"></span></div>
+          <div class="row"><span class="lbl">WARD</span><span class="bar ward" id="cx-ward" role="img"></span></div></div>
+      </div>
+    </div>
+    <div class="box dialog" aria-live="polite"><p class="say" id="cx-log">Pick an animation below.</p></div>
+    <div class="pads" id="pads1">
+      <div class="box round"><h2>Round</h2>
+        <button class="an" type="button" data-e1="enter"><span class="cur">&#9654;</span>Entrance</button>
+        <button class="an" type="button" data-e1="win"><span class="cur">&#9654;</span>Victory</button>
+        <button class="an" type="button" data-e1="shrug"><span class="cur">&#9654;</span>Shake it off</button>
+        <label for="critter1">Critter</label><select id="critter1"></select>
+        <label for="biome1">Backdrop</label><select id="biome1"></select></div>
+      <div class="box pad"><h2>Pomelo</h2><div id="near1"></div></div>
+      <div class="box pad right"><h2 id="name1">Critter</h2><div id="far1"></div></div>
+    </div>
+    <p class="note">Engine 1 is what the game runs today: six critters from the Critter Clash set, three moves each. The game only uses the damage moves. The lab plays them all.</p>
+  </div>
+</div>
+
+<script src="js/clash-arena.js?v=b20261119j"></script>
+<script src="data/creatures.js?v=b20261119j"></script>
+<script src="js/battle2.js?v=b20261119j"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  function btn(label, attrs) { var b = document.createElement('button'); b.type = 'button'; b.className = 'an'; b.innerHTML = '<span class="cur">&#9654;</span>'; b.appendChild(document.createTextNode(label));
+    Object.keys(attrs || {}).forEach(function (k) { b.setAttribute(k, attrs[k]); }); return b; }
+
+  /* ---------------- Engine 2 ---------------- */
+  var typer = 0;
+  function say(text) {   /* retro typing: a fixed 30ms tick and a block cursor */
+    var el = $('say2'), n = 0, per = Math.max(1, Math.ceil(text.length / 34)); clearInterval(typer); el.textContent = ''; el.classList.add('typing');
+    typer = setInterval(function () { n = Math.min(text.length, n + per); el.textContent = text.slice(0, n); if (n >= text.length) { clearInterval(typer); el.classList.remove('typing'); } }, 30);
+  }
+  var C = window.SQ_CREATURES, ids = Object.keys(C), q = new URLSearchParams(location.search);
+  var pick = function (spot, want) { return want && C[want] ? want : ids.filter(function (k) { return C[k].spot === spot; })[0]; };
+  var E2 = window.SQBattle2.mount($('scene2'), { near: pick('near', q.get('near')), far: pick('far', q.get('far')), say: say, onBusy: busy2, ver: '?v=b20261119j' });
+  window.__SQ_LAB = { e2: E2 };
+  var btns2 = [];
+  function busy2(on, id) { btns2.forEach(function (b) { b.disabled = on; b.classList.toggle('on', on && b.dataset.a === id); }); }
+  Object.keys(E2.acts).forEach(function (id) {
+    var a = E2.acts[id], b = btn(a.label, { 'data-a': id }); b.onclick = function () { E2.play(id).then(function (ok) { if (ok) b.focus(); }); };
+    btns2.push(b); (a.side === 'near' ? $('near2') : a.side === 'far' ? $('far2') : $('round2')).appendChild(b);
+  });
+  $('round2').style.display = 'contents';
+  busy2(E2.busy());
+  $('guides').onclick = function () { var on = this.getAttribute('aria-pressed') !== 'true'; E2.guides(on); this.classList.toggle('on', on); this.setAttribute('aria-pressed', on); };
+
+  /* the profile readout and the tuning rows */
+  var FIELDS = [['size', 'Size'], ['front', 'Nose reach'], ['mid', 'Centre'], ['head.x', 'Head x'], ['head.y', 'Head y'], ['launch.x', 'Launch x'], ['launch.y', 'Launch y']];
+  function get(P, path) { return path.split('.').reduce(function (o, k) { return o[k]; }, P); }
+  function set(P, path, v) { var ks = path.split('.'), o = P; while (ks.length > 1) o = o[ks.shift()]; o[ks[0]] = v; }
+  function profileText(id) { var P = C[id];
+    return "  '" + id + "': {\n    name: '" + P.name + "', dir: '" + P.dir + "', w: " + P.w + ", h: " + P.h + ", art: " + P.art + ", feet: " + P.feet + ", size: " + P.size + ", spot: '" + P.spot + "'" + (P.farArt ? ", farArt: " + P.farArt : "") + ",\n" +
+      "    front: " + P.front + ", mid: " + P.mid + ", head: { x: " + P.head.x + ", y: " + P.head.y + " }, launch: { x: " + P.launch.x + ", y: " + P.launch.y + " },\n" +
+      "    faces: " + (P.faces || 1) + ", article: " + !!P.article + ", alt: " + (P.alt ? "'" + P.alt + "'" : "null") + ", tint: '" + P.tint + "', breath: [" + P.breath.join(', ') + "],\n" +
+      "    poses: [" + P.poses.map(function (k) { return "'" + k + "'"; }).join(', ') + "]\n  },"; }
+  function readout() {
+    $('prof').textContent = ['near', 'far'].map(function (side) { var f = E2.fighter(side), P = f.P;
+      return P.name + ': size ' + P.size + ', art ' + P.art + 'px, stands ' + side + ', drawn at ' + Math.round(E2.scaleAt(side, 'near') * 100) + '% near and ' + Math.round(E2.scaleAt(side, 'far') * 100) + '% far'; }).join('.  ') + '.';
+    $('nameNear').textContent = E2.fighter('near').P.name; $('nameFar').textContent = E2.fighter('far').P.name;
+  }
+  function tuneRows() {
+    var host = $('tuneRows'); host.innerHTML = '';
+    ['near', 'far'].forEach(function (side) {
+      var id = ids.filter(function (k) { return C[k] === E2.fighter(side).P; })[0], P = C[id], fs = document.createElement('fieldset');
+      var lg = document.createElement('legend'), sel = document.createElement('select'); sel.id = 'sel-' + side; sel.setAttribute('aria-label', (side === 'near' ? 'Near' : 'Far') + ' creature');
+      ids.filter(function (k) { return C[k].spot === side; }).forEach(function (k) { var o = document.createElement('option'); o.value = k; o.textContent = C[k].name; o.selected = k === id; sel.appendChild(o); });
+      sel.style.cssText = 'font: 700 14px var(--pixel); background: var(--card); color: var(--ink); border: 2px solid var(--frame); padding: 2px 4px;';
+      sel.onchange = function () { E2.setFighter(side, sel.value).then(function () { readout(); tuneRows(); }); };
+      lg.appendChild(sel); fs.appendChild(lg);
+      FIELDS.forEach(function (f) { var lb = document.createElement('label'), inp = document.createElement('input'); inp.type = 'number'; inp.step = f[0] === 'front' ? '0.5' : '1'; inp.id = 'tn-' + side + '-' + f[0].replace('.', '-'); inp.value = get(P, f[0]);
+        inp.oninput = function () { var v = parseFloat(inp.value); if (!isFinite(v) || (f[0] === 'size' && v <= 0)) return; set(P, f[0], v); E2.refresh(); readout(); };
+        lb.appendChild(document.createTextNode(f[1])); lb.appendChild(inp); fs.appendChild(lb); });
+      var cp = document.createElement('button'); cp.type = 'button'; cp.className = 'copy'; cp.textContent = 'Copy profile';
+      cp.onclick = function () { var text = profileText(id), ta = $('tuneOut'); ta.hidden = false; ta.value = text;
+        var done = function () { cp.textContent = 'Copied'; setTimeout(function () { cp.textContent = 'Copy profile'; }, 1400); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { ta.focus(); ta.select(); }); else { ta.focus(); ta.select(); } };
+      fs.appendChild(cp); host.appendChild(fs);
+    });
+    var ta = document.createElement('textarea'); ta.id = 'tuneOut'; ta.rows = 6; ta.readOnly = true; ta.hidden = true; ta.setAttribute('aria-label', 'Profile to paste into data/creatures.js'); host.appendChild(ta);
+  }
+  readout(); tuneRows();
+
+  /* ---------------- Engine 1 ---------------- */
+  var A = window.SQArena, started1 = false, btns1 = [];
+  var BIOMES = [['lorewood', 'Lorewood'], ['storyforge', 'Story Forge'], ['inkreef', 'Ink Reef'], ['syntaxcitadel', 'Syntax Citadel'], ['mirrormines', 'Mirror Mines'], ['infinityisles', 'Infinity Isles'], ['datadocks', 'Data Docks'], ['prismpeaks', 'Prism Peaks']];
+  BIOMES.forEach(function (b) { var o = document.createElement('option'); o.value = b[0]; o.textContent = b[1]; $('biome1').appendChild(o); });
+  var roster = A.lab.roster();
+  roster.filter(function (r) { return r.key !== 'capybara'; }).forEach(function (r) { var o = document.createElement('option'); o.value = r.key; o.textContent = r.name; $('critter1').appendChild(o); });
+  $('critter1').value = 'rabbit';
+  function run1(b, fn) { if (btns1.some(function (x) { return x.disabled; })) return; btns1.forEach(function (x) { x.disabled = true; x.classList.toggle('on', x === b); });
+    Promise.resolve(fn()).then(function () { btns1.forEach(function (x) { x.disabled = false; x.classList.remove('on'); }); b.focus(); }); }
+  function moves1() {
+    var key = $('critter1').value, r = roster.filter(function (x) { return x.key === key; })[0], cap = roster.filter(function (x) { return x.key === 'capybara'; })[0];
+    $('name1').textContent = r.name; $('near1').innerHTML = ''; $('far1').innerHTML = '';
+    btns1 = [].slice.call(document.querySelectorAll('[data-e1]'));
+    cap.moves.forEach(function (m, i) { var b = btn(m); b.onclick = function () { run1(b, function () { return A.lab.move(-1, i); }); }; $('near1').appendChild(b); btns1.push(b); });
+    r.moves.forEach(function (m, i) { var b = btn(m); b.onclick = function () { run1(b, function () { return A.lab.move(1, i); }); }; $('far1').appendChild(b); btns1.push(b); });
+  }
+  function enter1() { return A.lab.set($('biome1').value, $('critter1').value); }
+  [].forEach.call(document.querySelectorAll('[data-e1]'), function (b) { b.onclick = function () { var k = b.dataset.e1; run1(b, function () { return k === 'enter' ? enter1() : k === 'win' ? A.lab.win() : A.lab.shrug(); }); }; });
+  $('critter1').onchange = function () { moves1(); enter1(); }; $('biome1').onchange = enter1;
+  A.setMotion('full'); moves1();
+
+  /* ---------------- the engine switch ---------------- */
+  function show(n) {
+    $('view1').hidden = n !== 1; $('view2').hidden = n !== 2;
+    $('eng1').setAttribute('aria-pressed', n === 1); $('eng2').setAttribute('aria-pressed', n === 2);
+    window.dispatchEvent(new Event('resize'));
+    if (n === 1 && !started1) { started1 = true; A.ready.then(enter1); }
+    try { history.replaceState(null, '', n === 1 ? '#engine1' : '#engine2'); } catch (e) {}
+  }
+  $('eng1').onclick = function () { show(1); }; $('eng2').onclick = function () { show(2); };
+  if (location.hash === '#engine1') show(1);
+})();
+</script>
+</body>
+</html>
