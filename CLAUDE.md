@@ -177,9 +177,13 @@ re-run it on any existing project. verify_auth guards all of this.
   .qmeta row is ONLY the source chip + report flag (Nov 19, Magnolia: the "Question 1 of 10 ·
   skill · Easy" label was excessive; the header already says it). The card has a SET HEIGHT
   (Nov 19, Magnolia: a short math card looked wrong): min-height = max(360px, 100vh - --bar -
-  --strip - --below) (--below 96px overlay, 150px clash.html with its trail), padding 30px
+  --strip - --below) (--below 96px overlay, 150px clash.html with its trail), padding 22px
   44px, flex column with justify-content: safe center so a SHORT question floats mid-box with
-  air above and below (Nov 19, Magnolia) while a long passage fills from the top and grows it,
+  air above and below (Nov 19, Magnolia) while a long passage fills from the top and grows it.
+  TIGHT (Nov 19, Magnolia: pull the air out before scrolling): SQCard.fit(root), run on enter
+  and after the reveal fold, measures on the next frame and puts .is-tight on .lay.stage when
+  the scroller overflows: --strip 185px, card padding 14px 32px, tighter line heights, gaps,
+  buttons; cleared on every new question,
   Check. AFTER CHECK (Nov 18, Magnolia: no scrolling for the explanation): SQCard.reveal()
   folds the grid into a one-line .recap (You chose B / Answer C, key text, "Show choices"
   toggle = .card.show-choices) and the explanation (#whybox, rendered INSIDE the card by

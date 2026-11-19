@@ -191,6 +191,7 @@
       recap.hidden = false;
       if (box) box.hidden = false;
       card.classList.add('is-reviewed');
+      fit(root);
     };
     var wait = motionOff() ? 0 : (opts.delay != null ? opts.delay : reveal.DELAY);
     if (wait) setTimeout(fold, wait); else fold();
@@ -238,8 +239,21 @@
     timer = setTimeout(step, after || 0);
     return function () { finish(); };
   }
+  /* fit(root): if the page would scroll, go tight (.is-tight on the stage: less padding, line
+     height and gap, a shorter strip) before letting it scroll. Measured on the next frame,
+     after the browser has laid the card out; cleared first so each question starts roomy. */
+  function fit(root) {
+    var card = root && (root.closest ? (root.closest('.card') || root) : root);
+    var lay = card && card.closest && card.closest('.lay.stage');
+    if (!lay) return;
+    var sc = lay.closest('.sq-overlay');
+    var overflows = function () { return sc ? sc.scrollHeight > sc.clientHeight + 2 : document.documentElement.scrollHeight > window.innerHeight + 2; };
+    lay.classList.remove('is-tight');
+    requestAnimationFrame(function () { if (overflows()) lay.classList.add('is-tight'); });
+  }
   function enter(root) {
     if (!root) return;
+    fit(root);
     if (running) { running(); running = null; }
     if (motionOff()) return;
     var card = root.closest ? (root.closest('.card') || root) : root;
@@ -327,6 +341,6 @@
   }
   window.SQCard = { esc: esc, LV: LV, math: math, rich: rich, figure: figure, table: table, value: value, gridIn: gridIn, check: check,
     px: px, LANTERN: LANTERN, LEAF: LEAF, lairIcon: lairIcon, passageHTML: passageHTML, questionHTML: questionHTML, sourceChip: sourceChip,
-    sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal, enter: enter,
+    sideVisuals: sideVisuals, whyboxHTML: whyboxHTML, reveal: reveal, enter: enter, fit: fit,
     flagButton: flagButton, bindReports: bindReports, fileReport: fileReport, flushReports: flushReports, reports: reports };
 })();
