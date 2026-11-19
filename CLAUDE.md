@@ -175,7 +175,10 @@ re-run it on any existing project. verify_auth guards all of this.
   plates collided on retina); log line centred; the question
   card centred below (max 1120px; passage 17px, stem 18px, choices 16px): passage, stem, answers in a 2x2 GRID (1 col under 720px); the
   .qmeta row is ONLY the source chip + report flag (Nov 19, Magnolia: the "Question 1 of 10 ·
-  skill · Easy" label was excessive; the header already says it),
+  skill · Easy" label was excessive; the header already says it). The card has a SET HEIGHT
+  (Nov 19, Magnolia: a short math card looked wrong): min-height = max(360px, 100vh - --bar -
+  --strip - --below) (--below 96px overlay, 150px clash.html with its trail), flex column, the
+  .answers stretch and Check rests on the floor; a long passage still grows it,
   Check. AFTER CHECK (Nov 18, Magnolia: no scrolling for the explanation): SQCard.reveal()
   folds the grid into a one-line .recap (You chose B / Answer C, key text, "Show choices"
   toggle = .card.show-choices) and the explanation (#whybox, rendered INSIDE the card by
