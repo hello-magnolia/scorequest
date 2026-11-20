@@ -33,6 +33,8 @@ def load(bank_path, approved_only):
     for it in b["items"]:
         if it.get("source") != "scorequest-original":
             raise SystemExit(f"{it['id']}: not an original, refusing to export")
+        if it.get("status") == "retired":
+            continue          # rejected in review: kept in originals/, never shipped
         if approved_only and it.get("status") != "approved":
             continue
         q = {"id": it["id"], "section": it["section"], "domain": it["legacy_section"], "skill": it["skill"],
