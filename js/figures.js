@@ -11,6 +11,10 @@
  *
  * Kinds: graph (coordinate plane: functions, lines, points, scatterplots),
  *        bar, linechart, boxplot, geometry, table.
+ * v0.2 (Nov 2026): dotted lines ("dash": "dot"), star / diamond / cross markers, right-angle
+ *        marks, dashed or dotted geometry segments, legends that move below a chart when bars
+ *        would run under them, axis titles that wrap, tick labels that keep "3.0" or get
+ *        thousands commas ("decimals", "commas"), slanted category labels ("slant").
  * Colors come from CSS variables (--fig-ink, --fig-grid, --fig-fill-1/2,
  * --fig-bg, --fig-font), so figures follow the page theme, including dark mode.
  * Spec reference: FIGURES.md next to this file's project root.
@@ -31,6 +35,24 @@
   const r2 = (v) => Math.round(v * 100) / 100;
   const num = (v) => (v < 0 ? "−" + fmt(-v) : fmt(v));          // true minus sign, like the SAT
   function fmt(v) { return Number.isInteger(v) ? String(v) : String(r2(v)); }
+  // axis numbers: "decimals": 1 keeps 3.0 as written, "commas": true writes 12,000
+  const styled = (A) => !!A && (A.decimals != null || A.commas);
+  function fmtA(v, A) {
+    let t = A.decimals != null ? Math.abs(v).toFixed(A.decimals) : fmt(Math.abs(v));
+    if (A.commas) { const [whole, frac] = t.split("."); t = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (frac ? "." + frac : ""); }
+    return (v < 0 ? "−" : "") + t;
+  }
+  // "dash": true is dashed, "dot" (or "dotted") is dotted; `dashed` is each figure kind's own dash pattern
+  function dashAttr(d, dashed) {
+    if (d === "dot" || d === "dotted") return ' stroke-dasharray="0.1 4.6" stroke-linecap="round"';
+    return d ? ` stroke-dasharray="${dashed || "6 4"}"` : "";
+  }
+  // an axis title broken into lines that fit `px` pixels ("\n" forces a break)
+  function titleLinesFor(text, px) {
+    // about 5.5px a letter at this size; a title only a little longer than its axis is left alone
+    const fits = Math.floor((px + 20) / 5.5), max = Math.max(8, Math.floor(px / 5.5));
+    return String(text).split("\n").reduce((out, part) => out.concat(part.length > fits ? wrap(part, max) : [part]), []);
+  }
   function steps(min, max, step) {
     const out = [], eps = step * 1e-6;
     for (let v = Math.ceil((min - eps) / step) * step; v <= max + eps; v += step) out.push(Math.abs(v) < eps ? 0 : r2(v));
@@ -103,11 +125,17 @@
     const titleLines = [].concat(spec.title || []);
     const pad = { l: 30 + (Y.title ? 22 : 0), r: spec.arrows === false ? 14 : 30, t: (spec.arrows === false ? 14 : 28) + titleLines.length * 17, b: 22 + (X.title ? 22 : 0) };
     let pw, ph;
-    if (spec.size) { pw = spec.size[0] - pad.l - pad.r; ph = spec.size[1] - pad.t - pad.b; }
-    else {
-      pw = (spec.width || 280);
-      ph = Math.min(pw * 1.6, Math.max(pw * 0.4, pw * (Y.max - Y.min) / (X.max - X.min)));
-    }
+    const sized = () => {
+      if (spec.size) { pw = spec.size[0] - pad.l - pad.r; ph = spec.size[1] - pad.t - pad.b; }
+      else {
+        pw = (spec.width || 280);
+        ph = Math.min(pw * 1.6, Math.max(pw * 0.4, pw * (Y.max - Y.min) / (X.max - X.min)));
+      }
+    };
+    sized();
+    // long axis titles wrap instead of running off the figure; each extra line widens its margin
+    const yT = Y.title ? titleLinesFor(Y.title, ph) : [], xT = X.title ? titleLinesFor(X.title, pw) : [];
+    if (yT.length > 1 || xT.length > 1) { pad.l += (Math.max(1, yT.length) - 1) * 16; pad.b += (Math.max(1, xT.length) - 1) * 16; sized(); }
     const W = pw + pad.l + pad.r, H = ph + pad.t + pad.b;
     const px = (x) => pad.l + (x - X.min) / (X.max - X.min) * pw;
     const py = (y) => pad.t + (Y.max - y) / (Y.max - Y.min) * ph;
@@ -125,24 +153,24 @@
     if (X.label !== null) b += txt(xEnd + 5, py(oy) + 4, X.label || "x", { anchor: "start", italic: true });
     if (Y.label !== null) b += txt(px(ox), yEnd - 5, Y.label || "y", { italic: true });
     // tick labels
-    const lab = (v) => (Array.isArray(v) ? v : [v, num(v)]);
-    (X.labels || []).map(lab).forEach(([v, t]) => {
+    const labOf = (A) => (v) => (Array.isArray(v) ? v : [v, styled(A) ? fmtA(v, A) : num(v)]);
+    (X.labels || []).map(labOf(X)).forEach(([v, t]) => {
       b += `<line x1="${r2(px(v))}" y1="${r2(py(oy) - 3)}" x2="${r2(px(v))}" y2="${r2(py(oy) + 3)}" stroke="${INK}"/>`;
       b += txt(px(v), py(oy) + 15, t, { size: 12 });
     });
-    (Y.labels || []).map(lab).forEach(([v, t]) => {
+    (Y.labels || []).map(labOf(Y)).forEach(([v, t]) => {
       b += `<line x1="${r2(px(ox) - 3)}" y1="${r2(py(v))}" x2="${r2(px(ox) + 3)}" y2="${r2(py(v))}" stroke="${INK}"/>`;
       b += txt(px(ox) - 6, py(v) + 4, t, { size: 12, anchor: "end" });
     });
     const showO = spec.origin !== undefined ? spec.origin : (ox === 0 && oy === 0);
     if (showO) b += txt(px(0) - 5, py(0) + 14, "O", { anchor: "end", italic: true });
     titleLines.forEach((t, k) => (b += txt(pad.l + pw / 2, 14 + k * 17, t, { size: 13 })));   // chart title, above the plot
-    if (X.title) b += txt(pad.l + pw / 2, H - 6, X.title, { size: 13 });
-    if (Y.title) b += `<g transform="translate(14 ${r2(pad.t + ph / 2)}) rotate(-90)">${txt(0, 0, Y.title, { size: 13 })}</g>`;
+    xT.forEach((t, k) => (b += txt(pad.l + pw / 2, H - 6 - (xT.length - 1 - k) * 16, t, { size: 13 })));
+    yT.forEach((t, k) => (b += `<g transform="translate(${14 + k * 16} ${r2(pad.t + ph / 2)}) rotate(-90)">${txt(0, 0, t, { size: 13 })}</g>`));
     // elements
     let els = "";
     (spec.elements || []).forEach((e) => {
-      const dash = e.dash ? ' stroke-dasharray="6 4"' : "";
+      const dash = dashAttr(e.dash);
       const sw = e.width || 1.8;
       if (e.type === "function") {
         const f = compile(e.fn), [a, z] = e.domain || [X.min, X.max];
@@ -158,7 +186,8 @@
         els += `<polyline points="${e.points.map(([x, y]) => r2(px(x)) + "," + r2(py(y))).join(" ")}" fill="none" stroke="${INK}" stroke-width="${sw}"${dash} stroke-linejoin="round"/>`;
       } else if (e.type === "points") {
         const rr = e.r || 3.2;
-        e.data.forEach(([x, y]) => (els += `<circle cx="${r2(px(x))}" cy="${r2(py(y))}" r="${rr}" fill="${e.open ? BG : INK}" stroke="${INK}" stroke-width="1.2"/>`));
+        if (e.marker && e.marker !== "circle") e.data.forEach(([x, y]) => (els += marker({ marker: e.marker, filled: !e.open }, px(x), py(y))));   // star, square, triangle, diamond, cross
+        else e.data.forEach(([x, y]) => (els += `<circle cx="${r2(px(x))}" cy="${r2(py(y))}" r="${rr}" fill="${e.open ? BG : INK}" stroke="${INK}" stroke-width="1.2"/>`));
       } else if (e.type === "region") {
         els += `<polygon points="${e.points.map(([x, y]) => r2(px(x)) + "," + r2(py(y))).join(" ")}" fill="${INK}" fill-opacity="0.12" stroke="none"/>`;
       }
@@ -187,23 +216,35 @@
   function chartFrame(spec, plotH) {
     const Y = spec.y, cats = spec.categories;
     const W = spec.width || 340;
-    const pad = { l: 44 + (Y.title ? 20 : 0), r: 14 };
+    const ph = plotH || 210;
+    const yLab = (v) => (styled(Y) ? fmtA(v, Y) : fmt(v));
+    const ticks = steps(Y.min, Y.max, Y.step);
+    const tickW = Math.max(...ticks.map((v) => yLab(v).length)) * 6.6 + 12;        // long numbers (12,000) push the plot right
+    const yT = Y.title ? titleLinesFor(Y.title, ph) : [];
+    const pad = { l: Math.max(44, tickW) + (Y.title ? 20 : 0) + Math.max(0, yT.length - 1) * 16, r: 14 };
     const titleH = (spec.title || []).length * 18 + 8;
+    const slant = spec.x && spec.x.slant ? (spec.x.slant === true ? 35 : +spec.x.slant) : 0;   // degrees
     const catLines = Math.max(...cats.map((c) => String(c).split("\n").length));
-    const pw = W - pad.l - pad.r, ph = plotH || 210;
+    const pw = W - pad.l - pad.r;
+    const xT = spec.x && spec.x.title ? titleLinesFor(spec.x.title, pw) : [];
     const top = titleH + 6, bottom = top + ph;
-    const H = bottom + 10 + catLines * 15 + (spec.x && spec.x.title ? 26 : 0) + 6;
+    const catH = slant ? Math.max(...cats.map((c) => String(c).replace(/\n/g, " ").length)) * 6.6 * Math.sin(slant * Math.PI / 180) + 14 : catLines * 15;
+    const H = bottom + 10 + catH + (xT.length ? 26 + (xT.length - 1) * 16 : 0) + 6;
     const py = (v) => bottom - (v - Y.min) / (Y.max - Y.min) * ph;
     let b = titleBlock(spec.title, W / 2 + (pad.l - pad.r) / 4, 16)[0];
-    steps(Y.min, Y.max, Y.step).forEach((v) => {
+    ticks.forEach((v) => {
       b += `<line x1="${pad.l}" y1="${r2(py(v))}" x2="${pad.l + pw}" y2="${r2(py(v))}" stroke="${v === Y.min ? INK : GRID}" stroke-width="${v === Y.min ? 1.2 : 0.9}"/>`;
-      b += txt(pad.l - 6, py(v) + 4, fmt(v), { size: 12, anchor: "end" });
+      b += txt(pad.l - 6, py(v) + 4, yLab(v), { size: 12, anchor: "end" });
     });
     b += `<line x1="${pad.l}" y1="${r2(py(Y.min))}" x2="${pad.l}" y2="${r2(py(Y.max))}" stroke="${INK}" stroke-width="1.2"/>`;
-    if (Y.title) b += `<g transform="translate(16 ${r2((top + bottom) / 2)}) rotate(-90)">${txt(0, 0, Y.title, { size: 13 })}</g>`;
-    if (spec.x && spec.x.title) b += txt(pad.l + pw / 2, H - 8, spec.x.title, { size: 13 });
+    yT.forEach((t, k) => (b += `<g transform="translate(${16 + k * 16} ${r2((top + bottom) / 2)}) rotate(-90)">${txt(0, 0, t, { size: 13 })}</g>`));
+    xT.forEach((t, k) => (b += txt(pad.l + pw / 2, H - 8 - (xT.length - 1 - k) * 16, t, { size: 13 })));
     const slot = pw / cats.length;
-    cats.forEach((c, k) => (b += catLabel(c, pad.l + slot * (k + 0.5), bottom + 18)));
+    cats.forEach((c, k) => {
+      const x = pad.l + slot * (k + 0.5);
+      if (slant) b += `<g transform="translate(${r2(x + 4)} ${r2(bottom + 14)}) rotate(${-slant})">${txt(0, 0, String(c).replace(/\n/g, " "), { size: 13, anchor: "end" })}</g>`;
+      else b += catLabel(c, x, bottom + 18);
+    });
     return { W, H, pad, pw, top, bottom, py, slot, b };
   }
 
@@ -223,8 +264,17 @@
       const x = f.pad.l + f.slot * (ci + 0.5) - groupW / 2 + si * bw;
       b += `<rect x="${r2(x)}" y="${r2(f.py(v))}" width="${r2(bw)}" height="${r2(f.py(spec.y.min) - f.py(v))}" fill="${s.fill || FILL[si % FILL.length]}" stroke="${INK}" stroke-width="1"/>`;
     }));
-    if (n > 1 && spec.legend !== false) b += legend(spec.series, f.pad.l + f.pw - 6, f.top + 4, (s, k, x, y) => `<rect x="${x}" y="${y - 10}" width="13" height="13" fill="${s.fill || FILL[k % FILL.length]}" stroke="${INK}"/>`);
     let H = f.H;
+    if (n > 1 && spec.legend !== false) {
+      const sw = (s, k, x, y) => `<rect x="${x}" y="${y - 10}" width="13" height="13" fill="${s.fill || FILL[k % FILL.length]}" stroke="${INK}"/>`;
+      // the box sits inside the plot, top right, unless a bar would run under it (or "legend": "below")
+      const lw = Math.max(...spec.series.map((s) => String(s.name).length * 6.6 + 34)), lx = f.pad.l + f.pw - 6 - lw, ly = f.top + 4 + spec.series.length * 20 + 8;
+      const under = spec.series.some((s, si) => s.values.some((v, ci) => { const x = f.pad.l + f.slot * (ci + 0.5) - groupW / 2 + si * bw; return x + bw > lx - 2 && f.py(v) < ly + 2; }));
+      if (spec.legend === "below" || (spec.legend !== "inside" && under)) {
+        H += 4;
+        spec.series.forEach((s, k) => { b += sw(s, k, f.pad.l + 10, H + 10) + txt(f.pad.l + 30, H + 10, s.name, { anchor: "start", size: 13 }); H += 20; });
+      } else b += legend(spec.series, f.pad.l + f.pw - 6, f.top + 4, sw);
+    }
     if (spec.note) wrap(spec.note, Math.floor(f.W / 6.4)).forEach((line) => { b += txt(10, H + 10, line, { anchor: "start", size: 12 }); H += 16; });
     return svg(f.W, H, b, describe(spec));
   }
@@ -233,6 +283,13 @@
     const fill = s.filled === false ? BG : INK;
     if (s.marker === "triangle") return `<path d="M${r2(x)},${r2(y - 5)} L${r2(x + 5)},${r2(y + 4)} L${r2(x - 5)},${r2(y + 4)} z" fill="${fill}" stroke="${INK}" stroke-width="1.2"/>`;
     if (s.marker === "square") return `<rect x="${r2(x - 4)}" y="${r2(y - 4)}" width="8" height="8" fill="${fill}" stroke="${INK}" stroke-width="1.2"/>`;
+    if (s.marker === "diamond") return `<path d="M${r2(x)},${r2(y - 5.5)} L${r2(x + 5)},${r2(y)} L${r2(x)},${r2(y + 5.5)} L${r2(x - 5)},${r2(y)} z" fill="${fill}" stroke="${INK}" stroke-width="1.2"/>`;
+    if (s.marker === "star") {
+      let d = "";
+      for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rad = k % 2 ? 2.7 : 6.4; d += (k ? "L" : "M") + r2(x + rad * Math.cos(a)) + "," + r2(y + rad * Math.sin(a)); }
+      return `<path d="${d}z" fill="${fill}" stroke="${INK}" stroke-width="1.1" stroke-linejoin="round"/>`;
+    }
+    if (s.marker === "cross") return `<path d="M${r2(x - 4)},${r2(y - 4)} L${r2(x + 4)},${r2(y + 4)} M${r2(x - 4)},${r2(y + 4)} L${r2(x + 4)},${r2(y - 4)}" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>`;
     return `<circle cx="${r2(x)}" cy="${r2(y)}" r="4" fill="${fill}" stroke="${INK}" stroke-width="1.2"/>`;
   }
 
@@ -243,13 +300,13 @@
     spec.categories.forEach((c, k) => { const x = f.pad.l + f.slot * (k + 0.5); b += `<line x1="${r2(x)}" y1="${r2(f.bottom)}" x2="${r2(x)}" y2="${r2(f.bottom + 5)}" stroke="${INK}"/>`; });
     spec.series.forEach((s) => {
       const pts = s.values.map((v, k) => [f.pad.l + f.slot * (k + 0.5), f.py(v)]);
-      b += `<polyline points="${pts.map((p) => p.map(r2).join(",")).join(" ")}" fill="none" stroke="${INK}" stroke-width="1.6"${s.dash ? ' stroke-dasharray="6 4"' : ""}/>`;
+      b += `<polyline points="${pts.map((p) => p.map(r2).join(",")).join(" ")}" fill="none" stroke="${INK}" stroke-width="1.6"${dashAttr(s.dash)}/>`;
       pts.forEach(([x, y]) => (b += marker(s, x, y)));
     });
     // legend: one row per series, sample line with its marker
     let H = f.H + 6;
     spec.series.forEach((s) => {
-      b += `<line x1="${f.pad.l + 10}" y1="${H + 6}" x2="${f.pad.l + 50}" y2="${H + 6}" stroke="${INK}" stroke-width="1.6"${s.dash ? ' stroke-dasharray="6 4"' : ""}/>` + marker(s, f.pad.l + 30, H + 6);
+      b += `<line x1="${f.pad.l + 10}" y1="${H + 6}" x2="${f.pad.l + 50}" y2="${H + 6}" stroke="${INK}" stroke-width="1.6"${dashAttr(s.dash)}/>` + marker(s, f.pad.l + 30, H + 6);
       b += txt(f.pad.l + 60, H + 10, s.name, { anchor: "start", size: 13 });
       H += 20;
     });
@@ -275,7 +332,7 @@
     });
     b += `<line x1="${l}" y1="${y}" x2="${r}" y2="${y}" stroke="${INK}" stroke-width="1.2"/>`;
     steps(A.min, A.max, A.step || 1).forEach((v) => (b += `<line x1="${r2(px(v))}" y1="${y - 4}" x2="${r2(px(v))}" y2="${y + 4}" stroke="${INK}"/>`));
-    (A.labels || steps(A.min, A.max, A.step || 1)).forEach((v) => (b += txt(px(v), y + 18, num(v), { size: 12 })));
+    (A.labels || steps(A.min, A.max, A.step || 1)).forEach((v) => (b += txt(px(v), y + 18, styled(A) ? fmtA(v, A) : num(v), { size: 12 })));
     if (A.title) { b += txt((l + r) / 2, y + 40, A.title, { size: 13 }); y += 22; }   // axis title under the numbers
     return svg(W, y + 26, b, describe(spec));
   }
@@ -294,11 +351,19 @@
     const H = Math.max(60, (maxY - minY) * s + 2 * pad + extraTop) + (spec.notToScale ? 18 : 0);
     const X = (n) => pad + (P[n][0] - minX) * s, Yp = (n) => pad + extraTop + (maxY - P[n][1]) * s;
     const cx = xs.reduce((a, v) => a + v, 0) / xs.length, cy = ys.reduce((a, v) => a + v, 0) / ys.length;
-    const seg = (sg) => (Array.isArray(sg) ? sg : [sg[0], sg.slice(1)]);
+    // a segment is "AB", ["A", "B"], or { "seg": "AB", "dash": true | "dot" }
+    const seg = (sg) => (Array.isArray(sg) ? sg : typeof sg === "object" ? seg(sg.seg) : [sg[0], sg.slice(1)]);
     let b = arrowDefs(nextId("a"));
     const arrowId = b.match(/id="([^"]+)"/)[1];
-    (spec.segments || []).map(seg).forEach(([a, z]) => (b += `<line x1="${r2(X(a))}" y1="${r2(Yp(a))}" x2="${r2(X(z))}" y2="${r2(Yp(z))}" stroke="${INK}" stroke-width="1.6"/>`));
-    (spec.circles || []).forEach((c) => (b += `<circle cx="${r2(X(c.center))}" cy="${r2(Yp(c.center))}" r="${r2(circR(c) * s)}" fill="none" stroke="${INK}" stroke-width="1.6"${c.dash ? ' stroke-dasharray="5 4"' : ""}/>`));
+    (spec.segments || []).forEach((sg) => { const [a, z] = seg(sg); b += `<line x1="${r2(X(a))}" y1="${r2(Yp(a))}" x2="${r2(X(z))}" y2="${r2(Yp(z))}" stroke="${INK}" stroke-width="1.6"${dashAttr(sg && sg.dash, "5 4")}/>`; });
+    (spec.circles || []).forEach((c) => (b += `<circle cx="${r2(X(c.center))}" cy="${r2(Yp(c.center))}" r="${r2(circR(c) * s)}" fill="none" stroke="${INK}" stroke-width="1.6"${dashAttr(c.dash, "5 4")}/>`));
+    // right-angle marks: a small square in the corner. "rightAngles": [{ "vertex": "B", "between": ["A", "C"] }]
+    const corner = (v, p1, p2, size) => {
+      const u1 = [X(p1) - X(v), Yp(p1) - Yp(v)], u2 = [X(p2) - X(v), Yp(p2) - Yp(v)], n1 = Math.hypot(...u1) || 1, n2 = Math.hypot(...u2) || 1, k = size || 10;
+      const a = [X(v) + u1[0] / n1 * k, Yp(v) + u1[1] / n1 * k], c = [X(v) + u2[0] / n2 * k, Yp(v) + u2[1] / n2 * k];
+      return `<path d="M${r2(a[0])},${r2(a[1])} L${r2(a[0] + c[0] - X(v))},${r2(a[1] + c[1] - Yp(v))} L${r2(c[0])},${r2(c[1])}" fill="none" stroke="${INK}" stroke-width="1"/>`;
+    };
+    (spec.rightAngles || []).forEach((A) => (b += corner(A.vertex, A.between[0], A.between[1], A.size)));
     (spec.dots || []).forEach((n) => (b += `<circle cx="${r2(X(n))}" cy="${r2(Yp(n))}" r="3.6" fill="${INK}"/>`));
     // point labels, pushed away from the figure's center unless a direction is given
     const DIR = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0], ne: [0.7, -0.7], nw: [-0.7, -0.7], se: [0.7, 0.7], sw: [-0.7, 0.7] };
@@ -315,8 +380,9 @@
       const n1 = Math.hypot(...u1), n2 = Math.hypot(...u2);
       let bx = u1[0] / n1 + u2[0] / n2, by = u1[1] / n1 + u2[1] / n2; const m = Math.hypot(bx, by) || 1;
       const dist = A.distance || 30;
-      b += txt(X(v) + bx / m * dist, Yp(v) + by / m * dist + 4, A.text, { size: 12 });
-      if (A.arc !== false) {
+      if (A.text) b += txt(X(v) + bx / m * dist, Yp(v) + by / m * dist + 4, A.text, { size: 12 });
+      if (A.right) b += corner(v, p1, p2, A.size);      // an angle marked "right": true gets the square, not the arc
+      else if (A.arc !== false) {
         const rr = 16, a1 = Math.atan2(u1[1], u1[0]), a2 = Math.atan2(u2[1], u2[0]);
         let da = a2 - a1; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
         b += `<path d="M${r2(X(v) + rr * Math.cos(a1))},${r2(Yp(v) + rr * Math.sin(a1))} A${rr},${rr} 0 0 ${da > 0 ? 1 : 0} ${r2(X(v) + rr * Math.cos(a2))},${r2(Yp(v) + rr * Math.sin(a2))}" fill="none" stroke="${INK}" stroke-width="1"/>`;
@@ -366,7 +432,7 @@
       case "bar": return `Bar graph${t ? " titled " + t : ""}: ` + spec.categories.map((c, k) => `${String(c).replace(/\n/g, " ")}: ${spec.series.map((s) => (spec.series.length > 1 ? s.name + " " : "") + s.values[k]).join(", ")}`).join("; ") + ".";
       case "linechart": return `Line graph${t ? " titled " + t : ""}: ` + spec.series.map((s) => `${s.name}: ${s.values.map((v, k) => spec.categories[k] + " " + v).join(", ")}`).join("; ") + ".";
       case "boxplot": return "Box plots: " + spec.plots.map((p) => `${p.label} min ${p.min}, Q1 ${p.q1}, median ${p.median}, Q3 ${p.q3}, max ${p.max}`).join("; ") + ".";
-      case "geometry": return ((spec.circles || []).length ? `Circle${spec.circles.length > 1 ? "s" : ""} with center ${spec.circles.map((c) => c.center).join(", ")}. ` : "") + `Figure with points ${Object.keys(spec.points).join(", ")}` + ((spec.angles || []).length ? `; angles ${spec.angles.map((a) => a.vertex + " " + a.text).join(", ")}` : "") + ((spec.segmentLabels || []).length ? `; ${spec.segmentLabels.map((l) => (Array.isArray(l.seg) ? l.seg.join("") : l.seg) + " = " + l.text).join(", ")}` : "") + ".";
+      case "geometry": return ((spec.circles || []).length ? `Circle${spec.circles.length > 1 ? "s" : ""} with center ${spec.circles.map((c) => c.center).join(", ")}. ` : "") + `Figure with points ${Object.keys(spec.points).join(", ")}` + (() => { const named = (spec.angles || []).filter((a) => a.text), rights = (spec.rightAngles || []).concat((spec.angles || []).filter((a) => a.right && !a.text)).map((a) => a.vertex); return (named.length ? `; angles ${named.map((a) => a.vertex + " " + a.text).join(", ")}` : "") + (rights.length ? `; right angle${rights.length > 1 ? "s" : ""} marked at ${rights.join(", ")}` : ""); })() + ((spec.segmentLabels || []).length ? `; ${spec.segmentLabels.map((l) => (Array.isArray(l.seg) ? l.seg.join("") : l.seg) + " = " + l.text).join(", ")}` : "") + ".";
       case "table": return `Table${spec.title ? " titled " + spec.title : ""}.`;
       default: return "Figure";
     }
@@ -397,7 +463,8 @@
         spec.plots.forEach((p) => need(p.min <= p.q1 && p.q1 <= p.median && p.median <= p.q3 && p.q3 <= p.max, `box plot "${p.label}" is not ordered min <= Q1 <= median <= Q3 <= max`));
       } else if (spec.kind === "geometry") {
         const has = (n) => spec.points[n] !== undefined;
-        (spec.segments || []).forEach((sg) => { const [a, z] = Array.isArray(sg) ? sg : [sg[0], sg.slice(1)]; need(has(a) && has(z), `segment ${a}${z} uses an unknown point`); });
+        (spec.segments || []).forEach((sg) => { const q = sg && typeof sg === "object" && !Array.isArray(sg) ? sg.seg : sg; need(q != null, "a segment object needs \"seg\""); if (q == null) return; const [a, z] = Array.isArray(q) ? q : [q[0], q.slice(1)]; need(has(a) && has(z), `segment ${a}${z} uses an unknown point`); });
+        (spec.rightAngles || []).forEach((A) => need(has(A.vertex) && Array.isArray(A.between) && A.between.length === 2 && A.between.every(has), `right angle at ${A.vertex} uses an unknown point`));
         (spec.angles || []).forEach((A) => need(has(A.vertex) && A.between.every(has), `angle at ${A.vertex} uses an unknown point`));
         (spec.circles || []).forEach((c, k) => need(has(c.center) && (c.radius > 0 || has(c.through)), `circle ${k + 1} needs a known center and a radius > 0 or a "through" point`));
       }
@@ -421,5 +488,5 @@
     lineAt: (pts, x) => { const [[x1, y1], [x2, y2]] = pts; return y1 + (y2 - y1) * (x - x1) / (x2 - x1); }
   };
 
-  return { render, describe, validate, compile, facts, version: "0.1" };
+  return { render, describe, validate, compile, facts, version: "0.2" };
 });
