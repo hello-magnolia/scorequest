@@ -8,8 +8,8 @@
 <!-- A workshop page, not linked from the site: play every battle animation of every creature,
      in both engines, and tune a creature's size profile. Engine 1 = js/clash-arena.js (the live
      side-view fight). Engine 2 = js/battle2.js (over the shoulder), creatures from data/creatures.js. -->
-<link rel="stylesheet" href="css/clash.css?v=b20261119l" />
-<link rel="stylesheet" href="css/battle2.css?v=b20261119l" />
+<link rel="stylesheet" href="css/clash.css?v=b20261119m" />
+<link rel="stylesheet" href="css/battle2.css?v=b20261119m" />
 <style>
 @font-face { font-family: 'Pixelify Sans'; font-weight: 400; font-display: swap; src: url('assets/fonts/pixelify-sans-latin-400-normal.woff2') format('woff2'); }
 @font-face { font-family: 'Pixelify Sans'; font-weight: 600; font-display: swap; src: url('assets/fonts/pixelify-sans-latin-600-normal.woff2') format('woff2'); }
@@ -127,9 +127,9 @@
   </div>
 </div>
 
-<script src="js/clash-arena.js?v=b20261119l"></script>
-<script src="data/creatures.js?v=b20261119l"></script>
-<script src="js/battle2.js?v=b20261119l"></script>
+<script src="js/clash-arena.js?v=b20261119m"></script>
+<script src="data/creatures.js?v=b20261119m"></script>
+<script src="js/battle2.js?v=b20261119m"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -144,7 +144,7 @@
   }
   var C = window.SQ_CREATURES, ids = Object.keys(C), q = new URLSearchParams(location.search);
   var pick = function (spot, want) { return want && C[want] ? want : ids.filter(function (k) { return C[k].spot === spot; })[0]; };
-  var E2 = window.SQBattle2.mount($('scene2'), { near: pick('near', q.get('near')), far: pick('far', q.get('far')), say: say, onBusy: busy2, ver: '?v=b20261119l' });
+  var E2 = window.SQBattle2.mount($('scene2'), { near: pick('near', q.get('near')), far: pick('far', q.get('far')), say: say, onBusy: busy2, ver: '?v=b20261119m' });
   window.__SQ_LAB = { e2: E2 };
   var btns2 = [];
   function busy2(on, id) { btns2.forEach(function (b) { b.disabled = on; b.classList.toggle('on', on && b.dataset.a === id); }); }

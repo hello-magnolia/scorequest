@@ -13,6 +13,7 @@ What it does, in order:
   2. POSES   the creature's own recipe bends that one drawing into pose frames
              (ears back, hurt, cheer...). This part is hand work per creature: see RECIPES.
   3. BREATH  four idle frames (rest, sink, out-breath, rise) with a part that follows a beat late.
+     SEAL   every frame then has its outline closed wherever fur ended up touching empty space.
   4. FAR     for a creature that stands NEAR, a true small sprite for the far end of the field
              (area-averaged, snapped to its own palette, outline redrawn), so it stays crisp.
   5. WRITE   assets/creatures/<id>/<pose>.png and print the numbers for data/creatures.js.
@@ -148,6 +149,24 @@ def breath(base, seam, lag, rump_rows, rump_x):
     return [base, sink(base, seam, lag, 'body'), bulge(sink(base, seam, lag, 'all'), rump_rows, rump_x), sink(base, seam, lag, 'lag')]
 
 
+def seal(a):
+    """Close gaps in the outline. A fur pixel that touches empty space gets an outline pixel put there, in the
+    colour of the nearest real outline pixel. Gaps come from two places: the cleaner drops an outline sliver
+    that covers under half a grid cell (Pomelo's snout), and bending a frame (the breathing sink and the rump
+    easing back) can slide fur out from behind its outline (Nov 2026, Magnolia: a chunk missing from his back)."""
+    H, W = a.shape[:2]; op = a[..., 3] > 0; dark = op & (a[..., :3].astype(int).sum(2) < 200)
+    pad_ = np.pad(op, 1); edge = dark & ~(pad_[:-2, 1:-1] & pad_[2:, 1:-1] & pad_[1:-1, :-2] & pad_[1:-1, 2:])   # outline = dark and on the rim
+    ys, xs = np.where(edge if edge.any() else dark); o = a.copy()
+    for y in range(H):
+        for x in range(W):
+            if not op[y, x] or dark[y, x]: continue
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                yy, xx = y + dy, x + dx
+                if not (0 <= yy < H and 0 <= xx < W) or op[yy, xx]: continue
+                k = ((ys - yy) ** 2 + (xs - xx) ** 2).argmin(); o[yy, xx] = a[ys[k], xs[k]]
+    return o
+
+
 # ---------------------------------------------------------------- 4. far sprite
 def far(a, scale):
     H, W = a.shape[:2]; w, h = round(W * scale), round(H * scale)
@@ -247,7 +266,7 @@ def pomelo_poses(src):
     put(bare, X(28), Y(9), LINE); put(bare, X(29), Y(9), LINE); bare[Y(9), X(30)] = 0; bare[Y(9), X(33)] = 0   # the top of his head where it sat
     P['bare'] = bare
     P['bare_rear'] = shear_cols(bare, lambda x: -int(np.clip(round((x - X(12)) / 8), 0, 3)))
-    return P, {'feet': 5, 'far': ('idle', 'crouch', 'rear')}
+    return P, {'feet': 5, 'far': ('idle', 'crouch', 'rear'), 'props': ('orange',)}
 
 
 RECIPES = {
@@ -265,6 +284,7 @@ def build(cid):
     src = native(path, *r['grid'], r['tol'])
     if r.get('poses'): frames, info = r['poses'](src)
     else: frames, info = {'idle': src}, {'feet': 0}
+    frames = {k: (v if k in info.get('props', ()) else seal(v)) for k, v in frames.items()}   # every frame leaves with a closed outline
     h_art = src.shape[0]
     far_scale = FIELD['far'] / FIELD[r['spot']]
     if r['spot'] == 'near':
