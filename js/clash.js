@@ -235,7 +235,16 @@
     if (window.SQAmbient) window.SQAmbient.setMotion(m);
     $('#bMotion').textContent = 'Motion: ' + m;
     if (save) try { window.localStorage.setItem('sq_motion', m); } catch (e) {}
+    soundLabel();
   }
+  /* fight sounds: on with full motion, quiet on calm or off unless switched on here (sq_clash_sound) */
+  function soundLabel() {
+    var b = $('#bSound'); if (!b) return;
+    var on = soundNow();
+    b.textContent = 'Sound: ' + (on ? 'on' : 'off');
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  function soundNow() { return ARENA.sound && (!window.SQSfx || window.SQSfx.enabled()); }
 
   /* ---------- header + keys ---------- */
   var sel = $('#biome');
@@ -250,6 +259,12 @@
   $('#bReset').addEventListener('click', function () { progress = {}; save(); loadBiome(); });
   $('#bFocus').addEventListener('click', function () { setFocus(!document.body.classList.contains('focus')); });
   $('#bMotion').addEventListener('click', function () { setMotion(MOTIONS[(MOTIONS.indexOf(ARENA.motion) + 1) % MOTIONS.length], true); });
+  $('#bSound').addEventListener('click', function () {
+    var next = !soundNow();
+    ARENA.setSound(next);
+    if (next && window.SQSfx && !window.SQSfx.enabled()) window.SQSfx.setEnabled(true);   /* the site-wide switch was off: this turns it back on */
+    soundLabel();
+  });
   $('#me-name').insertAdjacentHTML('afterbegin', LEAF);
 
   document.addEventListener('keydown', function (e) {

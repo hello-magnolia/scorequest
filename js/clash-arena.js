@@ -61,6 +61,7 @@ function loadAll(){
     const im=new Image(); im.onload=()=>{IMG[k]=im;WHITE[k]=silhouette(im,"#fff");r()}; im.src=SPRITES[k].src;
   })));
 }
+let BAN=null;   /* where the banner goes in a wide strip: {y, h, f} in canvas px (set by resize) */
 function resize(){
   const box=cv.parentElement; if(!box)return;
   const dpr=window.devicePixelRatio||1, w=box.clientWidth*dpr, h=box.clientHeight*dpr;
@@ -75,7 +76,11 @@ function resize(){
     box.style.setProperty("--sx",sCss+"px");
     cv.style.width=(vw*S/dpr)+"px"; cv.style.height=(H*S/dpr)+"px"; cv.style.left=(-Math.round((vw*S/dpr-box.clientWidth)/2))+"px";
     cv.style.bottom=(-Math.round(6*S/dpr))+"px";   /* tuck 6 scene px of bare ground under the frame so the fight sits higher */
-  } else { S=Math.max(2,Math.ceil(w/W)); }
+    /* the "Dispelled!" banner has to sit inside the part of the canvas the box shows (the sky above it is
+       cropped): between the two plates when the strip is wide enough, else as a slim band just under them */
+    const visTop=Math.max(0,H*S-Math.round(h)-6*S), pl=box.querySelector(".plate"), under=pl?pl.offsetTop+pl.offsetHeight+3:0;
+    BAN=box.clientWidth<720?{y:visTop+Math.round(under*dpr),h:6*S,f:4.5*S}:{y:visTop+2*S,h:13*S,f:9*S};
+  } else { S=Math.max(2,Math.ceil(w/W)); BAN=null; }
   const changed=vw!==VW||ox!==OX;
   VW=vw; OX=ox; low.width=VW; low.height=H; lx.imageSmoothingEnabled=false;
   cv.width=VW*S; cv.height=H*S; ctx.imageSmoothingEnabled=false;
@@ -169,8 +174,8 @@ function render(t){
     ctx.font=`700 ${Math.round((f.big?9:f.small?5:7)*S)}px "Pixelify Sans",monospace`;
     ctx.lineWidth=Math.max(2,S*1.1);ctx.strokeStyle="#2b2118";ctx.strokeText(f.text,(f.x+OX)*S,f.y*S);ctx.fillStyle=f.c;ctx.fillText(f.text,(f.x+OX)*S,f.y*S)});
   ctx.globalAlpha=1;
-  if(banner){ctx.globalAlpha=Math.min(1,banner.t);const y=H*S*.42;ctx.fillStyle="rgba(43,33,24,.82)";ctx.fillRect(0,y-11*S,cv.width,22*S);
-    ctx.font=`700 ${Math.round(12*S)}px "Pixelify Sans",monospace`;ctx.fillStyle="#ffd36a";ctx.fillText(banner.text,cv.width/2,y+S*.5);ctx.globalAlpha=1}
+  if(banner){ctx.globalAlpha=Math.min(1,banner.t);const bh=BAN?BAN.h:22*S, y=BAN?BAN.y+bh/2:H*S*.42;ctx.fillStyle="rgba(43,33,24,.82)";ctx.fillRect(0,y-bh/2,cv.width,bh);
+    ctx.font=`700 ${Math.round(BAN?BAN.f:12*S)}px "Pixelify Sans",monospace`;ctx.fillStyle="#ffd36a";ctx.fillText(banner.text,cv.width/2,y+S*.5);ctx.globalAlpha=1}
 }
 let last=performance.now();
 function loop(t){
@@ -485,6 +490,7 @@ async function strike(att,def,move,{knock=4,shakeAmt=1,colors=["#fff"],hx}={}){
   hx=hx??def.cx+def.ox; const hy=GROUND-def.h*.55;
   def.dodge=false; def.guard=false;
   def.flash=def.soft?3:6; shake=def.soft?.6:shakeAmt;
+  if(!def.soft)sfx("clashHit");          /* a hit on the boss; Pomelo taking one stays quiet */
   const ix=hx-def.side*def.w*.2;
   star(ix,hy,"#ffffff",14,def.soft?4:6); burst(ix,hy,colors,def.soft?6:12);
   if(def.soft&&!def._said){def._said=true;float("oof",def.cx,GROUND-def.h-5,"#fff2c9",false,true)}
@@ -527,7 +533,17 @@ async function knockOver(f){
 /* one boss per biome. Its ward (health) drops by one pip per correct answer;
    at zero it is dispelled. Pomelo has no health at all. */
 const POMELO_MOVES=ROSTER.capybara.moves.filter(m=>m.dmg);
-let chain=Promise.resolve(), started=false, winCount=0, ward={hp:0,max:0}, motion="full";
+let chain=Promise.resolve(), started=false, winCount=0, ward={hp:0,max:0}, motion="full", biomeNow=null;
+/* fight sounds go through SQSfx (so the site's Sound switch mutes them too). On by default with full
+   motion, off by default on calm or off; localStorage sq_clash_sound = "on" | "off" overrides that. */
+function soundOn(){let p=null;try{p=localStorage.getItem("sq_clash_sound")}catch(e){}return p==="on"||(p!=="off"&&motion==="full")}
+function sfx(n){try{if(soundOn()&&window.SQSfx&&window.SQSfx[n])window.SQSfx[n]()}catch(e){}}
+/* one line of victory copy per biome, shown in the log when the ward breaks */
+const VICTORY={lorewood:"The lanterns of Lorewood burn steady again.",storyforge:"The Story Forge glows warm and quiet.",
+  inkreef:"The ink settles and Ink Reef runs clear.",syntaxcitadel:"Every comma in Syntax Citadel is back in place.",
+  mirrormines:"The mirrors of Mirror Mines show a clear way through.",infinityisles:"The tide around Infinity Isles goes calm.",
+  datadocks:"Every crate on Data Docks is counted.",prismpeaks:"Prism Peaks catches the light from every side."};
+function victoryLine(id){return VICTORY[id]||"The biome is clear."}
 function queue(fn){chain=chain.then(fn).catch(e=>{console.error(e)});return chain}
 function freshPomelo(){A=makeFighter("capybara",-1);A.name="Pomelo";A.soft=true}
 function pips(){
@@ -545,7 +561,7 @@ window.SQArena={
   bind,
   /* the biome's boss walks in with hp of max ward pips left */
   enter(biomeId,key,name,hp,max){return queue(async()=>{
-    paintBg(biomeId);
+    paintBg(biomeId); biomeNow=biomeId;
     banner=null;fxs=[];parts=[];floats=[];
     freshPomelo();
     ward={hp,max};
@@ -571,10 +587,11 @@ window.SQArena={
       setLog(ward.hp===1?`${B.name} is wobbling. One more correct answer!`:`${B.name}'s ward cracks. ${ward.hp} of ${ward.max} pips left.`);
       return;
     }
+    sfx("clashDispel");
     if(motion==="off"){B.upside=true;B.dizzy=true;B.ox=8}
     else{await sleep(120);await knockOver(B)}
     banner={text:"Dispelled!",t:motion==="off"?1:0};
-    setLog(`${B.name} is dispelled! The biome is clear.`);
+    setLog(`${B.name} is dispelled! ${victoryLine(biomeNow)}`);
     if(motion==="full")await victoryHop(A,3);
   })},
   /* a miss: the boss shows off, Pomelo stays unbothered, the ward stays where it was */
@@ -605,11 +622,14 @@ window.SQArena={
     })},
     win(){return queue(async()=>{
       if(!B)return; if(B.upside){Object.assign(B,{upside:false,dizzy:false,ox:0});banner=null;await sleep(200)}
-      ward.hp=0;pips();await knockOver(B);banner={text:"Dispelled!",t:0};setLog(`${B.name} is dispelled! The biome is clear.`);await victoryHop(A,3);
+      ward.hp=0;pips();sfx("clashDispel");await knockOver(B);banner={text:"Dispelled!",t:0};setLog(`${B.name} is dispelled! ${victoryLine(biomeNow)}`);await victoryHop(A,3);
     })},
     shrug(){return queue(async()=>{setLog(`Pomelo shakes it off.`);await zenShrug(A)})}
   },
   setMotion(m){motion=m==="calm"||m==="off"?m:"full";if(motion!=="full"){shake=0}},
+  victoryLine, get sound(){return soundOn()},
+  /* true / false sets the fight sounds; null goes back to the default for the motion setting */
+  setSound(on){try{if(on==null)localStorage.removeItem("sq_clash_sound");else localStorage.setItem("sq_clash_sound",on?"on":"off")}catch(e){}return soundOn()},
   get motion(){return motion},
   get ward(){return {hp:ward.hp,max:ward.max}}
 };

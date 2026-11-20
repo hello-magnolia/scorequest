@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261119o" />
-<link rel="stylesheet" href="css/clash.css?v=b20261119o" />
+<link rel="stylesheet" href="assets/katex/katex.min.css?v=b20261119p" />
+<link rel="stylesheet" href="css/clash.css?v=b20261119p" />
 <style>
 :root {
   --bg: #efe9da; --card: #fffdf7; --ink: #2b2118; --muted: #6f6252; --line: #d9cfba;
@@ -94,6 +94,11 @@ body.focus .trail .here { display: none; }
   .screen { max-width: 520px; width: 100%; margin: 0 auto; }
   .done { flex-basis: 100%; }
 }
+@media (max-width: 480px) {   /* four buttons on one row on a phone */
+  .top { gap: 10px 6px; }
+  .top .spacer { display: none; }
+  .tbtn { font-size: 12px; padding: 5px 6px; }
+}
 </style>
 </head>
 <body>
@@ -110,6 +115,7 @@ body.focus .trail .here { display: none; }
   <span class="spacer"></span>
   <button class="tbtn" id="bFocus" type="button" aria-pressed="false" title="Hide the battle screen (F)">Focus</button>
   <button class="tbtn" id="bMotion" type="button" title="Battle animations. Also in Settings">Motion: full</button>
+  <button class="tbtn" id="bSound" type="button" aria-pressed="true" title="Fight sounds. Quiet by default on calm motion">Sound: on</button>
   <button class="tbtn" id="bReset" type="button" title="Clear this biome's answers and start the boss over">Start over</button>
 </div>
 <nav class="trail" id="trail" aria-label="Question trail"></nav>
@@ -130,16 +136,17 @@ body.focus .trail .here { display: none; }
 </main>
 
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="assets/katex/katex.min.js?v=b20261119o"></script>
-<script defer src="assets/katex/auto-render.min.js?v=b20261119o"></script>
-<script defer src="js/config.js?v=b20261119o"></script>
-<script defer src="js/auth.js?v=b20261119o"></script>
-<script defer src="data/questions.js?v=b20261119o"></script>
-<script defer src="js/figures.js?v=b20261119o"></script>
-<script defer src="js/questions.js?v=b20261119o"></script>
-<script defer src="js/qcard.js?v=b20261119o"></script>
-<script defer src="js/clash-arena.js?v=b20261119o"></script>
-<script defer src="js/clash-ambient.js?v=b20261119o"></script>
-<script defer src="js/clash.js?v=b20261119o"></script>
+<script defer src="assets/katex/katex.min.js?v=b20261119p"></script>
+<script defer src="assets/katex/auto-render.min.js?v=b20261119p"></script>
+<script defer src="js/config.js?v=b20261119p"></script>
+<script defer src="js/auth.js?v=b20261119p"></script>
+<script defer src="data/questions.js?v=b20261119p"></script>
+<script defer src="js/figures.js?v=b20261119p"></script>
+<script defer src="js/questions.js?v=b20261119p"></script>
+<script defer src="js/sfx.js?v=b20261119p"></script>
+<script defer src="js/qcard.js?v=b20261119p"></script>
+<script defer src="js/clash-arena.js?v=b20261119p"></script>
+<script defer src="js/clash-ambient.js?v=b20261119p"></script>
+<script defer src="js/clash.js?v=b20261119p"></script>
 </body>
 </html>

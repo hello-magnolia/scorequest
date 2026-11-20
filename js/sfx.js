@@ -457,6 +457,18 @@
       voice(1568, { type: 'sine', dur: 0.4, peak: 0.05, delay: 1.0 });
       voice(2093, { type: 'sine', dur: 0.5, peak: 0.045, delay: 1.35 });
     },
+    /* Critter Clash: a hit lands on the ward (soft and woody, with a little glass on top) */
+    clashHit: function () {
+      voice(180, { type: 'triangle', dur: 0.12, peak: 0.11, glideTo: 95 });
+      voice(1320, { type: 'sine', dur: 0.09, peak: 0.035, delay: 0.01 });
+    },
+    /* Critter Clash: the ward breaks. Glass settling, then a warm three-note rise */
+    clashDispel: function () {
+      voice(1760, { type: 'sine', dur: 0.18, peak: 0.05, glideTo: 880 });
+      [523.25, 783.99, 1046.5].forEach(function (f, i) {
+        voice(f, { type: 'triangle', dur: 0.32, peak: 0.1, delay: 0.14 + i * 0.1 });
+      });
+    },
     correct: function () {
       voice(659.25, { type: 'triangle', dur: 0.16, peak: 0.12 });
       voice(987.77, { type: 'triangle', dur: 0.3, peak: 0.12, delay: 0.09 });

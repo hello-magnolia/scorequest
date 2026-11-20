@@ -141,6 +141,29 @@ const DOMAIN = { lorewood: 'Information and Ideas', storyforge: 'Craft and Struc
     await answer(w, true); click(w, d.querySelector('#bNext'));
   }
   check('Enough correct answers dispel the boss', w.__SQ_CLASH.state.ward === 0 && /dispelled/i.test(d.querySelector('#cx-log').textContent));
+  /* polish (Nov 19): a line of victory copy per biome when the ward breaks, and fight sounds through SQSfx */
+  check('The ward breaking shows the biome\'s own victory line', /lanterns of Lorewood/.test(d.querySelector('#cx-log').textContent), d.querySelector('#cx-log').textContent);
+  check('Every biome has a victory line, none with an em dash', Object.keys(DOMAIN).every(id => { const l = w.SQArena.victoryLine(id); return l && l !== w.SQArena.victoryLine('nowhere') && !/\u2014/.test(l) && l.length < 60; }));
+  {
+    const ws = await open('clash.html?realm=mirrormines', (win) => { win.localStorage.clear(); });
+    const ds = ws.document; let hits = 0, breaks = 0;
+    check('Sound module loads on the clash page with hit and dispel sounds', !!(ws.SQSfx && ws.SQSfx.clashHit && ws.SQSfx.clashDispel));
+    ws.SQSfx.clashHit = () => { hits++; }; ws.SQSfx.clashDispel = () => { breaks++; };
+    ws.SQArena.setMotion('calm');
+    check('Fight sounds are quiet by default on calm motion', ws.SQArena.sound === false);
+    await answer(ws, true); click(ws, ds.querySelector('#bNext'));
+    const quiet = hits;
+    click(ws, ds.querySelector('#bSound'));
+    check('The Sound switch turns them on and says so', ws.SQArena.sound === true && /on/.test(ds.querySelector('#bSound').textContent) && ws.localStorage.getItem('sq_clash_sound') === 'on');
+    await answer(ws, true); click(ws, ds.querySelector('#bNext'));
+    check('A correct answer plays the hit sound only when sounds are on', quiet === 0 && hits === 1, quiet + ' then ' + hits);
+    let g2 = 0;
+    while (ws.__SQ_CLASH.state.ward > 0 && g2++ < 40) { await answer(ws, true); click(ws, ds.querySelector('#bNext')); }
+    check('Breaking the ward plays the dispel sound once', breaks === 1 && /mirrors of Mirror Mines/.test(ds.querySelector('#cx-log').textContent), String(breaks));
+    ws.SQArena.setSound(null); ws.SQArena.setMotion('full');
+    check('With full motion and no saved choice, sounds are on', ws.SQArena.sound === true);
+    ws.close();
+  }
   check('Dispelled boss stays dispelled on reload', await (async () => { const keep2 = w.localStorage.getItem('sq_clash_lorewood'); const w2 = await open('clash.html?realm=lorewood', (win) => { win.localStorage.clear(); win.localStorage.setItem('sq_clash_lorewood', keep2); win.localStorage.setItem('sq_motion', 'off'); }); return w2.__SQ_CLASH.state.ward === 0 && /dispelled/i.test(w2.document.querySelector('#cx-log').textContent); })());
 
   /* focus and motion controls */
